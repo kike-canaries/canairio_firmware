@@ -11,17 +11,18 @@
 #include <SoftwareSerial.h>
 
 //Create an instance of software serial
-SoftwareSerial hpmaSerial(10, 11); // Feather TX, Feather RX
+SoftwareSerial hpmaSerial(13, 15); // Feather TX, Feather RX
 
 //Create an instance of the hpma115S0 library
 HPMA115S0 hpma115S0(hpmaSerial);
 
 void setup() {
-  Serial.begin(57600);
+  Serial.begin(9600);
   hpmaSerial.begin(9600);
-  delay(5000);
+  delay(1000);
   Serial.println("Starting...");
   hpma115S0.Init();
+  delay(2000);
   hpma115S0.StartParticleMeasurement();
 }
 
@@ -31,5 +32,5 @@ void loop() {
     Serial.println("PM 2.5: " + String(pm2_5) + " ug/m3" );
     Serial.println("PM 10: " + String(pm10) + " ug/m3" );
   }
-  delay(1000);
+  delay(5000);
 }

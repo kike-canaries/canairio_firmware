@@ -1,3 +1,6 @@
+# Prerequisites
+*.d
+
 # Compiled Object files
 *.slo
 *.lo
@@ -27,6 +30,7 @@
 *.exe
 *.out
 *.app
+<<<<<<< HEAD
 
 # Vim backups
 *.swp

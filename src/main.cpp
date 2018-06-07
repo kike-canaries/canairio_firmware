@@ -29,7 +29,7 @@ void showWelcome(){
   display.setLogBuffer(5, 30);
 }
 
-void showPM25(String msg){
+void displayOnBuffer(String msg){
   display.clear();
   display.setFont(ArialMT_Plain_10);
   display.println(msg);
@@ -59,7 +59,7 @@ void loop() {
   if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
     Serial.print("PM 2.5:\t" + String(pm2_5) + " ug/m3\t" );
     Serial.println("\tPM 10:\t" + String(pm10) + " ug/m3" );
-    showPM25("PM25:  " + String(pm2_5) + " | PM10:  " + String(pm10));
+    displayOnBuffer("PM25:  " + String(pm2_5) + " | PM10:  " + String(pm10));
   }
   delay(1000);
 }

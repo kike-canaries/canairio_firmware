@@ -20,6 +20,7 @@ HardwareSerial hpmaSerial(1);
 SSD1306Wire display(0x3c, 5, 4);
 // Create an instance of the hpma115S0 library
 HPMA115S0 hpma115S0(hpmaSerial);
+hw_timer_t *hpmaTimer = NULL;
 // BLE vars
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
@@ -32,10 +33,12 @@ uint8_t value = 0;
 
 class MyServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* pServer) {
+      Serial.println("[BLE] onConnect");
       deviceConnected = true;
     };
 
     void onDisconnect(BLEServer* pServer) {
+      Serial.println("[BLE] onDisconnect");
       deviceConnected = false;
     };
 }; // BLEServerCallbacks
@@ -118,13 +121,6 @@ void displayOnBuffer(String msg){
   display.display();
 }
 
-void sensorInit(){
-  Serial.print("Starting hpma115S0..");
-  hpma115S0.Init();
-  hpma115S0.StartParticleMeasurement();
-  Serial.print("done");
-}
-
 void sensorLoop(){
   unsigned int pm2_5, pm10;
   if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
@@ -134,12 +130,25 @@ void sensorLoop(){
   }
 }
 
+void sensorInit(){
+  Serial.print("Starting hpma115S0..");
+  hpma115S0.Init();
+  hpma115S0.StartParticleMeasurement();
+  delay(10);
+  hpmaTimer = timerBegin(0, 80, true);
+  timerAttachInterrupt(hpmaTimer, &sensorLoop, true);
+  timerAlarmWrite(hpmaTimer, 2000000, true);
+  timerAlarmEnable(hpmaTimer);
+  timerStart(hpmaTimer);
+  Serial.print("done");
+}
+
 void setup() {
   Serial.begin(9600);
   Serial.println("-->DebugConsole ready");
   hpmaSerial.begin(9600,SERIAL_8N1,13,15);
   Serial.println("-->HardwareSerial ready");
-  delay(100);
+  delay(10);
   displayInit();
   sensorInit();
   bleServerInit();
@@ -148,5 +157,4 @@ void setup() {
 
 void loop() {
   bleLoop();
-  sensorLoop();
 }

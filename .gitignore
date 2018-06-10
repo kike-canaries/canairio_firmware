@@ -46,3 +46,6 @@ libraries
 
 .clang_complete
 .gcc-flags.json
+
+# travis
+.travis.yml

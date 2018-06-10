@@ -20,16 +20,63 @@ HardwareSerial hpmaSerial(1);
 SSD1306Wire display(0x3c, 5, 4);
 // Create an instance of the hpma115S0 library
 HPMA115S0 hpma115S0(hpmaSerial);
-hw_timer_t *hpmaTimer = NULL;
+
 // BLE vars
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
-uint8_t value = 0;
 
 #define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
 #define CHARACTERISTIC_UUID "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
+
+void displayInit(){
+  display.init();
+  display.flipScreenVertically();
+  display.setContrast(128);
+  display.clear();
+  Serial.println("-->OLED ready");
+}
+
+void showWelcome(){
+  display.clear();
+  display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+  display.setFont(ArialMT_Plain_16);
+  display.drawString(display.getWidth()/2, display.getHeight()/2, "ESP32 HPMA115S0");
+  display.display();
+  Serial.println("-->Welcome screen ready");
+  delay(1000);
+  display.setLogBuffer(5, 30);
+}
+
+void displayOnBuffer(String msg){
+  display.clear();
+  display.setFont(ArialMT_Plain_10);
+  display.println(msg);
+  display.drawLogBuffer(0,0);
+  display.display();
+}
+
+String sensorRead(){
+  unsigned int pm2_5, pm10;
+  if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
+    Serial.print("PM 2.5:\t" + String(pm2_5) + " ug/m3\t" );
+    Serial.println("\tPM 10:\t" + String(pm10) + " ug/m3" );
+    String output = "PM25:  " + String(pm2_5) + " | PM10:  " + String(pm10);
+    displayOnBuffer(output);
+    delay(2000);
+    return output;
+  }
+  return "";
+}
+
+void sensorInit(){
+  Serial.print("Starting hpma115S0..");
+  hpma115S0.Init();
+  hpma115S0.StartParticleMeasurement();
+  delay(10);
+  Serial.print("done");
+}
 
 class MyServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* pServer) {
@@ -74,73 +121,23 @@ void bleServerInit(){
 
 void bleLoop(){
   // notify changed value
-    if (deviceConnected) {
-        pCharacteristic->setValue(&value, 1);
-        pCharacteristic->notify();
-        value++;
-        delay(10); // bluetooth stack will go into congestion, if too many packets are sent
-    }
-    // disconnecting
-    if (!deviceConnected && oldDeviceConnected) {
-        delay(500); // give the bluetooth stack the chance to get things ready
-        pServer->startAdvertising(); // restart advertising
-        Serial.println("start advertising");
-        oldDeviceConnected = deviceConnected;
-    }
-    // connecting
-    if (deviceConnected && !oldDeviceConnected) {
-        // do stuff here on connecting
-        oldDeviceConnected = deviceConnected;
-    }
-}
-
-void displayInit(){
-  display.init();
-  display.flipScreenVertically();
-  display.setContrast(128);
-  display.clear();
-  Serial.println("-->OLED ready");
-}
-
-void showWelcome(){
-  display.clear();
-  display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-  display.setFont(ArialMT_Plain_16);
-  display.drawString(display.getWidth()/2, display.getHeight()/2, "ESP32 HPMA115S0");
-  display.display();
-  Serial.println("-->Welcome screen ready");
-  delay(1000);
-  display.setLogBuffer(5, 30);
-}
-
-void displayOnBuffer(String msg){
-  display.clear();
-  display.setFont(ArialMT_Plain_10);
-  display.println(msg);
-  display.drawLogBuffer(0,0);
-  display.display();
-}
-
-void sensorLoop(){
-  unsigned int pm2_5, pm10;
-  if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
-    Serial.print("PM 2.5:\t" + String(pm2_5) + " ug/m3\t" );
-    Serial.println("\tPM 10:\t" + String(pm10) + " ug/m3" );
-    displayOnBuffer("PM25:  " + String(pm2_5) + " | PM10:  " + String(pm10));
+  if (deviceConnected) {
+    pCharacteristic->setValue(sensorRead().c_str());
+    pCharacteristic->notify();
+    delay(10); // bluetooth stack will go into congestion, if too many packets are sent
   }
-}
-
-void sensorInit(){
-  Serial.print("Starting hpma115S0..");
-  hpma115S0.Init();
-  hpma115S0.StartParticleMeasurement();
-  delay(10);
-  hpmaTimer = timerBegin(0, 80, true);
-  timerAttachInterrupt(hpmaTimer, &sensorLoop, true);
-  timerAlarmWrite(hpmaTimer, 2000000, true);
-  timerAlarmEnable(hpmaTimer);
-  timerStart(hpmaTimer);
-  Serial.print("done");
+  // disconnecting
+  if (!deviceConnected && oldDeviceConnected) {
+    delay(500); // give the bluetooth stack the chance to get things ready
+    pServer->startAdvertising(); // restart advertising
+    Serial.println("start advertising");
+    oldDeviceConnected = deviceConnected;
+  }
+  // connecting
+  if (deviceConnected && !oldDeviceConnected) {
+    // do stuff here on connecting
+    oldDeviceConnected = deviceConnected;
+  }
 }
 
 void setup() {
@@ -150,8 +147,8 @@ void setup() {
   Serial.println("-->HardwareSerial ready");
   delay(10);
   displayInit();
-  sensorInit();
   bleServerInit();
+  sensorInit();
   showWelcome();
 }
 

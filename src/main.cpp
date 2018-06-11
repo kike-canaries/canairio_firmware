@@ -20,6 +20,7 @@ HardwareSerial hpmaSerial(1);
 SSD1306Wire display(0x3c, 5, 4);
 // Create an instance of the hpma115S0 library
 HPMA115S0 hpma115S0(hpmaSerial);
+unsigned long count = 0;
 
 // BLE vars
 BLEServer* pServer = NULL;
@@ -44,7 +45,7 @@ void showWelcome(){
   display.setFont(ArialMT_Plain_16);
   display.drawString(display.getWidth()/2, display.getHeight()/2, "ESP32 HPMA115S0");
   display.display();
-  Serial.println("-->Welcome screen ready");
+  Serial.println("-->Welcome screen ready\n");
   delay(1000);
   display.setLogBuffer(5, 30);
 }
@@ -60,22 +61,23 @@ void displayOnBuffer(String msg){
 String sensorRead(){
   unsigned int pm2_5, pm10;
   if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
-    Serial.print("PM 2.5:\t" + String(pm2_5) + " ug/m3\t" );
-    Serial.println("\tPM 10:\t" + String(pm10) + " ug/m3" );
-    String output = "PM25:  " + String(pm2_5) + " | PM10:  " + String(pm10);
+    Serial.print(String(count)+" Pm2.5:\t" + String(pm2_5) + " ug/m3\t" );
+    Serial.println("\tPm10:\t" + String(pm10) + " ug/m3" );
+    String output = String(count)+" P25: " + String(pm2_5) + " | P10: " + String(pm10);
     displayOnBuffer(output);
     delay(2000);
+    count++;
     return output;
   }
   return "";
 }
 
 void sensorInit(){
-  Serial.print("Starting hpma115S0..");
+  Serial.print("-->Starting hpma115S0..");
   hpma115S0.Init();
   hpma115S0.StartParticleMeasurement();
   delay(10);
-  Serial.print("done");
+  Serial.println("done");
 }
 
 class MyServerCallbacks: public BLEServerCallbacks {
@@ -116,7 +118,7 @@ void bleServerInit(){
   pService->start();
   // Start advertising
   pServer->getAdvertising()->start();
-  Serial.println("Waiting a client to notify...");
+  Serial.println("-->BLE ready. (Waiting a client to notify)");
 }
 
 void bleLoop(){
@@ -130,7 +132,7 @@ void bleLoop(){
   if (!deviceConnected && oldDeviceConnected) {
     delay(500); // give the bluetooth stack the chance to get things ready
     pServer->startAdvertising(); // restart advertising
-    Serial.println("start advertising");
+    Serial.println("[BLE] start advertising");
     oldDeviceConnected = deviceConnected;
   }
   // connecting
@@ -141,14 +143,15 @@ void bleLoop(){
 }
 
 void setup() {
+  Serial.println("\nINIT SETUP:\n");
   Serial.begin(9600);
-  Serial.println("-->DebugConsole ready");
+  Serial.println("\n-->DebugConsole ready");
   hpmaSerial.begin(9600,SERIAL_8N1,13,15);
   Serial.println("-->HardwareSerial ready");
   delay(10);
   displayInit();
-  bleServerInit();
   sensorInit();
+  bleServerInit();
   showWelcome();
 }
 

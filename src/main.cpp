@@ -63,8 +63,9 @@ String sensorRead(){
   if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
     Serial.print(String(count)+" Pm2.5:\t" + String(pm2_5) + " ug/m3\t" );
     Serial.println("\tPm10:\t" + String(pm10) + " ug/m3" );
-    String output = String(count)+" P25: " + String(pm2_5) + " | P10: " + String(pm10);
-    displayOnBuffer(output);
+    String display = String(count)+" P25: " + String(pm2_5) + " | P10: " + String(pm10);
+    displayOnBuffer(display);
+    String output = String("{")+"\"P25\":"+String(pm2_5)+",\"P10\":"+String(pm10)+"}";
     delay(2000);
     count++;
     return output;

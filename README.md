@@ -1,6 +1,6 @@
 # ESP32-HPMA115S0
 
-ESP32 with HPMA115s0 Honeywell dust sensor with a WeMOS like board
+ESP32 with HPMA115s0 Honeywell dust sensor with a WeMOS like board and [Android Client](https://github.com/kike-canaries/android-hpma115s0)
 
 ## Dependencies
 

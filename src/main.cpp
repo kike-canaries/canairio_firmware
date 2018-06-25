@@ -90,6 +90,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
     void onDisconnect(BLEServer* pServer) {
       Serial.println("[BLE] onDisconnect");
       deviceConnected = false;
+      showWelcome();
     };
 }; // BLEServerCallbacks
 

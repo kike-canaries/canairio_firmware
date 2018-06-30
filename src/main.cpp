@@ -14,6 +14,8 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
+bool DEBUG = true;
+
 //Create an instance of hardware serial
 HardwareSerial hpmaSerial(1);
 // Display via i2c for WeMOS OLED
@@ -24,12 +26,14 @@ unsigned long count = 0;
 
 // BLE vars
 BLEServer* pServer = NULL;
-BLECharacteristic* pCharacteristic = NULL;
+BLECharacteristic* pCharactPM25 = NULL;
+BLECharacteristic* pCharactPM10 = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 
 #define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
-#define CHARACTERISTIC_UUID "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
+#define CHARAC_PM25_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
+#define CHARAC_PM10_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
 
 void displayInit(){
   display.init();
@@ -58,16 +62,30 @@ void displayOnBuffer(String msg){
   display.display();
 }
 
-String sensorRead(){
+/**
+* PM2.5 and PM10 visualization function (provisional)
+*/
+String sensorRead25(){
   unsigned int pm2_5, pm10;
   if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
     Serial.print(String(count)+" Pm2.5:\t" + String(pm2_5) + " ug/m3\t" );
     Serial.println("\tPm10:\t" + String(pm10) + " ug/m3" );
     String display = String(count)+" P25: " + String(pm2_5) + " | P10: " + String(pm10);
     displayOnBuffer(display);
-    String output = String("{")+"\"P25\":"+String(pm2_5)+",\"P10\":"+String(pm10)+"}";
+    String output = String("{")+"\"P25\":"+String(pm2_5)+"}";
+    Serial.println("output length: "+output.length());
     delay(2000);
     count++;
+    return output;
+  }
+  return "";
+}
+
+String sensorRead10(){
+  unsigned int pm2_5, pm10;
+  if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
+    String output = String("{")+"\"P10\":"+String(pm10)+"}";
+    delay(2000);
     return output;
   }
   return "";
@@ -105,17 +123,22 @@ void bleServerInit(){
   // Create the BLE Service
   BLEService *pService = pServer->createService(SERVICE_UUID);
 
-  // Create a BLE Characteristic
-  pCharacteristic = pService->createCharacteristic(
-                      CHARACTERISTIC_UUID,
+  // Create a BLE Characteristic for PM 2.5
+  pCharactPM25 = pService->createCharacteristic(
+                      CHARAC_PM25_UUID,
                       BLECharacteristic::PROPERTY_READ   |
-                      BLECharacteristic::PROPERTY_WRITE  |
-                      BLECharacteristic::PROPERTY_NOTIFY |
-                      BLECharacteristic::PROPERTY_INDICATE
+                      BLECharacteristic::PROPERTY_NOTIFY
+                    );
+  // Create a BLE Characteristic for PM 10
+  pCharactPM10 = pService->createCharacteristic(
+                      CHARAC_PM10_UUID,
+                      BLECharacteristic::PROPERTY_READ   |
+                      BLECharacteristic::PROPERTY_NOTIFY
                     );
 
   // Create a BLE Descriptor
-  pCharacteristic->addDescriptor(new BLE2902());
+  pCharactPM25->addDescriptor(new BLE2902());
+  pCharactPM10->addDescriptor(new BLE2902());
   // Start the service
   pService->start();
   // Start advertising
@@ -126,8 +149,10 @@ void bleServerInit(){
 void bleLoop(){
   // notify changed value
   if (deviceConnected) {
-    pCharacteristic->setValue(sensorRead().c_str());
-    pCharacteristic->notify();
+    pCharactPM25->setValue(sensorRead25().c_str());
+    pCharactPM10->setValue(sensorRead10().c_str());
+    pCharactPM25->notify();
+    pCharactPM10->notify();
     delay(10); // bluetooth stack will go into congestion, if too many packets are sent
   }
   // disconnecting

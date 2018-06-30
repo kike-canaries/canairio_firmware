@@ -4,7 +4,7 @@ ESP32 with HPMA115s0 Honeywell dust sensor with a WeMOS like board and [Android 
 
 ## Dependencies
 
-Please install before, [PlatformIO](http://platformio.org/) open source ecosystem for IoT development.
+Please install before, [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE.
 
 ## Compiling and install
 
@@ -23,3 +23,10 @@ Please install before, [PlatformIO](http://platformio.org/) open source ecosyste
 ## Prototype
 
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/prototype.jpg"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/prototype.jpg" align="left" width="1024" ></a>
+
+### Provisional Materials
+
+* [ESP32 compatible board (WeMOS)](http://bit.ly/2lMbWH6)
+* [Honeywell HPMA115S0](http://bit.ly/2pZPxYh)
+* [USB Power module board](http://bit.ly/2lHSKdr) (Optional)
+* [Lipo Battery of 3.7v or similar](http://bit.ly/2KA3fdB) (Optional)

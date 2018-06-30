@@ -24,7 +24,7 @@ Please install before, [PlatformIO](http://platformio.org/) open source ecosyste
 
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/prototype.jpg"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/prototype.jpg" align="left" width="1024" ></a>
 
-### Provisional Materials
+## Materials
 
 * [ESP32 compatible board (WeMOS)](http://bit.ly/2lMbWH6)
 * [Honeywell HPMA115S0](http://bit.ly/2pZPxYh)

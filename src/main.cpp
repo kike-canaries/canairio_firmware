@@ -23,6 +23,7 @@ SSD1306Wire display(0x3c, 5, 4);
 // Create an instance of the hpma115S0 library
 HPMA115S0 hpma115S0(hpmaSerial);
 unsigned long count = 0;
+unsigned int pm2_5, pm10;
 
 // BLE vars
 BLEServer* pServer = NULL;
@@ -63,32 +64,27 @@ void displayOnBuffer(String msg){
 }
 
 /**
-* PM2.5 and PM10 visualization function (provisional)
+* PM2.5 and PM10 visualization function
 */
-String sensorRead25(){
-  unsigned int pm2_5, pm10;
+void sensorRead(){
   if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
     Serial.print(String(count)+" Pm2.5:\t" + String(pm2_5) + " ug/m3\t" );
     Serial.println("\tPm10:\t" + String(pm10) + " ug/m3" );
     String display = String(count)+" P25: " + String(pm2_5) + " | P10: " + String(pm10);
     displayOnBuffer(display);
-    String output = String("{")+"\"P25\":"+String(pm2_5)+"}";
-    Serial.println("output length: "+output.length());
-    delay(2000);
     count++;
-    return output;
+    delay(2000);
   }
-  return "";
 }
 
-String sensorRead10(){
-  unsigned int pm2_5, pm10;
-  if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
-    String output = String("{")+"\"P10\":"+String(pm10)+"}";
-    delay(2000);
-    return output;
-  }
-  return "";
+String sensorGetRead25(){
+  String output = String("{")+"\"P25\":"+String(pm2_5)+"}";
+  return output;
+}
+
+String sensorGetRead10(){
+  String output = String("{")+"\"P10\":"+String(pm10)+"}";
+  return output;
 }
 
 void sensorInit(){
@@ -149,8 +145,9 @@ void bleServerInit(){
 void bleLoop(){
   // notify changed value
   if (deviceConnected) {
-    pCharactPM25->setValue(sensorRead25().c_str());
-    pCharactPM10->setValue(sensorRead10().c_str());
+    sensorRead();
+    pCharactPM25->setValue(sensorGetRead25().c_str());
+    pCharactPM10->setValue(sensorGetRead10().c_str());
     pCharactPM25->notify();
     pCharactPM10->notify();
     delay(10); // bluetooth stack will go into congestion, if too many packets are sent

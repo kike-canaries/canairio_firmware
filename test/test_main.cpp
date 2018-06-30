@@ -11,7 +11,6 @@ void test_characteristic_check (void){
 
 void setup (){
   delay(100);
-
   UNITY_BEGIN();
   RUN_TEST(test_serviceuuid_check);
 }

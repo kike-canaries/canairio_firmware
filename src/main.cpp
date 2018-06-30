@@ -64,12 +64,12 @@ void displayOnBuffer(String msg){
 }
 
 /**
-* PM2.5 and PM10 visualization function
+* PM2.5 and PM10 read and visualization functions
 */
 void sensorRead(){
   if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
-    Serial.print(String(count)+" Pm2.5:\t" + String(pm2_5) + " ug/m3\t" );
-    Serial.println("\tPm10:\t" + String(pm10) + " ug/m3" );
+    Serial.print(String(count)+"\tPm2.5:\t" + String(pm2_5) + " ug/m3\t" );
+    Serial.println("Pm10:\t" + String(pm10) + " ug/m3" );
     String display = String(count)+" P25: " + String(pm2_5) + " | P10: " + String(pm10);
     displayOnBuffer(display);
     count++;
@@ -78,13 +78,11 @@ void sensorRead(){
 }
 
 String sensorGetRead25(){
-  String output = String("{")+"\"P25\":"+String(pm2_5)+"}";
-  return output;
+  return String("{")+"\"P25\":"+String(pm2_5)+"}"; // max supported 20 chars
 }
 
 String sensorGetRead10(){
-  String output = String("{")+"\"P10\":"+String(pm10)+"}";
-  return output;
+  return String("{")+"\"P10\":"+String(pm10)+"}"; // max supported 20 chars
 }
 
 void sensorInit(){

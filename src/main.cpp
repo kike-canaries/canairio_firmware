@@ -15,12 +15,15 @@
 #include <BLE2902.h>
 
 bool DEBUG = true;
-
+// firmware version from git rev-list command
+String VERSION_CODE = "rev";
+int VCODE = SRC_REV;
 //Create an instance of hardware serial
 HardwareSerial hpmaSerial(1);
 // Display via i2c for WeMOS OLED
 SSD1306Wire display(0x3c, 5, 4);
 // Create an instance of the hpma115S0 library
+#define SAMPLING_RATE 3000
 HPMA115S0 hpma115S0(hpmaSerial);
 unsigned long count = 0;
 unsigned int pm2_5, pm10;
@@ -38,6 +41,7 @@ bool oldDeviceConnected = false;
 
 void displayInit(){
   display.init();
+  display.setLogBuffer(5, 30);
   display.flipScreenVertically();
   display.setContrast(128);
   display.clear();
@@ -45,14 +49,19 @@ void displayInit(){
 }
 
 void showWelcome(){
+  display.setLogBuffer(5, 30);     // forcing redraw display (bug)
+  display.flipScreenVertically();  // forcing redraw display (bug)
+  display.setContrast(128);        // forcing redraw display (bug)
   display.clear();
   display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
   display.setFont(ArialMT_Plain_16);
-  display.drawString(display.getWidth()/2, display.getHeight()/2, "ESP32 HPMA115S0");
+  display.drawString(display.getWidth()/2, display.getHeight()/2, "ESP32 HPMA115");
+  display.setFont(ArialMT_Plain_10);
+  display.setTextAlignment(TEXT_ALIGN_RIGHT);
+  display.drawString(display.getWidth()-5,display.getHeight()-10, VERSION_CODE+VCODE);
   display.display();
   Serial.println("-->Welcome screen ready\n");
   delay(1000);
-  display.setLogBuffer(5, 30);
 }
 
 void displayOnBuffer(String msg){
@@ -71,9 +80,9 @@ void sensorRead(){
     Serial.print(String(count)+"\tPm2.5:\t" + String(pm2_5) + " ug/m3\t" );
     Serial.println("Pm10:\t" + String(pm10) + " ug/m3" );
     String display = String(count)+" P25: " + String(pm2_5) + " | P10: " + String(pm10);
-    displayOnBuffer(display);
+    if(deviceConnected)displayOnBuffer(display);
     count++;
-    delay(2000);
+    delay(SAMPLING_RATE);
   }
 }
 
@@ -102,7 +111,6 @@ class MyServerCallbacks: public BLEServerCallbacks {
     void onDisconnect(BLEServer* pServer) {
       Serial.println("[BLE] onDisconnect");
       deviceConnected = false;
-      showWelcome();
     };
 }; // BLEServerCallbacks
 
@@ -148,7 +156,7 @@ void bleLoop(){
     pCharactPM10->setValue(sensorGetRead10().c_str());
     pCharactPM25->notify();
     pCharactPM10->notify();
-    delay(10); // bluetooth stack will go into congestion, if too many packets are sent
+    delay(100); // bluetooth stack will go into congestion, if too many packets are sent
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {
@@ -156,6 +164,8 @@ void bleLoop(){
     pServer->startAdvertising(); // restart advertising
     Serial.println("[BLE] start advertising");
     oldDeviceConnected = deviceConnected;
+    delay(100);
+    showWelcome();
   }
   // connecting
   if (deviceConnected && !oldDeviceConnected) {

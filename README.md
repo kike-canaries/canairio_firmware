@@ -14,6 +14,7 @@ Please install before, [PlatformIO](http://platformio.org/) open source ecosyste
 - [X] HPMA115S0 fixes and libraries tests
 - [X] SSD1306 OLED display output (PM2.5 and PM10)
 - [X] Basic output via Bluetooth LE GATT server
+- [ ] Config firmware Characteristic
 - [ ] Real time clock or clock set via BT sync
 - [ ] Timestamp for GPS sync
 - [ ] Gson output parser (for [Android client](https://github.com/kike-canaries/android-hpma115s0))

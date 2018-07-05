@@ -102,6 +102,10 @@ void sensorInit(){
   Serial.println("done");
 }
 
+void resetVars(){
+  count=0;
+}
+
 class MyServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* pServer) {
       Serial.println("[BLE] onConnect");
@@ -164,8 +168,8 @@ void bleLoop(){
     pServer->startAdvertising(); // restart advertising
     Serial.println("[BLE] start advertising");
     oldDeviceConnected = deviceConnected;
-    delay(100);
     showWelcome();
+    resetVars();
   }
   // connecting
   if (deviceConnected && !oldDeviceConnected) {

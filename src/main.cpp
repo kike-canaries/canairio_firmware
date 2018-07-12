@@ -23,7 +23,7 @@ HardwareSerial hpmaSerial(1);
 // Display via i2c for WeMOS OLED
 SSD1306Wire display(0x3c, 5, 4);
 // Create an instance of the hpma115S0 library
-#define SAMPLING_RATE 3000
+#define SAMPLING_RATE 5000
 HPMA115S0 hpma115S0(hpmaSerial);
 unsigned long count = 0;
 unsigned int pm2_5, pm10;

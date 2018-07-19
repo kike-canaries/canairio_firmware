@@ -136,15 +136,15 @@ void bleServerInit(){
                       BLECharacteristic::PROPERTY_NOTIFY
                     );
   // Create a BLE Characteristic for PM 10
-  pCharactPM10 = pService->createCharacteristic(
-                      CHARAC_PM10_UUID,
-                      BLECharacteristic::PROPERTY_READ   |
-                      BLECharacteristic::PROPERTY_NOTIFY
-                    );
+  //pCharactPM10 = pService->createCharacteristic(
+  //                   CHARAC_PM10_UUID,
+  //                   BLECharacteristic::PROPERTY_READ   |
+  //                    BLECharacteristic::PROPERTY_NOTIFY
+  //                 );
 
-  // Create a BLE Descriptor
+  // uCreate a BLE Descriptor
   pCharactPM25->addDescriptor(new BLE2902());
-  pCharactPM10->addDescriptor(new BLE2902());
+  //pCharactPM10->addDescriptor(new BLE2902());
   // Start the service
   pService->start();
   // Start advertising
@@ -157,10 +157,10 @@ void bleLoop(){
   if (deviceConnected) {
     sensorRead();
     pCharactPM25->setValue(sensorGetRead25().c_str());
-    pCharactPM10->setValue(sensorGetRead10().c_str());
+    // pCharactPM10->setValue(sensorGetRead10().c_str());
     pCharactPM25->notify();
-    pCharactPM10->notify();
-    delay(100); // bluetooth stack will go into congestion, if too many packets are sent
+    // pCharactPM10->notify();
+    delay(200); // bluetooth stack will go into congestion, if too many packets are sent
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {

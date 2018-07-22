@@ -82,7 +82,9 @@ void sensorRead(){
     String display = String(count)+" P25: " + String(pm2_5) + " | P10: " + String(pm10);
     if(deviceConnected)displayOnBuffer(display);
     count++;
-    delay(SAMPLING_RATE);
+  }
+  else{
+    Serial.println("Warnning: hpma115S0 cant not read!");
   }
 }
 
@@ -161,7 +163,7 @@ void bleLoop(){
     sensorRead();
     pCharactPM25->setValue(sensorGetRead25().c_str());
     pCharactPM25->notify();
-    delay(200); // bluetooth stack will go into congestion, if too many packets are sent
+    delay(SAMPLING_RATE); // bluetooth stack will go into congestion, if too many packets are sent
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {

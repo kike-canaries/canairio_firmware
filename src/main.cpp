@@ -72,6 +72,14 @@ void displayOnBuffer(String msg){
   display.display();
 }
 
+void sensorInit(){
+  Serial.print("-->Starting hpma115S0..");
+  hpma115S0.Init();
+  hpma115S0.StartParticleMeasurement();
+  delay(10);
+  Serial.println("done");
+}
+
 /**
 * PM2.5 and PM10 read and visualization functions
 */
@@ -85,6 +93,9 @@ void sensorRead(){
   }
   else{
     Serial.println("Warnning: hpma115S0 cant not read!");
+    pm2_5 = 0; pm10 = 0 ;
+    displayOnBuffer("E: sensor read error!");
+    delay(1000);
   }
 }
 
@@ -94,14 +105,6 @@ String sensorGetRead25(){
 
 String sensorGetRead10(){
   return String("{")+"\"P10\":"+String(pm10)+"}"; // max supported 20 chars
-}
-
-void sensorInit(){
-  Serial.print("-->Starting hpma115S0..");
-  hpma115S0.Init();
-  hpma115S0.StartParticleMeasurement();
-  delay(10);
-  Serial.println("done");
 }
 
 void resetVars(){

@@ -76,7 +76,8 @@ void sensorInit(){
   Serial.print("-->Starting hpma115S0..");
   hpma115S0.Init();
   hpma115S0.StartParticleMeasurement();
-  delay(10);
+  hpma115S0.DisableAutoSend();
+  delay(20);
   Serial.println("done");
 }
 
@@ -88,14 +89,12 @@ void sensorRead(){
     Serial.print(String(count)+"\tPm2.5:\t" + String(pm2_5) + " ug/m3\t" );
     Serial.println("Pm10:\t" + String(pm10) + " ug/m3" );
     String display = String(count)+" P25: " + String(pm2_5) + " | P10: " + String(pm10);
-    if(deviceConnected)displayOnBuffer(display);
+    displayOnBuffer(display);
     count++;
   }
   else{
     Serial.println("Warnning: hpma115S0 cant not read!");
-    pm2_5 = 0; pm10 = 0 ;
-    displayOnBuffer("E: sensor read error!");
-    delay(1000);
+    displayOnBuffer(String(count)+" E: read error!");
   }
 }
 

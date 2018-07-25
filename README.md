@@ -1,6 +1,6 @@
 # ESP32-HPMA115S0
 
-ESP32 with HPMA115s0 Honeywell dust sensor with a WeMOS like board and [Android Client](https://github.com/kike-canaries/android-hpma115s0)
+**Pollution sensor** builded with a `ESP32` module board and `HPMA115s0 Honeywell` dust sensor, interfaced with a [Android Client](https://github.com/kike-canaries/android-hpma115s0). You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section.
 
 ## Dependencies
 
@@ -25,9 +25,11 @@ Please install before, [PlatformIO](http://platformio.org/) open source ecosyste
 
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/prototype.jpg"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/prototype.jpg" align="left" width="1024" ></a>
 
+<div></div>
+
 ## Materials
 
-* [ESP32 compatible board (WeMOS)](http://bit.ly/2lMbWH6)
+* [ESP32 compatible board (WeMOS like)](http://bit.ly/2lMbWH6)
 * [Honeywell HPMA115S0](http://bit.ly/2pZPxYh)
 * [USB Power module board](http://bit.ly/2lHSKdr) (Optional)
 * [Lipo Battery of 3.7v or similar](http://bit.ly/2KA3fdB) (Optional)

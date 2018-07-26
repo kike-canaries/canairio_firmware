@@ -1,5 +1,7 @@
 # ESP32-HPMA115S0
 
+**W A R N I N G :** Project in development
+
 **Pollution sensor** builded with a `ESP32` module board and `HPMA115s0 Honeywell` dust sensor, interfaced with a [Android Client](https://github.com/kike-canaries/android-hpma115s0). You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section.
 
 ## Dependencies
@@ -9,6 +11,18 @@ Please install before, [PlatformIO](http://platformio.org/) open source ecosyste
 ## Compiling and install
 
 `pio run --target upload`
+
+## Troubleshooting
+
+If you have some issues with Bluetooth library internals, please upgrade all frameworks and tools on PlatformIO:
+
+```
+pio update
+sudo pio upgrade
+pio run -t clean
+rm -rf .pioenvs .piolibdeps
+pio run --target upload
+```
 
 ## TODO
 - [X] HPMA115S0 fixes and libraries tests
@@ -25,11 +39,15 @@ Please install before, [PlatformIO](http://platformio.org/) open source ecosyste
 
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/prototype.jpg"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/prototype.jpg" align="left" width="1024" ></a>
 
-<div></div>
+<div>
+____
+
+</div>
 
 ## Materials
 
-* [ESP32 compatible board (WeMOS like)](http://bit.ly/2lMbWH6)
+* [ESP32 compatible board (WeMOS like)](http://bit.ly/2lMbWH6) or [ESP32 Mini KIT](http://bit.ly/2NLwtHK)
 * [Honeywell HPMA115S0](http://bit.ly/2pZPxYh)
+* [Battery module for ESP32 Mini KIT](http://bit.ly/2JSADuR)
 * [USB Power module board](http://bit.ly/2lHSKdr) (Optional)
 * [Lipo Battery of 3.7v or similar](http://bit.ly/2KA3fdB) (Optional)

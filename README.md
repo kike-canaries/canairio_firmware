@@ -48,6 +48,6 @@ ____
 
 * [ESP32 compatible board (WeMOS like)](http://bit.ly/2lMbWH6) or [ESP32 Mini KIT](http://bit.ly/2NLwtHK)
 * [Honeywell HPMA115S0](http://bit.ly/2pZPxYh)
-* [Battery module for ESP32 Mini KIT](http://bit.ly/2JSADuR)
+* [Battery module for ESP32 Mini KIT](http://bit.ly/2JSADuR) (Optional)
 * [USB Power module board](http://bit.ly/2lHSKdr) (Optional)
 * [Lipo Battery of 3.7v or similar](http://bit.ly/2KA3fdB) (Optional)

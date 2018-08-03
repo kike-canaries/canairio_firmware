@@ -72,15 +72,15 @@ void displayOnBuffer(String msg){
 }
 
 void sensorInit(){
-  Serial.println("-->Starting hpma115S0..");
+  Serial.println("-->[HPMA] Starting hpma115S0 sensor..");
   hpmaSerial.begin(9600,SERIAL_8N1,13,15);
-  Serial.println("-->hpma serial ready");
+  Serial.println("-->[HPMA] init hpma serial ready..");
   delay(10);
   hpma115S0.Init();
   hpma115S0.StartParticleMeasurement();
   hpma115S0.DisableAutoSend();
   delay(10);
-  Serial.println("-->hpma115s0 ready.");
+  Serial.println("-->[HPMA] sensor ready.");
 }
 
 void drawHistoryValue(int value){
@@ -99,9 +99,9 @@ void sensorRead(){
   if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
     if(count<1000)count++;
     else count=0;
-    Serial.print(String(count)+"\tPm2.5:\t" + String(pm2_5) + " ug/m3\t" );
+    Serial.print("-->[HPMA]\t"+String(count)+"\tPm2.5:\t" + String(pm2_5) + " ug/m3\t" );
     Serial.println("Pm10:\t" + String(pm10) + " ug/m3" );
-    // String display = String(count)+" P25: " + String(pm2_5) + " | P10: " + String(pm10);
+
     if(pm2_5<1000&&pm10<1000){
       char output[20];
       sprintf(output,"%03d P25:%03d P10:%03d",count,pm2_5,pm10);
@@ -109,7 +109,7 @@ void sensorRead(){
     }
   }
   else{
-    Serial.println("Warnning: hpma115S0 cant not read!");
+    Serial.println("-->[HPMA] Warnning: hpma115S0 cant not read!");
     displayOnBuffer(String(count)+" E: read error!");
   }
 }
@@ -128,12 +128,12 @@ void resetVars(){
 
 class MyServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* pServer) {
-      Serial.println("[BLE] onConnect");
+      Serial.println("-->[BLE] onConnect");
       deviceConnected = true;
     };
 
     void onDisconnect(BLEServer* pServer) {
-      Serial.println("[BLE] onDisconnect");
+      Serial.println("-->[BLE] onDisconnect");
       deviceConnected = false;
     };
 }; // BLEServerCallbacks
@@ -172,7 +172,7 @@ void bleServerInit(){
   pService->start();
   // Start advertising
   pServer->getAdvertising()->start();
-  Serial.println("-->BLE ready. (Waiting a client to notify)");
+  Serial.println("-->[BLE} ready. (Waiting a client to notify)");
 }
 
 void bleLoop(){
@@ -187,7 +187,7 @@ void bleLoop(){
   if (!deviceConnected && oldDeviceConnected) {
     delay(500); // give the bluetooth stack the chance to get things ready
     pServer->startAdvertising(); // restart advertising
-    Serial.println("[BLE] start advertising");
+    Serial.println("-->[BLE] start advertising");
     oldDeviceConnected = deviceConnected;
     showWelcome();
     resetVars();

@@ -45,6 +45,7 @@ bool oldDeviceConnected = false;
 int history[32];
 
 void displayInit(){
+  Serial.println("-->[OLED] setup display..");
   u8g2.begin();
   u8g2.clearBuffer();
   u8g2.setFont(u8g2_font_6x10_tf);
@@ -53,7 +54,7 @@ void displayInit(){
   u8g2.setDrawColor(1);
   u8g2.setFontPosTop();
   u8g2.setFontDirection(0);
-  Serial.println("-->OLED ready");
+  Serial.println("-->[OLED] ready.");
 }
 
 void showWelcome(){
@@ -62,7 +63,7 @@ void showWelcome(){
   u8g2.drawStr(0, 0,version.c_str());
   u8g2.drawLine(0, 11, 128, 11);
   u8g2.sendBuffer();
-  Serial.println("-->Welcome screen ready\n");
+  Serial.println("-->[OLED] Welcome screen ready\n");
   delay(1000);
 }
 
@@ -172,7 +173,7 @@ void bleServerInit(){
   pService->start();
   // Start advertising
   pServer->getAdvertising()->start();
-  Serial.println("-->[BLE} ready. (Waiting a client to notify)");
+  Serial.println("-->[BLE] ready. (Waiting a client to notify)");
 }
 
 void bleLoop(){

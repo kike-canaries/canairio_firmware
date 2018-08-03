@@ -54,7 +54,7 @@ void displayInit(){
   u8g2.setDrawColor(1);
   u8g2.setFontPosTop();
   u8g2.setFontDirection(0);
-  Serial.println("-->[OLED] ready.");
+  Serial.println("-->[OLED] display ready.");
 }
 
 void showWelcome(){
@@ -63,7 +63,7 @@ void showWelcome(){
   u8g2.drawStr(0, 0,version.c_str());
   u8g2.drawLine(0, 11, 128, 11);
   u8g2.sendBuffer();
-  Serial.println("-->[OLED] Welcome screen ready\n");
+  Serial.println("-->[OLED] welcome screen ready\n");
   delay(1000);
 }
 
@@ -73,7 +73,7 @@ void displayOnBuffer(String msg){
 }
 
 void sensorInit(){
-  Serial.println("-->[HPMA] Starting hpma115S0 sensor..");
+  Serial.println("-->[HPMA] starting hpma115S0 sensor..");
   hpmaSerial.begin(9600,SERIAL_8N1,13,15);
   Serial.println("-->[HPMA] init hpma serial ready..");
   delay(10);
@@ -173,7 +173,7 @@ void bleServerInit(){
   pService->start();
   // Start advertising
   pServer->getAdvertising()->start();
-  Serial.println("-->[BLE] ready. (Waiting a client to notify)");
+  Serial.println("-->[BLE] GATT server ready. (Waiting a client to notify)");
 }
 
 void bleLoop(){
@@ -201,13 +201,14 @@ void bleLoop(){
 }
 
 void setup() {
-  Serial.println("\nINIT SETUP:\n");
   Serial.begin(9600);
-  Serial.println("\n-->DebugConsole ready");
+  Serial.println("\n== INIT SETUP ==\n");
+  Serial.println("-->[SETUP] console ready");
   displayInit();
   sensorInit();
   bleServerInit();
   showWelcome();
+  Serial.println("-->[SETUP] setup ready");
 }
 
 void loop() {

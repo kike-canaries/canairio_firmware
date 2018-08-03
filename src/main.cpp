@@ -42,6 +42,8 @@ bool oldDeviceConnected = false;
 #define CHARAC_PM25_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
 #define CHARAC_PM10_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
 
+int history[32];
+
 void displayInit(){
   u8g2.begin();
   u8g2.clearBuffer();
@@ -70,12 +72,24 @@ void displayOnBuffer(String msg){
 }
 
 void sensorInit(){
-  Serial.print("-->Starting hpma115S0..");
+  Serial.println("-->Starting hpma115S0..");
+  hpmaSerial.begin(9600,SERIAL_8N1,13,15);
+  Serial.println("-->hpma serial ready");
+  delay(10);
   hpma115S0.Init();
   hpma115S0.StartParticleMeasurement();
   hpma115S0.DisableAutoSend();
-  delay(20);
-  Serial.println("done");
+  delay(10);
+  Serial.println("-->hpma115s0 ready.");
+}
+
+void drawHistoryValue(int value){
+  for(int i=0;i<32;i++){
+    history[i]=history[i+1];
+    Serial.print(""+String(history[i])+",");
+  }
+  history[32]=value;
+  Serial.println(String(history[32]));
 }
 
 /**
@@ -88,10 +102,9 @@ void sensorRead(){
     Serial.print(String(count)+"\tPm2.5:\t" + String(pm2_5) + " ug/m3\t" );
     Serial.println("Pm10:\t" + String(pm10) + " ug/m3" );
     // String display = String(count)+" P25: " + String(pm2_5) + " | P10: " + String(pm10);
-    char output[20];
     if(pm2_5<1000&&pm10<1000){
+      char output[20];
       sprintf(output,"%03d P25:%03d P10:%03d",count,pm2_5,pm10);
-      // String display = String(count)+" P25: " + String(pm2_5) + " | P10: " + String(pm10);
       displayOnBuffer(String(output));
     }
   }
@@ -191,9 +204,6 @@ void setup() {
   Serial.begin(9600);
   Serial.println("\n-->DebugConsole ready");
   displayInit();
-  hpmaSerial.begin(9600,SERIAL_8N1,13,15);
-  Serial.println("-->HardwareSerial ready");
-  delay(10);
   sensorInit();
   bleServerInit();
   showWelcome();

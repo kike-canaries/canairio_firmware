@@ -120,13 +120,12 @@ void sensorRead(){
     Serial.println("Pm10:\t" + String(pm10) + " ug/m3" );
     if(pm2_5<1000&&pm10<1000){
       sprintf(output,"%03d P25:%03d P10:%03d",count,pm2_5,pm10);
-      displayOnBuffer(String(output));
     }
   }
   else{
     Serial.println("-->[HPMA] Warnning: hpma115S0 cant not read!");
     sprintf(output,"%03d P25:%03d P10:%03d E",count,pm2_5,pm10);
-    displayOnBuffer(String(count)+String(output)+": read error!");
+    displayOnBuffer(String(output));
   }
 }
 

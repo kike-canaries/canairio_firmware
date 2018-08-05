@@ -15,18 +15,25 @@
 #include <BLE2902.h>
 
 #include <U8g2lib.h>
-// Display via i2c for WeMOS OLED
+// Display via i2c for WeMOS OLED board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+// Display via i2c for Heltec board
 // U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
+
 // Debugging flag
 bool DEBUG = true;
+
 // firmware version from git rev-list command
 String VERSION_CODE = "rev";
+#ifdef SRC_REV
 int VCODE = SRC_REV;
-//Create an instance of hardware serial
-HardwareSerial hpmaSerial(1);
+#else
+int VCODE = 0;
+#endif
+
 // Create an instance of the hpma115S0 library
-#define SAMPLING_RATE 5000
+#define SAMPLING_RATE 1000
+HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 unsigned int count = 0;
 unsigned int pm2_5, pm10;
@@ -42,8 +49,12 @@ bool oldDeviceConnected = false;
 #define CHARAC_PM25_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
 #define CHARAC_PM10_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
 
+// Histogram
 int history[32];
 
+/******************************************************************************
+*   D I S P L A Y  M E T H O D S
+******************************************************************************/
 void displayInit(){
   Serial.println("-->[OLED] setup display..");
   u8g2.begin();
@@ -73,6 +84,18 @@ void displayOnBuffer(String msg){
   u8g2.sendBuffer();
 }
 
+void drawHistoryValue(int value){
+  for(int i=0;i<32;i++){
+    history[i]=history[i+1];
+    Serial.print(""+String(history[i])+",");
+  }
+  history[32]=value;
+  Serial.println(String(history[32]));
+}
+
+/******************************************************************************
+*   S E N S O R  M E T H O D S
+******************************************************************************/
 void sensorInit(){
   Serial.println("-->[HPMA] starting hpma115S0 sensor..");
   hpmaSerial.begin(9600,SERIAL_8N1,13,15);
@@ -83,15 +106,6 @@ void sensorInit(){
   hpma115S0.DisableAutoSend();
   delay(10);
   Serial.println("-->[HPMA] sensor ready.");
-}
-
-void drawHistoryValue(int value){
-  for(int i=0;i<32;i++){
-    history[i]=history[i+1];
-    Serial.print(""+String(history[i])+",");
-  }
-  history[32]=value;
-  Serial.println(String(history[32]));
 }
 
 /**
@@ -128,6 +142,9 @@ void resetVars(){
   count=0;
 }
 
+/******************************************************************************
+*   B L U E T O O T H  M E T H O D S
+******************************************************************************/
 class MyServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* pServer) {
       Serial.println("-->[BLE] onConnect");
@@ -200,6 +217,10 @@ void bleLoop(){
     oldDeviceConnected = deviceConnected;
   }
 }
+
+/******************************************************************************
+*  M A I N
+******************************************************************************/
 
 void setup() {
   Serial.begin(9600);

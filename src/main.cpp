@@ -68,7 +68,8 @@ void showWelcome(){
 }
 
 void displayOnBuffer(String msg){
-  u8g2.drawStr(0, 16, msg.c_str());
+  u8g2.setCursor(0, 16);
+  u8g2.print(msg.c_str());
   u8g2.sendBuffer();
 }
 

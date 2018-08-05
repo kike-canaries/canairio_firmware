@@ -118,13 +118,13 @@ void sensorRead(){
   if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
     if(pm2_5<1000&&pm10<1000){
       sprintf(output,"%03d P25:%03d P10:%03d",count,pm2_5,pm10);
-      Serial.print("-->[HPMA] "+String(output));
+      Serial.println("-->[HPMA] "+String(output));
       displayOnBuffer(String(output));
     }
   }
   else{
     sprintf(output,"%03d P25:%03d P10:%03d E",count,pm2_5,pm10);
-    Serial.print("-->[HPMA] "+String(output)+": Warnning: HPMA can't read!");
+    Serial.println("-->[HPMA] "+String(output)+": Warnning: HPMA can't read!");
     displayOnBuffer(String(output));
   }
 }

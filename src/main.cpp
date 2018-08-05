@@ -8,24 +8,34 @@
  */
 
 #include <hpma115S0.h>
-#include "SSD1306Wire.h"
+
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
+#include <U8g2lib.h>
+// Display via i2c for WeMOS OLED board
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+// Display via i2c for Heltec board
+// U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
+
+// Debugging flag
 bool DEBUG = true;
+
 // firmware version from git rev-list command
 String VERSION_CODE = "rev";
+#ifdef SRC_REV
 int VCODE = SRC_REV;
-//Create an instance of hardware serial
-HardwareSerial hpmaSerial(1);
-// Display via i2c for WeMOS OLED
-SSD1306Wire display(0x3c, 5, 4);
+#else
+int VCODE = 0;
+#endif
+
 // Create an instance of the hpma115S0 library
 #define SAMPLING_RATE 5000
+HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
-unsigned long count = 0;
+unsigned int count = 0;
 unsigned int pm2_5, pm10;
 
 // BLE vars
@@ -39,62 +49,83 @@ bool oldDeviceConnected = false;
 #define CHARAC_PM25_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
 #define CHARAC_PM10_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
 
+// Histogram
+int history[32];
+
+/******************************************************************************
+*   D I S P L A Y  M E T H O D S
+******************************************************************************/
 void displayInit(){
-  display.init();
-  display.setLogBuffer(5, 30);
-  display.flipScreenVertically();
-  display.setContrast(128);
-  display.clear();
-  Serial.println("-->OLED ready");
+  Serial.println("-->[OLED] setup display..");
+  u8g2.begin();
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_6x10_tf);
+  u8g2.setContrast(255);
+  u8g2.setFontRefHeightExtendedText();
+  u8g2.setDrawColor(1);
+  u8g2.setFontPosTop();
+  u8g2.setFontDirection(0);
+  Serial.println("-->[OLED] display ready.");
 }
 
 void showWelcome(){
-  display.setLogBuffer(5, 30);     // forcing redraw display (bug)
-  display.flipScreenVertically();  // forcing redraw display (bug)
-  display.setContrast(128);        // forcing redraw display (bug)
-  display.clear();
-  display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-  display.setFont(ArialMT_Plain_16);
-  display.drawString(display.getWidth()/2, display.getHeight()/2, "ESP32 HPMA115");
-  display.setFont(ArialMT_Plain_10);
-  display.setTextAlignment(TEXT_ALIGN_RIGHT);
-  display.drawString(display.getWidth()-5,display.getHeight()-10, VERSION_CODE+VCODE);
-  display.display();
-  Serial.println("-->Welcome screen ready\n");
+  u8g2.clearBuffer();
+  String version = "ESP32 HPMA115 ("+String(VERSION_CODE+VCODE)+")";
+  u8g2.drawStr(0, 0,version.c_str());
+  u8g2.drawLine(0, 11, 128, 11);
+  u8g2.sendBuffer();
+  Serial.println("-->[OLED] welcome screen ready\n");
   delay(1000);
 }
 
 void displayOnBuffer(String msg){
-  display.clear();
-  display.setFont(ArialMT_Plain_10);
-  display.println(msg);
-  display.drawLogBuffer(0,0);
-  display.display();
+  u8g2.setCursor(0, 16);
+  u8g2.print(msg.c_str());
+  u8g2.sendBuffer();
 }
 
+void drawHistoryValue(int value){
+  for(int i=0;i<32;i++){
+    history[i]=history[i+1];
+    Serial.print(""+String(history[i])+",");
+  }
+  history[32]=value;
+  Serial.println(String(history[32]));
+}
+
+/******************************************************************************
+*   S E N S O R  M E T H O D S
+******************************************************************************/
 void sensorInit(){
-  Serial.print("-->Starting hpma115S0..");
+  Serial.println("-->[HPMA] starting hpma115S0 sensor..");
+  hpmaSerial.begin(9600,SERIAL_8N1,13,15);
+  Serial.println("-->[HPMA] init hpma serial ready..");
+  delay(10);
   hpma115S0.Init();
   hpma115S0.StartParticleMeasurement();
   hpma115S0.DisableAutoSend();
-  delay(20);
-  Serial.println("done");
+  delay(10);
+  Serial.println("-->[HPMA] sensor ready.");
 }
 
 /**
 * PM2.5 and PM10 read and visualization functions
 */
 void sensorRead(){
+  if(count<1000)count++;
+  else count=0;
+  char output[22];
   if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
-    Serial.print(String(count)+"\tPm2.5:\t" + String(pm2_5) + " ug/m3\t" );
-    Serial.println("Pm10:\t" + String(pm10) + " ug/m3" );
-    String display = String(count)+" P25: " + String(pm2_5) + " | P10: " + String(pm10);
-    displayOnBuffer(display);
-    count++;
+    if(pm2_5<1000&&pm10<1000){
+      sprintf(output,"%03d P25:%03d P10:%03d  ",count,pm2_5,pm10);
+      Serial.println("-->[HPMA] "+String(output));
+      displayOnBuffer(String(output));
+    }
   }
   else{
-    Serial.println("Warnning: hpma115S0 cant not read!");
-    displayOnBuffer(String(count)+" E: read error!");
+    sprintf(output,"%03d P25:%03d P10:%03d E",count,pm2_5,pm10);
+    Serial.println("-->[HPMA] "+String(output)+": Warnning: HPMA can't read!");
+    displayOnBuffer(String(output));
   }
 }
 
@@ -110,14 +141,17 @@ void resetVars(){
   count=0;
 }
 
+/******************************************************************************
+*   B L U E T O O T H  M E T H O D S
+******************************************************************************/
 class MyServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* pServer) {
-      Serial.println("[BLE] onConnect");
+      Serial.println("-->[BLE] onConnect");
       deviceConnected = true;
     };
 
     void onDisconnect(BLEServer* pServer) {
-      Serial.println("[BLE] onDisconnect");
+      Serial.println("-->[BLE] onDisconnect");
       deviceConnected = false;
     };
 }; // BLEServerCallbacks
@@ -156,7 +190,7 @@ void bleServerInit(){
   pService->start();
   // Start advertising
   pServer->getAdvertising()->start();
-  Serial.println("-->BLE ready. (Waiting a client to notify)");
+  Serial.println("-->[BLE] GATT server ready. (Waiting a client to notify)");
 }
 
 void bleLoop(){
@@ -171,7 +205,7 @@ void bleLoop(){
   if (!deviceConnected && oldDeviceConnected) {
     delay(500); // give the bluetooth stack the chance to get things ready
     pServer->startAdvertising(); // restart advertising
-    Serial.println("[BLE] start advertising");
+    Serial.println("-->[BLE] start advertising");
     oldDeviceConnected = deviceConnected;
     showWelcome();
     resetVars();
@@ -183,17 +217,19 @@ void bleLoop(){
   }
 }
 
+/******************************************************************************
+*  M A I N
+******************************************************************************/
+
 void setup() {
-  Serial.println("\nINIT SETUP:\n");
   Serial.begin(9600);
-  Serial.println("\n-->DebugConsole ready");
-  hpmaSerial.begin(9600,SERIAL_8N1,13,15);
-  Serial.println("-->HardwareSerial ready");
-  delay(10);
+  Serial.println("\n== INIT SETUP ==\n");
+  Serial.println("-->[SETUP] console ready");
   displayInit();
   sensorInit();
   bleServerInit();
   showWelcome();
+  Serial.println("-->[SETUP] setup ready");
 }
 
 void loop() {

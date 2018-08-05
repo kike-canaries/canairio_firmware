@@ -32,7 +32,7 @@ int VCODE = 0;
 #endif
 
 // Create an instance of the hpma115S0 library
-#define SAMPLING_RATE 1000
+#define SAMPLING_RATE 5000
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 unsigned int count = 0;
@@ -112,21 +112,21 @@ void sensorInit(){
 * PM2.5 and PM10 read and visualization functions
 */
 void sensorRead(){
+  if(count<1000)count++;
+  else count=0;
+  char output[20];
   if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
-    if(count<1000)count++;
-    else count=0;
     Serial.print("-->[HPMA]\t"+String(count)+"\tPm2.5:\t" + String(pm2_5) + " ug/m3\t" );
     Serial.println("Pm10:\t" + String(pm10) + " ug/m3" );
-
     if(pm2_5<1000&&pm10<1000){
-      char output[20];
       sprintf(output,"%03d P25:%03d P10:%03d",count,pm2_5,pm10);
       displayOnBuffer(String(output));
     }
   }
   else{
     Serial.println("-->[HPMA] Warnning: hpma115S0 cant not read!");
-    displayOnBuffer(String(count)+" E: read error!");
+    sprintf(output,"%03d P25:%03d P10:%03d E",count,pm2_5,pm10);
+    displayOnBuffer(String(count)+String(output)+": read error!");
   }
 }
 

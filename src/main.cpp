@@ -15,10 +15,16 @@
 #include <BLE2902.h>
 
 #include <U8g2lib.h>
+// config board
+//#define WEMOS_OLED // comment this line for HELTEC board
+
+#ifdef WEMOS_OLED
 // Display via i2c for WeMOS OLED board
-// U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+#else
 // Display via i2c for Heltec board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
+#endif
 
 // Debugging flag
 bool DEBUG = true;
@@ -31,7 +37,15 @@ int VCODE = SRC_REV;
 int VCODE = 0;
 #endif
 
-// Create an instance of the hpma115S0 library
+// HPMA115S0 sensor config
+#ifdef WEMOS_OLED
+#define HPMA_RX 13
+#define HPMA_TX 15
+#else
+#define HPMA_RX 13
+#define HPMA_TX 12
+#endif
+
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 String txtMsg = "";
@@ -100,7 +114,7 @@ void drawHistoryValue(int value){
 void sensorInit(){
   Serial.println("-->[HPMA] starting hpma115S0 sensor..");
   // delay(5000);
-  hpmaSerial.begin(9600,SERIAL_8N1,13,12);
+  hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
   Serial.println("-->[HPMA] init hpma serial ready..");
   // sensorConfig();
   Serial.println("-->[HPMA] sensor ready.");

@@ -16,9 +16,9 @@
 
 #include <U8g2lib.h>
 // Display via i2c for WeMOS OLED board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+// U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 // Display via i2c for Heltec board
-// U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
 
 // Debugging flag
 bool DEBUG = true;
@@ -98,7 +98,7 @@ void drawHistoryValue(int value){
 ******************************************************************************/
 void sensorInit(){
   Serial.println("-->[HPMA] starting hpma115S0 sensor..");
-  hpmaSerial.begin(9600,SERIAL_8N1,13,15);
+  hpmaSerial.begin(9600,SERIAL_8N1,13,12);
   Serial.println("-->[HPMA] init hpma serial ready..");
   delay(10);
   hpma115S0.Init();

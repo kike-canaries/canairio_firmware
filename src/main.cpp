@@ -16,8 +16,6 @@
 
 #include <U8g2lib.h>
 // config board
-//#define WEMOS_OLED // comment this line for HELTEC board
-
 #ifdef WEMOS_OLED
 // Display via i2c for WeMOS OLED board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
@@ -111,15 +109,6 @@ void drawHistoryValue(int value){
 /******************************************************************************
 *   S E N S O R  M E T H O D S
 ******************************************************************************/
-void sensorInit(){
-  Serial.println("-->[HPMA] starting hpma115S0 sensor..");
-  // delay(5000);
-  hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
-  Serial.println("-->[HPMA] init hpma serial ready..");
-  // sensorConfig();
-  Serial.println("-->[HPMA] sensor ready.");
-}
-
 /**
 *  TODO: the next method is only for first time
 *  the idea is via bluetooth config
@@ -133,6 +122,17 @@ void sensorConfig(){
   hpma115S0.StartParticleMeasurement();
   delay(1000);
 }
+
+void sensorInit(){
+  Serial.println("-->[HPMA] starting hpma115S0 sensor..");
+  delay(1000);
+  hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
+  Serial.println("-->[HPMA] init hpma serial ready..");
+  // sensorConfig();
+  Serial.println("-->[HPMA] sensor ready.");
+  delay(100);
+}
+
 
 /**
 * PM2.5 and PM10 read and visualization

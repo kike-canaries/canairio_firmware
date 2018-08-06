@@ -46,8 +46,18 @@ ____
 
 ## Materials
 
-* [ESP32 compatible board (WeMOS like)](http://bit.ly/2lMbWH6) or [ESP32 Mini KIT](http://bit.ly/2NLwtHK)
+### Supported boards:
+
+* [ESP32 compatible board (WeMOS like)](http://bit.ly/2lMbWH6)
+* [ESP32 Mini KIT](http://bit.ly/2NLwtHK)
+* [ESP32 Bluetooth WIFI Kit OLED](http://bit.ly/2neQI5f)
+
+### Pollution sensors
+
 * [Honeywell HPMA115S0](http://bit.ly/2pZPxYh)
+
+### Optional hardware
+
 * [Battery module for ESP32 Mini KIT](http://bit.ly/2JSADuR) (Optional)
 * [USB Power module board](http://bit.ly/2lHSKdr) (Optional)
 * [Lipo Battery of 3.7v or similar](http://bit.ly/2KA3fdB) (Optional)

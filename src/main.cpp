@@ -8,20 +8,11 @@
  */
 
 #include <hpma115S0.h>
-
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
-
 #include <U8g2lib.h>
-// Display via i2c for WeMOS OLED board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
-// Display via i2c for Heltec board
-// U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
-
-// Debugging flag
-bool DEBUG = true;
 
 // firmware version from git rev-list command
 String VERSION_CODE = "rev";
@@ -31,14 +22,30 @@ int VCODE = SRC_REV;
 int VCODE = 0;
 #endif
 
-// Create an instance of the hpma115S0 library
-#define SAMPLING_RATE 5000
+// Config ESP32 board
+#ifdef WEMOS_OLED
+// display via i2c for WeMOS OLED board
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+#else
+// display via i2c for Heltec board
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
+#endif
+
+// HPMA115S0 sensor connection config
+#ifdef WEMOS_OLED
+#define HPMA_RX 13   // config for Wemos board
+#define HPMA_TX 15
+#else
+#define HPMA_RX 13  // config for Heltec board
+#define HPMA_TX 12
+#endif
+
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
-unsigned int count = 0;
-unsigned int pm2_5, pm10;
+String txtMsg = "";
+unsigned int pm2_5, pm10, count = 0;
 
-// BLE vars
+// Bluetooth variables
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharactPM25 = NULL;
 BLECharacteristic* pCharactPM10 = NULL;
@@ -48,9 +55,6 @@ bool oldDeviceConnected = false;
 #define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
 #define CHARAC_PM25_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
 #define CHARAC_PM10_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
-
-// Histogram
-int history[32];
 
 /******************************************************************************
 *   D I S P L A Y  M E T H O D S
@@ -65,6 +69,7 @@ void displayInit(){
   u8g2.setDrawColor(1);
   u8g2.setFontPosTop();
   u8g2.setFontDirection(0);
+  u8g2.setFontMode(0);
   Serial.println("-->[OLED] display ready.");
 }
 
@@ -84,48 +89,55 @@ void displayOnBuffer(String msg){
   u8g2.sendBuffer();
 }
 
-void drawHistoryValue(int value){
-  for(int i=0;i<32;i++){
-    history[i]=history[i+1];
-    Serial.print(""+String(history[i])+",");
-  }
-  history[32]=value;
-  Serial.println(String(history[32]));
-}
-
 /******************************************************************************
 *   S E N S O R  M E T H O D S
 ******************************************************************************/
-void sensorInit(){
-  Serial.println("-->[HPMA] starting hpma115S0 sensor..");
-  hpmaSerial.begin(9600,SERIAL_8N1,13,15);
-  Serial.println("-->[HPMA] init hpma serial ready..");
-  delay(10);
+/**
+*  TODO: the next method is only for first time
+*  the idea is via bluetooth config
+*/
+void sensorConfig(){
   hpma115S0.Init();
+  delay(100);
+  hpma115S0.EnableAutoSend();
+  delay(100);
   hpma115S0.StartParticleMeasurement();
-  hpma115S0.DisableAutoSend();
-  delay(10);
-  Serial.println("-->[HPMA] sensor ready.");
+  delay(1000);
 }
 
+void sensorInit(){
+  Serial.println("-->[HPMA] starting hpma115S0 sensor..");
+  delay(1000);
+  hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
+  Serial.println("-->[HPMA] init hpma serial ready..");
+  // sensorConfig();
+  Serial.println("-->[HPMA] sensor ready.");
+  delay(100);
+}
 /**
-* PM2.5 and PM10 read and visualization functions
+* PM2.5 and PM10 read and visualization
 */
-void sensorRead(){
-  if(count<1000)count++;
-  else count=0;
-  char output[22];
-  if (hpma115S0.ReadParticleMeasurement(&pm2_5, &pm10)) {
-    if(pm2_5<1000&&pm10<1000){
-      sprintf(output,"%03d P25:%03d P10:%03d  ",count,pm2_5,pm10);
-      Serial.println("-->[HPMA] "+String(output));
-      displayOnBuffer(String(output));
+void hpmaSerialRead(){
+  while (txtMsg.length() < 32) {
+    while (hpmaSerial.available() > 0) {
+      char inChar = hpmaSerial.read();
+      txtMsg += inChar;
     }
   }
-  else{
-    sprintf(output,"%03d P25:%03d P10:%03d E",count,pm2_5,pm10);
-    Serial.println("-->[HPMA] "+String(output)+": Warnning: HPMA can't read!");
-    displayOnBuffer(String(output));
+  if (txtMsg[0] == 66) {
+    if (txtMsg[1] == 77) {
+      if(count<1000)count++;
+      else count=0;
+      pm2_5 = txtMsg[6] * 256 + byte(txtMsg[7]);
+      pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
+      txtMsg="";
+      char output[22];
+      if(pm2_5<1000&&pm10<1000){
+        sprintf(output,"%03d P25:%03d P10:%03d  ",count,pm2_5,pm10);
+        Serial.println("-->[HPMA] "+String(output));
+        displayOnBuffer(String(output));
+      }
+    }
   }
 }
 
@@ -139,6 +151,10 @@ String sensorGetRead10(){
 
 void resetVars(){
   count=0;
+}
+
+void hpmaSerialLoop(){
+  if(deviceConnected)hpmaSerialRead();
 }
 
 /******************************************************************************
@@ -196,10 +212,10 @@ void bleServerInit(){
 void bleLoop(){
   // notify changed value
   if (deviceConnected) {
-    sensorRead();
-    pCharactPM25->setValue(sensorGetRead25().c_str());
-    pCharactPM25->notify();
-    delay(SAMPLING_RATE); // bluetooth stack will go into congestion, if too many packets are sent
+    if(pm2_5>0){
+      pCharactPM25->setValue(sensorGetRead25().c_str());
+      pCharactPM25->notify();
+    }
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {
@@ -233,5 +249,6 @@ void setup() {
 }
 
 void loop() {
+  hpmaSerialLoop();
   bleLoop();
 }

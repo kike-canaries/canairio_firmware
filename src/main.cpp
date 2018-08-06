@@ -137,7 +137,7 @@ void sensorInit(){
 /**
 * PM2.5 and PM10 read and visualization
 */
-void hpmaSerialLoop(){
+void hpmaSerialRead(){
   while (txtMsg.length() < 32) {
     while (hpmaSerial.available() > 0) {
       char inChar = hpmaSerial.read();
@@ -171,6 +171,10 @@ String sensorGetRead10(){
 
 void resetVars(){
   count=0;
+}
+
+void hpmaSerialLoop(){
+  if(deviceConnected)hpmaSerialRead();
 }
 
 /******************************************************************************

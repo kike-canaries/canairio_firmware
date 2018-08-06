@@ -8,24 +8,11 @@
  */
 
 #include <hpma115S0.h>
-
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
-
 #include <U8g2lib.h>
-// config board
-#ifdef WEMOS_OLED
-// Display via i2c for WeMOS OLED board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
-#else
-// Display via i2c for Heltec board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
-#endif
-
-// Debugging flag
-bool DEBUG = true;
 
 // firmware version from git rev-list command
 String VERSION_CODE = "rev";
@@ -35,22 +22,30 @@ int VCODE = SRC_REV;
 int VCODE = 0;
 #endif
 
-// HPMA115S0 sensor config
+// Config ESP32 board
 #ifdef WEMOS_OLED
-#define HPMA_RX 13
+// display via i2c for WeMOS OLED board
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+#else
+// display via i2c for Heltec board
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
+#endif
+
+// HPMA115S0 sensor connection config
+#ifdef WEMOS_OLED
+#define HPMA_RX 13   // config for Wemos board
 #define HPMA_TX 15
 #else
-#define HPMA_RX 13
+#define HPMA_RX 13  // config for Heltec board
 #define HPMA_TX 12
 #endif
 
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 String txtMsg = "";
-unsigned int count = 0;
-unsigned int pm2_5, pm10;
+unsigned int pm2_5, pm10, count = 0;
 
-// BLE vars
+// Bluetooth variables
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharactPM25 = NULL;
 BLECharacteristic* pCharactPM10 = NULL;
@@ -60,9 +55,6 @@ bool oldDeviceConnected = false;
 #define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
 #define CHARAC_PM25_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
 #define CHARAC_PM10_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
-
-// Histogram
-int history[32];
 
 /******************************************************************************
 *   D I S P L A Y  M E T H O D S
@@ -97,15 +89,6 @@ void displayOnBuffer(String msg){
   u8g2.sendBuffer();
 }
 
-void drawHistoryValue(int value){
-  for(int i=0;i<32;i++){
-    history[i]=history[i+1];
-    Serial.print(""+String(history[i])+",");
-  }
-  history[32]=value;
-  Serial.println(String(history[32]));
-}
-
 /******************************************************************************
 *   S E N S O R  M E T H O D S
 ******************************************************************************/
@@ -113,7 +96,6 @@ void drawHistoryValue(int value){
 *  TODO: the next method is only for first time
 *  the idea is via bluetooth config
 */
-
 void sensorConfig(){
   hpma115S0.Init();
   delay(100);
@@ -132,8 +114,6 @@ void sensorInit(){
   Serial.println("-->[HPMA] sensor ready.");
   delay(100);
 }
-
-
 /**
 * PM2.5 and PM10 read and visualization
 */

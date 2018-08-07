@@ -126,14 +126,14 @@ void hpmaSerialRead(){
   }
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
-      if(count<1000)count++;
+      if(count<999)count++;
       else count=0;
       pm2_5 = txtMsg[6] * 256 + byte(txtMsg[7]);
       pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       txtMsg="";
       char output[22];
       if(pm2_5<1000&&pm10<1000){
-        sprintf(output,"%03d P25:%03d P10:%03d  ",count,pm2_5,pm10);
+        sprintf(output,"%03d P25:%03d P10:%03d",count,pm2_5,pm10);
         Serial.println("-->[HPMA] "+String(output));
         displayOnBuffer(String(output));
       }
@@ -212,10 +212,8 @@ void bleServerInit(){
 void bleLoop(){
   // notify changed value
   if (deviceConnected) {
-    if(pm2_5>0){
-      pCharactPM25->setValue(sensorGetRead25().c_str());
-      pCharactPM25->notify();
-    }
+    pCharactPM25->setValue(sensorGetRead25().c_str());
+    pCharactPM25->notify();
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {

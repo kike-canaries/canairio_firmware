@@ -7,6 +7,8 @@
  * @license GPL3
  */
 
+#include <vector>
+#include <numeric>
 #include <hpma115S0.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
@@ -40,10 +42,13 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #define HPMA_TX 12
 #endif
 
+using namespace std;
+
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 String txtMsg = "";
 unsigned int pm2_5, pm10, count = 0;
+vector<int> v;
 
 // Bluetooth variables
 BLEServer* pServer = NULL;
@@ -55,6 +60,7 @@ bool oldDeviceConnected = false;
 #define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
 #define CHARAC_PM25_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
 #define CHARAC_PM10_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
+
 
 /******************************************************************************
 *   D I S P L A Y  M E T H O D S
@@ -133,6 +139,7 @@ void hpmaSerialRead(){
       txtMsg="";
       char output[22];
       if(pm2_5<1000&&pm10<1000){
+        v.push_back(pm2_5); // for avarage
         sprintf(output,"%03d P25:%03d P10:%03d",count,pm2_5,pm10);
         Serial.println("-->[HPMA] "+String(output));
         displayOnBuffer(String(output));
@@ -141,8 +148,10 @@ void hpmaSerialRead(){
   }
 }
 
-String sensorGetRead25(){
-  return String("{")+"\"P25\":"+String(pm2_5)+"}"; // max supported 20 chars
+String sensorGetRead25Avarage(){
+  int pm2_5_avarage = accumulate( v.begin(), v.end(), 0.0)/v.size();
+  v.clear();
+  return String("{")+"\"P25\":"+String(pm2_5_avarage)+"}"; // max supported 20 chars
 }
 
 String sensorGetRead10(){
@@ -211,8 +220,8 @@ void bleServerInit(){
 
 void bleLoop(){
   // notify changed value
-  if (deviceConnected) {
-    pCharactPM25->setValue(sensorGetRead25().c_str());
+  if (deviceConnected && v.size() > 4) {  // ~5 sec aprox
+    pCharactPM25->setValue(sensorGetRead25Avarage().c_str());
     pCharactPM25->notify();
   }
   // disconnecting

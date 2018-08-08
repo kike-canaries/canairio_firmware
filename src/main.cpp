@@ -120,32 +120,44 @@ void sensorInit(){
   Serial.println("-->[HPMA] sensor ready.");
   delay(100);
 }
+
+void wrongDataState(){
+  Serial.println("wrong data");
+  txtMsg="";
+  delay(1000);
+}
 /**
 * PM2.5 and PM10 read and visualization
 */
 void hpmaSerialRead(){
+  Serial.print("-->[HPMA] read.");
   while (txtMsg.length() < 32) {
     while (hpmaSerial.available() > 0) {
       char inChar = hpmaSerial.read();
       txtMsg += inChar;
+      Serial.print(".");
     }
   }
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
+      Serial.print("done");
       if(count<999)count++;
       else count=0;
       pm2_5 = txtMsg[6] * 256 + byte(txtMsg[7]);
       pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       txtMsg="";
-      char output[22];
       if(pm2_5<1000&&pm10<1000){
+        char output[22];
         v.push_back(pm2_5); // for avarage
         sprintf(output,"%03d P25:%03d P10:%03d",count,pm2_5,pm10);
         Serial.println("-->[HPMA] "+String(output));
         displayOnBuffer(String(output));
       }
+      else wrongDataState();
     }
+    else wrongDataState();
   }
+  else wrongDataState();
 }
 
 String sensorGetRead25Avarage(){

@@ -89,8 +89,14 @@ void showWelcome(){
   delay(1000);
 }
 
-void displayOnBuffer(String msg){
+void displaySensorData(String msg){
   u8g2.setCursor(0, 16);
+  u8g2.print(msg.c_str());
+  u8g2.sendBuffer();
+}
+
+void displaySensorError(String msg){
+  u8g2.setCursor(0, 26);
   u8g2.print(msg.c_str());
   u8g2.sendBuffer();
 }
@@ -113,7 +119,7 @@ void sensorConfig(){
 
 void sensorInit(){
   Serial.println("-->[HPMA] starting hpma115S0 sensor..");
-  delay(1000);
+  delay(100);
   hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
   Serial.println("-->[HPMA] init hpma serial ready..");
   // sensorConfig();
@@ -122,8 +128,13 @@ void sensorInit(){
 }
 
 void wrongDataState(){
-  Serial.println("wrong data");
+  Serial.println("wrong data!");
+  char output[22];
+  sprintf(output,"error: %03d",count);
+  displaySensorError(output);
   txtMsg="";
+  hpmaSerial.end();
+  sensorInit();
   delay(1000);
 }
 /**
@@ -138,11 +149,11 @@ void hpmaSerialRead(){
       Serial.print(".");
     }
   }
+  if(count<999)count++;
+  else count=0;
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
       Serial.print("done");
-      if(count<999)count++;
-      else count=0;
       pm2_5 = txtMsg[6] * 256 + byte(txtMsg[7]);
       pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       txtMsg="";
@@ -151,7 +162,7 @@ void hpmaSerialRead(){
         v.push_back(pm2_5); // for avarage
         sprintf(output,"%03d P25:%03d P10:%03d",count,pm2_5,pm10);
         Serial.println("-->[HPMA] "+String(output));
-        displayOnBuffer(String(output));
+        displaySensorData(String(output));
       }
       else wrongDataState();
     }
@@ -257,7 +268,7 @@ void bleLoop(){
 ******************************************************************************/
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("\n== INIT SETUP ==\n");
   Serial.println("-->[SETUP] console ready");
   displayInit();

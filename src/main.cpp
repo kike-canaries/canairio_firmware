@@ -130,7 +130,7 @@ void sensorInit(){
 void wrongDataState(){
   Serial.println("wrong data!");
   char output[22];
-  sprintf(output,"error: %03d",count);
+  sprintf(output,"last error: %03d",count);
   displaySensorError(output);
   txtMsg="";
   hpmaSerial.end();

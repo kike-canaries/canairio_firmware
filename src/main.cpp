@@ -95,6 +95,14 @@ void displaySensorData(String msg){
   u8g2.sendBuffer();
 }
 
+void displayLastPM25(String msg){
+  u8g2.setCursor(99, 45);
+  u8g2.setFont(u8g2_font_10x20_mr);
+  u8g2.print(msg.c_str());
+  u8g2.setFont(u8g2_font_6x10_tf);
+  u8g2.sendBuffer();
+}
+
 void displaySensorError(String msg){
   u8g2.setCursor(0, 26);
   u8g2.print(msg.c_str());
@@ -149,7 +157,7 @@ void hpmaSerialRead(){
       Serial.print(".");
     }
   }
-  if(count<999)count++;
+  if(count<9999)count++;
   else count=0;
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
@@ -160,8 +168,8 @@ void hpmaSerialRead(){
       if(pm2_5<1000&&pm10<1000){
         char output[22];
         v.push_back(pm2_5); // for avarage
-        sprintf(output,"%03d P25:%03d P10:%03d",count,pm2_5,pm10);
-        Serial.println("-->[HPMA] "+String(output));
+        sprintf(output,"%04d P25:%03d P10:%03d",count,pm2_5,pm10);
+        Serial.println(" --> "+String(output));
         displaySensorData(String(output));
       }
       else wrongDataState();
@@ -173,12 +181,11 @@ void hpmaSerialRead(){
 
 String sensorGetRead25Avarage(){
   int pm2_5_avarage = accumulate( v.begin(), v.end(), 0.0)/v.size();
+  char output[4];
+  sprintf(output,"%03d",pm2_5_avarage);
+  displayLastPM25(output);
   v.clear();
   return String("{")+"\"P25\":"+String(pm2_5_avarage)+"}"; // max supported 20 chars
-}
-
-String sensorGetRead10(){
-  return String("{")+"\"P10\":"+String(pm10)+"}"; // max supported 20 chars
 }
 
 void resetVars(){
@@ -207,31 +214,17 @@ class MyServerCallbacks: public BLEServerCallbacks {
 void bleServerInit(){
   // Create the BLE Device
   BLEDevice::init("ESP32_HPMA115S0");
-
   // Create the BLE Server
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
-
   // Create the BLE Service
   BLEService *pService = pServer->createService(SERVICE_UUID);
-
   // Create a BLE Characteristic for PM 2.5
   pCharactPM25 = pService->createCharacteristic(
                       CHARAC_PM25_UUID,
                       BLECharacteristic::PROPERTY_READ   |
                       BLECharacteristic::PROPERTY_NOTIFY
                     );
-
-  // TODO: to research possible issue with two characteristics,
-  // notitications are accumalated and lag when sending it
-
-  // Create a BLE Characteristic for PM 10
-  //pCharactPM10 = pService->createCharacteristic(
-  //                   CHARAC_PM10_UUID,
-  //                   BLECharacteristic::PROPERTY_READ   |
-  //                    BLECharacteristic::PROPERTY_NOTIFY
-  //                 );
-
   // Create a BLE Descriptor
   pCharactPM25->addDescriptor(new BLE2902());
   // Start the service

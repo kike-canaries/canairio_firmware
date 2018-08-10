@@ -16,24 +16,22 @@
 #include <BLE2902.h>
 #include <U8g2lib.h>
 
-// firmware version from git rev-list command
+using namespace std;
+
+// Firmware version from git rev-list command
 String VERSION_CODE = "rev";
 #ifdef SRC_REV
 int VCODE = SRC_REV;
 #else
 int VCODE = 0;
 #endif
-
-// Config ESP32 board
-#ifdef WEMOS_OLED
-// display via i2c for WeMOS OLED board
+// ESP32 board config
+#ifdef WEMOS_OLED  // display via i2c for WeMOS OLED board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
-#else
-// display via i2c for Heltec board
+#else             // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #endif
-
-// HPMA115S0 sensor connection config
+// HPMA115S0 sensor config
 #ifdef WEMOS_OLED
 #define HPMA_RX 13   // config for Wemos board
 #define HPMA_TX 15
@@ -41,26 +39,20 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #define HPMA_RX 13  // config for Heltec board
 #define HPMA_TX 12
 #endif
-
-using namespace std;
-
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 String txtMsg = "";
-unsigned int pm2_5, pm10, count = 0;
-vector<int> v;
-
+vector<int> v;      // for avarage
+unsigned int pm2_5, pm10, count, ecount = 0;
 // Bluetooth variables
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharactPM25 = NULL;
 BLECharacteristic* pCharactPM10 = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
-
 #define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
 #define CHARAC_PM25_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
 #define CHARAC_PM10_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
-
 
 /******************************************************************************
 *   D I S P L A Y  M E T H O D S
@@ -72,7 +64,7 @@ void displayInit(){
   u8g2.setFont(u8g2_font_6x10_tf);
   u8g2.setContrast(255);
   u8g2.setFontRefHeightExtendedText();
-  u8g2.setDrawColor(1);
+  // u8g2.setDrawColor(1);
   u8g2.setFontPosTop();
   u8g2.setFontDirection(0);
   u8g2.setFontMode(0);
@@ -96,8 +88,8 @@ void displaySensorData(String msg){
 }
 
 void displayLastPM25(String msg){
-  u8g2.setCursor(99, 45);
-  u8g2.setFont(u8g2_font_10x20_mr);
+  u8g2.setCursor(73,40);
+  u8g2.setFont(u8g2_font_freedoomr25_mn);
   u8g2.print(msg.c_str());
   u8g2.setFont(u8g2_font_6x10_tf);
   u8g2.sendBuffer();
@@ -112,10 +104,10 @@ void displaySensorError(String msg){
 /******************************************************************************
 *   S E N S O R  M E T H O D S
 ******************************************************************************/
-/**
-*  TODO: the next method is only for first time
-*  the idea is via bluetooth config
-*/
+
+//TODO: the next method is only for first time
+// the idea is execute it via bluetooth config
+
 void sensorConfig(){
   hpma115S0.Init();
   delay(100);
@@ -138,7 +130,8 @@ void sensorInit(){
 void wrongDataState(){
   Serial.println("wrong data!");
   char output[22];
-  sprintf(output,"last error: %04d",count);
+  if(ecount>999)ecount=0;
+  sprintf(output,"%04d E:%03d",count,ecount++);
   displaySensorError(output);
   txtMsg="";
   hpmaSerial.end();
@@ -169,7 +162,7 @@ void hpmaSerialRead(){
         char output[22];
         v.push_back(pm2_5); // for avarage
         sprintf(output,"%04d P25:%03d P10:%03d",count,pm2_5,pm10);
-        Serial.println(" --> "+String(output));
+        Serial.println(" --> "+String(output)+" E:"+String(ecount));
         displaySensorData(String(output));
       }
       else wrongDataState();

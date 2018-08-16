@@ -30,11 +30,11 @@ int VCODE = 0;
 * ---------------------
 * please select board on platformio.ini file
 ******************************************************************************/
-#ifdef WEMOS  // display via i2c for WeMOS OLED board
+#ifdef WEMOS // display via i2c for WeMOS OLED board
 U8G2_SSD1306_64X48_ER_1_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
-#elif HELTEC             // display via i2c for Heltec board
+#elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
-#elif D1MINI
+#else       // display via i2c for D1MINI board
 U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
 #endif
 // HPMA115S0 sensor config
@@ -43,6 +43,9 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_TX 15
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board
+#define HPMA_TX 12
+#else
+#define HPMA_RX 13  // config for D1MIN1 board
 #define HPMA_TX 12
 #endif
 HardwareSerial hpmaSerial(1);

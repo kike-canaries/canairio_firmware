@@ -30,15 +30,15 @@ int VCODE = 0;
 * ---------------------
 * please select board on platformio.ini file
 ******************************************************************************/
-#ifdef WEMOS // display via i2c for WeMOS OLED board
-U8G2_SSD1306_64X48_ER_1_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
+#ifdef WEMOSOLED // display via i2c for WeMOS OLED board
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 #elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #else       // display via i2c for D1MINI board
 U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
 #endif
 // HPMA115S0 sensor config
-#ifdef WEMOS_OLED
+#ifdef WEMOSOLED
 #define HPMA_RX 13   // config for Wemos board
 #define HPMA_TX 15
 #elif HELTEC
@@ -74,7 +74,7 @@ void displayInit(){
   u8g2.setFont(u8g2_font_6x10_tf);
   u8g2.setContrast(255);
   u8g2.setFontRefHeightExtendedText();
-  // u8g2.setDrawColor(1);
+  u8g2.setDrawColor(1);
   u8g2.setFontPosTop();
   u8g2.setFontDirection(0);
   u8g2.setFontMode(0);

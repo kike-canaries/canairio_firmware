@@ -8,9 +8,26 @@
 
 Please install before, [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE.
 
-## Compiling and install
+## Compiling and installing
 
-`pio run --target upload`
+For ** default ** board WeMOS OLED, clone and upload firmware via USB cable:
+``` bash
+git clone https://github.com/kike-canaries/esp32-hpma115s0.git
+cd esp32-hpma115s0
+pio run --target upload
+```
+
+** Optional ** for other board, please edit and select it on `platformio.ini` file and upload the new firmware, for example for `Heltec`:
+
+``` python
+build_flags =
+# Uncomment your board
+# -D WEMOSOLED=1
+# -D D1MINI=1
+ -D HELTEC=1
+```
+
+** NOTE: ** for each board the `Rx/Tx` of sensor maybe change.
 
 ## Troubleshooting
 
@@ -28,10 +45,13 @@ pio run --target upload
 - [X] HPMA115S0 fixes and libraries tests
 - [X] SSD1306 OLED display output (PM2.5 and PM10)
 - [X] Basic output via Bluetooth LE GATT server
+- [X] Gson output parser (for [Android client](https://github.com/kike-canaries/android-hpma115s0))
+- [X] WeMOS OLED board supported
+- [X] Heltec board supported
+- [X] D1 MINI Kit OLED board supported
 - [ ] Config firmware Characteristic
 - [ ] Real time clock or clock set via BT sync
 - [ ] Timestamp for GPS sync
-- [ ] Gson output parser (for [Android client](https://github.com/kike-canaries/android-hpma115s0))
 - [ ] Display graphs for PM2.5 and PM10
 - [ ] ROM storage for offline issues
 

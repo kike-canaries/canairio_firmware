@@ -10,14 +10,14 @@ Please install before, [PlatformIO](http://platformio.org/) open source ecosyste
 
 ## Compiling and installing
 
-For ** default ** board WeMOS OLED, clone and upload firmware via USB cable:
+For **default** board WeMOS OLED, clone and upload firmware via USB cable:
 ``` bash
 git clone https://github.com/kike-canaries/esp32-hpma115s0.git
 cd esp32-hpma115s0
 pio run --target upload
 ```
 
-** Optional ** for other board, please edit and select it on `platformio.ini` file and upload the new firmware, for example for `Heltec`:
+**Optional** for other board, please edit and select it on `platformio.ini` file and upload the new firmware, for example for `Heltec`:
 
 ``` python
 build_flags =
@@ -27,7 +27,7 @@ build_flags =
  -D HELTEC=1
 ```
 
-** NOTE: ** for each board the `Rx/Tx` of sensor maybe change.
+**NOTE:** for each board the `Rx/Tx` of sensor maybe change.
 
 ## Troubleshooting
 

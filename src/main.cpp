@@ -15,44 +15,50 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <U8g2lib.h>
+// #include <LiquidCrystal_I2C.h>
+#include <Wire.h>
 
-using namespace std;
+#include "Adafruit_Sensor.h"
+#include "Adafruit_AM2320.h"
 
-// Firmware version from git rev-list command
+// firmware version from git rev-list command
 String VERSION_CODE = "rev";
 #ifdef SRC_REV
 int VCODE = SRC_REV;
 #else
 int VCODE = 0;
 #endif
-/******************************************************************************
-* S E T U P  B O A R D
-* ---------------------
-* please select board on platformio.ini file
-******************************************************************************/
-#ifdef WEMOSOLED // display via i2c for WeMOS OLED board
+
+
+// Config ESP32 board
+#ifdef WEMOS_OLED
+// display via i2c for WeMOS OLED board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
-#elif HELTEC // display via i2c for Heltec board
+#else
+// display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
-#else       // display via i2c for D1MINI board
-U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
 #endif
-// HPMA115S0 sensor config
-#ifdef WEMOSOLED
+
+// HPMA115S0 sensor connection config
+#ifdef WEMOS_OLED
 #define HPMA_RX 13   // config for Wemos board
 #define HPMA_TX 15
-#elif HELTEC
+#else
 #define HPMA_RX 13  // config for Heltec board
 #define HPMA_TX 12
-#else
-#define HPMA_RX 13  // config for D1MIN1 board
-#define HPMA_TX 12
 #endif
+
+// LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+using namespace std;
+
+Adafruit_AM2320 am2320 = Adafruit_AM2320();
+
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 String txtMsg = "";
-vector<int> v;      // for avarage
-unsigned int pm2_5, pm10, count, ecount = 0;
+unsigned int pm2_5, pm10, count = 0;
+vector<int> v;
 
 // Bluetooth variables
 BLEServer* pServer = NULL;
@@ -60,9 +66,11 @@ BLECharacteristic* pCharactPM25 = NULL;
 BLECharacteristic* pCharactPM10 = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
+
 #define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
 #define CHARAC_PM25_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
 #define CHARAC_PM10_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
+
 
 /******************************************************************************
 *   D I S P L A Y  M E T H O D S
@@ -97,14 +105,6 @@ void displaySensorData(String msg){
   u8g2.sendBuffer();
 }
 
-void displayLastPM25(String msg){
-  u8g2.setCursor(73,40);
-  u8g2.setFont(u8g2_font_freedoomr25_mn);
-  u8g2.print(msg.c_str());
-  u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.sendBuffer();
-}
-
 void displaySensorError(String msg){
   u8g2.setCursor(0, 26);
   u8g2.print(msg.c_str());
@@ -114,10 +114,10 @@ void displaySensorError(String msg){
 /******************************************************************************
 *   S E N S O R  M E T H O D S
 ******************************************************************************/
-
-//TODO: the next method is only for first time
-// the idea is execute it via bluetooth config
-
+/**
+*  TODO: the next method is only for first time
+*  the idea is via bluetooth config
+*/
 void sensorConfig(){
   hpma115S0.Init();
   delay(100);
@@ -140,8 +140,7 @@ void sensorInit(){
 void wrongDataState(){
   Serial.println("wrong data!");
   char output[22];
-  if(ecount>999)ecount=0;
-  sprintf(output,"%04d E:%03d",count,ecount++);
+  sprintf(output,"last error: %03d",count);
   displaySensorError(output);
   txtMsg="";
   hpmaSerial.end();
@@ -160,7 +159,7 @@ void hpmaSerialRead(){
       Serial.print(".");
     }
   }
-  if(count<9999)count++;
+  if(count<999)count++;
   else count=0;
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
@@ -171,9 +170,17 @@ void hpmaSerialRead(){
       if(pm2_5<1000&&pm10<1000){
         char output[22];
         v.push_back(pm2_5); // for avarage
-        sprintf(output,"%04d P25:%03d P10:%03d",count,pm2_5,pm10);
-        Serial.println(" --> "+String(output)+" E:"+String(ecount));
+        sprintf(output,"%03d P25:%03d P10:%03d",count,pm2_5,pm10);
+        Serial.println("-->[HPMA] "+String(output));
         displaySensorData(String(output));
+
+//
+        Serial.print("AM2320 Hum: "); Serial.print(am2320.readHumidity());
+        Serial.print(" %       ");
+        Serial.print("Temp: "); Serial.println(am2320.readTemperature());
+
+//
+
       }
       else wrongDataState();
     }
@@ -184,11 +191,12 @@ void hpmaSerialRead(){
 
 String sensorGetRead25Avarage(){
   int pm2_5_avarage = accumulate( v.begin(), v.end(), 0.0)/v.size();
-  char output[4];
-  sprintf(output,"%03d",pm2_5_avarage);
-  displayLastPM25(output);
   v.clear();
   return String("{")+"\"P25\":"+String(pm2_5_avarage)+"}"; // max supported 20 chars
+}
+
+String sensorGetRead10(){
+  return String("{")+"\"P10\":"+String(pm10)+"}"; // max supported 20 chars
 }
 
 void resetVars(){
@@ -217,17 +225,31 @@ class MyServerCallbacks: public BLEServerCallbacks {
 void bleServerInit(){
   // Create the BLE Device
   BLEDevice::init("ESP32_HPMA115S0");
+
   // Create the BLE Server
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
+
   // Create the BLE Service
   BLEService *pService = pServer->createService(SERVICE_UUID);
+
   // Create a BLE Characteristic for PM 2.5
   pCharactPM25 = pService->createCharacteristic(
                       CHARAC_PM25_UUID,
                       BLECharacteristic::PROPERTY_READ   |
                       BLECharacteristic::PROPERTY_NOTIFY
                     );
+
+  // TODO: to research possible issue with two characteristics,
+  // notitications are accumalated and lag when sending it
+
+  // Create a BLE Characteristic for PM 10
+  //pCharactPM10 = pService->createCharacteristic(
+  //                   CHARAC_PM10_UUID,
+  //                   BLECharacteristic::PROPERTY_READ   |
+  //                    BLECharacteristic::PROPERTY_NOTIFY
+  //                 );
+
   // Create a BLE Descriptor
   pCharactPM25->addDescriptor(new BLE2902());
   // Start the service
@@ -267,11 +289,23 @@ void setup() {
   Serial.begin(115200);
   Serial.println("\n== INIT SETUP ==\n");
   Serial.println("-->[SETUP] console ready");
+	
+  Serial.println("Adafruit AM2320 Basic Test");
+  am2320.begin();
+	
   displayInit();
   sensorInit();
   bleServerInit();
   showWelcome();
   Serial.println("-->[SETUP] setup ready");
+
+//  lcd.begin();
+
+	// Turn on the blacklight and print a message.
+//	lcd.backlight();
+//	lcd.print("Hello, world!");
+//  Serial.println("Hello world LCD");
+
 }
 
 void loop() {

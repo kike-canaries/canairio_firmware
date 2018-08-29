@@ -45,8 +45,8 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX 13  // config for Heltec board
 #define HPMA_TX 12
 #else
-#define HPMA_RX 13  // config for D1MIN1 board
-#define HPMA_TX 12
+#define HPMA_RX 17  // config for D1MIN1 board
+#define HPMA_TX 16
 #endif
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
@@ -92,14 +92,21 @@ void showWelcome(){
 }
 
 void displaySensorData(String msg){
+#ifndef D1MINI
   u8g2.setCursor(0, 16);
   u8g2.print(msg.c_str());
   u8g2.sendBuffer();
+#endif
 }
 
 void displayLastPM25(String msg){
+#ifdef D1MINI
+  u8g2.setCursor(0,0);
+  u8g2.setFont(u8g2_font_10x20_mn);
+#else
   u8g2.setCursor(73,40);
   u8g2.setFont(u8g2_font_freedoomr25_mn);
+#endif
   u8g2.print(msg.c_str());
   u8g2.setFont(u8g2_font_6x10_tf);
   u8g2.sendBuffer();

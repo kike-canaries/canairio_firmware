@@ -101,8 +101,9 @@ void displaySensorData(String msg){
 
 void displayLastPM25(String msg){
 #ifdef D1MINI
-  u8g2.setCursor(0,0);
-  u8g2.setFont(u8g2_font_10x20_mn);
+  u8g2.clearBuffer();
+  u8g2.setCursor(0,4);
+  u8g2.setFont(u8g2_font_inb27_mn);
 #else
   u8g2.setCursor(73,40);
   u8g2.setFont(u8g2_font_freedoomr25_mn);

@@ -176,7 +176,7 @@
      y="9909.498" />
   <svg:path
      sodipodi:type="arc"
-     style="fill:none;stroke:#000000;stroke-width:0.70899999;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     style="fill:none;stroke:#000000;stroke-width:0.8415212;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
      id="path3786"
      sodipodi:cx="439.8931"
      sodipodi:cy="633.18921"
@@ -184,4 +184,25 @@
      sodipodi:ry="40.075008"
      d="m 480.90008,633.18921 a 41.006985,40.075008 0 1 1 -82.01397,0 41.006985,40.075008 0 1 1 82.01397,0 z"
      transform="matrix(0.232077,0,0,0.23747414,25.680937,9811.5339)" />
+  <svg:rect
+     style="fill:none;stroke:#000000;stroke-width:0.22502682;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     id="rect3788"
+     width="25.274975"
+     height="19.574974"
+     x="10.53472"
+     y="9958.7344" />
+  <svg:rect
+     style="fill:none;stroke:#000000;stroke-width:0.19755557;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     id="rect3790"
+     width="14.992403"
+     height="6.5756154"
+     x="82.418785"
+     y="9974.4873" />
+  <svg:rect
+     style="fill:none;stroke:#000000;stroke-width:0.19755559;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     id="rect3790-3"
+     width="14.992403"
+     height="6.5756154"
+     x="82.418785"
+     y="9933.0596" />
 </svg:svg>

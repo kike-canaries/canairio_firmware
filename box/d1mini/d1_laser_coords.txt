@@ -10,3 +10,9 @@ Lcd dimensions (visible)
 InkScape
 117.212
 14.476 (10.84)
+
+Sensor input hole:
+14.8x7.2
+
+Wires hole:
+19.8x25 (8.57)

@@ -7,11 +7,11 @@
 <a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://github.com/kike-canaries/android-hpma115s0/blob/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>
 
 
-**CanAirIO quality air sensor** builded with a `ESP32` module board and `HPMA115s0 Honeywell` dust sensor, interfaced with a [Android Client](https://github.com/kike-canaries/android-hpma115s0). You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section.
+**CanAirIO quality air sensor** built with a `ESP32` module board and `HPMA115s0 Honeywell` dust sensor, interfaced with an [Android Client](https://github.com/kike-canaries/android-hpma115s0). You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section.
 
-## Dependencies
+## Software Dependencies
 
-Please install before, [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE.
+Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
 
 ## Compiling and installing
 
@@ -32,8 +32,6 @@ build_flags =
 # -D D1MINI=1
  -D HELTEC=1
 ```
-
-**NOTE:** for each board the `Rx/Tx` of sensor maybe change.
 
 ## Troubleshooting
 

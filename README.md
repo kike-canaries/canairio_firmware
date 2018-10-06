@@ -10,7 +10,8 @@ Please install before, [PlatformIO](http://platformio.org/) open source ecosyste
 
 ## Compiling and installing
 
-For **default** board WeMOS OLED, clone and upload firmware via USB cable:
+For **default** board `D1Mini Kit`, clone and upload firmware via USB cable:
+
 ``` bash
 git clone https://github.com/kike-canaries/esp32-hpma115s0.git
 cd esp32-hpma115s0
@@ -49,6 +50,7 @@ pio run --target upload
 - [X] WeMOS OLED board supported
 - [X] Heltec board supported
 - [X] D1 MINI Kit OLED board supported
+- [X] LaserCut box for D1Mini board
 - [ ] Config firmware Characteristic
 - [ ] Real time clock or clock set via BT sync
 - [ ] Timestamp for GPS sync
@@ -66,10 +68,12 @@ ____
 
 ## Materials
 
+Please for official materials and part list click on [wiki](Surprisingly my crappy solar powered #ESP32 sensor node makes it through the night, charges in 2 hours and appears to be rather stable. How did that happen?)
+
 ### Supported boards:
 
+* [ESP32 Mini KIT](http://bit.ly/2NLwtHK) (Recommendend board)
 * [ESP32 compatible board (WeMOS like)](http://bit.ly/2lMbWH6)
-* [ESP32 Mini KIT](http://bit.ly/2NLwtHK)
 * [ESP32 Bluetooth WIFI Kit OLED](http://bit.ly/2neQI5f)
 
 ### Pollution sensors

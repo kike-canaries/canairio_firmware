@@ -1,5 +1,6 @@
 # ESP32-HPMA115S0
 
+
 **W A R N I N G :** Project in development
 
 **Pollution sensor** builded with a `ESP32` module board and `HPMA115s0 Honeywell` dust sensor, interfaced with a [Android Client](https://github.com/kike-canaries/android-hpma115s0). You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section.
@@ -7,6 +8,11 @@
 ## Dependencies
 
 Please install before, [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE.
+
+
+---
+<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" target="_blank"><img src="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" align="right" width="512" ></a>
+---
 
 ## Compiling and installing
 
@@ -56,15 +62,6 @@ pio run --target upload
 - [ ] Timestamp for GPS sync
 - [ ] Display graphs for PM2.5 and PM10
 - [ ] ROM storage for offline issues
-
-## Prototype
-
-<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/prototype.jpg"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/prototype.jpg" align="left" width="1024" ></a>
-
-<div>
-____
-
-</div>
 
 ## Materials
 

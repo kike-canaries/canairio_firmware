@@ -1,8 +1,6 @@
 # ESP32-HPMA115S0
 
----
-<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" align="right" width="512" ></a>
----
+<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" align="right" width="384" ></a>
 
 **W A R N I N G :** Project in development
 
@@ -11,7 +9,6 @@
 ## Dependencies
 
 Please install before, [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE.
-
 
 ## Compiling and installing
 
@@ -65,6 +62,8 @@ pio run --target upload
 ## Materials
 
 Please for official materials and part list click on [wiki](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Hardware)
+
+<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/materials.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/materials.jpg" align="right" width="384" ></a>
 
 ### Supported boards:
 

@@ -54,7 +54,7 @@ pio run --target upload
 - [X] Heltec board supported
 - [X] D1 MINI Kit OLED board supported
 - [X] LaserCut box for D1Mini board
-- [ ] Config firmware Characteristic
+- [ ] Config WiFi device stand alone option
 - [ ] Real time clock or clock set via BT sync
 - [ ] Timestamp for GPS sync
 - [ ] Display graphs for PM2.5 and PM10
@@ -68,13 +68,13 @@ Please for official materials and part list click on [wiki](https://github.com/k
 
 ### Supported boards:
 
-* [ESP32 Mini KIT](http://bit.ly/2NLwtHK) (Recommendend board)
+* [ESP32 Mini KIT](http://bit.ly/2NLwtHK) (Recommended board)
 * [ESP32 compatible board (WeMOS like)](http://bit.ly/2lMbWH6)
 * [ESP32 Bluetooth WIFI Kit OLED](http://bit.ly/2neQI5f)
 
 ### Pollution sensors
 
-* [Honeywell HPMA115S0](http://bit.ly/2pZPxYh)
+* [Honeywell HPMA115S0](http://bit.ly/2II6647)
 
 ### Optional hardware
 

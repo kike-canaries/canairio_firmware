@@ -1,0 +1,7 @@
+oled 15.75x12.7
+box 53.8x83.42
+
+Edge to rectangle center: 4.06
+bottom oled: 20.77 (to edge: 23.72)
+left oled: 9.39
+

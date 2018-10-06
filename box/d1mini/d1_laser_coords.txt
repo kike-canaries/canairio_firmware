@@ -1,0 +1,18 @@
+LaserBox dimmensions:
+38.18x34x91
+
+Lcd location:
+17.39
+
+Lcd dimensions (visible)
+16.5x13.3
+
+InkScape
+117.212
+14.476 (10.84)
+
+Sensor input hole:
+14.8x7.2
+
+Wires hole:
+19.8x25 (8.57)

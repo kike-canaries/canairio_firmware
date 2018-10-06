@@ -2,7 +2,7 @@
 The oficial LaserCut box for D1Mini Kit board (official project board)
 
 
-### Directory 
+### Files
 
 SVG files for printing with Laser Cut on MDF with thickness 0.3 mm, for one box or 14 boxes.
 
@@ -16,6 +16,7 @@ SVG files for printing with Laser Cut on MDF with thickness 0.3 mm, for one box 
 
 
 ## Heltec Laser Box
-**Warning** this box still in development for Heltec board setup. The current development is for Laser cutter but the state is **untested**
+
+**Warning** this box still in development for Heltec board setup. The current development is for Laser cutter but the state is **UNTESTED**
 
 

@@ -68,7 +68,7 @@ ____
 
 ## Materials
 
-Please for official materials and part list click on [wiki](Surprisingly my crappy solar powered #ESP32 sensor node makes it through the night, charges in 2 hours and appears to be rather stable. How did that happen?)
+Please for official materials and part list click on [wiki](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Hardware)
 
 ### Supported boards:
 

@@ -83,9 +83,16 @@ void displayInit(){
 
 void showWelcome(){
   u8g2.clearBuffer();
-  String version = "ESP32 HPMA115 ("+String(VERSION_CODE+VCODE)+")";
+#ifdef D1MINI
+  u8g2.drawStr(0, 0, "CanAirIO");
+  String version = "("+String(VERSION_CODE+VCODE)+")";
+  u8g2.drawStr(0, 11,version.c_str());
+  u8g2.drawLine(0, 22, 128, 22);
+#else
+  String version = "CanAirIO ("+String(VERSION_CODE+VCODE)+")";
   u8g2.drawStr(0, 0,version.c_str());
   u8g2.drawLine(0, 11, 128, 11);
+#endif
   u8g2.sendBuffer();
   Serial.println("-->[OLED] welcome screen ready\n");
   delay(1000);
@@ -96,13 +103,16 @@ void displaySensorData(String msg){
   u8g2.setCursor(0, 16);
   u8g2.print(msg.c_str());
   u8g2.sendBuffer();
+#else
+  u8g2.setCursor(0, 40);
+  u8g2.print(msg.c_str());
+  u8g2.sendBuffer();
 #endif
 }
 
 void displayLastPM25(String msg){
 #ifdef D1MINI
-  u8g2.clearBuffer();
-  u8g2.setCursor(0,4);
+  u8g2.setCursor(0,0);
   u8g2.setFont(u8g2_font_inb27_mn);
 #else
   u8g2.setCursor(73,40);
@@ -114,25 +124,35 @@ void displayLastPM25(String msg){
 }
 
 void displaySensorError(String msg){
-  u8g2.setCursor(0, 26);
+  u8g2.clearBuffer();
+#ifdef D1MINI
+  u8g2.setCursor(0, 40);
   u8g2.print(msg.c_str());
   u8g2.sendBuffer();
+#else
+  u8g2.setCursor(0, 32);
+  u8g2.print(msg.c_str());
+  u8g2.sendBuffer();
+#endif
 }
 
 /******************************************************************************
 *   S E N S O R  M E T H O D S
 ******************************************************************************/
 
-//TODO: the next method is only for first time
-// the idea is execute it via bluetooth config
+// [DEPRECATED] sensorConfig:
+// The next method is only if sensor was config without autosend.
 
 void sensorConfig(){
+  Serial.println("-->[HPMA] configuration hpma115S0 sensor..");
+  hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
   hpma115S0.Init();
   delay(100);
   hpma115S0.EnableAutoSend();
   delay(100);
   hpma115S0.StartParticleMeasurement();
-  delay(1000);
+  delay(100);
+  Serial.println("-->[HPMA] sensor configured.");
 }
 
 void sensorInit(){
@@ -140,7 +160,6 @@ void sensorInit(){
   delay(100);
   hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
   Serial.println("-->[HPMA] init hpma serial ready..");
-  // sensorConfig();
   Serial.println("-->[HPMA] sensor ready.");
   delay(100);
 }
@@ -156,9 +175,11 @@ void wrongDataState(){
   sensorInit();
   delay(1000);
 }
+
 /**
 * PM2.5 and PM10 read and visualization
 */
+
 void hpmaSerialRead(){
   Serial.print("-->[HPMA] read.");
   while (txtMsg.length() < 32) {
@@ -179,7 +200,11 @@ void hpmaSerialRead(){
       if(pm2_5<1000&&pm10<1000){
         char output[22];
         v.push_back(pm2_5); // for avarage
+#ifdef D1MINI
+        sprintf(output,"%04d P:%03d",count,pm2_5);
+#else
         sprintf(output,"%04d P25:%03d P10:%03d",count,pm2_5,pm10);
+#endif
         Serial.println(" --> "+String(output)+" E:"+String(ecount));
         displaySensorData(String(output));
       }

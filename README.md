@@ -1,4 +1,4 @@
-# CanAirIO ESP32-HPMA115S0 Air Quality Monitoring
+# CanAirIO ESP32-HPMA115S0 sensor
 
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" align="right" width="384" ></a>
 

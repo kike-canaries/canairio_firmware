@@ -334,7 +334,7 @@ void setup() {
   displayInit();
   sensorInit();
   bleServerInit();
-  wifiSmartConfigInit();
+  //wifiSmartConfigInit();
   showWelcome();
   Serial.println("-->[SETUP] setup ready");
 }

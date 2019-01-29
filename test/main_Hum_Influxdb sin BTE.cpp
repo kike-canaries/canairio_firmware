@@ -86,15 +86,26 @@ unsigned int PM25promedio=0;
 
 InfluxArduino influx;
 //connection/ database stuff that needs configuring
-//const char WIFI_NAME[] = "BelkinTX";
-const char WIFI_NAME[] = "CiscoTX";
-//const char WIFI_PASS[] = "apt413sago16";
-const char WIFI_PASS[] = "865C103DEF381";
+//const char WIFI_NAME[] = "FAMILIA PATINO";
+//const char WIFI_NAME[] = "camilo";
+const char WIFI_NAME[] = "BelkinTX";
+//const char WIFI_NAME[] = "CiscoTX";
+//const char WIFI_NAME[] = "TP-LINK-RX";
+//const char WIFI_PASS[] = "72236370";
+//const char WIFI_PASS[] = "camiloyatila";
+const char WIFI_PASS[] = "apt413sago16";
+//const char WIFI_PASS[] = "865C103DEF381";
+//const char WIFI_PASS[] = "tpDBBenvio16linkRX";
 const char INFLUX_DATABASE[] = "mydb";
-const char INFLUX_IP[] = "192.168.0.100";
+const char INFLUX_IP[] = "aireciudadano.servehttp.com";
+//const char INFLUX_IP[] = "192.168.0.100";
+//const char INFLUX_IP[] = "190.157.100.71";
 const char INFLUX_USER[] = ""; //username if authorization is enabled.
 const char INFLUX_PASS[] = ""; //password for if authorization is enabled.
-const char INFLUX_MEASUREMENT[] = "pm25_EST1"; //measurement name for the database. (in practice, you can use several, this example just uses the one)
+//const char INFLUX_MEASUREMENT[] = "PM2.5_EST2_noHum_526"; //measurement name for the database. (in practice, you can use several, this example just uses the one)
+//const char INFLUX_MEASUREMENT[] = "PM2.5_EST5_noHum_524";
+const char INFLUX_MEASUREMENT[] = "PM2.5_EST6_noHum_524";
+//const char INFLUX_MEASUREMENT[] = "PM2.5_EST1_siHum";
 
 unsigned long DELAY_TIME_US = 10 * 1000 * 1000; //how frequently to send data, in microseconds
 unsigned long countINF = 0; //a variable that we gradually increase in the loop
@@ -319,7 +330,7 @@ void AM2320Read() {
           Serial.print(dataMessage);
           TramaSD+= dataMessage;
 
-     if (count%5==0) {
+     if (count%60==0) {
 
             humidity = am2320.readHumidity();
             temperature = am2320.readTemperature();
@@ -343,7 +354,7 @@ char tags[16];
 char fields[128];
 
 sensorGetRead25Avarage();
-PM25promedio = PM25promedio / 5;
+PM25promedio = PM25promedio / 60;
 
 sprintf(tags, "read_ok=true");
 //sprintf(fields,"count=%d,pm25promedio=%d",count,pm25promedio);

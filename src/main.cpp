@@ -7,6 +7,8 @@
  * @license GPL3
  */
 
+#include <Arduino.h>
+#include <InfluxArduino.hpp>
 #include <vector>
 #include <numeric>
 #include <hpma115S0.h>

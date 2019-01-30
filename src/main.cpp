@@ -52,7 +52,7 @@ HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 String txtMsg = "";
 vector<int> v;      // for avarage
-unsigned int pm2_5, pm10, count, ecount = 0;
+unsigned int pm2_5, pm10, mcount, ecount = 0;
 
 // Bluetooth variables
 BLEServer* pServer = NULL;
@@ -168,7 +168,7 @@ void wrongDataState(){
   Serial.println("wrong data!");
   char output[22];
   if(ecount>999)ecount=0;
-  sprintf(output,"%04d E:%03d",count,ecount++);
+  sprintf(output,"%04d E:%03d",mcount,ecount++);
   displaySensorError(output);
   txtMsg="";
   hpmaSerial.end();
@@ -189,8 +189,8 @@ void hpmaSerialRead(){
       Serial.print(".");
     }
   }
-  if(count<9999)count++;
-  else count=0;
+  if(mcount<9999)mcount++;
+  else mcount=0;
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
       Serial.print("done");
@@ -201,9 +201,9 @@ void hpmaSerialRead(){
         char output[22];
         v.push_back(pm2_5); // for avarage
 #ifdef D1MINI
-        sprintf(output,"%04d P:%03d",count,pm2_5);
+        sprintf(output,"%04d P:%03d",mcount,pm2_5);
 #else
-        sprintf(output,"%04d P25:%03d P10:%03d",count,pm2_5,pm10);
+        sprintf(output,"%04d P25:%03d P10:%03d",mcount,pm2_5,pm10);
 #endif
         Serial.println(" --> "+String(output)+" E:"+String(ecount));
         displaySensorData(String(output));
@@ -225,7 +225,7 @@ String sensorGetRead25Avarage(){
 }
 
 void resetVars(){
-  count=0;
+  mcount=0;
 }
 
 void hpmaSerialLoop(){

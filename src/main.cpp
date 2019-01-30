@@ -36,10 +36,10 @@ int VCODE = SRC_REV;
 int VCODE = 0;
 #endif
 /******************************************************************************
-* S E T U P  B O A R D
-* ---------------------
-* please select board on platformio.ini file
-******************************************************************************/
+ * S E T U P  B O A R D
+ * ---------------------
+ * please select board on platformio.ini file
+ ******************************************************************************/
 #ifdef WEMOSOLED // display via i2c for WeMOS OLED board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 #elif HELTEC // display via i2c for Heltec board
@@ -62,7 +62,9 @@ HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 String txtMsg = "";
 vector<long> v;      // for avarage
-unsigned int pm2_5, pm10, count, ecount = 0;
+unsigned int pm2_5, pm10;
+unsigned int mcount = 0;
+unsigned int ecount = 0;
 
 
 ///////////
@@ -98,22 +100,9 @@ unsigned long DELAY_TIME_US = 10 * 1000 * 1000; //how frequently to send data, i
 unsigned long countINF = 0; //a variable that we gradually increase in the loop
 #define LED 2
 
-///////////
-
-// Bluetooth variables
-/*
-BLEServer* pServer = NULL;
-BLECharacteristic* pCharactPM25 = NULL;
-BLECharacteristic* pCharactPM10 = NULL;
-bool deviceConnected = false;
-bool oldDeviceConnected = false;
-#define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
-#define CHARAC_PM25_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
-#define CHARAC_PM10_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
-
 /******************************************************************************
-*   D I S P L A Y  M E T H O D S
-******************************************************************************/
+ *   D I S P L A Y  M E T H O D S
+ ******************************************************************************/
 void displayInit(){
   Serial.println("-->[OLED] setup display..");
   u8g2.begin();
@@ -197,8 +186,8 @@ void displaySensorError(String msg){
 }
 
 /******************************************************************************
-*   S E N S O R  M E T H O D S
-******************************************************************************/
+ *   S E N S O R  M E T H O D S
+ ******************************************************************************/
 
 // [DEPRECATED] sensorConfig:
 // The next method is only if sensor was config without autosend.
@@ -237,8 +226,8 @@ void wrongDataState(){
 }
 
 /**
-* PM2.5 and PM10 read and visualization
-*/
+ * PM2.5 and PM10 read and visualization
+ */
 
 void hpmaSerialRead(){
   Serial.print("-->[HPMA] read.");
@@ -249,8 +238,8 @@ void hpmaSerialRead(){
       Serial.print(".");
     }
   }
-  if(count<99999)count++;
-  else count=0;
+  if(mcount<99999)mcount++;
+  else mcount=0;
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
       Serial.print("done");
@@ -261,15 +250,15 @@ void hpmaSerialRead(){
         char output[22];
         v.push_back(pm2_5); // for avarage
 
-////////
-    PMtotal = PMtotal + pm2_5;
-    PM25promedio= PM25promedio + pm2_5;
-////////
+        ////////
+        PMtotal = PMtotal + pm2_5;
+        PM25promedio= PM25promedio + pm2_5;
+        ////////
 
 #ifdef D1MINI
-        sprintf(output,"%05d P:%03d",count,pm2_5);
+        sprintf(output,"%05d P:%03d",mcount,pm2_5);
 #else
-        sprintf(output,"%04d P25:%03d P10:%03d",count,pm2_5,pm10);
+        sprintf(output,"%04d P25:%03d P10:%03d",mcount,pm2_5,pm10);
 #endif
         Serial.println(" --> "+String(output)+" E:"+String(ecount));
         displaySensorData2(String(output));
@@ -287,13 +276,13 @@ String sensorGetRead25Avarage(){
   sprintf(output,"%03d",pm2_5_average);
   displayLastPM25(output);
 
-///////////
+  ///////////
 
-//  pm2_5_average = pm25promedio;
+  //  pm2_5_average = pm25promedio;
 
-///////////
+  ///////////
 
-  sprintf(output,"%05d  %03d",count,pm2_5);
+  sprintf(output,"%05d  %03d",mcount,pm2_5);
   displaySensorData2(String(output));
   sprintf(output,"H=%02d P=%03d",HUMint,PMs);
   displaySensorData1(String(output));
@@ -303,207 +292,88 @@ String sensorGetRead25Avarage(){
 }
 
 void resetVars(){
-  count=0;
+  mcount=0;
 }
 
 /******************************************************************************
-*   HUMIDITY  M E T H O D S
-******************************************************************************/
+ *   HUMIDITY  M E T H O D S
+ ******************************************************************************/
 
 void AM2320Read() {
 
-          dataMessage = "Trama " + String(count) + "; " + String(pm2_5) + "; " + String(humidity) + "\r\n";
-          Serial.print("Save data: ");
-          Serial.print(dataMessage);
-          TramaSD+= dataMessage;
+  dataMessage = "Trama " + String(mcount) + "; " + String(pm2_5) + "; " + String(humidity) + "\r\n";
+  Serial.print("Save data: ");
+  Serial.print(dataMessage);
+  TramaSD+= dataMessage;
 
-     if (count%60==0) {
+  if (mcount%60==0) {
 
-            humidity = am2320.readHumidity();
-            temperature = am2320.readTemperature();
-            Serial.print("AM2320 Hum: ");
-            Serial.print(humidity);
-            Serial.print(" %       ");
-            Serial.print("Temp: ");
-            Serial.print(temperature);
-            Serial.println(" °C");
-            if (count==0) {
-              count++;
-            }
-            PMdiv = PMtotal/count;
-            PMs = round (PMdiv); //promedio
-        //    HUMint = (int) humidity;
-            HUMint = round (humidity);
+    humidity = am2320.readHumidity();
+    temperature = am2320.readTemperature();
+    Serial.print("AM2320 Hum: ");
+    Serial.print(humidity);
+    Serial.print(" %       ");
+    Serial.print("Temp: ");
+    Serial.print(temperature);
+    Serial.println(" °C");
+    if (mcount==0) {
+      mcount++;
+    }
+    PMdiv = PMtotal/mcount;
+    PMs = round (PMdiv); //promedio
+    //    HUMint = (int) humidity;
+    HUMint = round (humidity);
 
-////////////////////
+    ////////////////////
 
-char tags[16];
-char fields[128];
+    char tags[16];
+    char fields[128];
 
-sensorGetRead25Avarage();
-PM25promedio = PM25promedio / 60;
+    sensorGetRead25Avarage();
+    PM25promedio = PM25promedio / 60;
 
-sprintf(tags, "read_ok=true");
-//sprintf(fields,"count=%d,pm25promedio=%d",count,pm25promedio);
-sprintf(fields,"count=%d,PM25promedio=%d",count,PM25promedio);
+    sprintf(tags, "read_ok=true");
+    //sprintf(fields,"mcount=%d,pm25promedio=%d",mcount,pm25promedio);
+    sprintf(fields,"mcount=%d,PM25promedio=%d",mcount,PM25promedio);
 
-bool writeSuccessful = influx.write(INFLUX_MEASUREMENT, tags, fields);
+    bool writeSuccessful = influx.write(INFLUX_MEASUREMENT, tags, fields);
 
-PM25promedio = 0;
+    PM25promedio = 0;
 
-digitalWrite(LED, HIGH);
+    digitalWrite(LED, HIGH);
 
-if (!writeSuccessful) {
- Serial.print("error: ");
- Serial.println(influx.getResponse());
-}
-else {
- delay(50);
- digitalWrite(LED, LOW);
+    if (!writeSuccessful) {
+      Serial.print("error: ");
+      Serial.println(influx.getResponse());
+    }
+    else {
+      delay(50);
+      digitalWrite(LED, LOW);
 
-////////////////////
-}
-     if ((humidity>94) & (humidity<101)){
+      ////////////////////
+    }
+    if ((humidity>94) & (humidity<101)){
       // mirar que colocar aqui
-   }
-}
-}
-/******************************************************************************
-*   B L U E T O O T H  M E T H O D S
-******************************************************************************/
-/*
-
-class MyServerCallbacks: public BLEServerCallbacks {
-	void onConnect(BLEServer* pServer) {
-      Serial.println("-->[BLE] onConnect");
-      deviceConnected = true;
-    };
-
-    void onDisconnect(BLEServer* pServer) {
-      Serial.println("-->[BLE] onDisconnect");
-      deviceConnected = false;
-    };
-}; // BLEServerCallbacks
-
-void bleServerInit(){
-  // Create the BLE Device
-  BLEDevice::init("ESP32_HPMA115S0");
-  // Create the BLE Server
-  pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new MyServerCallbacks());
-  // Create the BLE Service
-  BLEService *pService = pServer->createService(SERVICE_UUID);
-  // Create a BLE Characteristic for PM 2.5
-  pCharactPM25 = pService->createCharacteristic(
-                      CHARAC_PM25_UUID,
-                      BLECharacteristic::PROPERTY_READ   |
-                      BLECharacteristic::PROPERTY_NOTIFY
-                    );
-  // Create a BLE Descriptor
-  pCharactPM25->addDescriptor(new BLE2902());
-  // Start the service
-  pService->start();
-  // Start advertising
-  pServer->getAdvertising()->start();
-  Serial.println("-->[BLE] GATT server ready. (Waiting a client to notify)");
-}
-
-void bleLoop(){
-  // notify changed value
-  if (deviceConnected && v.size() > 4) {  // ~5 sec aprox
-    pCharactPM25->setValue(sensorGetRead25Avarage().c_str());
-    pCharactPM25->notify();
-
-//////////////
-  char tags[16];
-  char fields[128];
-
- sprintf(tags, "read_ok=true");
- sprintf(fields,"count=%d,pm25promedio=%d",count,pm25promedio);
-
- bool writeSuccessful = influx.write(INFLUX_MEASUREMENT, tags, fields);
-
- digitalWrite(LED, HIGH);
-
- if (!writeSuccessful) {
-   Serial.print("error: ");
-   Serial.println(influx.getResponse());
- }
- else {
-   delay(50);
-   digitalWrite(LED, LOW);
- }
-/////////////
-
-  }
-  // disconnecting
-  if (!deviceConnected && oldDeviceConnected) {
-    delay(500); // give the bluetooth stack the chance to get things ready
-    pServer->startAdvertising(); // restart advertising
-    Serial.println("-->[BLE] start advertising");
-    oldDeviceConnected = deviceConnected;
-    showWelcome();
-    resetVars();
-  }
-  // connecting
-  if (deviceConnected && !oldDeviceConnected) {
-    // do stuff here on connecting
-    oldDeviceConnected = deviceConnected;
+    }
   }
 }
-
-/******************************************************************************
-*   WIFI  M E T H O D S
-******************************************************************************/
-/*
-void wifiSmartConfigInit() {
-  //Init WiFi as Station, start SmartConfig
-  WiFi.mode(WIFI_AP_STA);
-  WiFi.beginSmartConfig();
-
-  //Wait for SmartConfig packet from mobile
-  Serial.println("Waiting for SmartConfig.");
-  while (!WiFi.smartConfigDone())
-  {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("");
-  Serial.println("SmartConfig received.");
-
-  //Wait for WiFi to connect to AP
-  Serial.println("Waiting for WiFi");
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("WiFi Connected.");
-
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
-}
-
-*/
 
 //***********************************************************
 void wifiConfigInit() {
-    pinMode(LED,OUTPUT);
+  pinMode(LED,OUTPUT);
 
-    WiFi.begin(WIFI_NAME, WIFI_PASS);
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
-    }
+  WiFi.begin(WIFI_NAME, WIFI_PASS);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
 
-    Serial.println("WiFi connected!");
-    influx.configure(INFLUX_DATABASE,INFLUX_IP); //third argument (port number) defaults to 8086
-    // influx.authorize(INFLUX_USER,INFLUX_PASS); //if you have set the Influxdb .conf variable auth-enabled to true, uncomment this
-    // influx.addCertificate(ROOT_CERT); //uncomment if you have generated a CA cert and copied it into InfluxCert.hpp
-    Serial.print("Using HTTPS: ");
-    Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
+  Serial.println("WiFi connected!");
+  influx.configure(INFLUX_DATABASE,INFLUX_IP); //third argument (port number) defaults to 8086
+  // influx.authorize(INFLUX_USER,INFLUX_PASS); //if you have set the Influxdb .conf variable auth-enabled to true, uncomment this
+  // influx.addCertificate(ROOT_CERT); //uncomment if you have generated a CA cert and copied it into InfluxCert.hpp
+  Serial.print("Using HTTPS: ");
+  Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
 
 }
 
@@ -512,8 +382,8 @@ void wifiConfigInit() {
 
 
 /******************************************************************************
-*  M A I N
-******************************************************************************/
+ *  M A I N
+ ******************************************************************************/
 
 void setup() {
   Serial.begin(115200);
@@ -522,15 +392,15 @@ void setup() {
   displayInit();
   sensorInit();
 
-//////////
+  //////////
 
   am2320.begin();
   Serial.println("-->[AM2320] sensor ready.");
   //wifiConfigInit();
 
-/////////
+  /////////
 
-//  bleServerInit();
+  //  bleServerInit();
   wifiConfigInit(); ///////////////
   //wifiSmartConfigInit();
   showWelcome();
@@ -540,5 +410,5 @@ void setup() {
 void loop() {
   hpmaSerialRead();
   AM2320Read();    //directo
-//  bleLoop();
+  //  bleLoop();
 }

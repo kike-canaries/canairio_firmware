@@ -67,6 +67,21 @@ bool oldDeviceConnected = false;
 #define CHARAC_PM25_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
 #define CHARAC_PM10_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
 
+// InfluxDB variables:
+InfluxArduino influx;
+// connection database stuff that needs configuring
+const char WIFI_NAME[] = "xxxx";
+const char WIFI_PASS[] = "xxxx";
+const char INFLUX_DATABASE[] = "mydb";
+const char INFLUX_IP[] = "aireciudadano.servehttp.com";
+const char INFLUX_USER[] = ""; //username if authorization is enabled.
+const char INFLUX_PASS[] = ""; //password for if authorization is enabled.
+const char INFLUX_MEASUREMENT[] = "PM2.5_EST6_noHum_524";
+
+unsigned long DELAY_TIME_US = 10 * 1000 * 1000; //how frequently to send data, in microseconds
+unsigned long countINF = 0; //a variable that we gradually increase in the loop
+#define LED 2
+
 /******************************************************************************
 *   D I S P L A Y  M E T H O D S
 ******************************************************************************/
@@ -295,34 +310,35 @@ void bleLoop(){
   }
 }
 
-void wifiSmartConfigInit() {
-  //Init WiFi as Station, start SmartConfig
-  WiFi.mode(WIFI_AP_STA);
-  WiFi.beginSmartConfig();
+/******************************************************************************
+*   I N F L U X D B   M E T H O D S
+******************************************************************************/
 
-  //Wait for SmartConfig packet from mobile
-  Serial.println("Waiting for SmartConfig.");
-  while (!WiFi.smartConfigDone())
-  {
+void influxDbInit() {
+  influx.configure(INFLUX_DATABASE, INFLUX_IP); //third argument (port number) defaults to 8086
+  // influx.authorize(INFLUX_USER,INFLUX_PASS); //if you have set the Influxdb .conf variable auth-enabled to true, uncomment this
+  // influx.addCertificate(ROOT_CERT); //uncomment if you have generated a CA cert and copied it into InfluxCert.hpp
+  Serial.print("Using HTTPS: ");
+  Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
+}
+
+bool influxDbWrite(char *tags, char *fields) {
+  return influx.write(INFLUX_MEASUREMENT, tags, fields);
+}
+
+/******************************************************************************
+*   W I F I   M E T H O D S
+******************************************************************************/
+
+void wifiConfigInit() {
+  pinMode(LED,OUTPUT);
+
+  WiFi.begin(WIFI_NAME, WIFI_PASS);
+  while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-
-  Serial.println("");
-  Serial.println("SmartConfig received.");
-
-  //Wait for WiFi to connect to AP
-  Serial.println("Waiting for WiFi");
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("WiFi Connected.");
-
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
+  Serial.println("WiFi connected!");
 }
 
 /******************************************************************************
@@ -336,7 +352,6 @@ void setup() {
   displayInit();
   sensorInit();
   bleServerInit();
-  //wifiSmartConfigInit();
   showWelcome();
   Serial.println("-->[SETUP] setup ready");
 }

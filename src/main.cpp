@@ -7,6 +7,9 @@
  * @license GPL3
  */
 
+
+ //Prueba
+
 #include <vector>
 #include <numeric>
 #include <hpma115S0.h>
@@ -88,8 +91,8 @@ unsigned int PM25promedio=0;
 
 InfluxArduino influx;
 //connection/ database stuff that needs configuring
-const char WIFI_NAME[] = "BelkinTX";
-const char WIFI_PASS[] = "aptclave436";
+const char WIFI_NAME[] = "xxxx";
+const char WIFI_PASS[] = "xxxx";
 const char INFLUX_DATABASE[] = "mydb";
 const char INFLUX_IP[] = "aireciudadano.servehttp.com";
 const char INFLUX_USER[] = ""; //username if authorization is enabled.

@@ -17,6 +17,7 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <U8g2lib.h>
+#include "WiFi.h"
 
 using namespace std;
 
@@ -294,6 +295,36 @@ void bleLoop(){
   }
 }
 
+void wifiSmartConfigInit() {
+  //Init WiFi as Station, start SmartConfig
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.beginSmartConfig();
+
+  //Wait for SmartConfig packet from mobile
+  Serial.println("Waiting for SmartConfig.");
+  while (!WiFi.smartConfigDone())
+  {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("SmartConfig received.");
+
+  //Wait for WiFi to connect to AP
+  Serial.println("Waiting for WiFi");
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("WiFi Connected.");
+
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+}
+
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
@@ -305,6 +336,7 @@ void setup() {
   displayInit();
   sensorInit();
   bleServerInit();
+  //wifiSmartConfigInit();
   showWelcome();
   Serial.println("-->[SETUP] setup ready");
 }

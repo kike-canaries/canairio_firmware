@@ -9,6 +9,7 @@
 
 #include <Arduino.h>
 #include <InfluxArduino.hpp>
+#include <ArduinoJson.h>
 #include <vector>
 #include <numeric>
 #include <hpma115S0.h>
@@ -62,12 +63,14 @@ BLEServer* pServer = NULL;
 BLECharacteristic* pCharactPM25 = NULL;
 BLECharacteristic* pCharactPM10 = NULL;
 BLECharacteristic* pCharactConfig = NULL;
+BLECharacteristic* pCharactAuth = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 #define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
 #define CHARAC_PM25_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
 #define CHARAC_PM10_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
 #define CHARAC_CONFIG_UUID  "b0f332a8-a5aa-4f3f-bb43-f99e7791ae03"
+#define CHARAC_AUTH_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae04"
 
 // InfluxDB variables:
 InfluxArduino influx;
@@ -277,15 +280,19 @@ void bleServerInit(){
   BLEService *pService = pServer->createService(SERVICE_UUID);
   // Create a BLE Characteristic for PM 2.5
   pCharactPM25 = pService->createCharacteristic(
-                      CHARAC_PM25_UUID,
-                      BLECharacteristic::PROPERTY_READ   |
-                      BLECharacteristic::PROPERTY_NOTIFY
-                    );
+      CHARAC_PM25_UUID,
+      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY
+  );
+  // Create a BLE Characteristic for Sensor mode: STATIC/MOVIL
   pCharactConfig = pService->createCharacteristic(
-                      CHARAC_CONFIG_UUID,
-                      BLECharacteristic::PROPERTY_READ   |
-                      BLECharacteristic::PROPERTY_WRITE
-                    );
+      CHARAC_CONFIG_UUID,
+      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
+  );
+  // Create a BLE Characteristic for Chredentials
+  pCharactAuth = pService->createCharacteristic(
+      CHARAC_AUTH_UUID,
+      BLECharacteristic::PROPERTY_WRITE_NR
+  );
   // Create a BLE Descriptor
   pCharactPM25->addDescriptor(new BLE2902());
   // Start the service
@@ -361,6 +368,19 @@ void setup() {
   bleServerInit();
   showWelcome();
   Serial.println("-->[SETUP] setup ready");
+
+  StaticJsonBuffer<200> jsonBuffer;
+
+  JsonObject &root = jsonBuffer.createObject();
+  root["sensor"] = "gps";
+  root["time"] = 1351824120;
+
+  JsonArray &data = root.createNestedArray("data");
+  data.add(48.756080);
+  data.add(2.302038);
+  String output;
+  root.printTo(output);
+  pCharactConfig->setValue(output.c_str());
 }
 
 void loop() {

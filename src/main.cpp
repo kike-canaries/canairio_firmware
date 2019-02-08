@@ -61,15 +61,13 @@ unsigned int pm2_5, pm10, mcount, ecount = 0;
 
 // Bluetooth variables
 BLEServer* pServer = NULL;
-BLECharacteristic* pCharactPM25 = NULL;
-BLECharacteristic* pCharactPM10 = NULL;
+BLECharacteristic* pCharactData = NULL;
 BLECharacteristic* pCharactConfig = NULL;
 BLECharacteristic* pCharactAuth = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 #define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
-#define CHARAC_PM25_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
-#define CHARAC_PM10_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
+#define CHARAC_DATA_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
 #define CHARAC_CONFIG_UUID  "b0f332a8-a5aa-4f3f-bb43-f99e7791ae03"
 #define CHARAC_AUTH_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae04"
 
@@ -240,7 +238,7 @@ void hpmaSerialRead(){
   else wrongDataState();
 }
 
-String sensorGetRead25Avarage(){
+String sensorGetDataAvarage(){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
   int pm25_avarage = accumulate( v25.begin(), v25.end(), 0.0)/v25.size();
@@ -289,8 +287,8 @@ void bleServerInit(){
   // Create the BLE Service
   BLEService *pService = pServer->createService(SERVICE_UUID);
   // Create a BLE Characteristic for PM 2.5
-  pCharactPM25 = pService->createCharacteristic(
-      CHARAC_PM25_UUID,
+  pCharactData = pService->createCharacteristic(
+      CHARAC_DATA_UUID,
       BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY
   );
   // Create a BLE Characteristic for Sensor mode: STATIC/MOVIL
@@ -304,7 +302,7 @@ void bleServerInit(){
       BLECharacteristic::PROPERTY_WRITE_NR
   );
   // Create a BLE Descriptor
-  pCharactPM25->addDescriptor(new BLE2902());
+  pCharactData->addDescriptor(new BLE2902());
   // Start the service
   pService->start();
   // Start advertising
@@ -315,8 +313,8 @@ void bleServerInit(){
 void bleLoop(){
   // notify changed value
   if (deviceConnected && v25.size() > 4) {  // ~5 sec aprox
-    pCharactPM25->setValue(sensorGetRead25Avarage().c_str());
-    pCharactPM25->notify();
+    pCharactData->setValue(sensorGetDataAvarage().c_str());
+    pCharactData->notify();
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {

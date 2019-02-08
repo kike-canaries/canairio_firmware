@@ -61,11 +61,13 @@ unsigned int pm2_5, pm10, mcount, ecount = 0;
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharactPM25 = NULL;
 BLECharacteristic* pCharactPM10 = NULL;
+BLECharacteristic* pCharactConfig = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 #define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
 #define CHARAC_PM25_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
 #define CHARAC_PM10_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
+#define CHARAC_CONFIG_UUID  "b0f332a8-a5aa-4f3f-bb43-f99e7791ae03"
 
 // InfluxDB variables:
 InfluxArduino influx;
@@ -278,6 +280,11 @@ void bleServerInit(){
                       CHARAC_PM25_UUID,
                       BLECharacteristic::PROPERTY_READ   |
                       BLECharacteristic::PROPERTY_NOTIFY
+                    );
+  pCharactConfig = pService->createCharacteristic(
+                      CHARAC_CONFIG_UUID,
+                      BLECharacteristic::PROPERTY_READ   |
+                      BLECharacteristic::PROPERTY_WRITE
                     );
   // Create a BLE Descriptor
   pCharactPM25->addDescriptor(new BLE2902());

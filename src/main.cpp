@@ -55,7 +55,8 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 String txtMsg = "";
-vector<int> v;      // for avarage
+vector<int> v25;      // for avarage
+vector<int> v10;      // for avarage
 unsigned int pm2_5, pm10, mcount, ecount = 0;
 
 // Bluetooth variables
@@ -222,7 +223,8 @@ void hpmaSerialRead(){
       txtMsg="";
       if(pm2_5<1000&&pm10<1000){
         char output[22];
-        v.push_back(pm2_5); // for avarage
+        v25.push_back(pm2_5); // for PM25 avarage
+        v10.push_back(pm10);
 #ifdef D1MINI
         sprintf(output,"%04d P:%03d",mcount,pm2_5);
 #else
@@ -239,12 +241,20 @@ void hpmaSerialRead(){
 }
 
 String sensorGetRead25Avarage(){
-  int pm2_5_avarage = accumulate( v.begin(), v.end(), 0.0)/v.size();
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject &root = jsonBuffer.createObject();
+  int pm25_avarage = accumulate( v25.begin(), v25.end(), 0.0)/v25.size();
+  int pm10_avarage = accumulate( v10.begin(), v10.end(), 0.0)/v10.size();
+  v25.clear();
+  v10.clear();
   char output[4];
-  sprintf(output,"%03d",pm2_5_avarage);
+  sprintf(output,"%03d",pm25_avarage);
   displayLastPM25(output);
-  v.clear();
-  return String("{")+"\"P25\":"+String(pm2_5_avarage)+"}"; // max supported 20 chars
+  root["P25"] = pm25_avarage;
+  root["P10"] = pm10_avarage;
+  String json;
+  root.printTo(json);
+  return json;
 }
 
 void resetVars(){
@@ -304,7 +314,7 @@ void bleServerInit(){
 
 void bleLoop(){
   // notify changed value
-  if (deviceConnected && v.size() > 4) {  // ~5 sec aprox
+  if (deviceConnected && v25.size() > 4) {  // ~5 sec aprox
     pCharactPM25->setValue(sensorGetRead25Avarage().c_str());
     pCharactPM25->notify();
   }

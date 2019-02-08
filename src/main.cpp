@@ -278,6 +278,36 @@ class MyServerCallbacks: public BLEServerCallbacks {
     };
 }; // BLEServerCallbacks
 
+class MyConfigCallbacks: public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string value = pCharacteristic->getValue();
+      if (value.length() > 0) {
+        Serial.print("-->[BLE CONFIG] ");
+        Serial.println(value.c_str());
+      }
+    }
+};
+
+class MyAuthCallbacks: public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string value = pCharacteristic->getValue();
+      if (value.length() > 0) {
+        Serial.print("-->[BLE AUTH] ");
+        Serial.println(value.c_str());
+      }
+    }
+};
+
+String getConfigData(){
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject &root = jsonBuffer.createObject();
+  root["mode"]      = 0;
+  root["stime"]     = 5;
+  String output;
+  root.printTo(output);
+  return output;
+}
+
 void bleServerInit(){
   // Create the BLE Device
   BLEDevice::init("ESP32_HPMA115S0");
@@ -301,13 +331,19 @@ void bleServerInit(){
       CHARAC_AUTH_UUID,
       BLECharacteristic::PROPERTY_WRITE_NR
   );
-  // Create a BLE Descriptor
+  // Create a Data Descriptor (for notifications)
   pCharactData->addDescriptor(new BLE2902());
+  // Setting Config callback
+  pCharactConfig->setCallbacks(new MyConfigCallbacks());
+  // Getting saved config data
+  pCharactConfig->setValue(getConfigData().c_str());
+  // Setting Auth callback
+  pCharactAuth->setCallbacks(new MyAuthCallbacks());
   // Start the service
   pService->start();
   // Start advertising
   pServer->getAdvertising()->start();
-  Serial.println("-->[BLE] GATT server ready. (Waiting a client to notify)");
+  Serial.println("-->[BLE] GATT server ready. (Waiting for client)");
 }
 
 void bleLoop(){
@@ -376,19 +412,6 @@ void setup() {
   bleServerInit();
   showWelcome();
   Serial.println("-->[SETUP] setup ready");
-
-  StaticJsonBuffer<200> jsonBuffer;
-
-  JsonObject &root = jsonBuffer.createObject();
-  root["sensor"] = "gps";
-  root["time"] = 1351824120;
-
-  JsonArray &data = root.createNestedArray("data");
-  data.add(48.756080);
-  data.add(2.302038);
-  String output;
-  root.printTo(output);
-  pCharactConfig->setValue(output.c_str());
 }
 
 void loop() {

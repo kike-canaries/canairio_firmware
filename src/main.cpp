@@ -55,8 +55,8 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 String txtMsg = "";
-vector<int> v25;      // for avarage
-vector<int> v10;      // for avarage
+vector<unsigned int> v25;      // for avarage
+vector<unsigned int> v10;      // for avarage
 unsigned int mcount, ecount = 0;
 int interval = 5000;
 
@@ -165,12 +165,24 @@ void displayAvarage(int avarage){
   displayCenterBig(output);
 }
 
+void displaySensorData(int pm25, int pm10){
+  char output[22];
+#ifdef D1MINI
+  sprintf(output, "%04d P:%03d", mcount, pm25);
+#else
+  sprintf(output, "%04d P25:%03d P10:%03d", mcount, pm25, pm10);
+#endif
+  Serial.println(" --> " + String(output) + " E:" + String(ecount));
+  displayBottomLine(String(output));
+}
+
 /******************************************************************************
 *   S E N S O R  M E T H O D S
 ******************************************************************************/
-
-// [DEPRECATED] sensorConfig:
-// The next method is only if sensor was config without autosend.
+/**
+ * [DEPRECATED] sensorConfig:
+ * The next method is only if sensor was config without autosend
+ */
 
 void sensorConfig(){
   Serial.println("-->[HPMA] configuration hpma115S0 sensor..");
@@ -206,6 +218,27 @@ void wrongDataState(){
 }
 
 /**
+ * Avarage methods
+ */
+
+void saveDataForAvarage(unsigned int pm25, unsigned int pm10){
+  v25.push_back(pm25);
+  v10.push_back(pm10);
+}
+
+unsigned int getPM25Avarage(){
+  unsigned int pm25_avarage = accumulate( v25.begin(), v25.end(), 0.0)/v25.size();
+  v25.clear();
+  return pm25_avarage; 
+}
+
+unsigned int getPM10Avarage(){
+  unsigned int pm10_avarage = accumulate( v10.begin(), v10.end(), 0.0)/v10.size();
+  v10.clear();
+  return pm10_avarage; 
+}
+
+/**
 * PM2.5 and PM10 read and visualization
 */
 
@@ -227,16 +260,8 @@ void hpmaSerialRead(){
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       txtMsg="";
       if(pm25<1000&&pm10<1000){
-        char output[22];
-        v25.push_back(pm25); // for PM25 avarage
-        v10.push_back(pm10);
-#ifdef D1MINI
-        sprintf(output,"%04d P:%03d",mcount,pm25);
-#else
-        sprintf(output,"%04d P25:%03d P10:%03d",mcount,pm25,pm10);
-#endif
-        Serial.println(" --> "+String(output)+" E:"+String(ecount));
-        displayBottomLine(String(output));
+        displaySensorData(pm25,pm10);
+        saveDataForAvarage(pm25,pm10);
       }
       else wrongDataState();
     }
@@ -245,19 +270,7 @@ void hpmaSerialRead(){
   else wrongDataState();
 }
 
-int getPM25Avarage(){
-  int pm25_avarage = accumulate( v25.begin(), v25.end(), 0.0)/v25.size();
-  v25.clear();
-  return pm25_avarage; 
-}
-
-int getPM10Avarage(){
-  int pm10_avarage = accumulate( v10.begin(), v10.end(), 0.0)/v10.size();
-  v10.clear();
-  return pm10_avarage; 
-}
-
-String getFormatData(int pm25, int pm10){
+String getFormatData(unsigned int pm25, unsigned int pm10){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
   root["P25"] = pm25;
@@ -363,8 +376,8 @@ void bleServerInit(){
 void bleLoop(){
   // notify changed value
   if (deviceConnected && v25.size() > 4) {  // ~5 sec aprox
-    int pm25 = getPM25Avarage();
-    int pm10 = getPM10Avarage();
+    unsigned int pm25 = getPM25Avarage();
+    unsigned int pm10 = getPM10Avarage();
     pCharactData->setValue(getFormatData(pm25,pm10).c_str());
     pCharactData->notify();
     displayAvarage(pm25);

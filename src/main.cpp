@@ -57,7 +57,8 @@ HPMA115S0 hpma115S0(hpmaSerial);
 String txtMsg = "";
 vector<int> v25;      // for avarage
 vector<int> v10;      // for avarage
-unsigned int pm2_5, pm10, mcount, ecount = 0;
+unsigned int mcount, ecount = 0;
+int interval = 5000;
 
 // Bluetooth variables
 BLEServer* pServer = NULL;
@@ -120,7 +121,7 @@ void showWelcome(){
   delay(1000);
 }
 
-void displaySensorData(String msg){
+void displayBottomLine(String msg){
 #ifndef D1MINI
   u8g2.setCursor(0, 16);
   u8g2.print(msg.c_str());
@@ -132,7 +133,7 @@ void displaySensorData(String msg){
 #endif
 }
 
-void displayLastPM25(String msg){
+void displayCenterBig(String msg){
 #ifdef D1MINI
   u8g2.setCursor(0,0);
   u8g2.setFont(u8g2_font_inb27_mn);
@@ -156,6 +157,12 @@ void displaySensorError(String msg){
   u8g2.print(msg.c_str());
   u8g2.sendBuffer();
 #endif
+}
+
+void displayAvarage(int avarage){
+  char output[4];
+  sprintf(output, "%03d", avarage);
+  displayCenterBig(output);
 }
 
 /******************************************************************************
@@ -216,20 +223,20 @@ void hpmaSerialRead(){
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
       Serial.print("done");
-      pm2_5 = txtMsg[6] * 256 + byte(txtMsg[7]);
-      pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
+      unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
+      unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       txtMsg="";
-      if(pm2_5<1000&&pm10<1000){
+      if(pm25<1000&&pm10<1000){
         char output[22];
-        v25.push_back(pm2_5); // for PM25 avarage
+        v25.push_back(pm25); // for PM25 avarage
         v10.push_back(pm10);
 #ifdef D1MINI
-        sprintf(output,"%04d P:%03d",mcount,pm2_5);
+        sprintf(output,"%04d P:%03d",mcount,pm25);
 #else
-        sprintf(output,"%04d P25:%03d P10:%03d",mcount,pm2_5,pm10);
+        sprintf(output,"%04d P25:%03d P10:%03d",mcount,pm25,pm10);
 #endif
         Serial.println(" --> "+String(output)+" E:"+String(ecount));
-        displaySensorData(String(output));
+        displayBottomLine(String(output));
       }
       else wrongDataState();
     }
@@ -238,29 +245,46 @@ void hpmaSerialRead(){
   else wrongDataState();
 }
 
-String sensorGetDataAvarage(){
+int getPM25Avarage(){
+  int pm25_avarage = accumulate( v25.begin(), v25.end(), 0.0)/v25.size();
+  v25.clear();
+  return pm25_avarage; 
+}
+
+int getPM10Avarage(){
+  int pm10_avarage = accumulate( v10.begin(), v10.end(), 0.0)/v10.size();
+  v10.clear();
+  return pm10_avarage; 
+}
+
+String getFormatData(int pm25, int pm10){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
-  int pm25_avarage = accumulate( v25.begin(), v25.end(), 0.0)/v25.size();
-  int pm10_avarage = accumulate( v10.begin(), v10.end(), 0.0)/v10.size();
-  v25.clear();
-  v10.clear();
-  char output[4];
-  sprintf(output,"%03d",pm25_avarage);
-  displayLastPM25(output);
-  root["P25"] = pm25_avarage;
-  root["P10"] = pm10_avarage;
+  root["P25"] = pm25;
+  root["P10"] = pm10;
   String json;
   root.printTo(json);
   return json;
 }
 
-void resetVars(){
-  mcount=0;
+void hpmaSerialLoop(){
+  delay(1000);
+  hpmaSerialRead();
 }
 
-void hpmaSerialLoop(){
-  if(deviceConnected)hpmaSerialRead();
+/******************************************************************************
+*   C O N F I G  M E T H O D S
+******************************************************************************/
+
+String getConfigData(){
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject &root = jsonBuffer.createObject();
+  root["mode"]      = 0;
+  root["stime"]     = 5;
+  interval = 5*1000;  // Mockup for now
+  String output;
+  root.printTo(output);
+  return output;
 }
 
 /******************************************************************************
@@ -297,16 +321,6 @@ class MyAuthCallbacks: public BLECharacteristicCallbacks {
       }
     }
 };
-
-String getConfigData(){
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject &root = jsonBuffer.createObject();
-  root["mode"]      = 0;
-  root["stime"]     = 5;
-  String output;
-  root.printTo(output);
-  return output;
-}
 
 void bleServerInit(){
   // Create the BLE Device
@@ -349,8 +363,15 @@ void bleServerInit(){
 void bleLoop(){
   // notify changed value
   if (deviceConnected && v25.size() > 4) {  // ~5 sec aprox
-    pCharactData->setValue(sensorGetDataAvarage().c_str());
+    int pm25 = getPM25Avarage();
+    int pm10 = getPM10Avarage();
+    pCharactData->setValue(getFormatData(pm25,pm10).c_str());
     pCharactData->notify();
+    displayAvarage(pm25);
+  }
+  else if (v25.size() > 4) {
+    displayAvarage(getPM25Avarage());
+    getPM10Avarage(); // clear vector (possible overflow)
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {
@@ -358,8 +379,6 @@ void bleLoop(){
     pServer->startAdvertising(); // restart advertising
     Serial.println("-->[BLE] start advertising");
     oldDeviceConnected = deviceConnected;
-    showWelcome();
-    resetVars();
   }
   // connecting
   if (deviceConnected && !oldDeviceConnected) {

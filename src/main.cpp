@@ -144,7 +144,10 @@ void displayCenterBig(String msg){
   u8g2.print(msg.c_str());
 }
 
-void displaySensorError(String msg){
+void displaySensorError(){
+  char output[22];
+  if(ecount>999)ecount=0;
+  sprintf(output,"%04d E:%03d",mcount,ecount++);
   u8g2.setFont(u8g2_font_6x10_tf);
 #ifdef D1MINI
   u8g2.setCursor(0, 40);
@@ -203,10 +206,7 @@ void sensorInit(){
 
 void wrongDataState(){
   Serial.println("wrong data!");
-  char output[22];
-  if(ecount>999)ecount=0;
-  sprintf(output,"%04d E:%03d",mcount,ecount++);
-  displaySensorError(output);
+  displaySensorError();
   txtMsg="";
   hpmaSerial.end();
   sensorInit();

@@ -57,6 +57,8 @@ HPMA115S0 hpma115S0(hpmaSerial);
 String txtMsg = "";
 vector<unsigned int> v25;      // for avarage
 vector<unsigned int> v10;      // for avarage
+unsigned int apm25 = 0;
+unsigned int apm10 = 0;
 unsigned int mcount, ecount = 0;
 int interval = 5000;
 
@@ -93,7 +95,6 @@ unsigned long countINF = 0; //a variable that we gradually increase in the loop
 void displayInit(){
   Serial.println("-->[OLED] setup display..");
   u8g2.begin();
-  u8g2.clearBuffer();
   u8g2.setFont(u8g2_font_6x10_tf);
   u8g2.setContrast(255);
   u8g2.setFontRefHeightExtendedText();
@@ -105,7 +106,6 @@ void displayInit(){
 }
 
 void showWelcome(){
-  u8g2.clearBuffer();
 #ifdef D1MINI
   u8g2.drawStr(0, 0, "CanAirIO");
   String version = "("+String(VERSION_CODE+VCODE)+")";
@@ -116,20 +116,18 @@ void showWelcome(){
   u8g2.drawStr(0, 0,version.c_str());
   u8g2.drawLine(0, 11, 128, 11);
 #endif
-  u8g2.sendBuffer();
   Serial.println("-->[OLED] welcome screen ready\n");
   delay(1000);
 }
 
 void displayBottomLine(String msg){
-#ifndef D1MINI
-  u8g2.setCursor(0, 16);
-  u8g2.print(msg.c_str());
-  u8g2.sendBuffer();
-#else
+  u8g2.setFont(u8g2_font_6x10_tf);
+#ifdef D1MINI
   u8g2.setCursor(0, 40);
   u8g2.print(msg.c_str());
-  u8g2.sendBuffer();
+#else
+  u8g2.setCursor(0, 16);
+  u8g2.print(msg.c_str());
 #endif
 }
 
@@ -142,24 +140,20 @@ void displayCenterBig(String msg){
   u8g2.setFont(u8g2_font_freedoomr25_mn);
 #endif
   u8g2.print(msg.c_str());
-  u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.sendBuffer();
 }
 
 void displaySensorError(String msg){
-  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_6x10_tf);
 #ifdef D1MINI
   u8g2.setCursor(0, 40);
   u8g2.print(msg.c_str());
-  u8g2.sendBuffer();
 #else
   u8g2.setCursor(0, 32);
   u8g2.print(msg.c_str());
-  u8g2.sendBuffer();
 #endif
 }
 
-void displayAvarage(int avarage){
+void displaySensorAvarage(int avarage){
   char output[4];
   sprintf(output, "%03d", avarage);
   displayCenterBig(output);
@@ -238,11 +232,18 @@ unsigned int getPM10Avarage(){
   return pm10_avarage; 
 }
 
-/**
-* PM2.5 and PM10 read and visualization
-*/
+void avarageLoop(){
+  if (v25.size() > 4){
+    apm25 = getPM25Avarage();  // global var for display
+    apm10 = getPM10Avarage();
+  }
+}
 
-void hpmaSerialRead(){
+/***
+ * PM2.5 and PM10 read and visualization
+ ***/
+
+void sensorLoop(){
   Serial.print("-->[HPMA] read.");
   while (txtMsg.length() < 32) {
     while (hpmaSerial.available() > 0) {
@@ -260,6 +261,7 @@ void hpmaSerialRead(){
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       txtMsg="";
       if(pm25<1000&&pm10<1000){
+        displaySensorAvarage(apm25);  // it was calculated on bleLoop()
         displaySensorData(pm25,pm10);
         saveDataForAvarage(pm25,pm10);
       }
@@ -278,11 +280,6 @@ String getFormatData(unsigned int pm25, unsigned int pm10){
   String json;
   root.printTo(json);
   return json;
-}
-
-void hpmaSerialLoop(){
-  delay(1000);
-  hpmaSerialRead();
 }
 
 /******************************************************************************
@@ -375,16 +372,10 @@ void bleServerInit(){
 
 void bleLoop(){
   // notify changed value
-  if (deviceConnected && v25.size() > 4) {  // ~5 sec aprox
-    unsigned int pm25 = getPM25Avarage();
-    unsigned int pm10 = getPM10Avarage();
-    pCharactData->setValue(getFormatData(pm25,pm10).c_str());
+  if (deviceConnected && v25.size()==0) {  // each ~5 sec aprox
+    Serial.println("-->[BLE] sending notification..");
+    pCharactData->setValue(getFormatData(apm25,apm10).c_str());
     pCharactData->notify();
-    displayAvarage(pm25);
-  }
-  else if (v25.size() > 4) {
-    displayAvarage(getPM25Avarage());
-    getPM10Avarage(); // clear vector (possible overflow)
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {
@@ -447,6 +438,11 @@ void setup() {
 }
 
 void loop() {
-  hpmaSerialLoop();
-  bleLoop();
+  u8g2.firstPage();
+  do {
+    sensorLoop();
+    avarageLoop();
+    bleLoop();
+  } while (u8g2.nextPage());
+  delay(1000);
 }

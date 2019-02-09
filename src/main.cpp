@@ -106,6 +106,7 @@ void displayInit(){
 }
 
 void showWelcome(){
+  u8g2.firstPage();  // only for first screen
 #ifdef D1MINI
   u8g2.drawStr(0, 0, "CanAirIO");
   String version = "("+String(VERSION_CODE+VCODE)+")";
@@ -116,8 +117,9 @@ void showWelcome(){
   u8g2.drawStr(0, 0,version.c_str());
   u8g2.drawLine(0, 11, 128, 11);
 #endif
+  // only for first screen
   Serial.println("-->[OLED] welcome screen ready\n");
-  delay(1000);
+  u8g2.nextPage();
 }
 
 void displayBottomLine(String msg){
@@ -431,10 +433,11 @@ void setup() {
   Serial.println("\n== INIT SETUP ==\n");
   Serial.println("-->[SETUP] console ready");
   displayInit();
+  showWelcome();
   sensorInit();
   bleServerInit();
-  showWelcome();
   Serial.println("-->[SETUP] setup ready");
+  delay(1000);
 }
 
 void loop() {

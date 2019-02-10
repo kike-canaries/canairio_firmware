@@ -182,6 +182,11 @@ void sensorLoop(){
   else wrongDataState();
 }
 
+void statusLoop(){
+  gui.displayStatus(false,true,deviceConnected,toggle);
+  if(toggle)toggle=!toggle;
+}
+
 String getFormatData(unsigned int pm25, unsigned int pm10){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
@@ -352,10 +357,10 @@ void setup() {
 
 void loop(){
   gui.pageStart();
-  sensorLoop();
-  avarageLoop();
-  bleLoop();
-  gui.displayStatus(false,true,deviceConnected,toggle);
+  sensorLoop();    // read HPMA serial data and showed it
+  avarageLoop();   // calculated of sensor data avarage
+  bleLoop();       // notify data to connected devices
+  statusLoop();    // update sensor status GUI
   gui.pageEnd();
   delay(1000);
 }

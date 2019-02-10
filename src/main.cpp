@@ -56,6 +56,7 @@ vector<unsigned int> v10;      // for avarage
 unsigned int apm25 = 0;
 unsigned int apm10 = 0;
 int interval = 5000;
+bool toggle;
 
 // Bluetooth fields
 BLEServer* pServer = NULL;
@@ -115,7 +116,7 @@ void sensorInit(){
 
 void wrongDataState(){
   Serial.println("wrong data!");
-  gui.displaySensorError();
+  gui.updateError();
   txtMsg="";
   hpmaSerial.end();
   sensorInit();
@@ -285,6 +286,7 @@ void bleLoop(){
     Serial.println("-->[BLE] sending notification..");
     pCharactData->setValue(getFormatData(apm25,apm10).c_str());
     pCharactData->notify();
+    toggle=!toggle;
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {
@@ -292,6 +294,7 @@ void bleLoop(){
     pServer->startAdvertising(); // restart advertising
     Serial.println("-->[BLE] start advertising");
     oldDeviceConnected = deviceConnected;
+    toggle=false;
   }
   // connecting
   if (deviceConnected && !oldDeviceConnected) {
@@ -348,12 +351,11 @@ void setup() {
 }
 
 void loop(){
-
   gui.pageStart();
   sensorLoop();
   avarageLoop();
   bleLoop();
+  gui.displayStatus(false,true,deviceConnected,toggle);
   gui.pageEnd();
-
   delay(1000);
 }

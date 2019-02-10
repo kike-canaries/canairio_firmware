@@ -33,11 +33,13 @@ public:
 
   void displayEndLine(String msg);
 
-  void displaySensorError();
+  void displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn);
 
   void displaySensorAvarage(int avarage);
 
   void displaySensorData(int pm25, int pm10);
+
+  void updateError();
 
   void pageStart();
 

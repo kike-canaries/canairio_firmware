@@ -329,14 +329,12 @@ bool influxDbWrite(char *tags, char *fields) {
 ******************************************************************************/
 
 void wifiConfigInit() {
-  pinMode(LED,OUTPUT);
-
   WiFi.begin(WIFI_NAME, WIFI_PASS);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-  Serial.println("WiFi connected!");
+  Serial.println("--[SETUP] WiFi connected!");
 }
 
 /******************************************************************************
@@ -346,12 +344,13 @@ void wifiConfigInit() {
 void setup() {
   Serial.begin(115200);
   Serial.println("\n== INIT SETUP ==\n");
-  Serial.println("-->[SETUP] console ready");
+  Serial.println("-->[SETUP] serial ready.");
   gui.displayInit(u8g2);
   gui.showWelcome();
   sensorInit();
   bleServerInit();
-  Serial.println("-->[SETUP] setup ready");
+  pinMode(LED,OUTPUT);
+  Serial.println("-->[SETUP] setup ready.\n");
   delay(1000);
 }
 

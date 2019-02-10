@@ -151,10 +151,10 @@ void displaySensorError(){
   u8g2.setFont(u8g2_font_6x10_tf);
 #ifdef D1MINI
   u8g2.setCursor(0, 40);
-  u8g2.print(msg.c_str());
+  u8g2.print(output);
 #else
   u8g2.setCursor(0, 32);
-  u8g2.print(msg.c_str());
+  u8g2.print(output);
 #endif
 }
 

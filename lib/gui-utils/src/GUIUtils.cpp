@@ -1,5 +1,5 @@
 #include "GUIUtils.hpp"
-
+#include "GUIIcons.h"
 /******************************************************************************
 *   D I S P L A Y  M E T H O D S
 ******************************************************************************/
@@ -23,7 +23,7 @@ void GUIUtils::showWelcome(){
   u8g2.drawStr(0, 0, "CanAirIO");
   String version = "("+String(VERSION_CODE+VCODE)+")";
   u8g2.drawStr(0, 11,version.c_str());
-  u8g2.drawLine(0, 22, 128, 22);
+  u8g2.drawLine(0, 22, 63, 22);
 #else
   String version = "CanAirIO ("+String(VERSION_CODE+VCODE)+")";
   u8g2.drawStr(0, 0,version.c_str());
@@ -48,7 +48,7 @@ void GUIUtils::displayCenterBig(String msg){
 void GUIUtils::displayBottomLine(String msg){
   u8g2.setFont(u8g2_font_4x6_tf);
 #ifdef D1MINI
-  u8g2.setCursor(0, 27);
+  u8g2.setCursor(0, 29);
   u8g2.print(msg.c_str());
 #else
   u8g2.setCursor(0, 16);
@@ -57,21 +57,14 @@ void GUIUtils::displayBottomLine(String msg){
 }
 
 void GUIUtils::displayEndLine(String msg){
-  u8g2.setFont(u8g2_font_4x6_tf);
+  u8g2.setFont(u8g2_font_5x7_tf);
 #ifdef D1MINI
-  u8g2.setCursor(0, 33);
+  u8g2.setCursor(0, 41);
   u8g2.print(msg.c_str());
 #else
   u8g2.setCursor(0, 16);
   u8g2.print(msg.c_str());
 #endif
-}
-
-void GUIUtils::displaySensorError(){
-  char output[22];
-  if(ecount==99)ecount=0;
-  sprintf(output,"%04d E:%03d",mcount,ecount++);
-  displayEndLine(String(output));
 }
 
 void GUIUtils::displaySensorAvarage(int avarage){
@@ -81,15 +74,36 @@ void GUIUtils::displaySensorAvarage(int avarage){
 }
 
 void GUIUtils::displaySensorData(int pm25, int pm10){
-  char output[22];
-  if(mcount<9999)mcount++;
+  if(mcount<65535)mcount++;
   else mcount=0;
 #ifdef D1MINI
-  sprintf(output, "%03d %03d %02d %04d", pm25, pm10, ecount, mcount);
+  char output[22];
+  sprintf(output, "%03d E%02d [S%05d]" , pm10, ecount, mcount);
 #else
   sprintf(output, "%04d P25:%03d P10:%03d", mcount, pm25, pm10);
 #endif
   displayBottomLine(String(output));
+  sprintf(output, "P%03d" , pm25);
+  displayEndLine(String(output));
+}
+
+void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn){
+
+  if(bleOn) u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_on);
+
+  if(blePair) u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_pair);
+
+  if(dataOn) u8g2.drawBitmap(44, 40, 1, 8, ic_data_on);
+  
+  if(wifiOn) u8g2.drawBitmap(34, 40, 1, 8, ic_wifi_on);
+
+  u8g2.drawLine(0, 38, 63, 38);
+
+}
+
+void GUIUtils::updateError(){
+  ecount++;
+  if(ecount>99)ecount=0;
 }
 
 void GUIUtils::pageStart(){

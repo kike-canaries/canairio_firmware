@@ -22,12 +22,19 @@
 
 using namespace std;
 
-
 /******************************************************************************
 * S E T U P  B O A R D
 * ---------------------
 * please select board on platformio.ini file
 ******************************************************************************/
+
+#ifdef WEMOSOLED // display via i2c for WeMOS OLED board
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+#elif HELTEC // display via i2c for Heltec board
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
+#else       // display via i2c for D1MINI board
+U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
+#endif
 
 // HPMA115S0 sensor config
 #ifdef WEMOSOLED
@@ -40,6 +47,7 @@ using namespace std;
 #define HPMA_RX 17  // config for D1MIN1 board
 #define HPMA_TX 16
 #endif
+
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 String txtMsg = "";
@@ -49,7 +57,7 @@ unsigned int apm25 = 0;
 unsigned int apm10 = 0;
 int interval = 5000;
 
-// Bluetooth variables
+// Bluetooth fields
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharactData = NULL;
 BLECharacteristic* pCharactConfig = NULL;
@@ -61,7 +69,7 @@ bool oldDeviceConnected = false;
 #define CHARAC_CONFIG_UUID  "b0f332a8-a5aa-4f3f-bb43-f99e7791ae03"
 #define CHARAC_AUTH_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae04"
 
-// InfluxDB variables:
+// InfluxDB fields
 InfluxArduino influx;
 // connection database stuff that needs configuring
 const char WIFI_NAME[] = "xxxx";
@@ -72,18 +80,9 @@ const char INFLUX_USER[] = ""; //username if authorization is enabled.
 const char INFLUX_PASS[] = ""; //password for if authorization is enabled.
 const char INFLUX_MEASUREMENT[] = "PM2.5_EST6_noHum_524";
 
+// GUI fields
 #define LED 2
-
-
-#ifdef WEMOSOLED // display via i2c for WeMOS OLED board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
-#elif HELTEC // display via i2c for Heltec board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
-#else       // display via i2c for D1MINI board
-U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
-#endif
-
-GUIUtils gui (u8g2);
+GUIUtils gui;
 
 /******************************************************************************
 *   S E N S O R  M E T H O D S
@@ -340,7 +339,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println("\n== INIT SETUP ==\n");
   Serial.println("-->[SETUP] console ready");
-  gui.displayInit();
+  gui.displayInit(u8g2);
   gui.showWelcome();
   sensorInit();
   bleServerInit();
@@ -349,10 +348,12 @@ void setup() {
 }
 
 void loop(){
+
   gui.pageStart();
   sensorLoop();
   avarageLoop();
   bleLoop();
   gui.pageEnd();
+
   delay(1000);
 }

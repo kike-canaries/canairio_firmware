@@ -17,30 +17,18 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
-#include <U8g2lib.h>
+#include <GUIUtils.hpp>
 #include "WiFi.h"
 
 using namespace std;
 
-// Firmware version from git rev-list command
-String VERSION_CODE = "rev";
-#ifdef SRC_REV
-int VCODE = SRC_REV;
-#else
-int VCODE = 0;
-#endif
+
 /******************************************************************************
 * S E T U P  B O A R D
 * ---------------------
 * please select board on platformio.ini file
 ******************************************************************************/
-#ifdef WEMOSOLED // display via i2c for WeMOS OLED board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
-#elif HELTEC // display via i2c for Heltec board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
-#else       // display via i2c for D1MINI board
-U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
-#endif
+
 // HPMA115S0 sensor config
 #ifdef WEMOSOLED
 #define HPMA_RX 13   // config for Wemos board
@@ -59,7 +47,6 @@ vector<unsigned int> v25;      // for avarage
 vector<unsigned int> v10;      // for avarage
 unsigned int apm25 = 0;
 unsigned int apm10 = 0;
-unsigned int mcount, ecount = 0;
 int interval = 5000;
 
 // Bluetooth variables
@@ -85,95 +72,18 @@ const char INFLUX_USER[] = ""; //username if authorization is enabled.
 const char INFLUX_PASS[] = ""; //password for if authorization is enabled.
 const char INFLUX_MEASUREMENT[] = "PM2.5_EST6_noHum_524";
 
-unsigned long DELAY_TIME_US = 10 * 1000 * 1000; //how frequently to send data, in microseconds
-unsigned long countINF = 0; //a variable that we gradually increase in the loop
 #define LED 2
 
-/******************************************************************************
-*   D I S P L A Y  M E T H O D S
-******************************************************************************/
-void displayInit(){
-  Serial.println("-->[OLED] setup display..");
-  u8g2.begin();
-  u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.setContrast(255);
-  u8g2.setFontRefHeightExtendedText();
-  u8g2.setDrawColor(1);
-  u8g2.setFontPosTop();
-  u8g2.setFontDirection(0);
-  u8g2.setFontMode(0);
-  Serial.println("-->[OLED] display ready.");
-}
 
-void showWelcome(){
-  u8g2.firstPage();  // only for first screen
-#ifdef D1MINI
-  u8g2.drawStr(0, 0, "CanAirIO");
-  String version = "("+String(VERSION_CODE+VCODE)+")";
-  u8g2.drawStr(0, 11,version.c_str());
-  u8g2.drawLine(0, 22, 128, 22);
-#else
-  String version = "CanAirIO ("+String(VERSION_CODE+VCODE)+")";
-  u8g2.drawStr(0, 0,version.c_str());
-  u8g2.drawLine(0, 11, 128, 11);
+#ifdef WEMOSOLED // display via i2c for WeMOS OLED board
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+#elif HELTEC // display via i2c for Heltec board
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
+#else       // display via i2c for D1MINI board
+U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
 #endif
-  // only for first screen
-  Serial.println("-->[OLED] welcome screen ready\n");
-  u8g2.nextPage();
-}
 
-void displayBottomLine(String msg){
-  u8g2.setFont(u8g2_font_6x10_tf);
-#ifdef D1MINI
-  u8g2.setCursor(0, 40);
-  u8g2.print(msg.c_str());
-#else
-  u8g2.setCursor(0, 16);
-  u8g2.print(msg.c_str());
-#endif
-}
-
-void displayCenterBig(String msg){
-#ifdef D1MINI
-  u8g2.setCursor(0,0);
-  u8g2.setFont(u8g2_font_inb27_mn);
-#else
-  u8g2.setCursor(73,40);
-  u8g2.setFont(u8g2_font_freedoomr25_mn);
-#endif
-  u8g2.print(msg.c_str());
-}
-
-void displaySensorError(){
-  char output[22];
-  if(ecount>999)ecount=0;
-  sprintf(output,"%04d E:%03d",mcount,ecount++);
-  u8g2.setFont(u8g2_font_6x10_tf);
-#ifdef D1MINI
-  u8g2.setCursor(0, 40);
-  u8g2.print(output);
-#else
-  u8g2.setCursor(0, 32);
-  u8g2.print(output);
-#endif
-}
-
-void displaySensorAvarage(int avarage){
-  char output[4];
-  sprintf(output, "%03d", avarage);
-  displayCenterBig(output);
-}
-
-void displaySensorData(int pm25, int pm10){
-  char output[22];
-#ifdef D1MINI
-  sprintf(output, "%04d P:%03d", mcount, pm25);
-#else
-  sprintf(output, "%04d P25:%03d P10:%03d", mcount, pm25, pm10);
-#endif
-  Serial.println(" --> " + String(output) + " E:" + String(ecount));
-  displayBottomLine(String(output));
-}
+GUIUtils gui (u8g2);
 
 /******************************************************************************
 *   S E N S O R  M E T H O D S
@@ -206,7 +116,7 @@ void sensorInit(){
 
 void wrongDataState(){
   Serial.println("wrong data!");
-  displaySensorError();
+  gui.displaySensorError();
   txtMsg="";
   hpmaSerial.end();
   sensorInit();
@@ -254,8 +164,6 @@ void sensorLoop(){
       Serial.print(".");
     }
   }
-  if(mcount<9999)mcount++;
-  else mcount=0;
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
       Serial.print("done");
@@ -263,8 +171,8 @@ void sensorLoop(){
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       txtMsg="";
       if(pm25<1000&&pm10<1000){
-        displaySensorAvarage(apm25);  // it was calculated on bleLoop()
-        displaySensorData(pm25,pm10);
+        gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
+        gui.displaySensorData(pm25,pm10);
         saveDataForAvarage(pm25,pm10);
       }
       else wrongDataState();
@@ -432,20 +340,19 @@ void setup() {
   Serial.begin(115200);
   Serial.println("\n== INIT SETUP ==\n");
   Serial.println("-->[SETUP] console ready");
-  displayInit();
-  showWelcome();
+  gui.displayInit();
+  gui.showWelcome();
   sensorInit();
   bleServerInit();
   Serial.println("-->[SETUP] setup ready");
   delay(1000);
 }
 
-void loop() {
-  u8g2.firstPage();
-  do {
-    sensorLoop();
-    avarageLoop();
-    bleLoop();
-  } while (u8g2.nextPage());
+void loop(){
+  gui.pageStart();
+  sensorLoop();
+  avarageLoop();
+  bleLoop();
+  gui.pageEnd();
   delay(1000);
 }

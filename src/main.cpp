@@ -219,6 +219,7 @@ bool influxDbWrite() {
 }
 
 void influxLoop() {
+  wifiCheck();
   if(wifiOn&&influxDbWrite()&&v25.size()==0)Serial.println("-->[INFLUXDB] database write ready!");
 }
 
@@ -226,18 +227,26 @@ void influxLoop() {
 *   W I F I   M E T H O D S
 ******************************************************************************/
 
-void wifiConfigInit(const char* ssid, const char* pass) {
+void wifiConnect(const char* ssid, const char* pass) {
   Serial.print("-->[WIFI] Connecting to "); Serial.println(ssid);
   WiFi.begin(ssid, pass);
-  while (WiFi.status() != WL_CONNECTED) {
+  int wifi_retry = 0;
+  while (WiFi.status() != WL_CONNECTED && wifi_retry++<5) {
     delay(500);
   }
-  wifiOn=true;
-  if(WiFi.isConnected()){
+  if(wifiCheck()){
     Serial.println("-->[WIFI] connected!");
-    influxDbInit();
-  }else{
-    wifiOn=false;
+  }
+}
+
+bool wifiCheck() {
+  if (WiFi.isConnected()) {
+    wifiOn = true;
+    return true;
+  }
+  else {
+    wifiOn = false;
+    return false;
   }
 }
 
@@ -271,7 +280,11 @@ bool saveCredentials(const char* json){
   String ssid = root["ssid"] | "";
   String pass = root["pass"] | "";
 
-  wifiConfigInit(ssid.c_str(),pass.c_str());
+  wifiConnect(ssid.c_str(),pass.c_str());
+  
+  if(wifiCheck()){
+    influxDbInit();
+  }
 
   return true;
 }
@@ -405,8 +418,8 @@ void loop(){
   sensorLoop();    // read HPMA serial data and showed it
   avarageLoop();   // calculated of sensor data avarage
   bleLoop();       // notify data to connected devices
-  statusLoop();    // update sensor status GUI
   influxLoop();    // influxDB publication
+  statusLoop();    // update sensor status GUI
   gui.pageEnd();
   delay(1000);
 }

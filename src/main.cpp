@@ -248,6 +248,7 @@ bool influxDbWrite() {
 }
 
 void influxDbReconnect(){
+  wifiConnect(current_ssid.c_str(), current_pass.c_str());
   if (wifiCheck()) influxDbInit();
 }
 
@@ -259,7 +260,7 @@ void influxLoop() {
   }
   else if (wifiOn == false && current_ssid.length() != 0 && v25.size()==0){
     Serial.println("-->[E][INFLUXDB] reconnecting..");
-    WiFi.reconnect();
+    influxDbReconnect();
   }
 }
 
@@ -339,7 +340,6 @@ class MyAuthCallbacks: public BLECharacteristicCallbacks {
       if (value.length() > 0) {
         if(saveCredentials(value.c_str())){
           Serial.println("-->[AUTH] WiFi Auth config loaded!");
-          wifiConnect(current_ssid.c_str(), current_pass.c_str());
           influxDbReconnect();
         }
         else Serial.println ("-->[E][AUTH] load WiFi Auth config failed!");

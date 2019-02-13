@@ -56,7 +56,7 @@ vector<unsigned int> v10;      // for avarage
 unsigned int apm25 = 0;
 unsigned int apm10 = 0;
 int interval = 5000;
-bool toggle;
+bool dataSendToggle;
 bool wifiOn;
 
 // Bluetooth fields
@@ -182,8 +182,8 @@ void sensorLoop(){
 }
 
 void statusLoop(){
-  gui.displayStatus(wifiOn,true,deviceConnected,toggle);
-  if(toggle)toggle=!toggle;
+  gui.displayStatus(wifiOn,true,deviceConnected,dataSendToggle);
+  if(dataSendToggle)dataSendToggle=!dataSendToggle;
 }
 
 String getFormatData(unsigned int pm25, unsigned int pm10){
@@ -194,6 +194,32 @@ String getFormatData(unsigned int pm25, unsigned int pm10){
   String json;
   root.printTo(json);
   return json;
+}
+/******************************************************************************
+*   W I F I   M E T H O D S
+******************************************************************************/
+
+bool wifiCheck() {
+  if (WiFi.isConnected()) {
+    wifiOn = true;
+    return true;
+  }
+  else {
+    wifiOn = false;
+    return false;
+  }
+}
+
+void wifiConnect(const char* ssid, const char* pass) {
+  Serial.print("-->[WIFI] Connecting to "); Serial.println(ssid);
+  WiFi.begin(ssid, pass);
+  int wifi_retry = 0;
+  while (WiFi.status() != WL_CONNECTED && wifi_retry++<5) {
+    delay(500);
+  }
+  if(wifiCheck()){
+    Serial.println("-->[WIFI] connected!");
+  }
 }
 
 /******************************************************************************
@@ -220,33 +246,9 @@ bool influxDbWrite() {
 
 void influxLoop() {
   wifiCheck();
-  if(wifiOn&&influxDbWrite()&&v25.size()==0)Serial.println("-->[INFLUXDB] database write ready!");
-}
-
-/******************************************************************************
-*   W I F I   M E T H O D S
-******************************************************************************/
-
-void wifiConnect(const char* ssid, const char* pass) {
-  Serial.print("-->[WIFI] Connecting to "); Serial.println(ssid);
-  WiFi.begin(ssid, pass);
-  int wifi_retry = 0;
-  while (WiFi.status() != WL_CONNECTED && wifi_retry++<5) {
-    delay(500);
-  }
-  if(wifiCheck()){
-    Serial.println("-->[WIFI] connected!");
-  }
-}
-
-bool wifiCheck() {
-  if (WiFi.isConnected()) {
-    wifiOn = true;
-    return true;
-  }
-  else {
-    wifiOn = false;
-    return false;
+  if(wifiOn&&influxDbWrite()&&v25.size()==0){
+    dataSendToggle=!dataSendToggle;
+    Serial.println("-->[INFLUXDB] database write ready!");
   }
 }
 
@@ -379,7 +381,7 @@ void bleLoop(){
     Serial.println("-->[BLE] sending notification..");
     pCharactData->setValue(getFormatData(apm25,apm10).c_str());
     pCharactData->notify();
-    toggle=!toggle;
+    dataSendToggle=!dataSendToggle;
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {
@@ -387,7 +389,7 @@ void bleLoop(){
     pServer->startAdvertising(); // restart advertising
     Serial.println("-->[BLE] start advertising");
     oldDeviceConnected = deviceConnected;
-    toggle=false;
+    dataSendToggle=false;
   }
   // connecting
   if (deviceConnected && !oldDeviceConnected) {

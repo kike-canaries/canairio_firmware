@@ -56,6 +56,9 @@ vector<unsigned int> v10;      // for avarage
 unsigned int apm25 = 0;
 unsigned int apm10 = 0;
 int interval = 5000;
+
+// WiFi fields
+String current_ssid, current_pass;
 bool dataSendToggle;
 bool wifiOn;
 
@@ -183,7 +186,7 @@ void sensorLoop(){
 
 void statusLoop(){
   gui.displayStatus(wifiOn,true,deviceConnected,dataSendToggle);
-  if(dataSendToggle)dataSendToggle=!dataSendToggle;
+  if(dataSendToggle)dataSendToggle=false;
 }
 
 String getFormatData(unsigned int pm25, unsigned int pm10){
@@ -244,11 +247,19 @@ bool influxDbWrite() {
   return influx.write(INFLUX_MEASUREMENT, tags, fields);
 }
 
+void influxDbReconnect(){
+  if (wifiCheck()) influxDbInit();
+}
+
 void influxLoop() {
   wifiCheck();
   if(wifiOn&&influxDbWrite()&&v25.size()==0){
-    dataSendToggle=!dataSendToggle;
+    dataSendToggle=true;
     Serial.println("-->[INFLUXDB] database write ready!");
+  }
+  else if (wifiOn == false && current_ssid.length() != 0 && v25.size()==0){
+    Serial.println("-->[E][INFLUXDB] reconnecting..");
+    WiFi.reconnect();
   }
 }
 
@@ -279,14 +290,9 @@ bool saveCredentials(const char* json){
     Serial.println("-->[E][AUTH] parseObject() failed");
     return false;
   }
-  String ssid = root["ssid"] | "";
-  String pass = root["pass"] | "";
 
-  wifiConnect(ssid.c_str(),pass.c_str());
-  
-  if(wifiCheck()){
-    influxDbInit();
-  }
+  current_ssid = root["ssid"] | "";
+  current_pass = root["pass"] | "";
 
   return true;
 }
@@ -331,7 +337,11 @@ class MyAuthCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
       if (value.length() > 0) {
-        if(saveCredentials(value.c_str()))Serial.println("-->[AUTH] WiFi Auth config loaded!");
+        if(saveCredentials(value.c_str())){
+          Serial.println("-->[AUTH] WiFi Auth config loaded!");
+          wifiConnect(current_ssid.c_str(), current_pass.c_str());
+          influxDbReconnect();
+        }
         else Serial.println ("-->[E][AUTH] load WiFi Auth config failed!");
       }
     }
@@ -381,7 +391,7 @@ void bleLoop(){
     Serial.println("-->[BLE] sending notification..");
     pCharactData->setValue(getFormatData(apm25,apm10).c_str());
     pCharactData->notify();
-    dataSendToggle=!dataSendToggle;
+    dataSendToggle=true;
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {

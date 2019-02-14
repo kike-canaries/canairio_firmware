@@ -20,17 +20,18 @@ void GUIUtils::displayInit(U8G2 &u8g2){
 void GUIUtils::showWelcome(){
   u8g2.firstPage();  // only for first screen
 #ifdef D1MINI
+  u8g2.setFont(u8g2_font_5x7_tf);
   u8g2.drawStr(0, 0, "CanAirIO");
   String version = "("+String(VERSION_CODE+VCODE)+")";
-  u8g2.drawStr(0, 11,version.c_str());
-  u8g2.drawLine(0, 22, 63, 22);
+  u8g2.drawStr(0, 8,version.c_str());
+  u8g2.drawLine(0, 16, 63, 16);
 #else
   String version = "CanAirIO ("+String(VERSION_CODE+VCODE)+")";
   u8g2.drawStr(0, 0,version.c_str());
   u8g2.drawLine(0, 11, 128, 11);
 #endif
   // only for first screen
-  Serial.println("-->[OLED] welcome screen ready\n");
+  Serial.println("-->[OLED] welcome screen ready.");
   u8g2.nextPage();
 }
 
@@ -83,8 +84,10 @@ void GUIUtils::displaySensorData(int pm25, int pm10){
   sprintf(output, "%04d P25:%03d P10:%03d", mcount, pm25, pm10);
 #endif
   displayBottomLine(String(output));
+  Serial.print(" PM10:"); Serial.print(output);
   sprintf(output, "P%03d" , pm25);
   displayEndLine(String(output));
+  Serial.print(" PM2.5:"); Serial.println(output);
 }
 
 void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn){

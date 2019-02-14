@@ -18,8 +18,10 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <GUIUtils.hpp>
+#include <Preferences.h>
 #include "WiFi.h"
 
+String app_name = "canairio";
 using namespace std;
 
 /******************************************************************************
@@ -87,6 +89,8 @@ const char INFLUX_MEASUREMENT[] = "PM2.5_EST6_Berlin";
 // GUI fields
 #define LED 2
 GUIUtils gui;
+
+Preferences preferences;
 
 /******************************************************************************
 *   S E N S O R  M E T H O D S
@@ -262,7 +266,6 @@ void influxLoop() {
   }
   else if (!WiFi.isConnected() && current_ssid.length() != 0 && v25.size()==0){
     Serial.println("-->[E][INFLUXDB] reconnecting..");
-    // TODO: it'll crash the ESP on lost connection gateway
     influxDbReconnect();
   }
 }
@@ -295,8 +298,15 @@ bool saveCredentials(const char* json){
     return false;
   }
 
-  current_ssid = root["ssid"] | "";
-  current_pass = root["pass"] | "";
+  preferences.begin(app_name.c_str(),false);
+  preferences.putString("ssid",root["ssid"] | preferences.getString("ssid",""));
+  preferences.putString("pass",root["pass"] | preferences.getString("pass",""));
+  current_ssid = preferences.getString("ssid","");
+  current_pass = preferences.getString("pass","");
+  preferences.end();
+
+  Serial.print("-->[AUTH] preference ssid saved: ");
+  Serial.println(current_ssid);
 
   return true;
 }
@@ -304,12 +314,19 @@ bool saveCredentials(const char* json){
 String getConfigData(){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
-  root["ssid"]      = "";
-  root["pass"]     = "";
-  interval = 5*1000;  // Mockup for now
+  root["influxdb"]   =  String(INFLUX_DATABASE);
+  root["influxip"]   =  String(INFLUX_IP);
+  root["influxid"]   =  String(INFLUX_MEASUREMENT);
   String output;
   root.printTo(output);
   return output;
+}
+
+void preferencesInit(){
+  preferences.begin(app_name.c_str(),true);
+  current_ssid = preferences.getString("ssid","");
+  current_pass = preferences.getString("pass","");
+  preferences.end();
 }
 
 /******************************************************************************
@@ -424,6 +441,7 @@ void setup() {
   sensorInit();
   bleServerInit();
   pinMode(LED,OUTPUT);
+  preferencesInit();
   Serial.println("-->[SETUP] setup ready.\n");
   delay(1000);
 }

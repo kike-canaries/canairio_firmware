@@ -56,7 +56,12 @@ vector<unsigned int> v10;      // for avarage
 unsigned int apm25 = 0;
 unsigned int apm10 = 0;
 int interval = 5000;
-bool toggle;
+
+// WiFi fields
+#define WIFI_RETRY_CONNECTION    20
+String current_ssid, current_pass;
+bool dataSendToggle;
+bool wifiOn;
 
 // Bluetooth fields
 BLEServer* pServer = NULL;
@@ -73,13 +78,11 @@ bool oldDeviceConnected = false;
 // InfluxDB fields
 InfluxArduino influx;
 // connection database stuff that needs configuring
-const char WIFI_NAME[] = "xxxx";
-const char WIFI_PASS[] = "xxxx";
 const char INFLUX_DATABASE[] = "mydb";
 const char INFLUX_IP[] = "aireciudadano.servehttp.com";
 const char INFLUX_USER[] = ""; //username if authorization is enabled.
 const char INFLUX_PASS[] = ""; //password for if authorization is enabled.
-const char INFLUX_MEASUREMENT[] = "PM2.5_EST6_noHum_524";
+const char INFLUX_MEASUREMENT[] = "PM2.5_EST6_Berlin";
 
 // GUI fields
 #define LED 2
@@ -182,6 +185,11 @@ void sensorLoop(){
   else wrongDataState();
 }
 
+void statusLoop(){
+  gui.displayStatus(wifiOn,true,deviceConnected,dataSendToggle);
+  if(dataSendToggle)dataSendToggle=false;
+}
+
 String getFormatData(unsigned int pm25, unsigned int pm10){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
@@ -191,16 +199,113 @@ String getFormatData(unsigned int pm25, unsigned int pm10){
   root.printTo(json);
   return json;
 }
+/******************************************************************************
+*   W I F I   M E T H O D S
+******************************************************************************/
+
+bool wifiCheck() {
+  if (WiFi.isConnected()) {
+    wifiOn = true;
+    return true;
+  }
+  else {
+    wifiOn = false;
+    return false;
+  }
+}
+
+void wifiConnect(const char* ssid, const char* pass) {
+  Serial.print("-->[WIFI] Connecting to "); Serial.print(ssid);
+  WiFi.begin(ssid, pass);
+  int wifi_retry = 0;
+  while (WiFi.status() != WL_CONNECTED && wifi_retry++ < WIFI_RETRY_CONNECTION) {
+    Serial.print(".");
+    delay(250);
+  }
+  if(wifiCheck()){
+    Serial.println("done\n-->[WIFI] connected!");
+  }
+}
+
+/******************************************************************************
+*   I N F L U X D B   M E T H O D S
+******************************************************************************/
+
+void influxDbInit() {
+  Serial.println("-->[INFLUXDB] Starting..");
+  influx.configure(INFLUX_DATABASE, INFLUX_IP); //third argument (port number) defaults to 8086
+  // influx.authorize(INFLUX_USER,INFLUX_PASS); //if you have set the Influxdb .conf variable auth-enabled to true, uncomment this
+  // influx.addCertificate(ROOT_CERT); //uncomment if you have generated a CA cert and copied it into InfluxCert.hpp
+  Serial.print("-->[INFLUXDB] Using HTTPS: ");
+  Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
+  delay(1000);
+}
+
+bool influxDbWrite() {
+  char tags[16];
+  char fields[128];
+  sprintf(tags, "read_ok=true");
+  sprintf(fields, "PM25promedio=%d", apm25);
+  return influx.write(INFLUX_MEASUREMENT, tags, fields);
+}
+
+void influxDbReconnect(){
+  wifiConnect(current_ssid.c_str(), current_pass.c_str());
+  if (wifiCheck()) influxDbInit();
+}
+
+void influxLoop() {
+  wifiCheck();
+  if(wifiOn&&influxDbWrite()&&v25.size()==0){
+    dataSendToggle=true;
+    Serial.println("-->[INFLUXDB] database write ready!");
+  }
+  else if (!WiFi.isConnected() && current_ssid.length() != 0 && v25.size()==0){
+    Serial.println("-->[E][INFLUXDB] reconnecting..");
+    // TODO: it'll crash the ESP on lost connection gateway
+    influxDbReconnect();
+  }
+}
 
 /******************************************************************************
 *   C O N F I G  M E T H O D S
 ******************************************************************************/
+bool saveConfig(const char* json){
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject& root = jsonBuffer.parseObject(json);
+  // Test if parsing succeeds.
+  if (!root.success()) {
+    Serial.println("-->[E][CONFIG] parseObject() failed");
+    return false;
+  }
+  int mode = root["mode"] | 0;
+  int stime = root["stime"] | 5;
+  Serial.print("-->[CONFIG] mode: "); Serial.println(mode);
+  Serial.print("-->[CONFIG] stime: "); Serial.println(stime);
+
+  return true;
+}
+
+bool saveCredentials(const char* json){
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject& root = jsonBuffer.parseObject(json);
+  // Test if parsing succeeds.
+  if (!root.success()) {
+    Serial.println("-->[E][AUTH] parseObject() failed");
+    return false;
+  }
+
+  current_ssid = root["ssid"] | "";
+  current_pass = root["pass"] | "";
+
+  return true;
+}
 
 String getConfigData(){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
-  root["mode"]      = 0;
-  root["stime"]     = 5;
+  root["ssid"]      = "";
+  root["pass"]     = "";
   interval = 5*1000;  // Mockup for now
   String output;
   root.printTo(output);
@@ -226,8 +331,8 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
       if (value.length() > 0) {
-        Serial.print("-->[BLE CONFIG] ");
-        Serial.println(value.c_str());
+        if(saveConfig(value.c_str()))Serial.println("-->[CONFIG] config loaded!");
+        else Serial.println ("-->[E][CONFIG] load config failed!");
       }
     }
 };
@@ -236,8 +341,11 @@ class MyAuthCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
       if (value.length() > 0) {
-        Serial.print("-->[BLE AUTH] ");
-        Serial.println(value.c_str());
+        if(saveCredentials(value.c_str())){
+          Serial.println("-->[AUTH] WiFi Auth config loaded!");
+          influxDbReconnect();
+        }
+        else Serial.println ("-->[E][AUTH] load WiFi Auth config failed!");
       }
     }
 };
@@ -263,7 +371,7 @@ void bleServerInit(){
   // Create a BLE Characteristic for Chredentials
   pCharactAuth = pService->createCharacteristic(
       CHARAC_AUTH_UUID,
-      BLECharacteristic::PROPERTY_WRITE_NR
+      BLECharacteristic::PROPERTY_WRITE
   );
   // Create a Data Descriptor (for notifications)
   pCharactData->addDescriptor(new BLE2902());
@@ -286,7 +394,7 @@ void bleLoop(){
     Serial.println("-->[BLE] sending notification..");
     pCharactData->setValue(getFormatData(apm25,apm10).c_str());
     pCharactData->notify();
-    toggle=!toggle;
+    dataSendToggle=true;
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {
@@ -294,7 +402,7 @@ void bleLoop(){
     pServer->startAdvertising(); // restart advertising
     Serial.println("-->[BLE] start advertising");
     oldDeviceConnected = deviceConnected;
-    toggle=false;
+    dataSendToggle=false;
   }
   // connecting
   if (deviceConnected && !oldDeviceConnected) {
@@ -304,58 +412,29 @@ void bleLoop(){
 }
 
 /******************************************************************************
-*   I N F L U X D B   M E T H O D S
-******************************************************************************/
-
-void influxDbInit() {
-  influx.configure(INFLUX_DATABASE, INFLUX_IP); //third argument (port number) defaults to 8086
-  // influx.authorize(INFLUX_USER,INFLUX_PASS); //if you have set the Influxdb .conf variable auth-enabled to true, uncomment this
-  // influx.addCertificate(ROOT_CERT); //uncomment if you have generated a CA cert and copied it into InfluxCert.hpp
-  Serial.print("Using HTTPS: ");
-  Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
-}
-
-bool influxDbWrite(char *tags, char *fields) {
-  return influx.write(INFLUX_MEASUREMENT, tags, fields);
-}
-
-/******************************************************************************
-*   W I F I   M E T H O D S
-******************************************************************************/
-
-void wifiConfigInit() {
-  pinMode(LED,OUTPUT);
-
-  WiFi.begin(WIFI_NAME, WIFI_PASS);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("WiFi connected!");
-}
-
-/******************************************************************************
 *  M A I N
 ******************************************************************************/
 
 void setup() {
   Serial.begin(115200);
   Serial.println("\n== INIT SETUP ==\n");
-  Serial.println("-->[SETUP] console ready");
+  Serial.println("-->[SETUP] serial ready.");
   gui.displayInit(u8g2);
   gui.showWelcome();
   sensorInit();
   bleServerInit();
-  Serial.println("-->[SETUP] setup ready");
+  pinMode(LED,OUTPUT);
+  Serial.println("-->[SETUP] setup ready.\n");
   delay(1000);
 }
 
 void loop(){
   gui.pageStart();
-  sensorLoop();
-  avarageLoop();
-  bleLoop();
-  gui.displayStatus(false,true,deviceConnected,toggle);
+  sensorLoop();    // read HPMA serial data and showed it
+  avarageLoop();   // calculated of sensor data avarage
+  bleLoop();       // notify data to connected devices
+  influxLoop();    // influxDB publication
+  statusLoop();    // update sensor status GUI
   gui.pageEnd();
   delay(1000);
 }

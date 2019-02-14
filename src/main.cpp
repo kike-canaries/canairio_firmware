@@ -58,6 +58,7 @@ unsigned int apm10 = 0;
 int interval = 5000;
 
 // WiFi fields
+#define WIFI_RETRY_CONNECTION    20
 String current_ssid, current_pass;
 bool dataSendToggle;
 bool wifiOn;
@@ -214,14 +215,15 @@ bool wifiCheck() {
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
-  Serial.print("-->[WIFI] Connecting to "); Serial.println(ssid);
+  Serial.print("-->[WIFI] Connecting to "); Serial.print(ssid);
   WiFi.begin(ssid, pass);
   int wifi_retry = 0;
-  while (WiFi.status() != WL_CONNECTED && wifi_retry++<5) {
-    delay(500);
+  while (WiFi.status() != WL_CONNECTED && wifi_retry++ < WIFI_RETRY_CONNECTION) {
+    Serial.print(".");
+    delay(250);
   }
   if(wifiCheck()){
-    Serial.println("-->[WIFI] connected!");
+    Serial.println("done\n-->[WIFI] connected!");
   }
 }
 
@@ -258,8 +260,9 @@ void influxLoop() {
     dataSendToggle=true;
     Serial.println("-->[INFLUXDB] database write ready!");
   }
-  else if (wifiOn == false && current_ssid.length() != 0 && v25.size()==0){
+  else if (!WiFi.isConnected() && current_ssid.length() != 0 && v25.size()==0){
     Serial.println("-->[E][INFLUXDB] reconnecting..");
+    // TODO: it'll crash the ESP on lost connection gateway
     influxDbReconnect();
   }
 }

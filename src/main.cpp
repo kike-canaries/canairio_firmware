@@ -229,7 +229,7 @@ bool influxDbWrite() {
 }
 
 void influxDbReconnect(){
-  if (wifiOn) {
+  if (wifiOn && isInfluxDbConfigured()) {
     Serial.println("-->[INFLUXDB] reconnecting..");
     influxDbInit();
   }
@@ -290,9 +290,7 @@ String getConfigData(){
 }
 
 void preferencesInit(){
-
   preferences.begin(app_name,false);
-  // preferences.clear();
   ssid = preferences.getString("ssid","");
   pass = preferences.getString("pass","");
   ifxdb = preferences.getString("ifxdb","");
@@ -311,7 +309,6 @@ bool saveConfig(const char* json){
     Serial.println("-->[E][CONFIG] parseObject() failed");
     return false;
   }
-
   String tifxdb = root["ifxdb"] | "";
   String tifxip = root["ifxip"] | "";
   String tifxid = root["ifxid"] | "";

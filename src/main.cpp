@@ -78,11 +78,6 @@ bool oldDeviceConnected = false;
 // InfluxDB fields
 InfluxArduino influx;
 String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxfd;
-//const char INFLUX_DATABASE[] = "mydb";
-//const char INFLUX_IP[] = "aireciudadano.servehttp.com";
-//const char INFLUX_USER[] = ""; //username if authorization is enabled.
-//const char INFLUX_PASS[] = ""; //password for if authorization is enabled.
-//const char INFLUX_MEASUREMENT[] = "PM2.5_EST6_Berlin";
 
 // GUI fields
 #define LED 2
@@ -128,9 +123,9 @@ void wrongDataState(){
   delay(1000);
 }
 
-/**
+/***
  * Avarage methods
- */
+ **/
 
 void saveDataForAvarage(unsigned int pm25, unsigned int pm10){
   v25.push_back(pm25);
@@ -158,7 +153,7 @@ void avarageLoop(){
 
 /***
  * PM2.5 and PM10 read and visualization
- ***/
+ **/
 
 void sensorLoop(){
   Serial.print("-->[HPMA] read.");
@@ -224,7 +219,6 @@ bool influxDbWrite() {
   char fields[128];
   sprintf(tags, "read_ok=true");
   sprintf(fields, ifxfd.c_str(), apm25);
-  // sprintf(fields, "PM25promedio=%d", apm25);
   return influx.write(ifxid.c_str(), tags, fields);
 }
 

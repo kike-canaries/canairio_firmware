@@ -95,10 +95,10 @@ void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn)
   if(bleOn) u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_on);
 
   if(blePair) u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_pair);
-
-  if(dataOn) u8g2.drawBitmap(44, 40, 1, 8, ic_data_on);
   
-  if(wifiOn) u8g2.drawBitmap(34, 40, 1, 8, ic_wifi_on);
+  if(wifiOn) u8g2.drawBitmap(44, 40, 1, 8, ic_wifi_on);
+
+  if(dataOn) u8g2.drawBitmap(34, 40, 1, 8, ic_data_on);
 
   u8g2.drawLine(0, 38, 63, 38);
 

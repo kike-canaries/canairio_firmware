@@ -21,7 +21,7 @@
 #include <Preferences.h>
 #include "WiFi.h"
 
-String app_name = "canairio";
+const char app_name[] = "canairio";
 using namespace std;
 
 /******************************************************************************
@@ -57,11 +57,11 @@ vector<unsigned int> v25;      // for avarage
 vector<unsigned int> v10;      // for avarage
 unsigned int apm25 = 0;
 unsigned int apm10 = 0;
-int interval = 5000;
+int stime = 5;
 
 // WiFi fields
 #define WIFI_RETRY_CONNECTION    20
-String current_ssid, current_pass;
+String ssid, pass;
 bool dataSendToggle;
 bool wifiOn;
 
@@ -69,22 +69,20 @@ bool wifiOn;
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharactData = NULL;
 BLECharacteristic* pCharactConfig = NULL;
-BLECharacteristic* pCharactAuth = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 #define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
 #define CHARAC_DATA_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
-#define CHARAC_CONFIG_UUID  "b0f332a8-a5aa-4f3f-bb43-f99e7791ae03"
-#define CHARAC_AUTH_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae04"
+#define CHARAC_CONFIG_UUID  "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
 
 // InfluxDB fields
 InfluxArduino influx;
-// connection database stuff that needs configuring
-const char INFLUX_DATABASE[] = "mydb";
-const char INFLUX_IP[] = "aireciudadano.servehttp.com";
-const char INFLUX_USER[] = ""; //username if authorization is enabled.
-const char INFLUX_PASS[] = ""; //password for if authorization is enabled.
-const char INFLUX_MEASUREMENT[] = "PM2.5_EST6_Berlin";
+String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxfd;
+//const char INFLUX_DATABASE[] = "mydb";
+//const char INFLUX_IP[] = "aireciudadano.servehttp.com";
+//const char INFLUX_USER[] = ""; //username if authorization is enabled.
+//const char INFLUX_PASS[] = ""; //password for if authorization is enabled.
+//const char INFLUX_MEASUREMENT[] = "PM2.5_EST6_Berlin";
 
 // GUI fields
 #define LED 2
@@ -122,7 +120,7 @@ void sensorInit(){
 }
 
 void wrongDataState(){
-  Serial.println("wrong data!");
+  Serial.println("-->[E][HPMA] !wrong data!");
   gui.updateError();
   txtMsg="";
   hpmaSerial.end();
@@ -203,19 +201,54 @@ String getFormatData(unsigned int pm25, unsigned int pm10){
   root.printTo(json);
   return json;
 }
+
+/******************************************************************************
+*   I N F L U X D B   M E T H O D S
+******************************************************************************/
+
+void influxDbInit() {
+  Serial.println("-->[INFLUXDB] Starting..");
+  influx.configure(ifxdb.c_str(), ifxip.c_str()); //third argument (port number) defaults to 8086
+  Serial.print("-->[INFLUXDB] Using HTTPS: ");
+  Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
+  delay(1000);
+}
+
+bool isInfluxDbConfigured(){
+  return ifxdb.length()>0 && ifxip.length()>0 && ifxfd.length()>0 && ifxid.length()>0;
+}
+
+bool influxDbWrite() {
+  if(!isInfluxDbConfigured())return false;
+  char tags[16];
+  char fields[128];
+  sprintf(tags, "read_ok=true");
+  sprintf(fields, ifxfd.c_str(), apm25);
+  // sprintf(fields, "PM25promedio=%d", apm25);
+  return influx.write(ifxid.c_str(), tags, fields);
+}
+
+void influxDbReconnect(){
+  if (wifiOn) {
+    Serial.println("-->[INFLUXDB] reconnecting..");
+    influxDbInit();
+  }
+}
+
+void influxLoop() {
+  if(wifiOn && isInfluxDbConfigured() && influxDbWrite()&&v25.size()==0){
+    dataSendToggle=true;
+    Serial.println("-->[INFLUXDB] database write ready!");
+  }
+}
+
 /******************************************************************************
 *   W I F I   M E T H O D S
 ******************************************************************************/
 
-bool wifiCheck() {
-  if (WiFi.isConnected()) {
-    wifiOn = true;
-    return true;
-  }
-  else {
-    wifiOn = false;
-    return false;
-  }
+bool wifiCheck(){
+  wifiOn = WiFi.isConnected();
+  return wifiOn;
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
@@ -231,41 +264,9 @@ void wifiConnect(const char* ssid, const char* pass) {
   }
 }
 
-/******************************************************************************
-*   I N F L U X D B   M E T H O D S
-******************************************************************************/
-
-void influxDbInit() {
-  Serial.println("-->[INFLUXDB] Starting..");
-  influx.configure(INFLUX_DATABASE, INFLUX_IP); //third argument (port number) defaults to 8086
-  // influx.authorize(INFLUX_USER,INFLUX_PASS); //if you have set the Influxdb .conf variable auth-enabled to true, uncomment this
-  // influx.addCertificate(ROOT_CERT); //uncomment if you have generated a CA cert and copied it into InfluxCert.hpp
-  Serial.print("-->[INFLUXDB] Using HTTPS: ");
-  Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
-  delay(1000);
-}
-
-bool influxDbWrite() {
-  char tags[16];
-  char fields[128];
-  sprintf(tags, "read_ok=true");
-  sprintf(fields, "PM25promedio=%d", apm25);
-  return influx.write(INFLUX_MEASUREMENT, tags, fields);
-}
-
-void influxDbReconnect(){
-  wifiConnect(current_ssid.c_str(), current_pass.c_str());
-  if (wifiCheck()) influxDbInit();
-}
-
-void influxLoop() {
-  wifiCheck();
-  if(wifiOn&&influxDbWrite()&&v25.size()==0){
-    dataSendToggle=true;
-    Serial.println("-->[INFLUXDB] database write ready!");
-  }
-  else if (!WiFi.isConnected() && current_ssid.length() != 0 && v25.size()==0){
-    Serial.println("-->[E][INFLUXDB] reconnecting..");
+void wifiLoop(){
+  if(!wifiCheck() && ssid.length()>0 && v25.size()==0) {
+    wifiConnect(ssid.c_str(), pass.c_str());
     influxDbReconnect();
   }
 }
@@ -273,6 +274,35 @@ void influxLoop() {
 /******************************************************************************
 *   C O N F I G  M E T H O D S
 ******************************************************************************/
+String getConfigData(){
+  StaticJsonBuffer<400> jsonBuffer;
+  JsonObject &root = jsonBuffer.createObject();
+  preferences.begin(app_name,false);
+  root["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
+  root["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
+  root["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name
+  root["ifxfd"]  =  preferences.getString("ifxfd",""); // influxdb sensor fields
+  root["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
+  preferences.end();
+  String output;
+  root.printTo(output);
+  return output;
+}
+
+void preferencesInit(){
+
+  preferences.begin(app_name,false);
+  // preferences.clear();
+  ssid = preferences.getString("ssid","");
+  pass = preferences.getString("pass","");
+  ifxdb = preferences.getString("ifxdb","");
+  ifxip = preferences.getString("ifxip","");
+  ifxid = preferences.getString("ifxid","");
+  ifxfd = preferences.getString("ifxfd","");
+  stime = preferences.getInt("stime",5);
+  preferences.end();
+}
+
 bool saveConfig(const char* json){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.parseObject(json);
@@ -281,52 +311,46 @@ bool saveConfig(const char* json){
     Serial.println("-->[E][CONFIG] parseObject() failed");
     return false;
   }
-  int mode = root["mode"] | 0;
-  int stime = root["stime"] | 5;
-  Serial.print("-->[CONFIG] mode: "); Serial.println(mode);
-  Serial.print("-->[CONFIG] stime: "); Serial.println(stime);
 
-  return true;
-}
+  String tifxdb = root["ifxdb"] | "";
+  String tifxip = root["ifxip"] | "";
+  String tifxid = root["ifxid"] | "";
+  String tifxfd = root["ifxfd"] | "";
+  String tssid  = root["ssid"] | "";
+  String tpass  = root["pass"] | "";
+  int tstime    = root["stime"] | 5;
 
-bool saveCredentials(const char* json){
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& root = jsonBuffer.parseObject(json);
-  // Test if parsing succeeds.
-  if (!root.success()) {
-    Serial.println("-->[E][AUTH] parseObject() failed");
+  if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0 && tifxfd.length()>0) {
+    preferences.begin(app_name, false);
+    preferences.putString("ifxdb", tifxdb );
+    preferences.putString("ifxip", tifxip );
+    preferences.putString("ifxid", tifxid );
+    preferences.putString("ifxfd", tifxfd );
+    preferences.end();
+    Serial.println("-->[CONFIG] influxdb config saved!");
+    Serial.print("-->[CONFIG] ");
+    Serial.println(getConfigData());
+    return true;
+  }
+  else if (tssid.length()>0 && tpass.length()>0){
+    preferences.begin(app_name, false);
+    preferences.putString("ssid", tssid);
+    preferences.putString("pass", tpass);
+    preferences.end();
+    Serial.println("-->[AUTH] WiFi credentials saved!");
+    return true;
+  }
+  else if (tstime>0) {
+    preferences.begin(app_name, false);
+    preferences.putInt("stime", tstime);
+    preferences.end();
+    Serial.println("-->[CONFIG] sensor sample time saved!");
+    return true;
+  }
+  else{
+    Serial.println("-->[E][CONFIG] invalid config file!");
     return false;
   }
-
-  preferences.begin(app_name.c_str(),false);
-  preferences.putString("ssid",root["ssid"] | preferences.getString("ssid",""));
-  preferences.putString("pass",root["pass"] | preferences.getString("pass",""));
-  current_ssid = preferences.getString("ssid","");
-  current_pass = preferences.getString("pass","");
-  preferences.end();
-
-  Serial.print("-->[AUTH] preference ssid saved: ");
-  Serial.println(current_ssid);
-
-  return true;
-}
-
-String getConfigData(){
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject &root = jsonBuffer.createObject();
-  root["influxdb"]   =  String(INFLUX_DATABASE);
-  root["influxip"]   =  String(INFLUX_IP);
-  root["influxid"]   =  String(INFLUX_MEASUREMENT);
-  String output;
-  root.printTo(output);
-  return output;
-}
-
-void preferencesInit(){
-  preferences.begin(app_name.c_str(),true);
-  current_ssid = preferences.getString("ssid","");
-  current_pass = preferences.getString("pass","");
-  preferences.end();
 }
 
 /******************************************************************************
@@ -348,21 +372,12 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
       if (value.length() > 0) {
-        if(saveConfig(value.c_str()))Serial.println("-->[CONFIG] config loaded!");
-        else Serial.println ("-->[E][CONFIG] load config failed!");
-      }
-    }
-};
-
-class MyAuthCallbacks: public BLECharacteristicCallbacks {
-    void onWrite(BLECharacteristic *pCharacteristic) {
-      std::string value = pCharacteristic->getValue();
-      if (value.length() > 0) {
-        if(saveCredentials(value.c_str())){
-          Serial.println("-->[AUTH] WiFi Auth config loaded!");
+        if(saveConfig(value.c_str())){
+          preferencesInit();
           influxDbReconnect();
+          pCharactConfig->setValue(getConfigData().c_str());
         }
-        else Serial.println ("-->[E][AUTH] load WiFi Auth config failed!");
+        else Serial.println ("-->[E][CONFIG] load config failed!");
       }
     }
 };
@@ -385,19 +400,12 @@ void bleServerInit(){
       CHARAC_CONFIG_UUID,
       BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
   );
-  // Create a BLE Characteristic for Chredentials
-  pCharactAuth = pService->createCharacteristic(
-      CHARAC_AUTH_UUID,
-      BLECharacteristic::PROPERTY_WRITE
-  );
   // Create a Data Descriptor (for notifications)
   pCharactData->addDescriptor(new BLE2902());
   // Setting Config callback
   pCharactConfig->setCallbacks(new MyConfigCallbacks());
   // Getting saved config data
   pCharactConfig->setValue(getConfigData().c_str());
-  // Setting Auth callback
-  pCharactAuth->setCallbacks(new MyAuthCallbacks());
   // Start the service
   pService->start();
   // Start advertising
@@ -407,11 +415,10 @@ void bleServerInit(){
 
 void bleLoop(){
   // notify changed value
-  if (deviceConnected && v25.size()==0) {  // each ~5 sec aprox
+  if (deviceConnected && v25.size()==0) {  // v25 test for get each ~5 sec aprox
     Serial.println("-->[BLE] sending notification..");
     pCharactData->setValue(getFormatData(apm25,apm10).c_str());
     pCharactData->notify();
-    dataSendToggle=true;
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {
@@ -419,7 +426,6 @@ void bleLoop(){
     pServer->startAdvertising(); // restart advertising
     Serial.println("-->[BLE] start advertising");
     oldDeviceConnected = deviceConnected;
-    dataSendToggle=false;
   }
   // connecting
   if (deviceConnected && !oldDeviceConnected) {
@@ -451,6 +457,7 @@ void loop(){
   sensorLoop();    // read HPMA serial data and showed it
   avarageLoop();   // calculated of sensor data avarage
   bleLoop();       // notify data to connected devices
+  wifiLoop();      // check wifi and reconnect it
   influxLoop();    // influxDB publication
   statusLoop();    // update sensor status GUI
   gui.pageEnd();

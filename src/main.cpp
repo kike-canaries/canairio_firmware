@@ -55,9 +55,9 @@ HPMA115S0 hpma115S0(hpmaSerial);
 String txtMsg = "";
 vector<unsigned int> v25;      // for avarage
 vector<unsigned int> v10;      // for avarage
-unsigned int apm25 = 0;
-unsigned int apm10 = 0;
-int stime = 5;
+unsigned int apm25 = 0;        // last PM2.5 avarage
+unsigned int apm10 = 0;        // last PM10 avarage
+int stime = 5;                 // sample time (send data each 5 sec)
 
 // WiFi fields
 #define WIFI_RETRY_CONNECTION    20
@@ -150,7 +150,7 @@ unsigned int getPM10Avarage(){
 }
 
 void avarageLoop(){
-  if (v25.size() > 4){
+  if (v25.size() > stime){
     apm25 = getPM25Avarage();  // global var for display
     apm10 = getPM10Avarage();
   }

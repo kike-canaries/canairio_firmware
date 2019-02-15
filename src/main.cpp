@@ -193,7 +193,7 @@ void statusLoop(){
 }
 
 String getFormatData(unsigned int pm25, unsigned int pm10){
-  StaticJsonBuffer<200> jsonBuffer;
+  StaticJsonBuffer<100> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
   root["P25"] = pm25;
   root["P10"] = pm10;
@@ -236,7 +236,7 @@ void influxDbReconnect(){
 }
 
 void influxLoop() {
-  if(wifiOn && isInfluxDbConfigured() && influxDbWrite()&&v25.size()==0){
+  if(v25.size()==0 && isInfluxDbConfigured() && wifiOn && influxDbWrite()){
     dataSendToggle=true;
     Serial.println("-->[INFLUXDB] database write ready!");
   }
@@ -265,7 +265,7 @@ void wifiConnect(const char* ssid, const char* pass) {
 }
 
 void wifiLoop(){
-  if(!wifiCheck() && ssid.length()>0 && v25.size()==0) {
+  if(v25.size()==0 && ssid.length()>0 && !wifiCheck()) {
     wifiConnect(ssid.c_str(), pass.c_str());
     influxDbReconnect();
   }
@@ -275,7 +275,7 @@ void wifiLoop(){
 *   C O N F I G  M E T H O D S
 ******************************************************************************/
 String getConfigData(){
-  StaticJsonBuffer<400> jsonBuffer;
+  StaticJsonBuffer<200> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
   preferences.begin(app_name,false);
   root["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name

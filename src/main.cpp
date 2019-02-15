@@ -214,7 +214,9 @@ bool isInfluxDbConfigured(){
 }
 
 bool influxDbWrite() {
-  if(!isInfluxDbConfigured())return false;
+  if(!isInfluxDbConfigured() || apm25 == 0 || apm10 == 0) {
+    return false;
+  }
   char tags[16];
   char fields[128];
   sprintf(tags, "read_ok=true");
@@ -255,6 +257,12 @@ void wifiConnect(const char* ssid, const char* pass) {
   }
   if(wifiCheck()){
     Serial.println("done\n-->[WIFI] connected!");
+  }
+}
+
+void wifiInit(){
+  if(ssid.length() > 0 && pass.length() > 0) {
+    wifiConnect(ssid.c_str(), pass.c_str());
   }
 }
 
@@ -436,10 +444,16 @@ void setup() {
   gui.displayInit(u8g2);
   gui.showWelcome();
   sensorInit();
+  gui.welcomeAddMessage("Sensor ready..");
   bleServerInit();
-  pinMode(LED,OUTPUT);
+  gui.welcomeAddMessage("GATT server..");
   preferencesInit();
-  Serial.println("-->[SETUP] setup ready.\n");
+  gui.welcomeAddMessage("WiFi test..");
+  wifiInit();
+  gui.welcomeAddMessage("InfluxDB test..");
+  influxDbReconnect();
+  pinMode(LED,OUTPUT);
+  gui.welcomeAddMessage("==SETUP READY==");
   delay(1000);
 }
 

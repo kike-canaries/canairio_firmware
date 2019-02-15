@@ -18,13 +18,17 @@ void GUIUtils::displayInit(U8G2 &u8g2){
 }
 
 void GUIUtils::showWelcome(){
-  u8g2.firstPage();  // only for first screen
+  u8g2.clearBuffer();
 #ifdef D1MINI
   u8g2.setFont(u8g2_font_5x7_tf);
   u8g2.drawStr(0, 0, "CanAirIO");
-  String version = "("+String(VERSION_CODE+VCODE)+")";
-  u8g2.drawStr(0, 8,version.c_str());
-  u8g2.drawLine(0, 16, 63, 16);
+  u8g2.sendBuffer();
+  String version = String(VERSION_CODE+VCODE);
+  u8g2.setFont(u8g2_font_4x6_tf);
+  u8g2.drawStr(47, 1, version.c_str());
+  u8g2.drawLine(0, 8, 63, 8);
+  u8g2.sendBuffer();
+  lastDrawedLine = 9;
 #else
   String version = "CanAirIO ("+String(VERSION_CODE+VCODE)+")";
   u8g2.drawStr(0, 0,version.c_str());
@@ -32,7 +36,14 @@ void GUIUtils::showWelcome(){
 #endif
   // only for first screen
   Serial.println("-->[OLED] welcome screen ready.");
-  u8g2.nextPage();
+  u8g2.sendBuffer();
+}
+
+void GUIUtils::welcomeAddMessage(String msg){
+  u8g2.setFont(u8g2_font_4x6_tf);
+  u8g2.drawStr(0, lastDrawedLine, msg.c_str());
+  lastDrawedLine = lastDrawedLine + 7;
+  u8g2.sendBuffer();
 }
 
 void GUIUtils::displayCenterBig(String msg){

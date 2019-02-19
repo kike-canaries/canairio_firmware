@@ -47,11 +47,11 @@ rm -rf .pioenvs .piolibdeps
 pio run --target upload
 ```
 
-## WiFi config via Bluetooth [OPTIONAL]
+## WiFi and InfluxDb configs via Bluetooth [OPTIONAL]
 
 The current firmware [rev212](https://github.com/kike-canaries/esp32-hpma115s0/releases/tag/rev212) supports set WiFi crendentials and InfluxDb config via Bluetooth. The [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) does not support it yet, for now you can use [nRF Connect app](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp)
 
-### Steps
+### Wifi config
 
 1. Start your sensor with last firmware (rev212)
 2. Scan and connect to it with nRF connect App
@@ -59,12 +59,27 @@ The current firmware [rev212](https://github.com/kike-canaries/esp32-hpma115s0/r
 4. Click on `upload button` on the `READ,WRITE` characteristic item (ends in ae02)
 5. Change value type to `TEXT`
 6. Put your credentials on `New Value` field, i.e. like this:
-    ```
+    ```json
     {"ssid":"YourWifiName","pass":"YourPassword"}
     ```
 7. Click on `send` button.
 8. On your serial messages your sensor will be log succesuful connection or on your display the wifi icon will be enable.
 
+### InfluxDb config
+
+Repeat previous steps `1 to 6` but the payload for `InfluxDb` connection is:
+
+    ```json
+    "{"ifxdb":"","ifxip":"","ifxid":"","ifxfd":""}"
+    ```
+
+the fields mean:
+- **ifxdb**: InfluxDb database name
+- **ifxip**: InflusDb host
+- **ifxid**: Sensor ID or sensor name
+- **ifxfd**: data fields or sensor fields
+
+---
 
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" align="right" width="384" ></a>
 

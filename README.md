@@ -47,6 +47,8 @@ rm -rf .pioenvs .piolibdeps
 pio run --target upload
 ```
 
+<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" align="right" width="384" ></a>
+
 ## TODO
 - [X] HPMA115S0 fixes and libraries tests
 - [X] SSD1306 OLED display output (PM2.5 and PM10)

@@ -56,7 +56,10 @@ pio run --target upload
 - [X] Heltec board supported
 - [X] D1 MINI Kit OLED board supported
 - [X] LaserCut box for D1Mini board
-- [ ] Config WiFi device stand alone option
+- [X] Config WiFi via Bluetooth
+- [X] Config InfluxDb (Cronograf) via Bluetooth (without auth for now)
+- [X] Config sample time via Bluetooth
+- [X] GUI: bluetooth, wifi and cloud status icons 
 - [ ] Real time clock or clock set via BT sync
 - [ ] Timestamp for GPS sync
 - [ ] Display graphs for PM2.5 and PM10
@@ -71,7 +74,7 @@ Please for official materials and part list click on [wiki](https://github.com/k
 
 ### Supported boards:
 
-* [ESP32 Mini KIT](http://bit.ly/2NLwtHK) (Recommended board)
+* [ESP32 Mini KIT (D1 mini compatible board)](http://bit.ly/2NLwtHK) (Recommended board)
 * [ESP32 compatible board (WeMOS like)](http://bit.ly/2lMbWH6)
 * [ESP32 Bluetooth WIFI Kit OLED](http://bit.ly/2neQI5f)
 
@@ -84,3 +87,6 @@ Please for official materials and part list click on [wiki](https://github.com/k
 * [Battery module for ESP32 Mini KIT](http://bit.ly/2JSADuR) (Optional)
 * [USB Power module board](http://bit.ly/2lHSKdr) (Optional)
 * [Lipo Battery of 3.7v or similar](http://bit.ly/2KA3fdB) (Optional)
+
+Hardware details on Hackster.io: [English](https://www.hackster.io/MetaKernel/canairio-citizen-network-for-air-quality-monitoring-bbf647) **|** [Spanish](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a)
+

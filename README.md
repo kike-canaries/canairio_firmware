@@ -6,7 +6,7 @@
 
 <a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://github.com/kike-canaries/android-hpma115s0/blob/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>
 
-Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5) using low-cost sensors and smartphones. Built with a `ESP32` module board and `HPMA115s0 Honeywell` dust sensor, interfaced with an [Android Client](https://github.com/kike-canaries/android-hpma115s0).
+Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5) using low-cost sensors and smartphones. Built with a `ESP32` module board and `HPMA115s0 Honeywell` dust sensor, interfaced with an [CanAirIO Android client app](https://github.com/kike-canaries/android-hpma115s0).
 
 **Full guide (Hackster.io):** [English](https://www.hackster.io/MetaKernel/canairio-citizen-network-for-air-quality-monitoring-bbf647) **|** [Spanish](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a)
 
@@ -35,7 +35,7 @@ build_flags =
 ```
 You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. 
 
-## Troubleshooting
+### Troubleshooting
 
 If you have some issues with Bluetooth library internals, please upgrade all frameworks and tools on PlatformIO:
 
@@ -46,6 +46,25 @@ pio run -t clean
 rm -rf .pioenvs .piolibdeps
 pio run --target upload
 ```
+
+## WiFi config via Bluetooth [OPTIONAL]
+
+The current firmware [rev212](https://github.com/kike-canaries/esp32-hpma115s0/releases/tag/rev212) supports set WiFi crendentials and InfluxDb config via Bluetooth. The [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) does not support it yet, for now you can use [nRF Connect app](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp)
+
+### Steps
+
+1. Start your sensor with last firmware (rev212)
+2. Scan and connect to it with nRF connect App
+3. Expand the GATT service item (Unknown Service, ends in aaf3)
+4. Click on `upload button` on the `READ,WRITE` characteristic item (ends in ae02)
+5. Change value type to `TEXT`
+6. Put your credentials on `New Value` field, i.e. like this:
+    ```
+    {"ssid":"YourWifiName","pass":"YourPassword"}
+    ```
+7. Click on `send` button.
+8. On your serial messages your sensor will be log succesuful connection or on your display the wifi icon will be enable.
+
 
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" align="right" width="384" ></a>
 

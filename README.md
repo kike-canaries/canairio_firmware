@@ -69,9 +69,9 @@ The current firmware [rev212](https://github.com/kike-canaries/esp32-hpma115s0/r
 
 Repeat previous steps `1 to 6` but the payload for `InfluxDb` connection is:
 
-    ```json
-    "{"ifxdb":"","ifxip":"","ifxid":"","ifxfd":""}"
-    ```
+```json
+"{"ifxdb":"","ifxip":"","ifxid":"","ifxfd":""}"
+```
 
 the fields mean:
 - **ifxdb**: InfluxDb database name
@@ -100,6 +100,8 @@ the fields mean:
 - [ ] Timestamp for GPS sync
 - [ ] Display graphs for PM2.5 and PM10
 - [ ] ROM storage for offline issues
+
+---
 
 ## Materials
 

@@ -1,0 +1,60 @@
+rev212beta
+
+    Setup via Bluetooth:
+        sensor sample rate time setup
+        Wifi credentials setup
+        Influxdb settings (without user/passw support, only open stations for now)
+    Dual mode for default (mobile stations (via BT) or static stations (via Wifi))
+    New GUI library:
+        PM2.5 average is showed ever on big font
+        status icons (BT, BT paired, Wifi, upload data, etc)
+        error counter
+        PM10 value
+        other user interfaces.
+    Backward compatibility with current CanAirIO apk
+    Some speed improvements
+    Other minors
+
+
+rev134beta
+
+    D1 Mini Kit board (set to oficial board)
+    Multi display support from platformio.ini board setting
+    Refactored sensor config methods
+    fixed avarage value on display issue (big font)
+    Some minor issues fixed
+    Android app version supported: GooglePlay
+
+
+rev81alpha
+
+    D1 Mini Kit board supported
+    Avarage value on display (big font)
+    Some minor issues fixed
+    Android app version supported: rev149alpha
+
+
+rev66alpha
+
+    added config support via platformio.ini for choose board, view it for details
+    fixed HPMA serial read error, now the sensor handling the period sampling
+    fixed windows build issue (it not support echo calls for dinamic revision number resolution)
+    other minors
+    Android supported version: rev108alpha
+
+
+rev38alpha
+
+    Fixed BLE notification issue
+    Removed for now P10 notification
+    Other minors issues fixed
+    Android supported version: rev108alpha
+
+
+rev35alpha
+
+    GATT server with two notifications (PM2.5 and PM10)
+    SSD1306 basic support (print revision number and data sensor)
+    Sample rate: 5seg
+    Detecting device disconnect
+

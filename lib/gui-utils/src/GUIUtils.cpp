@@ -20,15 +20,15 @@ void GUIUtils::displayInit(U8G2 &u8g2){
 void GUIUtils::showWelcome(){
   u8g2.clearBuffer();
 #ifdef D1MINI
-  u8g2.setFont(u8g2_font_5x7_tf);
+  u8g2.setFont(u8g2_font_5x8_tf);
   u8g2.drawStr(0, 0, "CanAirIO");
   u8g2.sendBuffer();
   String version = String(VERSION_CODE+VCODE);
   u8g2.setFont(u8g2_font_4x6_tf);
-  u8g2.drawStr(47, 1, version.c_str());
-  u8g2.drawLine(0, 8, 63, 8);
+  u8g2.drawStr(46, 1, version.c_str());
+  u8g2.drawLine(0, 9, 63, 9);
   u8g2.sendBuffer();
-  lastDrawedLine = 9;
+  lastDrawedLine = 12;
 #else
   String version = "CanAirIO ("+String(VERSION_CODE+VCODE)+")";
   u8g2.drawStr(0, 0,version.c_str());

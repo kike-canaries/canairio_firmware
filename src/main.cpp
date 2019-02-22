@@ -280,6 +280,7 @@ String getConfigData(){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
   preferences.begin(app_name,false);
+  root["ssid"]   =  preferences.getString("ssid",""); // influxdb database name
   root["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
   root["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
   root["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name

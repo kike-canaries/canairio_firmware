@@ -145,7 +145,7 @@ unsigned int getPM10Avarage(){
 }
 
 void avarageLoop(){
-  if (v25.size() > stime){
+  if (v25.size() >= stime){
     apm25 = getPM25Avarage();  // global var for display
     apm10 = getPM10Avarage();
   }

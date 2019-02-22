@@ -77,7 +77,7 @@ bool oldDeviceConnected = false;
 
 // InfluxDB fields
 InfluxArduino influx;
-String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxfd;
+String ifxdb, ifxip, ifxuser, ifxpassw, ifxid;
 
 // GUI fields
 #define LED 2
@@ -210,7 +210,7 @@ void influxDbInit() {
 }
 
 bool isInfluxDbConfigured(){
-  return ifxdb.length()>0 && ifxip.length()>0 && ifxfd.length()>0 && ifxid.length()>0;
+  return ifxdb.length()>0 && ifxip.length()>0 && ifxid.length()>0;
 }
 
 bool influxDbWrite() {
@@ -218,12 +218,24 @@ bool influxDbWrite() {
     return false;
   }
   char tags[16];
-  char fields[128];
+  char fields[256];
   sprintf(tags, "read_ok=true");
   // "id","pm1","pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime","tstp"
   uint64_t id=ESP.getEfuseMac();
-  sprintf(fields,"id=%X,pm1=%u,pm25=%u,pm10=%u,hum=%d,tmp=%d,lat=%d,lng=%d,alt=%d,spd=%d,stime=%i,tstp=%u",(uint16_t)id,0,apm25,apm10,0,0,0,0,0,0,stime,0);
-  return influx.write(ifxid.c_str(), tags, fields);
+  sprintf(
+    fields,
+    "pm1=%u,pm25=%u,pm10=%u,hum=%d,tmp=%d,lat=%d,lng=%d,alt=%d,spd=%d,stime=%i,tstp=%u",
+    0,apm25,apm10,0,0,0,0,0,0,stime,0
+  );
+  if(influx.write(ifxid.c_str(), tags, fields)){
+    Serial.println("-->[INFLUXDB] parsing fields ok");
+    return true;
+  }
+  else{
+    Serial.print("-->[E][INFLUXDB] parsing fields fail: ");
+    Serial.println(String(fields));
+  }
+  return false;
 }
 
 void influxDbReconnect(){
@@ -286,7 +298,7 @@ String getConfigData(){
   root["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
   root["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
   root["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name
-  root["ifxfd"]  =  preferences.getString("ifxfd",""); // influxdb sensor fields
+  // root["ifxfd"]  =  preferences.getString("ifxfd",""); // influxdb sensor fields
   root["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
   preferences.end();
   String output;
@@ -301,7 +313,7 @@ void preferencesInit(){
   ifxdb = preferences.getString("ifxdb","");
   ifxip = preferences.getString("ifxip","");
   ifxid = preferences.getString("ifxid","");
-  ifxfd = preferences.getString("ifxfd","");
+  // ifxfd = preferences.getString("ifxfd","");
   stime = preferences.getInt("stime",5);
   preferences.end();
 }
@@ -317,17 +329,17 @@ bool saveConfig(const char* json){
   String tifxdb = root["ifxdb"] | "";
   String tifxip = root["ifxip"] | "";
   String tifxid = root["ifxid"] | "";
-  String tifxfd = root["ifxfd"] | "";
+  // String tifxfd = root["ifxfd"] | "";
   String tssid  = root["ssid"] | "";
   String tpass  = root["pass"] | "";
   int tstime    = root["stime"] | 5;
 
-  if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0 && tifxfd.length()>0) {
+  if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0) {
     preferences.begin(app_name, false);
     preferences.putString("ifxdb", tifxdb );
     preferences.putString("ifxip", tifxip );
     preferences.putString("ifxid", tifxid );
-    preferences.putString("ifxfd", tifxfd );
+    // preferences.putString("ifxfd", tifxfd );
     preferences.end();
     Serial.println("-->[CONFIG] influxdb config saved!");
     Serial.print("-->[CONFIG] ");

@@ -220,7 +220,9 @@ bool influxDbWrite() {
   char tags[16];
   char fields[128];
   sprintf(tags, "read_ok=true");
-  sprintf(fields, ifxfd.c_str(), apm25);
+  // "id","pm1","pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime","tstp"
+  uint64_t id=ESP.getEfuseMac();
+  sprintf(fields,"id=%X,pm1=%u,pm25=%u,pm10=%u,hum=%d,tmp=%d,lat=%d,lng=%d,alt=%d,spd=%d,stime=%i,tstp=%u",(uint16_t)id,0,apm25,apm10,0,0,0,0,0,0,stime,0);
   return influx.write(ifxid.c_str(), tags, fields);
 }
 
@@ -330,7 +332,6 @@ bool saveConfig(const char* json){
     Serial.println("-->[CONFIG] influxdb config saved!");
     Serial.print("-->[CONFIG] ");
     Serial.println(getConfigData());
-    return true;
   }
   else if (tssid.length()>0 && tpass.length()>0){
     preferences.begin(app_name, false);
@@ -338,19 +339,18 @@ bool saveConfig(const char* json){
     preferences.putString("pass", tpass);
     preferences.end();
     Serial.println("-->[AUTH] WiFi credentials saved!");
-    return true;
   }
   else if (tstime>0) {
     preferences.begin(app_name, false);
     preferences.putInt("stime", tstime);
     preferences.end();
     Serial.println("-->[CONFIG] sensor sample time saved!");
-    return true;
   }
   else{
     Serial.println("-->[E][CONFIG] invalid config file!");
     return false;
   }
+  return true;
 }
 
 /******************************************************************************
@@ -438,9 +438,16 @@ void bleLoop(){
 *  M A I N
 ******************************************************************************/
 
+void printDeviceId(){
+  uint64_t chipid = ESP.getEfuseMac();                                      //The chip ID is essentially its MAC address(length: 6 bytes).
+  Serial.printf("-->[INFO] ESP32 Chip ID = %04X", (uint16_t)(chipid >> 32)); //print High 2 bytes
+  Serial.printf("%08X\n", (uint32_t)chipid);                       //print Low 4bytes.
+}
+
 void setup() {
   Serial.begin(115200);
   Serial.println("\n== INIT SETUP ==\n");
+  printDeviceId();
   Serial.println("-->[SETUP] serial ready.");
   gui.displayInit(u8g2);
   gui.showWelcome();

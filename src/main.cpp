@@ -217,9 +217,14 @@ bool influxDbWrite() {
   if(!isInfluxDbConfigured() || apm25 == 0 || apm10 == 0) {
     return false;
   }
-  char tags[20];
+  char tags[256];
   uint64_t chipid=ESP.getEfuseMac();
-  sprintf(tags, "mac=%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
+
+  if(ifxtg.length()>0)
+    sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(chipid >> 32),(uint32_t)chipid,ifxtg.c_str());
+  else
+    sprintf(tags,"mac=%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
+
   char fields[256];
   // "id","pm1","pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime","tstp"
   sprintf(

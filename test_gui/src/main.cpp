@@ -10,6 +10,7 @@
 unsigned int tcount = 0;
 bool toggle;
 
+#define WEMOSOLED 1
 
 #ifdef WEMOSOLED // display via i2c for WeMOS OLED board
     U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
@@ -28,6 +29,11 @@ void setup(void) {
   Serial.println("-->[SETUP] console ready");
   gui.displayInit(u8g2);
   gui.showWelcome();
+  gui.welcomeAddMessage("Sensor ready..");
+  gui.welcomeAddMessage("GATT server..");
+  gui.welcomeAddMessage("WiFi test..");
+  gui.welcomeAddMessage("InfluxDB test..");
+  gui.welcomeAddMessage("==SETUP READY==");
   delay(1000);
 }
 

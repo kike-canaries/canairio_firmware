@@ -77,7 +77,13 @@ the fields mean:
 - **ifxdb**: InfluxDb database name
 - **ifxip**: InflusDb host
 - **ifxid**: Sensor ID or sensor name
-- **ifxtg**: Custom tags for InfluxDB data
+- **ifxtg**: Custom tags (optional)
+
+#### Example:
+
+```json
+{"ifxdb":"ENVdataDB","ifxip":"aireciudadano.servehttp.com","ifxid":"PM25_Berlin_Pankow_E00","ifxtg":"zone=north,"}
+```
 
 ---
 

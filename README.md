@@ -70,14 +70,14 @@ The current firmware [rev212](https://github.com/kike-canaries/esp32-hpma115s0/r
 Repeat previous steps `1 to 6` but the payload for `InfluxDb` connection is:
 
 ```json
-"{"ifxdb":"","ifxip":"","ifxid":"","ifxfd":""}"
+"{"ifxdb":"","ifxip":"","ifxid":"","ifxtg":""}"
 ```
 
 the fields mean:
 - **ifxdb**: InfluxDb database name
 - **ifxip**: InflusDb host
 - **ifxid**: Sensor ID or sensor name
-- **ifxfd**: data fields or sensor fields
+- **ifxtg**: Custom tags for InfluxDB data
 
 ---
 

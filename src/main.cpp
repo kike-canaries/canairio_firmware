@@ -77,7 +77,7 @@ bool oldDeviceConnected = false;
 
 // InfluxDB fields
 InfluxArduino influx;
-String ifxdb, ifxip, ifxuser, ifxpassw, ifxid;
+String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxtg;
 
 // GUI fields
 #define LED 2
@@ -217,11 +217,11 @@ bool influxDbWrite() {
   if(!isInfluxDbConfigured() || apm25 == 0 || apm10 == 0) {
     return false;
   }
-  char tags[16];
+  char tags[20];
+  uint64_t chipid=ESP.getEfuseMac();
+  sprintf(tags, "mac=%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
   char fields[256];
-  sprintf(tags, "read_ok=true");
   // "id","pm1","pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime","tstp"
-  uint64_t id=ESP.getEfuseMac();
   sprintf(
     fields,
     "pm1=%u,pm25=%u,pm10=%u,hum=%d,tmp=%d,lat=%d,lng=%d,alt=%d,spd=%d,stime=%i,tstp=%u",
@@ -298,7 +298,7 @@ String getConfigData(){
   root["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
   root["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
   root["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name
-  // root["ifxfd"]  =  preferences.getString("ifxfd",""); // influxdb sensor fields
+  root["ifxtg"]  =  preferences.getString("ifxtg",""); // influxdb sensor tags
   root["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
   preferences.end();
   String output;
@@ -313,7 +313,7 @@ void preferencesInit(){
   ifxdb = preferences.getString("ifxdb","");
   ifxip = preferences.getString("ifxip","");
   ifxid = preferences.getString("ifxid","");
-  // ifxfd = preferences.getString("ifxfd","");
+  ifxtg = preferences.getString("ifxtg","");
   stime = preferences.getInt("stime",5);
   preferences.end();
 }
@@ -329,7 +329,7 @@ bool saveConfig(const char* json){
   String tifxdb = root["ifxdb"] | "";
   String tifxip = root["ifxip"] | "";
   String tifxid = root["ifxid"] | "";
-  // String tifxfd = root["ifxfd"] | "";
+  String tifxtg = root["ifxtg"] | "";
   String tssid  = root["ssid"] | "";
   String tpass  = root["pass"] | "";
   int tstime    = root["stime"] | 5;
@@ -339,7 +339,7 @@ bool saveConfig(const char* json){
     preferences.putString("ifxdb", tifxdb );
     preferences.putString("ifxip", tifxip );
     preferences.putString("ifxid", tifxid );
-    // preferences.putString("ifxfd", tifxfd );
+    preferences.putString("ifxtg", tifxtg );
     preferences.end();
     Serial.println("-->[CONFIG] influxdb config saved!");
     Serial.print("-->[CONFIG] ");

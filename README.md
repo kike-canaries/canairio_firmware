@@ -75,14 +75,14 @@ Repeat previous steps `1 to 6` but the payload for `InfluxDb` connection is:
 
 the fields mean:
 - **ifxdb**: InfluxDb database name
-- **ifxip**: InflusDb host
+- **ifxip**: InflusDb hostname or ip
 - **ifxid**: Sensor ID or sensor name
-- **ifxtg**: Custom tags (optional)
+- **ifxtg**: Custom tags **(optional)**
 
 #### Example:
 
 ```json
-{"ifxdb":"ENVdataDB","ifxip":"aireciudadano.servehttp.com","ifxid":"PM25_Berlin_Pankow_E00","ifxtg":"zone=north,"}
+{"ifxdb":"database_name","ifxip":"hostname_or_ip","ifxid":"sensor_station_name","ifxtg":"zone=north,zone=south"}
 ```
 
 ---

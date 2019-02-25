@@ -92,7 +92,6 @@ Preferences preferences;
  * [DEPRECATED] sensorConfig:
  * The next method is only if sensor was config without autosend
  */
-
 void sensorConfig(){
   Serial.println("-->[HPMA] configuration hpma115S0 sensor..");
   hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
@@ -154,7 +153,6 @@ void avarageLoop(){
 /***
  * PM2.5 and PM10 read and visualization
  **/
-
 void sensorLoop(){
   Serial.print("-->[HPMA] read.");
   while (txtMsg.length() < 32) {
@@ -209,49 +207,62 @@ void influxDbInit() {
   delay(1000);
 }
 
-bool isInfluxDbConfigured(){
+bool influxDbIsConfigured(){
   return ifxdb.length()>0 && ifxip.length()>0 && ifxid.length()>0;
 }
 
-bool influxDbWrite() {
-  if(!isInfluxDbConfigured() || apm25 == 0 || apm10 == 0) {
-    return false;
-  }
-  char tags[256];
-  uint64_t chipid=ESP.getEfuseMac();
-
-  if(ifxtg.length()>0)
-    sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(chipid >> 32),(uint32_t)chipid,ifxtg.c_str());
-  else
-    sprintf(tags,"mac=%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
-
-  char fields[256];
-  // "id","pm1","pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime","tstp"
+/**
+ * @influxDbParseFields:
+ *
+ * Supported: 
+ * "id","pm1","pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime","tstp"
+ * 
+ */
+void influxDbParseFields(char* fields){
   sprintf(
     fields,
     "pm1=%u,pm25=%u,pm10=%u,hum=%d,tmp=%d,lat=%d,lng=%d,alt=%d,spd=%d,stime=%i,tstp=%u",
     0,apm25,apm10,0,0,0,0,0,0,stime,0
   );
+}
+
+void influxDbAddTags(char* tags){
+  uint64_t chipid=ESP.getEfuseMac();  // default tag (ESP32 MacAdress)
+  if(ifxtg.length()>0)
+    sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(chipid >> 32),(uint32_t)chipid,ifxtg.c_str());
+  else
+    sprintf(tags,"mac=%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
+}
+
+bool influxDbWrite() {
+  if(!influxDbIsConfigured() || apm25 == 0 || apm10 == 0) {
+    return false;
+  }
+  char tags[256];
+  influxDbAddTags(tags);
+  char fields[256];
+  influxDbParseFields(fields);
+   
   if(influx.write(ifxid.c_str(), tags, fields)){
     Serial.println("-->[INFLUXDB] parsing fields ok");
     return true;
   }
   else{
-    Serial.print("-->[E][INFLUXDB] parsing fields fail: ");
+    Serial.print("-->[E][INFLUXDB] write error!");
     Serial.println(String(fields));
   }
   return false;
 }
 
 void influxDbReconnect(){
-  if (wifiOn && isInfluxDbConfigured()) {
+  if (wifiOn && influxDbIsConfigured()) {
     Serial.println("-->[INFLUXDB] reconnecting..");
     influxDbInit();
   }
 }
 
-void influxLoop() {
-  if(v25.size()==0 && isInfluxDbConfigured() && wifiOn && influxDbWrite()){
+void influxDbLoop() {
+  if(v25.size()==0 && influxDbIsConfigured() && wifiOn && influxDbWrite()){
     dataSendToggle=true;
     Serial.println("-->[INFLUXDB] database write ready!");
   }
@@ -488,7 +499,7 @@ void loop(){
   avarageLoop();   // calculated of sensor data avarage
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
-  influxLoop();    // influxDB publication
+  influxDbLoop();    // influxDB publication
   statusLoop();    // update sensor status GUI
   gui.pageEnd();
   delay(1000);

@@ -58,6 +58,8 @@ vector<unsigned int> v10;      // for avarage
 unsigned int apm25 = 0;        // last PM2.5 avarage
 unsigned int apm10 = 0;        // last PM10 avarage
 int stime = 5;                 // sample time (send data each 5 sec)
+double lat,lon;                // Coordinates
+int alt, spd;                  // Altitude and speed
 
 // WiFi fields
 #define WIFI_RETRY_CONNECTION    20
@@ -190,6 +192,10 @@ String getFormatData(unsigned int pm25, unsigned int pm10){
   JsonObject &root = jsonBuffer.createObject();
   root["P25"] = pm25;
   root["P10"] = pm10;
+  root["lat"] = lat;
+  root["lon"] = lon;
+  root["alt"] = alt;
+  root["spd"] = spd;
   String json;
   root.printTo(json);
   return json;
@@ -221,8 +227,8 @@ bool influxDbIsConfigured(){
 void influxDbParseFields(char* fields){
   sprintf(
     fields,
-    "pm1=%u,pm25=%u,pm10=%u,hum=%d,tmp=%d,lat=%d,lng=%d,alt=%d,spd=%d,stime=%i,tstp=%u",
-    0,apm25,apm10,0,0,0,0,0,0,stime,0
+    "pm1=%u,pm25=%u,pm10=%u,hum=%d,tmp=%d,lat=%d,lng=%d,alt=%i,spd=%i,stime=%i,tstp=%u",
+    0,apm25,apm10,0,0,lat,lon,alt,spd,stime,0
   );
 }
 
@@ -306,7 +312,7 @@ void wifiLoop(){
 /******************************************************************************
 *   C O N F I G  M E T H O D S
 ******************************************************************************/
-String getConfigData(){
+String configGetData(){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
   preferences.begin(app_name,false);
@@ -322,7 +328,7 @@ String getConfigData(){
   return output;
 }
 
-void preferencesInit(){
+void configInit(){
   preferences.begin(app_name,false);
   ssid = preferences.getString("ssid","");
   pass = preferences.getString("pass","");
@@ -331,10 +337,14 @@ void preferencesInit(){
   ifxid = preferences.getString("ifxid","");
   ifxtg = preferences.getString("ifxtg","");
   stime = preferences.getInt("stime",5);
+  lat   = preferences.getDouble("lat",0);
+  lon   = preferences.getDouble("lon",0);
+  alt = preferences.getInt("alt",0);
+  spd = preferences.getInt("spd",0);
   preferences.end();
 }
 
-bool saveConfig(const char* json){
+bool configSave(const char* json){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.parseObject(json);
   // Test if parsing succeeds.
@@ -346,9 +356,13 @@ bool saveConfig(const char* json){
   String tifxip = root["ifxip"] | "";
   String tifxid = root["ifxid"] | "";
   String tifxtg = root["ifxtg"] | "";
-  String tssid  = root["ssid"] | "";
-  String tpass  = root["pass"] | "";
+  String tssid  = root["ssid"]  | "";
+  String tpass  = root["pass"]  | "";
   int tstime    = root["stime"] | 5;
+  double tlat   = root["lat"]  | 0;
+  double tlon   = root["lon"]  | 0;
+  int talt      = root["alt"] | 0;
+  int tspd      = root["spd"] | 0;
 
   if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0) {
     preferences.begin(app_name, false);
@@ -359,7 +373,7 @@ bool saveConfig(const char* json){
     preferences.end();
     Serial.println("-->[CONFIG] influxdb config saved!");
     Serial.print("-->[CONFIG] ");
-    Serial.println(getConfigData());
+    Serial.println(configGetData());
   }
   else if (tssid.length()>0 && tpass.length()>0){
     preferences.begin(app_name, false);
@@ -367,6 +381,18 @@ bool saveConfig(const char* json){
     preferences.putString("pass", tpass);
     preferences.end();
     Serial.println("-->[AUTH] WiFi credentials saved!");
+  }
+  else if (tlat != 0 && tlon != 0) {
+    preferences.begin(app_name, false);
+    preferences.putDouble("lat",tlat);
+    preferences.putDouble("lon",tlon);
+    preferences.putInt("alt",talt);
+    preferences.putInt("spd",tspd);
+    preferences.end();
+    Serial.print("-->[CONFIG] updated location to: ");
+    Serial.print(tlat); Serial.print(","); Serial.println(tlon);
+    Serial.print("-->[CONFIG] altitude: "); Serial.println(talt);
+    Serial.print("-->[CONFIG] speed: "); Serial.println(tspd);
   }
   else if (tstime>0) {
     preferences.begin(app_name, false);
@@ -400,10 +426,10 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
       if (value.length() > 0) {
-        if(saveConfig(value.c_str())){
-          preferencesInit();
+        if(configSave(value.c_str())){
+          configInit();
           influxDbReconnect();
-          pCharactConfig->setValue(getConfigData().c_str());
+          pCharactConfig->setValue(configGetData().c_str());
         }
         else Serial.println ("-->[E][CONFIG] load config failed!");
       }
@@ -433,7 +459,7 @@ void bleServerInit(){
   // Setting Config callback
   pCharactConfig->setCallbacks(new MyConfigCallbacks());
   // Getting saved config data
-  pCharactConfig->setValue(getConfigData().c_str());
+  pCharactConfig->setValue(configGetData().c_str());
   // Start the service
   pService->start();
   // Start advertising
@@ -483,7 +509,7 @@ void setup() {
   gui.welcomeAddMessage("Sensor ready..");
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
-  preferencesInit();
+  configInit();
   gui.welcomeAddMessage("WiFi test..");
   wifiInit();
   gui.welcomeAddMessage("InfluxDB test..");

@@ -227,7 +227,7 @@ bool influxDbIsConfigured(){
 void influxDbParseFields(char* fields){
   sprintf(
     fields,
-    "pm1=%u,pm25=%u,pm10=%u,hum=%d,tmp=%d,lat=%d,lng=%d,alt=%i,spd=%i,stime=%i,tstp=%u",
+    "pm1=%u,pm25=%u,pm10=%u,hum=%d,tmp=%d,lat=%f,lng=%f,alt=%i,spd=%i,stime=%i,tstp=%u",
     0,apm25,apm10,0,0,lat,lon,alt,spd,stime,0
   );
 }

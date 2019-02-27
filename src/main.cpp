@@ -368,8 +368,8 @@ bool configSave(const char* json){
   String tssid  = root["ssid"]  | "";
   String tpass  = root["pass"]  | "";
   int tstime    = root["stime"] | 0;
-  double tlat   = root["lat"]  | 0;
-  double tlon   = root["lon"]  | 0;
+  double tlat   = root["lat"].as<double>();
+  double tlon   = root["lon"].as<double>();
   int talt      = root["alt"] | 0;
   int tspd      = root["spd"] | 0;
 
@@ -438,9 +438,12 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
         if(configSave(value.c_str())){
           configInit();
           influxDbReconnect();
-          pCharactConfig->setValue(configGetData().c_str());
         }
-        else Serial.println ("-->[E][CONFIG] load config failed!");
+        else {
+          Serial.println ("-->[E][CONFIG] load config failed!");
+        }
+        pCharactConfig->setValue(configGetData().c_str());
+        pCharactData->setValue(getSensorData().c_str());
       }
     }
 };

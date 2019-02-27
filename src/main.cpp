@@ -21,6 +21,13 @@
 #include <Preferences.h>
 #include "WiFi.h"
 
+///////////////////
+#include <Wire.h>
+#include "Adafruit_Sensor.h"
+#include "Adafruit_AM2320.h"
+//////////////////
+
+
 const char app_name[] = "canairio";
 using namespace std;
 
@@ -52,11 +59,19 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
+////////
+Adafruit_AM2320 am2320 = Adafruit_AM2320();
+float humidity = 0;
+float temperature = 0;
+unsigned int humint = 0;
+unsigned int tmpint = 0;
+
+///////
 String txtMsg = "";
-vector<unsigned int> v25;      // for avarage
-vector<unsigned int> v10;      // for avarage
-unsigned int apm25 = 0;        // last PM2.5 avarage
-unsigned int apm10 = 0;        // last PM10 avarage
+vector<unsigned int> v25;      // for average
+vector<unsigned int> v10;      // for average
+unsigned int apm25 = 0;        // last PM2.5 average
+unsigned int apm10 = 0;        // last PM10 average
 int stime = 5;                 // sample time (send data each 5 sec)
 
 // WiFi fields
@@ -123,30 +138,39 @@ void wrongDataState(){
 }
 
 /***
- * Avarage methods
+ * Average methods
  **/
 
-void saveDataForAvarage(unsigned int pm25, unsigned int pm10){
+void saveDataForAverage(unsigned int pm25, unsigned int pm10){
   v25.push_back(pm25);
   v10.push_back(pm10);
 }
 
-unsigned int getPM25Avarage(){
-  unsigned int pm25_avarage = accumulate( v25.begin(), v25.end(), 0.0)/v25.size();
+unsigned int getPM25Average(){
+  unsigned int pm25_average = accumulate( v25.begin(), v25.end(), 0.0)/v25.size();
   v25.clear();
-  return pm25_avarage; 
+  return pm25_average;
 }
 
-unsigned int getPM10Avarage(){
-  unsigned int pm10_avarage = accumulate( v10.begin(), v10.end(), 0.0)/v10.size();
+unsigned int getPM10Average(){
+  unsigned int pm10_average = accumulate( v10.begin(), v10.end(), 0.0)/v10.size();
   v10.clear();
-  return pm10_avarage; 
+  return pm10_average;
 }
 
-void avarageLoop(){
+void averageLoop(){
   if (v25.size() >= stime){
-    apm25 = getPM25Avarage();  // global var for display
-    apm10 = getPM10Avarage();
+    apm25 = getPM25Average();  // global var for display
+    apm10 = getPM10Average();
+
+////////////
+    humidity = am2320.readHumidity();
+    temperature = am2320.readTemperature();
+    Serial.println("-->[AM2320] Humidity: "+ String(humidity) + " % Temperature: " + String(temperature) + " °C");
+    humint = round (humidity);
+    tmpint = round (temperature);
+
+//////////
   }
 }
 
@@ -171,7 +195,7 @@ void sensorLoop(){
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
         gui.displaySensorData(pm25,pm10);
-        saveDataForAvarage(pm25,pm10);
+        saveDataForAverage(pm25,pm10);
       }
       else wrongDataState();
     }
@@ -214,15 +238,15 @@ bool influxDbIsConfigured(){
 /**
  * @influxDbParseFields:
  *
- * Supported: 
+ * Supported:
  * "id","pm1","pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime","tstp"
- * 
+ *
  */
 void influxDbParseFields(char* fields){
   sprintf(
     fields,
-    "pm1=%u,pm25=%u,pm10=%u,hum=%d,tmp=%d,lat=%d,lng=%d,alt=%d,spd=%d,stime=%i,tstp=%u",
-    0,apm25,apm10,0,0,0,0,0,0,stime,0
+    "pm1=%u,pm25=%u,pm10=%u,hum=%u,tmp=%u,lat=%d,lng=%d,alt=%d,spd=%d,stime=%i,tstp=%u",   //change %d to %u for hum and tmp
+    0,apm25,apm10,humint,tmpint,0,0,0,0,stime,0
   );
 }
 
@@ -242,7 +266,7 @@ bool influxDbWrite() {
   influxDbAddTags(tags);
   char fields[256];
   influxDbParseFields(fields);
-   
+
   if(influx.write(ifxid.c_str(), tags, fields)){
     Serial.println("-->[INFLUXDB] parsing fields ok");
     return true;
@@ -480,6 +504,9 @@ void setup() {
   gui.displayInit(u8g2);
   gui.showWelcome();
   sensorInit();
+  //////////////
+  am2320.begin();
+  /////////////
   gui.welcomeAddMessage("Sensor ready..");
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
@@ -496,7 +523,7 @@ void setup() {
 void loop(){
   gui.pageStart();
   sensorLoop();    // read HPMA serial data and showed it
-  avarageLoop();   // calculated of sensor data avarage
+  averageLoop();   // calculated of sensor data average
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
   influxDbLoop();    // influxDB publication

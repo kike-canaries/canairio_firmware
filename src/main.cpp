@@ -59,14 +59,14 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
-////////
+
+// Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();
 float humidity = 0;
 float temperature = 0;
 unsigned int humint = 0;
 unsigned int tmpint = 0;
 
-///////
 String txtMsg = "";
 vector<unsigned int> v25;      // for average
 vector<unsigned int> v10;      // for average
@@ -265,13 +265,8 @@ bool influxDbIsConfigured(){
 void influxDbParseFields(char* fields){
   sprintf(
     fields,
-<<<<<<< HEAD
     "pm1=%u,pm25=%u,pm10=%u,hum=%d,tmp=%d,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
-    0,apm25,apm10,0,0,lat,lon,alt,spd,stime,0
-=======
-    "pm1=%u,pm25=%u,pm10=%u,hum=%u,tmp=%u,lat=%d,lng=%d,alt=%d,spd=%d,stime=%i,tstp=%u",
-    0,apm25,apm10,humint,tmpint,0,0,0,0,stime,0
->>>>>>> 8a9c2da39dfb6123f9286261e4fcf864ea134b86
+    0,apm25,apm10,humint,tmpint,lat,lon,alt,spd,stime,0
   );
 }
 

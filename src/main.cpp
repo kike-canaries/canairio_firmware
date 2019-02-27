@@ -219,7 +219,6 @@ String getFormatData(unsigned int pm25, unsigned int pm10){
  }
 
 void humidityLoop(){
-//  if(v25.size()==0) {
   if (v25.size() >= stime) {
      getHumidityRead();
     }
@@ -251,7 +250,7 @@ bool influxDbIsConfigured(){
 void influxDbParseFields(char* fields){
   sprintf(
     fields,
-    "pm1=%u,pm25=%u,pm10=%u,hum=%u,tmp=%u,lat=%d,lng=%d,alt=%d,spd=%d,stime=%i,tstp=%u", //cambie de %d a %u para hum y tmp
+    "pm1=%u,pm25=%u,pm10=%u,hum=%u,tmp=%u,lat=%d,lng=%d,alt=%d,spd=%d,stime=%i,tstp=%u",
     0,apm25,apm10,humint,tmpint,0,0,0,0,stime,0
   );
 }
@@ -510,9 +509,7 @@ void setup() {
   gui.displayInit(u8g2);
   gui.showWelcome();
   sensorInit();
-  //////////////
   am2320.begin();
-  /////////////
   gui.welcomeAddMessage("Sensor ready..");
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
@@ -538,4 +535,3 @@ void loop(){
   gui.pageEnd();
   delay(1000);
 }
-

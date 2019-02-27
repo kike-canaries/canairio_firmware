@@ -219,10 +219,11 @@ String getFormatData(unsigned int pm25, unsigned int pm10){
  }
 
 void humidityLoop(){
-  if(v25.size()==0) {
-    getHumidityRead();
+//  if(v25.size()==0) {
+  if (v25.size() >= stime) {
+     getHumidityRead();
+    }
   }
-}
 
 /******************************************************************************
 *   I N F L U X D B   M E T H O D S
@@ -537,3 +538,4 @@ void loop(){
   gui.pageEnd();
   delay(1000);
 }
+

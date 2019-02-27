@@ -187,11 +187,20 @@ void statusLoop(){
   if(dataSendToggle)dataSendToggle=false;
 }
 
-String getFormatData(unsigned int pm25, unsigned int pm10){
-  StaticJsonBuffer<100> jsonBuffer;
+String getNotificationData(){
+  StaticJsonBuffer<30> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
-  root["P25"] = pm25;
-  root["P10"] = pm10;
+  root["P25"] = apm25;  // notification capacity is reduced, only main value
+  String json;
+  root.printTo(json);
+  return json;
+}
+
+String getSensorData(){
+  StaticJsonBuffer<150> jsonBuffer;
+  JsonObject &root = jsonBuffer.createObject();
+  root["P25"] = apm25;
+  root["P10"] = apm10;
   root["lat"] = lat;
   root["lon"] = lon;
   root["alt"] = alt;
@@ -471,8 +480,9 @@ void bleLoop(){
   // notify changed value
   if (deviceConnected && v25.size()==0) {  // v25 test for get each ~5 sec aprox
     Serial.println("-->[BLE] sending notification..");
-    pCharactData->setValue(getFormatData(apm25,apm10).c_str());
+    pCharactData->setValue(getNotificationData().c_str());
     pCharactData->notify();
+    pCharactData->setValue(getSensorData().c_str());
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {

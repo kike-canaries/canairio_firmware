@@ -162,15 +162,6 @@ void averageLoop(){
   if (v25.size() >= stime){
     apm25 = getPM25Average();  // global var for display
     apm10 = getPM10Average();
-
-////////////
-    humidity = am2320.readHumidity();
-    temperature = am2320.readTemperature();
-    Serial.println("-->[AM2320] Humidity: "+ String(humidity) + " % Temperature: " + String(temperature) + " °C");
-    humint = round (humidity);
-    tmpint = round (temperature);
-
-//////////
   }
 }
 
@@ -219,6 +210,20 @@ String getFormatData(unsigned int pm25, unsigned int pm10){
   return json;
 }
 
+ void getHumidityRead(){
+   humidity = am2320.readHumidity();
+   temperature = am2320.readTemperature();
+   Serial.println("-->[AM2320] Humidity: "+ String(humidity) + " % Temperature: " + String(temperature) + " °C");
+   humint = round (humidity);
+   tmpint = round (temperature);
+ }
+
+void humidityLoop(){
+  if(v25.size()==0) {
+    getHumidityRead();
+  }
+}
+
 /******************************************************************************
 *   I N F L U X D B   M E T H O D S
 ******************************************************************************/
@@ -245,7 +250,7 @@ bool influxDbIsConfigured(){
 void influxDbParseFields(char* fields){
   sprintf(
     fields,
-    "pm1=%u,pm25=%u,pm10=%u,hum=%u,tmp=%u,lat=%d,lng=%d,alt=%d,spd=%d,stime=%i,tstp=%u",   //change %d to %u for hum and tmp
+    "pm1=%u,pm25=%u,pm10=%u,hum=%u,tmp=%u,lat=%d,lng=%d,alt=%d,spd=%d,stime=%i,tstp=%u", //cambie de %d a %u para hum y tmp
     0,apm25,apm10,humint,tmpint,0,0,0,0,stime,0
   );
 }
@@ -523,6 +528,7 @@ void setup() {
 void loop(){
   gui.pageStart();
   sensorLoop();    // read HPMA serial data and showed it
+  humidityLoop();  // read AM2320
   averageLoop();   // calculated of sensor data average
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it

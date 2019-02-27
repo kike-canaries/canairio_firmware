@@ -367,7 +367,7 @@ bool configSave(const char* json){
   String tifxtg = root["ifxtg"] | "";
   String tssid  = root["ssid"]  | "";
   String tpass  = root["pass"]  | "";
-  int tstime    = root["stime"] | 5;
+  int tstime    = root["stime"] | 0;
   double tlat   = root["lat"]  | 0;
   double tlon   = root["lon"]  | 0;
   int talt      = root["alt"] | 0;
@@ -480,9 +480,9 @@ void bleLoop(){
   // notify changed value
   if (deviceConnected && v25.size()==0) {  // v25 test for get each ~5 sec aprox
     Serial.println("-->[BLE] sending notification..");
-    pCharactData->setValue(getNotificationData().c_str());
+    pCharactData->setValue(getNotificationData().c_str());  // small payload for notification
     pCharactData->notify();
-    pCharactData->setValue(getSensorData().c_str());
+    pCharactData->setValue(getSensorData().c_str());        // load big payload for possible read
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {

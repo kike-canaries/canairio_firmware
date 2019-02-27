@@ -219,7 +219,7 @@ String getFormatData(unsigned int pm25, unsigned int pm10){
  }
 
 void humidityLoop(){
-  if (v25.size() >= stime) {
+  if (v25.size()==0) {
      getHumidityRead();
     }
   }
@@ -526,8 +526,8 @@ void setup() {
 void loop(){
   gui.pageStart();
   sensorLoop();    // read HPMA serial data and showed it
-  humidityLoop();  // read AM2320
   averageLoop();   // calculated of sensor data average
+  humidityLoop();  // read AM2320
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
   influxDbLoop();    // influxDB publication

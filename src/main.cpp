@@ -59,7 +59,7 @@ unsigned int apm25 = 0;        // last PM2.5 avarage
 unsigned int apm10 = 0;        // last PM10 avarage
 int stime = 5;                 // sample time (send data each 5 sec)
 double lat,lon;                // Coordinates
-int alt, spd;                  // Altitude and speed
+float alt, spd;                // Altitude and speed
 
 // WiFi fields
 #define WIFI_RETRY_CONNECTION    20
@@ -236,7 +236,7 @@ bool influxDbIsConfigured(){
 void influxDbParseFields(char* fields){
   sprintf(
     fields,
-    "pm1=%u,pm25=%u,pm10=%u,hum=%d,tmp=%d,lat=%f,lng=%f,alt=%i,spd=%i,stime=%i,tstp=%u",
+    "pm1=%u,pm25=%u,pm10=%u,hum=%d,tmp=%d,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
     0,apm25,apm10,0,0,lat,lon,alt,spd,stime,0
   );
 }
@@ -321,7 +321,7 @@ void wifiLoop(){
 /******************************************************************************
 *   C O N F I G  M E T H O D S
 ******************************************************************************/
-String configGetData(){
+String getConfigData(){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
   preferences.begin(app_name,false);
@@ -348,8 +348,8 @@ void configInit(){
   stime = preferences.getInt("stime",5);
   lat   = preferences.getDouble("lat",0);
   lon   = preferences.getDouble("lon",0);
-  alt = preferences.getInt("alt",0);
-  spd = preferences.getInt("spd",0);
+  alt = preferences.getFloat("alt",0);
+  spd = preferences.getFloat("spd",0);
   preferences.end();
 }
 
@@ -370,8 +370,8 @@ bool configSave(const char* json){
   int tstime    = root["stime"] | 0;
   double tlat   = root["lat"].as<double>();
   double tlon   = root["lon"].as<double>();
-  int talt      = root["alt"] | 0;
-  int tspd      = root["spd"] | 0;
+  float talt      = root["alt"].as<float>();
+  float tspd      = root["spd"].as<float>();
 
   if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0) {
     preferences.begin(app_name, false);
@@ -382,7 +382,7 @@ bool configSave(const char* json){
     preferences.end();
     Serial.println("-->[CONFIG] influxdb config saved!");
     Serial.print("-->[CONFIG] ");
-    Serial.println(configGetData());
+    Serial.println(getConfigData());
   }
   else if (tssid.length()>0 && tpass.length()>0){
     preferences.begin(app_name, false);
@@ -395,15 +395,15 @@ bool configSave(const char* json){
     preferences.begin(app_name, false);
     preferences.putDouble("lat",tlat);
     preferences.putDouble("lon",tlon);
-    preferences.putInt("alt",talt);
-    preferences.putInt("spd",tspd);
+    preferences.putFloat("alt",talt);
+    preferences.putFloat("spd",tspd);
     preferences.end();
     Serial.print("-->[CONFIG] updated location to: ");
     Serial.print(tlat); Serial.print(","); Serial.println(tlon);
     Serial.print("-->[CONFIG] altitude: "); Serial.println(talt);
     Serial.print("-->[CONFIG] speed: "); Serial.println(tspd);
   }
-  else if (tstime>0) {
+  else if (tstime>5) {
     preferences.begin(app_name, false);
     preferences.putInt("stime", tstime);
     preferences.end();
@@ -442,7 +442,7 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
         else {
           Serial.println ("-->[E][CONFIG] load config failed!");
         }
-        pCharactConfig->setValue(configGetData().c_str());
+        pCharactConfig->setValue(getConfigData().c_str());
         pCharactData->setValue(getSensorData().c_str());
       }
     }
@@ -468,10 +468,12 @@ void bleServerInit(){
   );
   // Create a Data Descriptor (for notifications)
   pCharactData->addDescriptor(new BLE2902());
+  // Saved current sensor data
+  pCharactData->setValue(getSensorData().c_str());
   // Setting Config callback
   pCharactConfig->setCallbacks(new MyConfigCallbacks());
-  // Getting saved config data
-  pCharactConfig->setValue(configGetData().c_str());
+  // Saved current config data
+  pCharactConfig->setValue(getConfigData().c_str());
   // Start the service
   pService->start();
   // Start advertising
@@ -518,11 +520,11 @@ void setup() {
   Serial.println("-->[SETUP] serial ready.");
   gui.displayInit(u8g2);
   gui.showWelcome();
+  configInit();
   sensorInit();
   gui.welcomeAddMessage("Sensor ready..");
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
-  configInit();
   gui.welcomeAddMessage("WiFi test..");
   wifiInit();
   gui.welcomeAddMessage("InfluxDB test..");

@@ -62,8 +62,8 @@ HPMA115S0 hpma115S0(hpmaSerial);
 
 // Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();
-float humi = 0;  // % Relative humidity 
-float temp = 0;  // Temperature (C)
+float humi = 0.0;  // % Relative humidity 
+float temp = 0.0;  // Temperature (C)
 
 String txtMsg = "";
 vector<unsigned int> v25;      // for average
@@ -226,6 +226,8 @@ String getSensorData(){
  void getHumidityRead() {
    humi = am2320.readHumidity();
    temp = am2320.readTemperature();
+   if(isnan(humi))humi=0.0;
+   if(isnan(temp))temp=0.0;
    Serial.println("-->[AM2320] Humidity: "+ String(humi) + " % Temperature: " + String(temp) + " °C");
  }
 

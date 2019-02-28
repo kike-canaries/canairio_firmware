@@ -21,6 +21,13 @@
 #include <Preferences.h>
 #include "WiFi.h"
 
+///////////////////
+#include <Wire.h>
+#include "Adafruit_Sensor.h"
+#include "Adafruit_AM2320.h"
+//////////////////
+
+
 const char app_name[] = "canairio";
 using namespace std;
 
@@ -52,12 +59,20 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
+
+// Humidity sensor
+Adafruit_AM2320 am2320 = Adafruit_AM2320();
+float humi = 0.0;  // % Relative humidity 
+float temp = 0.0;  // Temperature (C)
+
 String txtMsg = "";
-vector<unsigned int> v25;      // for avarage
-vector<unsigned int> v10;      // for avarage
-unsigned int apm25 = 0;        // last PM2.5 avarage
-unsigned int apm10 = 0;        // last PM10 avarage
+vector<unsigned int> v25;      // for average
+vector<unsigned int> v10;      // for average
+unsigned int apm25 = 0;        // last PM2.5 average
+unsigned int apm10 = 0;        // last PM10 average
 int stime = 5;                 // sample time (send data each 5 sec)
+double lat,lon;                // Coordinates
+float alt, spd;                // Altitude and speed
 
 // WiFi fields
 #define WIFI_RETRY_CONNECTION    20
@@ -77,7 +92,7 @@ bool oldDeviceConnected = false;
 
 // InfluxDB fields
 InfluxArduino influx;
-String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxfd;
+String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxtg;
 
 // GUI fields
 #define LED 2
@@ -92,7 +107,6 @@ Preferences preferences;
  * [DEPRECATED] sensorConfig:
  * The next method is only if sensor was config without autosend
  */
-
 void sensorConfig(){
   Serial.println("-->[HPMA] configuration hpma115S0 sensor..");
   hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
@@ -124,37 +138,36 @@ void wrongDataState(){
 }
 
 /***
- * Avarage methods
+ * Average methods
  **/
 
-void saveDataForAvarage(unsigned int pm25, unsigned int pm10){
+void saveDataForAverage(unsigned int pm25, unsigned int pm10){
   v25.push_back(pm25);
   v10.push_back(pm10);
 }
 
-unsigned int getPM25Avarage(){
-  unsigned int pm25_avarage = accumulate( v25.begin(), v25.end(), 0.0)/v25.size();
+unsigned int getPM25Average(){
+  unsigned int pm25_average = accumulate( v25.begin(), v25.end(), 0.0)/v25.size();
   v25.clear();
-  return pm25_avarage; 
+  return pm25_average;
 }
 
-unsigned int getPM10Avarage(){
-  unsigned int pm10_avarage = accumulate( v10.begin(), v10.end(), 0.0)/v10.size();
+unsigned int getPM10Average(){
+  unsigned int pm10_average = accumulate( v10.begin(), v10.end(), 0.0)/v10.size();
   v10.clear();
-  return pm10_avarage; 
+  return pm10_average;
 }
 
-void avarageLoop(){
-  if (v25.size() > stime){
-    apm25 = getPM25Avarage();  // global var for display
-    apm10 = getPM10Avarage();
+void averageLoop(){
+  if (v25.size() >= stime){
+    apm25 = getPM25Average();  // global var for display
+    apm10 = getPM10Average();
   }
 }
 
 /***
  * PM2.5 and PM10 read and visualization
  **/
-
 void sensorLoop(){
   Serial.print("-->[HPMA] read.");
   while (txtMsg.length() < 32) {
@@ -173,7 +186,7 @@ void sensorLoop(){
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
         gui.displaySensorData(pm25,pm10);
-        saveDataForAvarage(pm25,pm10);
+        saveDataForAverage(pm25,pm10);
       }
       else wrongDataState();
     }
@@ -187,52 +200,112 @@ void statusLoop(){
   if(dataSendToggle)dataSendToggle=false;
 }
 
-String getFormatData(unsigned int pm25, unsigned int pm10){
-  StaticJsonBuffer<100> jsonBuffer;
+String getNotificationData(){
+  StaticJsonBuffer<30> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
-  root["P25"] = pm25;
-  root["P10"] = pm10;
+  root["P25"] = apm25;  // notification capacity is reduced, only main value
   String json;
   root.printTo(json);
   return json;
 }
 
-/******************************************************************************
+String getSensorData(){
+  StaticJsonBuffer<150> jsonBuffer;
+  JsonObject &root = jsonBuffer.createObject();
+  root["P25"] = apm25;
+  root["P10"] = apm10;
+  root["lat"] = lat;
+  root["lon"] = lon;
+  root["alt"] = alt;
+  root["spd"] = spd;
+  String json;
+  root.printTo(json);
+  return json;
+}
+
+ void getHumidityRead() {
+   humi = am2320.readHumidity();
+   temp = am2320.readTemperature();
+   if(isnan(humi))humi=0.0;
+   if(isnan(temp))temp=0.0;
+   Serial.println("-->[AM2320] Humidity: "+ String(humi) + " % Temperature: " + String(temp) + " °C");
+ }
+
+ void humidityLoop() {
+   if (v25.size() == 0) {
+     getHumidityRead();
+   }
+ }
+
+ /******************************************************************************
 *   I N F L U X D B   M E T H O D S
 ******************************************************************************/
 
-void influxDbInit() {
-  Serial.println("-->[INFLUXDB] Starting..");
-  influx.configure(ifxdb.c_str(), ifxip.c_str()); //third argument (port number) defaults to 8086
-  Serial.print("-->[INFLUXDB] Using HTTPS: ");
-  Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
-  delay(1000);
+ void influxDbInit()
+ {
+   Serial.println("-->[INFLUXDB] Starting..");
+   influx.configure(ifxdb.c_str(), ifxip.c_str()); //third argument (port number) defaults to 8086
+   Serial.print("-->[INFLUXDB] Using HTTPS: ");
+   Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
+   delay(1000);
 }
 
-bool isInfluxDbConfigured(){
-  return ifxdb.length()>0 && ifxip.length()>0 && ifxfd.length()>0 && ifxid.length()>0;
+bool influxDbIsConfigured(){
+  return ifxdb.length()>0 && ifxip.length()>0 && ifxid.length()>0;
+}
+
+/**
+ * @influxDbParseFields:
+ *
+ * Supported:
+ * "id","pm1","pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime","tstp"
+ *
+ */
+void influxDbParseFields(char* fields){
+  sprintf(
+    fields,
+    "pm1=%u,pm25=%u,pm10=%u,hum=%f,tmp=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
+    0,apm25,apm10,humi,temp,lat,lon,alt,spd,stime,0
+  );
+}
+
+void influxDbAddTags(char* tags){
+  uint64_t chipid=ESP.getEfuseMac();  // default tag (ESP32 MacAdress)
+  if(ifxtg.length()>0)
+    sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(chipid >> 32),(uint32_t)chipid,ifxtg.c_str());
+  else
+    sprintf(tags,"mac=%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
 }
 
 bool influxDbWrite() {
-  if(!isInfluxDbConfigured() || apm25 == 0 || apm10 == 0) {
+  if(!influxDbIsConfigured() || apm25 == 0 || apm10 == 0) {
     return false;
   }
-  char tags[16];
-  char fields[128];
-  sprintf(tags, "read_ok=true");
-  sprintf(fields, ifxfd.c_str(), apm25);
-  return influx.write(ifxid.c_str(), tags, fields);
+  char tags[256];
+  influxDbAddTags(tags);
+  char fields[256];
+  influxDbParseFields(fields);
+
+  if(influx.write(ifxid.c_str(), tags, fields)){
+    Serial.println("-->[INFLUXDB] parsing fields ok");
+    return true;
+  }
+  else{
+    Serial.print("-->[E][INFLUXDB] write error!");
+    Serial.println(String(fields));
+  }
+  return false;
 }
 
 void influxDbReconnect(){
-  if (wifiOn && isInfluxDbConfigured()) {
+  if (wifiOn && influxDbIsConfigured()) {
     Serial.println("-->[INFLUXDB] reconnecting..");
     influxDbInit();
   }
 }
 
-void influxLoop() {
-  if(v25.size()==0 && isInfluxDbConfigured() && wifiOn && influxDbWrite()){
+void influxDbLoop() {
+  if(v25.size()==0 && influxDbIsConfigured() && wifiOn && influxDbWrite()){
     dataSendToggle=true;
     Serial.println("-->[INFLUXDB] database write ready!");
   }
@@ -280,10 +353,11 @@ String getConfigData(){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
   preferences.begin(app_name,false);
+  root["ssid"]   =  preferences.getString("ssid",""); // influxdb database name
   root["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
   root["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
   root["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name
-  root["ifxfd"]  =  preferences.getString("ifxfd",""); // influxdb sensor fields
+  root["ifxtg"]  =  preferences.getString("ifxtg",""); // influxdb sensor tags
   root["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
   preferences.end();
   String output;
@@ -291,19 +365,23 @@ String getConfigData(){
   return output;
 }
 
-void preferencesInit(){
+void configInit(){
   preferences.begin(app_name,false);
   ssid = preferences.getString("ssid","");
   pass = preferences.getString("pass","");
   ifxdb = preferences.getString("ifxdb","");
   ifxip = preferences.getString("ifxip","");
   ifxid = preferences.getString("ifxid","");
-  ifxfd = preferences.getString("ifxfd","");
+  ifxtg = preferences.getString("ifxtg","");
   stime = preferences.getInt("stime",5);
+  lat   = preferences.getDouble("lat",0);
+  lon   = preferences.getDouble("lon",0);
+  alt = preferences.getFloat("alt",0);
+  spd = preferences.getFloat("spd",0);
   preferences.end();
 }
 
-bool saveConfig(const char* json){
+bool configSave(const char* json){
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& root = jsonBuffer.parseObject(json);
   // Test if parsing succeeds.
@@ -314,22 +392,25 @@ bool saveConfig(const char* json){
   String tifxdb = root["ifxdb"] | "";
   String tifxip = root["ifxip"] | "";
   String tifxid = root["ifxid"] | "";
-  String tifxfd = root["ifxfd"] | "";
-  String tssid  = root["ssid"] | "";
-  String tpass  = root["pass"] | "";
-  int tstime    = root["stime"] | 5;
+  String tifxtg = root["ifxtg"] | "";
+  String tssid  = root["ssid"]  | "";
+  String tpass  = root["pass"]  | "";
+  int tstime    = root["stime"] | 0;
+  double tlat   = root["lat"].as<double>();
+  double tlon   = root["lon"].as<double>();
+  float talt      = root["alt"].as<float>();
+  float tspd      = root["spd"].as<float>();
 
-  if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0 && tifxfd.length()>0) {
+  if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0) {
     preferences.begin(app_name, false);
     preferences.putString("ifxdb", tifxdb );
     preferences.putString("ifxip", tifxip );
     preferences.putString("ifxid", tifxid );
-    preferences.putString("ifxfd", tifxfd );
+    preferences.putString("ifxtg", tifxtg );
     preferences.end();
     Serial.println("-->[CONFIG] influxdb config saved!");
     Serial.print("-->[CONFIG] ");
     Serial.println(getConfigData());
-    return true;
   }
   else if (tssid.length()>0 && tpass.length()>0){
     preferences.begin(app_name, false);
@@ -337,19 +418,30 @@ bool saveConfig(const char* json){
     preferences.putString("pass", tpass);
     preferences.end();
     Serial.println("-->[AUTH] WiFi credentials saved!");
-    return true;
   }
-  else if (tstime>0) {
+  else if (tlat != 0 && tlon != 0) {
+    preferences.begin(app_name, false);
+    preferences.putDouble("lat",tlat);
+    preferences.putDouble("lon",tlon);
+    preferences.putFloat("alt",talt);
+    preferences.putFloat("spd",tspd);
+    preferences.end();
+    Serial.print("-->[CONFIG] updated location to: ");
+    Serial.print(tlat); Serial.print(","); Serial.println(tlon);
+    Serial.print("-->[CONFIG] altitude: "); Serial.println(talt);
+    Serial.print("-->[CONFIG] speed: "); Serial.println(tspd);
+  }
+  else if (tstime>5) {
     preferences.begin(app_name, false);
     preferences.putInt("stime", tstime);
     preferences.end();
     Serial.println("-->[CONFIG] sensor sample time saved!");
-    return true;
   }
   else{
     Serial.println("-->[E][CONFIG] invalid config file!");
     return false;
   }
+  return true;
 }
 
 /******************************************************************************
@@ -371,12 +463,15 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
       if (value.length() > 0) {
-        if(saveConfig(value.c_str())){
-          preferencesInit();
+        if(configSave(value.c_str())){
+          configInit();
           influxDbReconnect();
-          pCharactConfig->setValue(getConfigData().c_str());
         }
-        else Serial.println ("-->[E][CONFIG] load config failed!");
+        else {
+          Serial.println ("-->[E][CONFIG] load config failed!");
+        }
+        pCharactConfig->setValue(getConfigData().c_str());
+        pCharactData->setValue(getSensorData().c_str());
       }
     }
 };
@@ -401,9 +496,11 @@ void bleServerInit(){
   );
   // Create a Data Descriptor (for notifications)
   pCharactData->addDescriptor(new BLE2902());
+  // Saved current sensor data
+  pCharactData->setValue(getSensorData().c_str());
   // Setting Config callback
   pCharactConfig->setCallbacks(new MyConfigCallbacks());
-  // Getting saved config data
+  // Saved current config data
   pCharactConfig->setValue(getConfigData().c_str());
   // Start the service
   pService->start();
@@ -416,8 +513,9 @@ void bleLoop(){
   // notify changed value
   if (deviceConnected && v25.size()==0) {  // v25 test for get each ~5 sec aprox
     Serial.println("-->[BLE] sending notification..");
-    pCharactData->setValue(getFormatData(apm25,apm10).c_str());
+    pCharactData->setValue(getNotificationData().c_str());  // small payload for notification
     pCharactData->notify();
+    pCharactData->setValue(getSensorData().c_str());        // load big payload for possible read
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {
@@ -437,17 +535,25 @@ void bleLoop(){
 *  M A I N
 ******************************************************************************/
 
+void printDeviceId(){
+  uint64_t chipid = ESP.getEfuseMac();                                      //The chip ID is essentially its MAC address(length: 6 bytes).
+  Serial.printf("-->[INFO] ESP32 Chip ID = %04X", (uint16_t)(chipid >> 32)); //print High 2 bytes
+  Serial.printf("%08X\n", (uint32_t)chipid);                       //print Low 4bytes.
+}
+
 void setup() {
   Serial.begin(115200);
   Serial.println("\n== INIT SETUP ==\n");
+  printDeviceId();
   Serial.println("-->[SETUP] serial ready.");
   gui.displayInit(u8g2);
   gui.showWelcome();
+  configInit();
   sensorInit();
+  am2320.begin();
   gui.welcomeAddMessage("Sensor ready..");
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
-  preferencesInit();
   gui.welcomeAddMessage("WiFi test..");
   wifiInit();
   gui.welcomeAddMessage("InfluxDB test..");
@@ -460,10 +566,11 @@ void setup() {
 void loop(){
   gui.pageStart();
   sensorLoop();    // read HPMA serial data and showed it
-  avarageLoop();   // calculated of sensor data avarage
+  averageLoop();   // calculated of sensor data average
+  humidityLoop();  // read AM2320
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
-  influxLoop();    // influxDB publication
+  influxDbLoop();    // influxDB publication
   statusLoop();    // update sensor status GUI
   gui.pageEnd();
   delay(1000);

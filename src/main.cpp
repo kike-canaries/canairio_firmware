@@ -62,10 +62,8 @@ HPMA115S0 hpma115S0(hpmaSerial);
 
 // Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();
-float humidity = 0;
-float temperature = 0;
-unsigned int humint = 0;
-unsigned int tmpint = 0;
+float humi = 0.0;  // % Relative humidity 
+float temp = 0.0;  // Temperature (C)
 
 String txtMsg = "";
 vector<unsigned int> v25;      // for average
@@ -225,30 +223,31 @@ String getSensorData(){
   return json;
 }
 
- void getHumidityRead(){
-   humidity = am2320.readHumidity();
-   temperature = am2320.readTemperature();
-   Serial.println("-->[AM2320] Humidity: "+ String(humidity) + " % Temperature: " + String(temperature) + " °C");
-   humint = round (humidity);
-   tmpint = round (temperature);
+ void getHumidityRead() {
+   humi = am2320.readHumidity();
+   temp = am2320.readTemperature();
+   if(isnan(humi))humi=0.0;
+   if(isnan(temp))temp=0.0;
+   Serial.println("-->[AM2320] Humidity: "+ String(humi) + " % Temperature: " + String(temp) + " °C");
  }
 
-void humidityLoop(){
-  if (v25.size()==0) {
+ void humidityLoop() {
+   if (v25.size() == 0) {
      getHumidityRead();
-    }
-  }
+   }
+ }
 
-/******************************************************************************
+ /******************************************************************************
 *   I N F L U X D B   M E T H O D S
 ******************************************************************************/
 
-void influxDbInit() {
-  Serial.println("-->[INFLUXDB] Starting..");
-  influx.configure(ifxdb.c_str(), ifxip.c_str()); //third argument (port number) defaults to 8086
-  Serial.print("-->[INFLUXDB] Using HTTPS: ");
-  Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
-  delay(1000);
+ void influxDbInit()
+ {
+   Serial.println("-->[INFLUXDB] Starting..");
+   influx.configure(ifxdb.c_str(), ifxip.c_str()); //third argument (port number) defaults to 8086
+   Serial.print("-->[INFLUXDB] Using HTTPS: ");
+   Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
+   delay(1000);
 }
 
 bool influxDbIsConfigured(){
@@ -265,8 +264,8 @@ bool influxDbIsConfigured(){
 void influxDbParseFields(char* fields){
   sprintf(
     fields,
-    "pm1=%u,pm25=%u,pm10=%u,hum=%d,tmp=%d,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
-    0,apm25,apm10,humint,tmpint,lat,lon,alt,spd,stime,0
+    "pm1=%u,pm25=%u,pm10=%u,hum=%f,tmp=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
+    0,apm25,apm10,humi,temp,lat,lon,alt,spd,stime,0
   );
 }
 

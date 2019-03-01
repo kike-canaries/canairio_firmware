@@ -8,6 +8,7 @@
  */
 
 #include <Arduino.h>
+#include <Wire.h>
 #include <InfluxArduino.hpp>
 #include <ArduinoJson.h>
 #include <vector>
@@ -17,16 +18,11 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
-#include <GUIUtils.hpp>
 #include <Preferences.h>
-#include "WiFi.h"
-
-///////////////////
-#include <Wire.h>
-#include "Adafruit_Sensor.h"
-#include "Adafruit_AM2320.h"
-//////////////////
-
+#include <WiFi.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_AM2320.h>
+#include <GUIUtils.hpp>
 
 const char app_name[] = "canairio";
 using namespace std;
@@ -60,11 +56,6 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 
-// Humidity sensor
-Adafruit_AM2320 am2320 = Adafruit_AM2320();
-float humi = 0.0;  // % Relative humidity 
-float temp = 0.0;  // Temperature (C)
-
 String txtMsg = "";
 vector<unsigned int> v25;      // for average
 vector<unsigned int> v10;      // for average
@@ -74,11 +65,17 @@ int stime = 5;                 // sample time (send data each 5 sec)
 double lat,lon;                // Coordinates
 float alt, spd;                // Altitude and speed
 
+// Humidity sensor
+Adafruit_AM2320 am2320 = Adafruit_AM2320();
+float humi = 0.0;              // % Relative humidity 
+float temp = 0.0;              // Temperature (C)
+
 // WiFi fields
 #define WIFI_RETRY_CONNECTION    20
 String ssid, pass;
 bool dataSendToggle;
 bool wifiOn;
+uint64_t chipid;
 
 // Bluetooth fields
 BLEServer* pServer = NULL;
@@ -98,6 +95,7 @@ String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxtg;
 #define LED 2
 GUIUtils gui;
 
+// Config Settings
 Preferences preferences;
 
 /******************************************************************************
@@ -269,8 +267,8 @@ void influxDbParseFields(char* fields){
   );
 }
 
-void influxDbAddTags(char* tags){
-  uint64_t chipid=ESP.getEfuseMac();  // default tag (ESP32 MacAdress)
+void influxDbAddTags(char* tags) {
+  // default tag (ESP32 MacAdress)
   if(ifxtg.length()>0)
     sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(chipid >> 32),(uint32_t)chipid,ifxtg.c_str());
   else
@@ -536,22 +534,22 @@ void bleLoop(){
 ******************************************************************************/
 
 void printDeviceId(){
-  uint64_t chipid = ESP.getEfuseMac();                                      //The chip ID is essentially its MAC address(length: 6 bytes).
-  Serial.printf("-->[INFO] ESP32 Chip ID = %04X", (uint16_t)(chipid >> 32)); //print High 2 bytes
-  Serial.printf("%08X\n", (uint32_t)chipid);                       //print Low 4bytes.
+  Serial.printf("-->[INFO] ESP32MAC: %04X", (uint16_t)(chipid >> 32)); //print High 2 bytes
+  Serial.printf("%08X\n", (uint32_t)chipid);                           //print Low 4bytes.
 }
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("\n== INIT SETUP ==\n");
-  printDeviceId();
-  Serial.println("-->[SETUP] serial ready.");
   gui.displayInit(u8g2);
   gui.showWelcome();
+  Serial.println("\n== INIT SETUP ==\n");
+  chipid=ESP.getEfuseMac(); 
+  printDeviceId();
+  Serial.println("-->[SETUP] serial ready.");
   configInit();
   sensorInit();
   am2320.begin();
-  gui.welcomeAddMessage("Sensor ready..");
+  gui.welcomeAddMessage("Sensors ready..");
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
   gui.welcomeAddMessage("WiFi test..");
@@ -570,7 +568,7 @@ void loop(){
   humidityLoop();  // read AM2320
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
-  influxDbLoop();    // influxDB publication
+  influxDbLoop();  // influxDB publication
   statusLoop();    // update sensor status GUI
   gui.pageEnd();
   delay(1000);

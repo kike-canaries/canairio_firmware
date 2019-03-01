@@ -84,6 +84,24 @@ the fields mean:
 ```json
 {"ifxdb":"database_name","ifxip":"hostname_or_ip","ifxid":"sensor_station_name","ifxtg":"zone=north,zone=south"}
 ```
+### Location config
+
+Repeat previous steps `1 to 6` but the payload for `sensor location` for example is:
+
+```json
+"{"lat":52.53819,"lon":13.44024,"alt":220,"spd":34.5}"
+```
+
+## InfluxDb payload
+
+The current version send the next variables to InfluxDb:
+
+```
+pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime"
+```
+- **pm25 and pm10**, from Honeywell sensor (is a average of `stime` samples)
+- **hum and tmp**, humidity and temperature if you connect AM2320 to your ESP32
+- **lat, lng, alt, spd**, variables that you already configured
 
 ---
 

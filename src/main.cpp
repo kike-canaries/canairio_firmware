@@ -429,7 +429,7 @@ bool configSave(const char* json){
     Serial.print("-->[CONFIG] altitude: "); Serial.println(talt);
     Serial.print("-->[CONFIG] speed: "); Serial.println(tspd);
   }
-  else if (tstime>5) {
+  else if (tstime>=5) {
     preferences.begin(app_name, false);
     preferences.putInt("stime", tstime);
     preferences.end();

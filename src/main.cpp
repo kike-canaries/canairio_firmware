@@ -75,6 +75,7 @@ float temp = 0.0;              // Temperature (C)
 String ssid, pass;
 bool dataSendToggle;
 bool wifiOn;
+bool isNewWifi;
 uint64_t chipid;
 
 // Bluetooth fields
@@ -327,6 +328,7 @@ void wifiConnect(const char* ssid, const char* pass) {
     delay(250);
   }
   if(wifiCheck()){
+    isNewWifi=false;
     Serial.println("done\n-->[WIFI] connected!");
   }
 }
@@ -334,6 +336,15 @@ void wifiConnect(const char* ssid, const char* pass) {
 void wifiInit(){
   if(ssid.length() > 0 && pass.length() > 0) {
     wifiConnect(ssid.c_str(), pass.c_str());
+  }
+}
+
+void wifiStop(){
+  if(wifiOn){
+    Serial.print("-->[WIFI] Disconnecting."); Serial.print(ssid);
+    while(WiFi.disconnect(true))Serial.print(".");
+    wifiCheck();
+    Serial.println("done\n");
   }
 }
 
@@ -417,6 +428,7 @@ bool configSave(const char* json){
     preferences.putString("ssid", tssid);
     preferences.putString("pass", tpass);
     preferences.end();
+    isNewWifi=true;  // for execute wifi reconnect
     Serial.println("-->[AUTH] WiFi credentials saved!");
   }
   else if (tlat != 0 && tlon != 0) {
@@ -470,7 +482,11 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
       if (value.length() > 0) {
         if(configSave(value.c_str())){
           configInit();
-          influxDbReconnect();
+          if(isNewWifi){
+            wifiStop();
+            wifiInit();
+            influxDbReconnect();
+          }
         }
         else {
           Serial.println ("-->[E][CONFIG] load config failed!");

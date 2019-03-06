@@ -333,8 +333,11 @@ void wifiConnect(const char* ssid, const char* pass) {
     delay(250);
   }
   if(wifiCheck()){
-    isNewWifi=false;
+    isNewWifi=false;  // flag for config via BLE
     Serial.println("done\n-->[WIFI] connected!");
+  }
+  else{
+    Serial.println("fail!\n-->[E][WIFI] disconnected!");
   }
 }
 

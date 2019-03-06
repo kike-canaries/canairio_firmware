@@ -23,6 +23,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
+#include <main.hpp>
 
 const char app_name[] = "canairio";
 using namespace std;
@@ -91,6 +92,7 @@ bool oldDeviceConnected = false;
 // InfluxDB fields
 InfluxArduino influx;
 String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxtg;
+#define IFX_RETRY_CONNECTION   5
 
 // GUI fields
 #define LED 2
@@ -284,16 +286,7 @@ bool influxDbWrite() {
   influxDbAddTags(tags);
   char fields[256];
   influxDbParseFields(fields);
-
-  if(influx.write(ifxid.c_str(), tags, fields)){
-    Serial.println("-->[INFLUXDB] parsing fields ok");
-    return true;
-  }
-  else{
-    Serial.print("-->[E][INFLUXDB] write error!");
-    Serial.println(String(fields));
-  }
-  return false;
+  return influx.write(ifxid.c_str(), tags, fields);
 }
 
 void influxDbReconnect(){
@@ -304,9 +297,21 @@ void influxDbReconnect(){
 }
 
 void influxDbLoop() {
-  if(v25.size()==0 && influxDbIsConfigured() && wifiOn && influxDbWrite()){
-    dataSendToggle=true;
-    Serial.println("-->[INFLUXDB] database write ready!");
+  if(v25.size()==0 && influxDbIsConfigured() && wifiOn){
+    int ifx_retry = 0;
+    Serial.print("-->[INFLUXDB] writing..");
+    while(!influxDbWrite() && ifx_retry++ < IFX_RETRY_CONNECTION){
+      Serial.print(".");
+      delay(500);
+    }
+    if(ifx_retry == IFX_RETRY_CONNECTION ) {
+      Serial.println("failed!\n-->[INFLUXDB] write error, try wifi restart..");
+      wifiRestart();
+    }
+    else {
+      Serial.println("done\n-->[INFLUXDB] database write ready!");
+      dataSendToggle = true;
+    }
   }
 }
 
@@ -341,11 +346,15 @@ void wifiInit(){
 
 void wifiStop(){
   if(wifiOn){
-    Serial.print("-->[WIFI] Disconnecting."); Serial.print(ssid);
-    while(WiFi.disconnect(true))Serial.print(".");
+    Serial.println("-->[WIFI] Disconnecting..");
+    WiFi.disconnect(true);
     wifiCheck();
-    Serial.println("done\n");
   }
+}
+
+void wifiRestart(){
+  wifiStop();
+  wifiInit();
 }
 
 void wifiLoop(){
@@ -483,8 +492,7 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
         if(configSave(value.c_str())){
           configInit();
           if(isNewWifi){
-            wifiStop();
-            wifiInit();
+            wifiRestart();
             influxDbReconnect();
           }
         }

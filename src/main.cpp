@@ -202,53 +202,53 @@ void statusLoop(){
 }
 
 String getNotificationData(){
-  StaticJsonBuffer<30> jsonBuffer;
-  JsonObject &root = jsonBuffer.createObject();
-  root["P25"] = apm25;  // notification capacity is reduced, only main value
+  StaticJsonDocument<40> doc;
+  doc["P25"] = apm25;  // notification capacity is reduced, only main value
   String json;
-  root.printTo(json);
+  serializeJson(doc,json);
   return json;
 }
 
 String getSensorData(){
-  StaticJsonBuffer<150> jsonBuffer;
-  JsonObject &root = jsonBuffer.createObject();
-  root["P25"] = apm25;
-  root["P10"] = apm10;
-  root["lat"] = lat;
-  root["lon"] = lon;
-  root["alt"] = alt;
-  root["spd"] = spd;
+  StaticJsonDocument<150> doc;
+  doc["P25"] = apm25;
+  doc["P10"] = apm10;
+  doc["lat"] = lat;
+  doc["lon"] = lon;
+  doc["alt"] = alt;
+  doc["spd"] = spd;
   String json;
-  root.printTo(json);
+  serializeJson(doc,json);
   return json;
 }
 
- void getHumidityRead() {
-   humi = am2320.readHumidity();
-   temp = am2320.readTemperature();
-   if(isnan(humi))humi=0.0;
-   if(isnan(temp))temp=0.0;
-   Serial.println("-->[AM2320] Humidity: "+ String(humi) + " % Temperature: " + String(temp) + " °C");
- }
+void getHumidityRead() {
+  humi = am2320.readHumidity();
+  temp = am2320.readTemperature();
+  if (isnan(humi))
+    humi = 0.0;
+  if (isnan(temp))
+    temp = 0.0;
+  Serial.println("-->[AM2320] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
+}
 
- void humidityLoop() {
-   if (v25.size() == 0) {
-     getHumidityRead();
-   }
- }
+void humidityLoop() {
+  if (v25.size() == 0) {
+    getHumidityRead();
+  }
+}
 
- /******************************************************************************
+/******************************************************************************
 *   I N F L U X D B   M E T H O D S
 ******************************************************************************/
 
- void influxDbInit()
- {
-   Serial.println("-->[INFLUXDB] Starting..");
-   influx.configure(ifxdb.c_str(), ifxip.c_str()); //third argument (port number) defaults to 8086
-   Serial.print("-->[INFLUXDB] Using HTTPS: ");
-   Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
-   delay(1000);
+void influxDbInit()
+{
+  Serial.println("-->[INFLUXDB] Starting..");
+  influx.configure(ifxdb.c_str(), ifxip.c_str()); //third argument (port number) defaults to 8086
+  Serial.print("-->[INFLUXDB] Using HTTPS: ");
+  Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
+  delay(1000);
 }
 
 bool influxDbIsConfigured(){
@@ -302,7 +302,7 @@ void influxDbLoop() {
     Serial.print("-->[INFLUXDB] writing..");
     while(!influxDbWrite() && ifx_retry++ < IFX_RETRY_CONNECTION){
       Serial.print(".");
-      delay(500);
+      delay(200);
     }
     if(ifx_retry == IFX_RETRY_CONNECTION ) {
       Serial.println("failed!\n-->[INFLUXDB] write error, try wifi restart..");
@@ -371,19 +371,18 @@ void wifiLoop(){
 *   C O N F I G  M E T H O D S
 ******************************************************************************/
 String getConfigData(){
-  StaticJsonBuffer<300> jsonBuffer;
-  JsonObject &root = jsonBuffer.createObject();
+  StaticJsonDocument<300> doc;
   preferences.begin(app_name,false);
-  root["ssid"]   =  preferences.getString("ssid",""); // influxdb database name
-  root["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
-  root["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
-  root["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name
-  root["ifxtg"]  =  preferences.getString("ifxtg",""); // influxdb sensor tags
-  root["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
-  root["wmac"]    =  (uint16_t)(chipid >> 32);
+  doc["ssid"]   =  preferences.getString("ssid",""); // influxdb database name
+  doc["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
+  doc["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
+  doc["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name
+  doc["ifxtg"]  =  preferences.getString("ifxtg",""); // influxdb sensor tags
+  doc["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
+  doc["wmac"]    =  (uint16_t)(chipid >> 32);
   preferences.end();
   String output;
-  root.printTo(output);
+  serializeJson(doc,output);
   return output;
 }
 
@@ -404,25 +403,26 @@ void configInit(){
 }
 
 bool configSave(const char* json){
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& root = jsonBuffer.parseObject(json);
+  StaticJsonDocument<200> doc;
+  auto error = deserializeJson(doc, json);
   // Test if parsing succeeds.
-  if (!root.success()) {
-    Serial.println("-->[E][CONFIG] parseObject() failed");
+  if (error) {
+    Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
+    Serial.println(error.c_str());
     return false;
   }
-  String tifxdb = root["ifxdb"] | "";
-  String tifxip = root["ifxip"] | "";
-  String tifxid = root["ifxid"] | "";
-  String tifxtg = root["ifxtg"] | "";
-  String tssid  = root["ssid"]  | "";
-  String tpass  = root["pass"]  | "";
-  int tstime    = root["stime"] | 0;
-  double tlat   = root["lat"].as<double>();
-  double tlon   = root["lon"].as<double>();
-  float talt    = root["alt"].as<float>();
-  float tspd    = root["spd"].as<float>();
-  uint16_t cmd  = root["cmd"].as<uint16_t>();
+  String tifxdb = doc["ifxdb"] | "";
+  String tifxip = doc["ifxip"] | "";
+  String tifxid = doc["ifxid"] | "";
+  String tifxtg = doc["ifxtg"] | "";
+  String tssid  = doc["ssid"]  | "";
+  String tpass  = doc["pass"]  | "";
+  int tstime    = doc["stime"] | 0;
+  double tlat   = doc["lat"].as<double>();
+  double tlon   = doc["lon"].as<double>();
+  float talt    = doc["alt"].as<float>();
+  float tspd    = doc["spd"].as<float>();
+  uint16_t cmd  = doc["cmd"].as<uint16_t>();
 
   if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0) {
     preferences.begin(app_name, false);

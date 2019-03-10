@@ -402,6 +402,12 @@ void configInit(){
   preferences.end();
 }
 
+void reboot() {
+  Serial.println("-->[CONFIG] reboot..");
+  delay(100);
+  ESP.restart();
+}
+
 bool configSave(const char* json){
   StaticJsonDocument<200> doc;
   auto error = deserializeJson(doc, json);
@@ -423,6 +429,7 @@ bool configSave(const char* json){
   float talt    = doc["alt"].as<float>();
   float tspd    = doc["spd"].as<float>();
   uint16_t cmd  = doc["cmd"].as<uint16_t>();
+  String act    = doc["act"]  | "";
 
   if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0) {
     preferences.begin(app_name, false);
@@ -461,10 +468,16 @@ bool configSave(const char* json){
     preferences.end();
     Serial.println("-->[CONFIG] sensor sample time saved!");
   }
-  else if (cmd==((uint16_t)(chipid >> 32))){
-    Serial.println("-->[CONFIG] reboot..");
-    delay(100);
-    ESP.restart();
+  else if (cmd==((uint16_t)(chipid >> 32)) && act.length()>0){
+    if (act.equals("rbt")) {
+      reboot();
+    }
+    if (act.equals("cls")) {
+      preferences.begin(app_name, false);
+      preferences.clear();
+      preferences.end();
+      reboot();
+    }
   }
   else {
     Serial.println("-->[E][CONFIG] invalid config file!");

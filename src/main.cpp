@@ -348,7 +348,7 @@ void wifiLoop(){
 *   C O N F I G  M E T H O D S
 ******************************************************************************/
 String getConfigData(){
-  StaticJsonBuffer<200> jsonBuffer;
+  StaticJsonBuffer<300> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
   preferences.begin(app_name,false);
   root["ssid"]   =  preferences.getString("ssid",""); // influxdb database name
@@ -357,6 +357,7 @@ String getConfigData(){
   root["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name
   root["ifxtg"]  =  preferences.getString("ifxtg",""); // influxdb sensor tags
   root["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
+  root["wmac"]    =  (uint16_t)(chipid >> 32);
   preferences.end();
   String output;
   root.printTo(output);
@@ -396,8 +397,9 @@ bool configSave(const char* json){
   int tstime    = root["stime"] | 0;
   double tlat   = root["lat"].as<double>();
   double tlon   = root["lon"].as<double>();
-  float talt      = root["alt"].as<float>();
-  float tspd      = root["spd"].as<float>();
+  float talt    = root["alt"].as<float>();
+  float tspd    = root["spd"].as<float>();
+  uint16_t cmd  = root["cmd"].as<uint16_t>();
 
   if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0) {
     preferences.begin(app_name, false);
@@ -429,13 +431,18 @@ bool configSave(const char* json){
     Serial.print("-->[CONFIG] altitude: "); Serial.println(talt);
     Serial.print("-->[CONFIG] speed: "); Serial.println(tspd);
   }
-  else if (tstime>5) {
+  else if (tstime>=5) {
     preferences.begin(app_name, false);
     preferences.putInt("stime", tstime);
     preferences.end();
     Serial.println("-->[CONFIG] sensor sample time saved!");
   }
-  else{
+  else if (cmd==((uint16_t)(chipid >> 32))){
+    Serial.println("-->[CONFIG] reboot..");
+    delay(100);
+    ESP.restart();
+  }
+  else {
     Serial.println("-->[E][CONFIG] invalid config file!");
     return false;
   }
@@ -558,7 +565,7 @@ void setup() {
   influxDbReconnect();
   pinMode(LED,OUTPUT);
   gui.welcomeAddMessage("==SETUP READY==");
-  delay(1000);
+  delay(500);
 }
 
 void loop(){

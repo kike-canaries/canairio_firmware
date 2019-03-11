@@ -23,6 +23,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
+#include <main.hpp>
 
 const char app_name[] = "canairio";
 using namespace std;
@@ -75,6 +76,7 @@ float temp = 0.0;              // Temperature (C)
 String ssid, pass;
 bool dataSendToggle;
 bool wifiOn;
+bool isNewWifi;
 uint64_t chipid;
 
 // Bluetooth fields
@@ -90,6 +92,7 @@ bool oldDeviceConnected = false;
 // InfluxDB fields
 InfluxArduino influx;
 String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxtg;
+#define IFX_RETRY_CONNECTION   5
 
 // GUI fields
 #define LED 2
@@ -199,53 +202,53 @@ void statusLoop(){
 }
 
 String getNotificationData(){
-  StaticJsonBuffer<30> jsonBuffer;
-  JsonObject &root = jsonBuffer.createObject();
-  root["P25"] = apm25;  // notification capacity is reduced, only main value
+  StaticJsonDocument<40> doc;
+  doc["P25"] = apm25;  // notification capacity is reduced, only main value
   String json;
-  root.printTo(json);
+  serializeJson(doc,json);
   return json;
 }
 
 String getSensorData(){
-  StaticJsonBuffer<150> jsonBuffer;
-  JsonObject &root = jsonBuffer.createObject();
-  root["P25"] = apm25;
-  root["P10"] = apm10;
-  root["lat"] = lat;
-  root["lon"] = lon;
-  root["alt"] = alt;
-  root["spd"] = spd;
+  StaticJsonDocument<150> doc;
+  doc["P25"] = apm25;
+  doc["P10"] = apm10;
+  doc["lat"] = lat;
+  doc["lon"] = lon;
+  doc["alt"] = alt;
+  doc["spd"] = spd;
   String json;
-  root.printTo(json);
+  serializeJson(doc,json);
   return json;
 }
 
- void getHumidityRead() {
-   humi = am2320.readHumidity();
-   temp = am2320.readTemperature();
-   if(isnan(humi))humi=0.0;
-   if(isnan(temp))temp=0.0;
-   Serial.println("-->[AM2320] Humidity: "+ String(humi) + " % Temperature: " + String(temp) + " °C");
- }
+void getHumidityRead() {
+  humi = am2320.readHumidity();
+  temp = am2320.readTemperature();
+  if (isnan(humi))
+    humi = 0.0;
+  if (isnan(temp))
+    temp = 0.0;
+  Serial.println("-->[AM2320] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
+}
 
- void humidityLoop() {
-   if (v25.size() == 0) {
-     getHumidityRead();
-   }
- }
+void humidityLoop() {
+  if (v25.size() == 0) {
+    getHumidityRead();
+  }
+}
 
- /******************************************************************************
+/******************************************************************************
 *   I N F L U X D B   M E T H O D S
 ******************************************************************************/
 
- void influxDbInit()
- {
-   Serial.println("-->[INFLUXDB] Starting..");
-   influx.configure(ifxdb.c_str(), ifxip.c_str()); //third argument (port number) defaults to 8086
-   Serial.print("-->[INFLUXDB] Using HTTPS: ");
-   Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
-   delay(1000);
+void influxDbInit()
+{
+  Serial.println("-->[INFLUXDB] Starting..");
+  influx.configure(ifxdb.c_str(), ifxip.c_str()); //third argument (port number) defaults to 8086
+  Serial.print("-->[INFLUXDB] Using HTTPS: ");
+  Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
+  delay(1000);
 }
 
 bool influxDbIsConfigured(){
@@ -283,16 +286,7 @@ bool influxDbWrite() {
   influxDbAddTags(tags);
   char fields[256];
   influxDbParseFields(fields);
-
-  if(influx.write(ifxid.c_str(), tags, fields)){
-    Serial.println("-->[INFLUXDB] parsing fields ok");
-    return true;
-  }
-  else{
-    Serial.print("-->[E][INFLUXDB] write error!");
-    Serial.println(String(fields));
-  }
-  return false;
+  return influx.write(ifxid.c_str(), tags, fields);
 }
 
 void influxDbReconnect(){
@@ -303,9 +297,21 @@ void influxDbReconnect(){
 }
 
 void influxDbLoop() {
-  if(v25.size()==0 && influxDbIsConfigured() && wifiOn && influxDbWrite()){
-    dataSendToggle=true;
-    Serial.println("-->[INFLUXDB] database write ready!");
+  if(v25.size()==0 && influxDbIsConfigured() && wifiOn){
+    int ifx_retry = 0;
+    Serial.print("-->[INFLUXDB] writing..");
+    while(!influxDbWrite() && ifx_retry++ < IFX_RETRY_CONNECTION){
+      Serial.print(".");
+      delay(200);
+    }
+    if(ifx_retry == IFX_RETRY_CONNECTION ) {
+      Serial.println("failed!\n-->[INFLUXDB] write error, try wifi restart..");
+      wifiRestart();
+    }
+    else {
+      Serial.println("done\n-->[INFLUXDB] database write ready!");
+      dataSendToggle = true;
+    }
   }
 }
 
@@ -327,7 +333,11 @@ void wifiConnect(const char* ssid, const char* pass) {
     delay(250);
   }
   if(wifiCheck()){
+    isNewWifi=false;  // flag for config via BLE
     Serial.println("done\n-->[WIFI] connected!");
+  }
+  else{
+    Serial.println("fail!\n-->[E][WIFI] disconnected!");
   }
 }
 
@@ -335,6 +345,19 @@ void wifiInit(){
   if(ssid.length() > 0 && pass.length() > 0) {
     wifiConnect(ssid.c_str(), pass.c_str());
   }
+}
+
+void wifiStop(){
+  if(wifiOn){
+    Serial.println("-->[WIFI] Disconnecting..");
+    WiFi.disconnect(true);
+    wifiCheck();
+  }
+}
+
+void wifiRestart(){
+  wifiStop();
+  wifiInit();
 }
 
 void wifiLoop(){
@@ -348,19 +371,18 @@ void wifiLoop(){
 *   C O N F I G  M E T H O D S
 ******************************************************************************/
 String getConfigData(){
-  StaticJsonBuffer<300> jsonBuffer;
-  JsonObject &root = jsonBuffer.createObject();
+  StaticJsonDocument<300> doc;
   preferences.begin(app_name,false);
-  root["ssid"]   =  preferences.getString("ssid",""); // influxdb database name
-  root["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
-  root["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
-  root["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name
-  root["ifxtg"]  =  preferences.getString("ifxtg",""); // influxdb sensor tags
-  root["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
-  root["wmac"]    =  (uint16_t)(chipid >> 32);
+  doc["ssid"]   =  preferences.getString("ssid",""); // influxdb database name
+  doc["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
+  doc["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
+  doc["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name
+  doc["ifxtg"]  =  preferences.getString("ifxtg",""); // influxdb sensor tags
+  doc["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
+  doc["wmac"]    =  (uint16_t)(chipid >> 32);
   preferences.end();
   String output;
-  root.printTo(output);
+  serializeJson(doc,output);
   return output;
 }
 
@@ -380,26 +402,34 @@ void configInit(){
   preferences.end();
 }
 
+void reboot() {
+  Serial.println("-->[CONFIG] reboot..");
+  delay(100);
+  ESP.restart();
+}
+
 bool configSave(const char* json){
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& root = jsonBuffer.parseObject(json);
+  StaticJsonDocument<200> doc;
+  auto error = deserializeJson(doc, json);
   // Test if parsing succeeds.
-  if (!root.success()) {
-    Serial.println("-->[E][CONFIG] parseObject() failed");
+  if (error) {
+    Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
+    Serial.println(error.c_str());
     return false;
   }
-  String tifxdb = root["ifxdb"] | "";
-  String tifxip = root["ifxip"] | "";
-  String tifxid = root["ifxid"] | "";
-  String tifxtg = root["ifxtg"] | "";
-  String tssid  = root["ssid"]  | "";
-  String tpass  = root["pass"]  | "";
-  int tstime    = root["stime"] | 0;
-  double tlat   = root["lat"].as<double>();
-  double tlon   = root["lon"].as<double>();
-  float talt    = root["alt"].as<float>();
-  float tspd    = root["spd"].as<float>();
-  uint16_t cmd  = root["cmd"].as<uint16_t>();
+  String tifxdb = doc["ifxdb"] | "";
+  String tifxip = doc["ifxip"] | "";
+  String tifxid = doc["ifxid"] | "";
+  String tifxtg = doc["ifxtg"] | "";
+  String tssid  = doc["ssid"]  | "";
+  String tpass  = doc["pass"]  | "";
+  int tstime    = doc["stime"] | 0;
+  double tlat   = doc["lat"].as<double>();
+  double tlon   = doc["lon"].as<double>();
+  float talt    = doc["alt"].as<float>();
+  float tspd    = doc["spd"].as<float>();
+  uint16_t cmd  = doc["cmd"].as<uint16_t>();
+  String act    = doc["act"]  | "";
 
   if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0) {
     preferences.begin(app_name, false);
@@ -417,6 +447,7 @@ bool configSave(const char* json){
     preferences.putString("ssid", tssid);
     preferences.putString("pass", tpass);
     preferences.end();
+    isNewWifi=true;  // for execute wifi reconnect
     Serial.println("-->[AUTH] WiFi credentials saved!");
   }
   else if (tlat != 0 && tlon != 0) {
@@ -437,10 +468,16 @@ bool configSave(const char* json){
     preferences.end();
     Serial.println("-->[CONFIG] sensor sample time saved!");
   }
-  else if (cmd==((uint16_t)(chipid >> 32))){
-    Serial.println("-->[CONFIG] reboot..");
-    delay(100);
-    ESP.restart();
+  else if (cmd==((uint16_t)(chipid >> 32)) && act.length()>0){
+    if (act.equals("rbt")) {
+      reboot();
+    }
+    if (act.equals("cls")) {
+      preferences.begin(app_name, false);
+      preferences.clear();
+      preferences.end();
+      reboot();
+    }
   }
   else {
     Serial.println("-->[E][CONFIG] invalid config file!");
@@ -470,7 +507,10 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
       if (value.length() > 0) {
         if(configSave(value.c_str())){
           configInit();
-          influxDbReconnect();
+          if(isNewWifi){
+            wifiRestart();
+            influxDbReconnect();
+          }
         }
         else {
           Serial.println ("-->[E][CONFIG] load config failed!");

@@ -235,6 +235,7 @@ String getSensorData(){
   doc["lon"] = lon;
   doc["alt"] = alt;
   doc["spd"] = spd;
+  doc["sta"] = status.to_string().c_str();
   String json;
   serializeJson(doc,json);
   return json;

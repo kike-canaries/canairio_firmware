@@ -103,6 +103,27 @@ pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime"
 - **hum and tmp**, humidity and temperature if you connect AM2320 to your ESP32
 - **lat, lng, alt, spd**, variables that you already configured
 
+## Status vector
+
+The current flags status is represented on one byte:
+
+``` java
+const int bit_sensor  = 0;    // sensor error/ok + code
+const int bit_ble     = 1;    // ble error/on + code
+const int bit_wan     = 2;    // internet access (wifi) + code
+const int bit_cloud   = 3;    // publish cloud + status code
+const int bit_free4   = 4;    // not configured yet
+const int bit_code0   = 5;    // code bit 0
+const int bit_code1   = 6;    // code bit 1
+const int bit_code2   = 7;    // code bit 2
+```
+
+sample:
+    
+    00100011 -> sensor ok, ble ok with code 1: paired
+    00000011 -> sensor ok, ble ok
+    00001111 -> sensor ok, ble ok, wan ok, cloud ok
+
 ---
 
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" align="right" width="384" ></a>

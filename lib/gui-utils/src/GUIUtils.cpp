@@ -90,7 +90,7 @@ void GUIUtils::displaySensorData(int pm25, int pm10){
   else mcount=0;
 #ifdef D1MINI
   char output[22];
-  sprintf(output, "%03d E%02d [S%05d]" , pm10, ecount, mcount);
+  sprintf(output, "%03d E%02d [S%05d]" , pm10, ecode, mcount);
 #else
   sprintf(output, "%04d P25:%03d P10:%03d", mcount, pm25, pm10);
 #endif
@@ -115,9 +115,8 @@ void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn)
 
 }
 
-void GUIUtils::updateError(){
-  ecount++;
-  if(ecount>99)ecount=0;
+void GUIUtils::updateError(unsigned int error){
+  ecode = error;
 }
 
 void GUIUtils::pageStart(){

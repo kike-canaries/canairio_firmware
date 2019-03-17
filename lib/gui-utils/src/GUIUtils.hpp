@@ -11,7 +11,7 @@ public:
 
   GUIUtils(void) {};
 
-  unsigned int mcount, ecount = 0;
+  unsigned int mcount, ecode = 0;
 
   int lastDrawedLine = 0;
 
@@ -43,7 +43,7 @@ public:
 
   void displaySensorData(int pm25, int pm10);
 
-  void updateError();
+  void updateError(unsigned int error);
 
   void pageStart();
 

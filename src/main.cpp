@@ -8,7 +8,6 @@
  */
 
 #include <Arduino.h>
-#include <bitset>
 #include <Wire.h>
 #include <InfluxArduino.hpp>
 #include <ArduinoJson.h>
@@ -25,6 +24,7 @@
 #include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
 #include <main.hpp>
+#include "status.h"
 
 const char app_name[] = "canairio";
 using namespace std;
@@ -102,17 +102,6 @@ GUIUtils gui;
 // Config Settings
 Preferences preferences;
 
-// Status Flags
-std::bitset<8> status;
-const int bit_sensor  = 0;    // sensor error/ok + code
-const int bit_ble     = 1;    // ble error/on + code
-const int bit_wan     = 2;    // internet access (wifi) + code
-const int bit_cloud   = 3;    // publish cloud + status code
-const int bit_free4   = 4;    // not configured yet
-const int bit_code0   = 5;    // code bit 0
-const int bit_code1   = 6;    // code bit 1
-const int bit_code2   = 7;    // code bit 2
-
 /******************************************************************************
 *   S E N S O R  M E T H O D S
 ******************************************************************************/
@@ -143,10 +132,10 @@ void sensorInit(){
 
 void wrongDataState(){
   Serial.println("-->[E][HPMA] !wrong data!");
-  gui.updateError();
+  setErrorCode(ecode_sensor_read_fail);
   txtMsg="";
   hpmaSerial.end();
-  status.reset(bit_sensor);
+  statusOff(bit_sensor);
   sensorInit();
   delay(1000);
 }
@@ -194,7 +183,7 @@ void sensorLoop(){
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
       Serial.print("done");
-      status.set(bit_sensor);
+      statusOn(bit_sensor);
       unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       txtMsg="";
@@ -214,6 +203,8 @@ void statusLoop(){
   if (v25.size() == 0) {
     Serial.print("-->[STATUS] ");
     Serial.println(status.to_string().c_str());
+    gui.updateError(getErrorCode());
+    updateStatusError();
   }
   gui.displayStatus(wifiOn,true,deviceConnected,dataSendToggle);
   if(dataSendToggle)dataSendToggle=false;
@@ -325,12 +316,12 @@ void influxDbLoop() {
     }
     if(ifx_retry == IFX_RETRY_CONNECTION ) {
       Serial.println("failed!\n-->[INFLUXDB] write error, try wifi restart..");
-      status.reset(bit_cloud);
+      statusOff(bit_cloud);
       wifiRestart();
     }
     else {
       Serial.println("done\n-->[INFLUXDB] database write ready!");
-      status.set(bit_cloud);
+      statusOn(bit_cloud);
       dataSendToggle = true;
     }
   }
@@ -342,10 +333,10 @@ void influxDbLoop() {
 
 bool wifiCheck(){
   wifiOn = WiFi.isConnected();
-  if(wifiOn)status.set(bit_wan);  // TODO: We need validate internet connection
+  if(wifiOn)statusOn(bit_wan);  // TODO: We need validate internet connection
   else {
-    status.reset(bit_cloud);
-    status.reset(bit_wan);
+    statusOff(bit_cloud);
+    statusOff(bit_wan);
   }
   return wifiOn;
 }
@@ -364,6 +355,7 @@ void wifiConnect(const char* ssid, const char* pass) {
   }
   else{
     Serial.println("fail!\n-->[E][WIFI] disconnected!");
+    setErrorCode(ecode_wifi_fail);
   }
 }
 
@@ -441,6 +433,7 @@ bool configSave(const char* json){
   if (error) {
     Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
     Serial.println(error.c_str());
+    setErrorCode(ecode_json_parser_error);
     return false;
   }
   String tifxdb = doc["ifxdb"] | "";
@@ -507,6 +500,7 @@ bool configSave(const char* json){
   }
   else {
     Serial.println("-->[E][CONFIG] invalid config file!");
+    setErrorCode(ecode_invalid_config);
     return false;
   }
   return true;
@@ -518,13 +512,13 @@ bool configSave(const char* json){
 class MyServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* pServer) {
       Serial.println("-->[BLE] onConnect");
-      status.set(bit_code0);
+      statusOn(bit_paired);
       deviceConnected = true;
     };
 
     void onDisconnect(BLEServer* pServer) {
       Serial.println("-->[BLE] onDisconnect");
-      status.reset(bit_code0);
+      statusOff(bit_paired);
       deviceConnected = false;
     };
 }; // BLEServerCallbacks
@@ -539,9 +533,6 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
             wifiRestart();
             influxDbReconnect();
           }
-        }
-        else {
-          Serial.println ("-->[E][CONFIG] load config failed!");
         }
         pCharactConfig->setValue(getConfigData().c_str());
         pCharactData->setValue(getSensorData().c_str());
@@ -579,7 +570,6 @@ void bleServerInit(){
   pService->start();
   // Start advertising
   pServer->getAdvertising()->start();
-  status.set(bit_ble);
   Serial.println("-->[BLE] GATT server ready. (Waiting for client)");
 }
 

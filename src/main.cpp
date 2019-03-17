@@ -76,7 +76,7 @@ float temp = 0.0;              // Temperature (C)
 #define WIFI_RETRY_CONNECTION    20
 String ssid, pass;
 bool dataSendToggle;
-bool wifiOn;
+bool wifiEnable, wifiOn;
 bool isNewWifi;
 uint64_t chipid;
 
@@ -361,7 +361,7 @@ void wifiConnect(const char* ssid, const char* pass) {
 }
 
 void wifiInit(){
-  if(ssid.length() > 0 && pass.length() > 0) {
+  if(wifiEnable && ssid.length() > 0 && pass.length() > 0) {
     wifiConnect(ssid.c_str(), pass.c_str());
   }
 }
@@ -380,7 +380,7 @@ void wifiRestart(){
 }
 
 void wifiLoop(){
-  if(v25.size()==0 && ssid.length()>0 && !wifiCheck()) {
+  if(v25.size()==0 && wifiEnable && ssid.length()>0 && !wifiCheck()) {
     wifiConnect(ssid.c_str(), pass.c_str());
     influxDbReconnect();
   }
@@ -392,6 +392,7 @@ void wifiLoop(){
 String getConfigData(){
   StaticJsonDocument<300> doc;
   preferences.begin(app_name,false);
+  doc["wenb"]   =  preferences.getBool("wifiEnable",false);
   doc["ssid"]   =  preferences.getString("ssid",""); // influxdb database name
   doc["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
   doc["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
@@ -407,6 +408,7 @@ String getConfigData(){
 
 void configInit(){
   preferences.begin(app_name,false);
+  wifiEnable = preferences.getBool("wifiEnable",false);
   ssid = preferences.getString("ssid","");
   pass = preferences.getString("pass","");
   ifxdb = preferences.getString("ifxdb","");
@@ -466,7 +468,9 @@ bool configSave(const char* json){
     preferences.begin(app_name, false);
     preferences.putString("ssid", tssid);
     preferences.putString("pass", tpass);
+    preferences.putBool("wifiEnable",true);
     preferences.end();
+    wifiEnable=true;
     isNewWifi=true;  // for execute wifi reconnect
     Serial.println("-->[AUTH] WiFi credentials saved!");
   }
@@ -497,6 +501,14 @@ bool configSave(const char* json){
       preferences.clear();
       preferences.end();
       reboot();
+    }
+    if (act.equals("wst")) {
+      preferences.begin(app_name, false);
+      preferences.putBool("wifiEnable", false);
+      preferences.end();
+      wifiEnable = false;
+      Serial.println("-->[CONFIG] disabling WiFi and radio..");
+      wifiStop();
     }
   }
   else {

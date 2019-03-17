@@ -315,8 +315,9 @@ void influxDbLoop() {
       delay(200);
     }
     if(ifx_retry == IFX_RETRY_CONNECTION ) {
-      Serial.println("failed!\n-->[INFLUXDB] write error, try wifi restart..");
+      Serial.println("failed!\n-->[E][INFLUXDB] write error, try wifi restart..");
       statusOff(bit_cloud);
+      setErrorCode(ecode_ifdb_write_fail);
       wifiRestart();
     }
     else {

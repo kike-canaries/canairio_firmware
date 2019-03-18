@@ -103,6 +103,42 @@ pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime"
 - **hum and tmp**, humidity and temperature if you connect AM2320 to your ESP32
 - **lat, lng, alt, spd**, variables that you already configured
 
+## Status vector
+
+The current flags status is represented on one byte and it is returned on config:
+
+``` java
+bit_sensor  = 0;    // sensor fail/ok
+bit_paired  = 1;    // bluetooth paired
+bit_wan     = 2;    // internet access
+bit_cloud   = 3;    // publish cloud
+bit_code0   = 4;    // code bit 0
+bit_code1   = 5;    // code bit 1
+bit_code2   = 6;    // code bit 2
+bit_code3   = 7;    // code bit 3
+
+```
+
+The error codes are represented on up four bits. Error code table:
+
+``` java
+ecode_sensor_ok          =   0;
+ecode_sensor_read_fail   =   1;
+ecode_sensor_timeout     =   2;
+ecode_wifi_fail          =   3;
+ecode_ifdb_write_fail    =   4;
+ecode_ifdb_dns_fail      =   5;
+ecode_json_parser_error  =   6;
+ecode_invalid_config     =   7;
+```
+
+sample:
+
+``` java
+    00000011 -> sensor ok, device paired
+    00001101 -> sensor ok, wan ok, ifxdb cloud ok
+    01000101 -> sensor ok, wan ok, ifxdb write fail
+```
 ---
 
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" align="right" width="384" ></a>

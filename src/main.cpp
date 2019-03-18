@@ -24,6 +24,7 @@
 #include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
 #include <main.hpp>
+#include "status.h"
 
 const char app_name[] = "canairio";
 using namespace std;
@@ -131,9 +132,10 @@ void sensorInit(){
 
 void wrongDataState(){
   Serial.println("-->[E][HPMA] !wrong data!");
-  gui.updateError();
+  setErrorCode(ecode_sensor_read_fail);
   txtMsg="";
   hpmaSerial.end();
+  statusOff(bit_sensor);
   sensorInit();
   delay(1000);
 }
@@ -181,6 +183,7 @@ void sensorLoop(){
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
       Serial.print("done");
+      statusOn(bit_sensor);
       unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       txtMsg="";
@@ -197,6 +200,12 @@ void sensorLoop(){
 }
 
 void statusLoop(){
+  if (v25.size() == 0) {
+    Serial.print("-->[STATUS] ");
+    Serial.println(status.to_string().c_str());
+    gui.updateError(getErrorCode());
+    updateStatusError();
+  }
   gui.displayStatus(wifiOn,true,deviceConnected,dataSendToggle);
   if(dataSendToggle)dataSendToggle=false;
 }
@@ -217,6 +226,7 @@ String getSensorData(){
   doc["lon"] = lon;
   doc["alt"] = alt;
   doc["spd"] = spd;
+  doc["sta"] = status.to_string().c_str();
   String json;
   serializeJson(doc,json);
   return json;
@@ -305,11 +315,14 @@ void influxDbLoop() {
       delay(200);
     }
     if(ifx_retry == IFX_RETRY_CONNECTION ) {
-      Serial.println("failed!\n-->[INFLUXDB] write error, try wifi restart..");
+      Serial.println("failed!\n-->[E][INFLUXDB] write error, try wifi restart..");
+      statusOff(bit_cloud);
+      setErrorCode(ecode_ifdb_write_fail);
       wifiRestart();
     }
     else {
       Serial.println("done\n-->[INFLUXDB] database write ready!");
+      statusOn(bit_cloud);
       dataSendToggle = true;
     }
   }
@@ -321,6 +334,11 @@ void influxDbLoop() {
 
 bool wifiCheck(){
   wifiOn = WiFi.isConnected();
+  if(wifiOn)statusOn(bit_wan);  // TODO: We need validate internet connection
+  else {
+    statusOff(bit_cloud);
+    statusOff(bit_wan);
+  }
   return wifiOn;
 }
 
@@ -338,6 +356,7 @@ void wifiConnect(const char* ssid, const char* pass) {
   }
   else{
     Serial.println("fail!\n-->[E][WIFI] disconnected!");
+    setErrorCode(ecode_wifi_fail);
   }
 }
 
@@ -415,6 +434,7 @@ bool configSave(const char* json){
   if (error) {
     Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
     Serial.println(error.c_str());
+    setErrorCode(ecode_json_parser_error);
     return false;
   }
   String tifxdb = doc["ifxdb"] | "";
@@ -481,6 +501,7 @@ bool configSave(const char* json){
   }
   else {
     Serial.println("-->[E][CONFIG] invalid config file!");
+    setErrorCode(ecode_invalid_config);
     return false;
   }
   return true;
@@ -492,11 +513,13 @@ bool configSave(const char* json){
 class MyServerCallbacks: public BLEServerCallbacks {
 	void onConnect(BLEServer* pServer) {
       Serial.println("-->[BLE] onConnect");
+      statusOn(bit_paired);
       deviceConnected = true;
     };
 
     void onDisconnect(BLEServer* pServer) {
       Serial.println("-->[BLE] onDisconnect");
+      statusOff(bit_paired);
       deviceConnected = false;
     };
 }; // BLEServerCallbacks
@@ -511,9 +534,6 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
             wifiRestart();
             influxDbReconnect();
           }
-        }
-        else {
-          Serial.println ("-->[E][CONFIG] load config failed!");
         }
         pCharactConfig->setValue(getConfigData().c_str());
         pCharactData->setValue(getSensorData().c_str());

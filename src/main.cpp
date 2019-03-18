@@ -11,96 +11,22 @@
 #include <Wire.h>
 #include <InfluxArduino.hpp>
 #include <ArduinoJson.h>
-#include <vector>
 #include <numeric>
 #include <hpma115S0.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
-#include <Preferences.h>
 #include <WiFi.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
-#include <main.hpp>
+#include <Preferences.h>
+#include <vector>
+#include "main.h"
 #include "status.h"
-
-const char app_name[] = "canairio";
-using namespace std;
-
-/******************************************************************************
-* S E T U P  B O A R D
-* ---------------------
-* please select board on platformio.ini file
-******************************************************************************/
-
-#ifdef WEMOSOLED // display via i2c for WeMOS OLED board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
-#elif HELTEC // display via i2c for Heltec board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
-#else       // display via i2c for D1MINI board
-U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
-#endif
-
-// HPMA115S0 sensor config
-#ifdef WEMOSOLED
-#define HPMA_RX 13   // config for Wemos board
-#define HPMA_TX 15
-#elif HELTEC
-#define HPMA_RX 13  // config for Heltec board
-#define HPMA_TX 12
-#else
-#define HPMA_RX 17  // config for D1MIN1 board
-#define HPMA_TX 16
-#endif
-
-HardwareSerial hpmaSerial(1);
-HPMA115S0 hpma115S0(hpmaSerial);
-
-String txtMsg = "";
-vector<unsigned int> v25;      // for average
-vector<unsigned int> v10;      // for average
-unsigned int apm25 = 0;        // last PM2.5 average
-unsigned int apm10 = 0;        // last PM10 average
-int stime = 5;                 // sample time (send data each 5 sec)
-double lat,lon;                // Coordinates
-float alt, spd;                // Altitude and speed
-
-// Humidity sensor
-Adafruit_AM2320 am2320 = Adafruit_AM2320();
-float humi = 0.0;              // % Relative humidity 
-float temp = 0.0;              // Temperature (C)
-
-// WiFi fields
-#define WIFI_RETRY_CONNECTION    20
-String ssid, pass;
-bool dataSendToggle;
-bool wifiOn;
-bool isNewWifi;
-uint64_t chipid;
-
-// Bluetooth fields
-BLEServer* pServer = NULL;
-BLECharacteristic* pCharactData = NULL;
-BLECharacteristic* pCharactConfig = NULL;
-bool deviceConnected = false;
-bool oldDeviceConnected = false;
-#define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
-#define CHARAC_DATA_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
-#define CHARAC_CONFIG_UUID  "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
-
-// InfluxDB fields
-InfluxArduino influx;
-String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxtg;
-#define IFX_RETRY_CONNECTION   5
-
-// GUI fields
-#define LED 2
-GUIUtils gui;
-
-// Config Settings
-Preferences preferences;
+#include "wifi.h"
+#include "settings.h"
 
 /******************************************************************************
 *   S E N S O R  M E T H O D S
@@ -205,6 +131,7 @@ void statusLoop(){
     Serial.println(status.to_string().c_str());
     gui.updateError(getErrorCode());
     updateStatusError();
+    wifiCheck();
   }
   gui.displayStatus(wifiOn,true,deviceConnected,dataSendToggle);
   if(dataSendToggle)dataSendToggle=false;
@@ -328,184 +255,6 @@ void influxDbLoop() {
   }
 }
 
-/******************************************************************************
-*   W I F I   M E T H O D S
-******************************************************************************/
-
-bool wifiCheck(){
-  wifiOn = WiFi.isConnected();
-  if(wifiOn)statusOn(bit_wan);  // TODO: We need validate internet connection
-  else {
-    statusOff(bit_cloud);
-    statusOff(bit_wan);
-  }
-  return wifiOn;
-}
-
-void wifiConnect(const char* ssid, const char* pass) {
-  Serial.print("-->[WIFI] Connecting to "); Serial.print(ssid);
-  WiFi.begin(ssid, pass);
-  int wifi_retry = 0;
-  while (WiFi.status() != WL_CONNECTED && wifi_retry++ < WIFI_RETRY_CONNECTION) {
-    Serial.print(".");
-    delay(250);
-  }
-  if(wifiCheck()){
-    isNewWifi=false;  // flag for config via BLE
-    Serial.println("done\n-->[WIFI] connected!");
-  }
-  else{
-    Serial.println("fail!\n-->[E][WIFI] disconnected!");
-    setErrorCode(ecode_wifi_fail);
-  }
-}
-
-void wifiInit(){
-  if(ssid.length() > 0 && pass.length() > 0) {
-    wifiConnect(ssid.c_str(), pass.c_str());
-  }
-}
-
-void wifiStop(){
-  if(wifiOn){
-    Serial.println("-->[WIFI] Disconnecting..");
-    WiFi.disconnect(true);
-    wifiCheck();
-  }
-}
-
-void wifiRestart(){
-  wifiStop();
-  wifiInit();
-}
-
-void wifiLoop(){
-  if(v25.size()==0 && ssid.length()>0 && !wifiCheck()) {
-    wifiConnect(ssid.c_str(), pass.c_str());
-    influxDbReconnect();
-  }
-}
-
-/******************************************************************************
-*   C O N F I G  M E T H O D S
-******************************************************************************/
-String getConfigData(){
-  StaticJsonDocument<300> doc;
-  preferences.begin(app_name,false);
-  doc["ssid"]   =  preferences.getString("ssid",""); // influxdb database name
-  doc["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
-  doc["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
-  doc["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name
-  doc["ifxtg"]  =  preferences.getString("ifxtg",""); // influxdb sensor tags
-  doc["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
-  doc["wmac"]    =  (uint16_t)(chipid >> 32);
-  preferences.end();
-  String output;
-  serializeJson(doc,output);
-  return output;
-}
-
-void configInit(){
-  preferences.begin(app_name,false);
-  ssid = preferences.getString("ssid","");
-  pass = preferences.getString("pass","");
-  ifxdb = preferences.getString("ifxdb","");
-  ifxip = preferences.getString("ifxip","");
-  ifxid = preferences.getString("ifxid","");
-  ifxtg = preferences.getString("ifxtg","");
-  stime = preferences.getInt("stime",5);
-  lat   = preferences.getDouble("lat",0);
-  lon   = preferences.getDouble("lon",0);
-  alt = preferences.getFloat("alt",0);
-  spd = preferences.getFloat("spd",0);
-  preferences.end();
-}
-
-void reboot() {
-  Serial.println("-->[CONFIG] reboot..");
-  delay(100);
-  ESP.restart();
-}
-
-bool configSave(const char* json){
-  StaticJsonDocument<200> doc;
-  auto error = deserializeJson(doc, json);
-  // Test if parsing succeeds.
-  if (error) {
-    Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
-    Serial.println(error.c_str());
-    setErrorCode(ecode_json_parser_error);
-    return false;
-  }
-  String tifxdb = doc["ifxdb"] | "";
-  String tifxip = doc["ifxip"] | "";
-  String tifxid = doc["ifxid"] | "";
-  String tifxtg = doc["ifxtg"] | "";
-  String tssid  = doc["ssid"]  | "";
-  String tpass  = doc["pass"]  | "";
-  int tstime    = doc["stime"] | 0;
-  double tlat   = doc["lat"].as<double>();
-  double tlon   = doc["lon"].as<double>();
-  float talt    = doc["alt"].as<float>();
-  float tspd    = doc["spd"].as<float>();
-  uint16_t cmd  = doc["cmd"].as<uint16_t>();
-  String act    = doc["act"]  | "";
-
-  if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0) {
-    preferences.begin(app_name, false);
-    preferences.putString("ifxdb", tifxdb );
-    preferences.putString("ifxip", tifxip );
-    preferences.putString("ifxid", tifxid );
-    preferences.putString("ifxtg", tifxtg );
-    preferences.end();
-    Serial.println("-->[CONFIG] influxdb config saved!");
-    Serial.print("-->[CONFIG] ");
-    Serial.println(getConfigData());
-  }
-  else if (tssid.length()>0 && tpass.length()>0){
-    preferences.begin(app_name, false);
-    preferences.putString("ssid", tssid);
-    preferences.putString("pass", tpass);
-    preferences.end();
-    isNewWifi=true;  // for execute wifi reconnect
-    Serial.println("-->[AUTH] WiFi credentials saved!");
-  }
-  else if (tlat != 0 && tlon != 0) {
-    preferences.begin(app_name, false);
-    preferences.putDouble("lat",tlat);
-    preferences.putDouble("lon",tlon);
-    preferences.putFloat("alt",talt);
-    preferences.putFloat("spd",tspd);
-    preferences.end();
-    Serial.print("-->[CONFIG] updated location to: ");
-    Serial.print(tlat); Serial.print(","); Serial.println(tlon);
-    Serial.print("-->[CONFIG] altitude: "); Serial.println(talt);
-    Serial.print("-->[CONFIG] speed: "); Serial.println(tspd);
-  }
-  else if (tstime>=5) {
-    preferences.begin(app_name, false);
-    preferences.putInt("stime", tstime);
-    preferences.end();
-    Serial.println("-->[CONFIG] sensor sample time saved!");
-  }
-  else if (cmd==((uint16_t)(chipid >> 32)) && act.length()>0){
-    if (act.equals("rbt")) {
-      reboot();
-    }
-    if (act.equals("cls")) {
-      preferences.begin(app_name, false);
-      preferences.clear();
-      preferences.end();
-      reboot();
-    }
-  }
-  else {
-    Serial.println("-->[E][CONFIG] invalid config file!");
-    setErrorCode(ecode_invalid_config);
-    return false;
-  }
-  return true;
-}
 
 /******************************************************************************
 *   B L U E T O O T H  M E T H O D S

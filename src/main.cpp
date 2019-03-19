@@ -2,7 +2,7 @@
 /**
  * @file main.cpp
  * @author Antonio Vanegas @hpsaturn
- * @date June 2018
+ * @date June 2018 - 2019
  * @brief HPMA115S0 sensor on ESP32 with bluetooth GATT notify server
  * @license GPL3
  */
@@ -23,6 +23,7 @@
 #include <GUIUtils.hpp>
 #include <Preferences.h>
 #include <vector>
+#include <bitset>
 #include "main.h"
 #include "status.h"
 #include "wifi.h"
@@ -185,6 +186,7 @@ void influxDbInit()
   influx.configure(ifxdb.c_str(), ifxip.c_str()); //third argument (port number) defaults to 8086
   Serial.print("-->[INFLUXDB] Using HTTPS: ");
   Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
+  isNewIfxdbConfig=false; // flag for config via BLE
   delay(1000);
 }
 
@@ -236,7 +238,8 @@ void influxDbReconnect(){
 void influxDbLoop() {
   if(v25.size()==0 && influxDbIsConfigured() && wifiOn){
     int ifx_retry = 0;
-    Serial.print("-->[INFLUXDB] writing..");
+    Serial.print("-->[INFLUXDB] writing to ");
+    Serial.print("" + ifxip + " db:" + ifxdb + " ..");
     while(!influxDbWrite() && ifx_retry++ < IFX_RETRY_CONNECTION){
       Serial.print(".");
       delay(200);
@@ -281,6 +284,9 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
           configInit();
           if(isNewWifi){
             wifiRestart();
+            influxDbReconnect();
+          }
+          if(isNewIfxdbConfig){
             influxDbReconnect();
           }
         }
@@ -348,6 +354,11 @@ void bleLoop(){
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
+
+void reboot() {
+  delay(100);
+  ESP.restart();
+}
 
 void printDeviceId(){
   Serial.printf("-->[INFO] ESP32MAC: %04X", (uint16_t)(chipid >> 32)); //print High 2 bytes

@@ -35,12 +35,6 @@ void configInit(){
   preferences.end();
 }
 
-void reboot() {
-  Serial.println("-->[CONFIG] reboot..");
-  delay(100);
-  ESP.restart();
-}
-
 bool configSave(const char* json){
   StaticJsonDocument<200> doc;
   auto error = deserializeJson(doc, json);
@@ -72,6 +66,7 @@ bool configSave(const char* json){
     preferences.putString("ifxid", tifxid );
     preferences.putString("ifxtg", tifxtg );
     preferences.end();
+    isNewIfxdbConfig=true;
     Serial.println("-->[CONFIG] influxdb config saved!");
     Serial.print("-->[CONFIG] ");
     Serial.println(getConfigData());
@@ -107,6 +102,7 @@ bool configSave(const char* json){
   else if (cmd==((uint16_t)(chipid >> 32)) && act.length()>0){
     // reboot command
     if (act.equals("rbt")) {  
+      Serial.println("-->[CONFIG] reboot..");
       reboot();
     }
     // clear preferences command

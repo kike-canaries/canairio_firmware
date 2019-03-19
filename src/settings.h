@@ -36,7 +36,7 @@ void configInit(){
 }
 
 bool configSave(const char* json){
-  StaticJsonDocument<200> doc;
+  StaticJsonDocument<1000> doc;
   auto error = deserializeJson(doc, json);
   // Test if parsing succeeds.
   if (error) {

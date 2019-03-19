@@ -62,9 +62,10 @@ bool oldDeviceConnected = false;
 #define CHARAC_CONFIG_UUID  "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
 
 // InfluxDB fields
+#define IFX_RETRY_CONNECTION   5
 InfluxArduino influx;
 String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxtg;
-#define IFX_RETRY_CONNECTION   5
+bool isNewIfxdbConfig;
 
 // GUI fields
 #define LED 2
@@ -78,3 +79,4 @@ const char app_name[] = "canairio";
 void wifiRestart();
 bool wifiCheck();
 void influxDbReconnect();
+void reboot();

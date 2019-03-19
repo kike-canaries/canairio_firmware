@@ -1,4 +1,3 @@
-#include <bitset>
 
 // Status flags byte
 std::bitset<8> status;

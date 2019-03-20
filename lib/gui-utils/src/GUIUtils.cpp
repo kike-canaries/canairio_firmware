@@ -88,8 +88,8 @@ void GUIUtils::displaySensorAvarage(int avarage){
 void GUIUtils::displaySensorData(int pm25, int pm10){
   if(mcount<65535)mcount++;
   else mcount=0;
-#ifdef D1MINI
   char output[22];
+#ifdef D1MINI
   sprintf(output, "%03d E%02d [S%05d]" , pm10, ecode, mcount);
 #else
   sprintf(output, "%04d P25:%03d P10:%03d", mcount, pm25, pm10);

@@ -52,8 +52,6 @@ void sensorInit(){
   Serial.println("-->[HPMA] starting hpma115S0 sensor..");
   delay(100);
   hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
-  Serial.println("-->[HPMA] init hpma serial ready..");
-  Serial.println("-->[HPMA] sensor ready.");
   delay(100);
 }
 
@@ -100,20 +98,21 @@ void averageLoop(){
  * PM2.5 and PM10 read and visualization
  **/
 void sensorLoop(){
-  Serial.print("-->[HPMA] read.");
+  Serial.print("-->[HPMA] read..");
   int try_sensor_read = 0;
   String txtMsg = "";
-  while (txtMsg.length() < 32 && try_sensor_read++<SENSOR_RETRY) {
+  while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
     while (hpmaSerial.available() > 0) {
       char inChar = hpmaSerial.read();
       txtMsg += inChar;
       Serial.print(".");
     }
   }
-  if(try_sensor_read==SENSOR_RETRY){
+  if(try_sensor_read > SENSOR_RETRY){
     setErrorCode(ecode_sensor_timeout);
+    Serial.println("fail"); 
     Serial.println("-->[E][HPMA] disconnected ?"); 
-    return;
+    delay(3000);  // waiting for sensor..
   }
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
@@ -251,7 +250,7 @@ void influxDbLoop() {
       Serial.print(".");
       delay(200);
     }
-    if(ifx_retry == IFX_RETRY_CONNECTION ) {
+    if(ifx_retry > IFX_RETRY_CONNECTION ) {
       Serial.println("failed!\n-->[E][INFLUXDB] write error, try wifi restart..");
       statusOff(bit_cloud);
       setErrorCode(ecode_ifdb_write_fail);
@@ -381,9 +380,9 @@ void setup() {
   printDeviceId();
   Serial.println("-->[SETUP] serial ready.");
   configInit();
+  gui.welcomeAddMessage("Sensors test..");
   sensorInit();
   am2320.begin();
-  gui.welcomeAddMessage("Sensors ready..");
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
   if(ssid.length()>0) gui.welcomeAddMessage("WiFi:"+ssid);

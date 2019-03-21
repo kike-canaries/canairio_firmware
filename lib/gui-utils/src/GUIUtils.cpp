@@ -64,6 +64,7 @@ void GUIUtils::displaySensorAvarage(int avarage){
   displayCenterBig(output);
 }
 
+// TODO: separate this function, format/display
 void GUIUtils::displaySensorData(int pm25, int pm10){
   if(mcount<65535)mcount++;
   else mcount=0;

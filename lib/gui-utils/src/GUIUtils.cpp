@@ -19,7 +19,6 @@ void GUIUtils::displayInit(U8G2 &u8g2){
 
 void GUIUtils::showWelcome(){
   u8g2.clearBuffer();
-#ifdef D1MINI
   u8g2.setFont(u8g2_font_5x8_tf);
   u8g2.drawStr(0, 0, "CanAirIO");
   u8g2.sendBuffer();
@@ -29,11 +28,6 @@ void GUIUtils::showWelcome(){
   u8g2.drawLine(0, 9, 63, 9);
   u8g2.sendBuffer();
   lastDrawedLine = 12;
-#else
-  String version = "CanAirIO ("+String(VERSION_CODE+VCODE)+")";
-  u8g2.drawStr(0, 0,version.c_str());
-  u8g2.drawLine(0, 11, 128, 11);
-#endif
   // only for first screen
   Serial.println("-->[OLED] welcome screen ready.");
   u8g2.sendBuffer();
@@ -47,36 +41,21 @@ void GUIUtils::welcomeAddMessage(String msg){
 }
 
 void GUIUtils::displayCenterBig(String msg){
-#ifdef D1MINI
   u8g2.setCursor(0,0);
   u8g2.setFont(u8g2_font_inb24_mn);
-#else
-  u8g2.setCursor(73,40);
-  u8g2.setFont(u8g2_font_freedoomr25_mn);
-#endif
   u8g2.print(msg.c_str());
 }
 
 void GUIUtils::displayBottomLine(String msg){
   u8g2.setFont(u8g2_font_4x6_tf);
-#ifdef D1MINI
   u8g2.setCursor(0, 29);
   u8g2.print(msg.c_str());
-#else
-  u8g2.setCursor(0, 16);
-  u8g2.print(msg.c_str());
-#endif
 }
 
 void GUIUtils::displayEndLine(String msg){
   u8g2.setFont(u8g2_font_5x7_tf);
-#ifdef D1MINI
   u8g2.setCursor(0, 41);
   u8g2.print(msg.c_str());
-#else
-  u8g2.setCursor(0, 16);
-  u8g2.print(msg.c_str());
-#endif
 }
 
 void GUIUtils::displaySensorAvarage(int avarage){
@@ -89,11 +68,7 @@ void GUIUtils::displaySensorData(int pm25, int pm10){
   if(mcount<65535)mcount++;
   else mcount=0;
   char output[22];
-#ifdef D1MINI
   sprintf(output, "%03d E%02d [S%05d]" , pm10, ecode, mcount);
-#else
-  sprintf(output, "%04d P25:%03d P10:%03d", mcount, pm25, pm10);
-#endif
   displayBottomLine(String(output));
   Serial.print(" PM10:"); Serial.print(output);
   sprintf(output, "P%03d" , pm25);

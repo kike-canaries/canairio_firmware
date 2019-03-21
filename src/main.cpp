@@ -60,7 +60,8 @@ void sensorInit(){
 void wrongDataState(){
   Serial.println("-->[E][HPMA] !wrong data!");
   setErrorCode(ecode_sensor_read_fail);
-  txtMsg="";
+  gui.displaySensorAvarage(apm25);
+  gui.displaySensorData(0,0); 
   hpmaSerial.end();
   statusOff(bit_sensor);
   sensorInit();
@@ -100,12 +101,19 @@ void averageLoop(){
  **/
 void sensorLoop(){
   Serial.print("-->[HPMA] read.");
-  while (txtMsg.length() < 32) {
+  int try_sensor_read = 0;
+  String txtMsg = "";
+  while (txtMsg.length() < 32 && try_sensor_read++<SENSOR_RETRY) {
     while (hpmaSerial.available() > 0) {
       char inChar = hpmaSerial.read();
       txtMsg += inChar;
       Serial.print(".");
     }
+  }
+  if(try_sensor_read==SENSOR_RETRY){
+    setErrorCode(ecode_sensor_timeout);
+    Serial.println("-->[E][HPMA] disconnected ?"); 
+    return;
   }
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
@@ -113,10 +121,9 @@ void sensorLoop(){
       statusOn(bit_sensor);
       unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
-      txtMsg="";
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
-        gui.displaySensorData(pm25,pm10);
+        gui.displaySensorData(pm25,pm10); 
         saveDataForAverage(pm25,pm10);
       }
       else wrongDataState();
@@ -130,10 +137,10 @@ void statusLoop(){
   if (v25.size() == 0) {
     Serial.print("-->[STATUS] ");
     Serial.println(status.to_string().c_str());
-    gui.updateError(getErrorCode());
     updateStatusError();
     wifiCheck();
   }
+  gui.updateError(getErrorCode());
   gui.displayStatus(wifiOn,true,deviceConnected,dataSendToggle);
   if(dataSendToggle)dataSendToggle=false;
 }
@@ -379,7 +386,8 @@ void setup() {
   gui.welcomeAddMessage("Sensors ready..");
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
-  gui.welcomeAddMessage("WiFi test..");
+  if(ssid.length()>0) gui.welcomeAddMessage("WiFi:"+ssid);
+  else gui.welcomeAddMessage("WiFi radio test..");
   wifiInit();
   gui.welcomeAddMessage("InfluxDB test..");
   influxDbReconnect();

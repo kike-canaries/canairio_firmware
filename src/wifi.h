@@ -39,7 +39,7 @@ void wifiInit(){
 void wifiStop(){
   if(wifiOn){
     Serial.println("-->[WIFI] Disconnecting..");
-    while(!WiFi.disconnect(true,true));
+    WiFi.disconnect(true);
     wifiCheck();
   }
 }

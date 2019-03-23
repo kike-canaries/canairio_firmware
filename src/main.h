@@ -1,35 +1,9 @@
 
 using namespace std;
-/******************************************************************************
-* S E T U P  B O A R D   A N D  F I E L D S
-* ---------------------
-* please select board on platformio.ini file
-******************************************************************************/
-
-#ifdef WEMOSOLED // display via i2c for WeMOS OLED board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
-#elif HELTEC // display via i2c for Heltec board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
-#else       // display via i2c for D1MINI board
-U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
-#endif
-
-// HPMA115S0 sensor config
-#ifdef WEMOSOLED
-#define HPMA_RX 13   // config for Wemos board
-#define HPMA_TX 15
-#elif HELTEC
-#define HPMA_RX 13  // config for Heltec board
-#define HPMA_TX 12
-#else
-#define HPMA_RX 17  // config for D1MIN1 board
-#define HPMA_TX 16
-#endif
 
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 
-String txtMsg = "";
 vector<unsigned int> v25;      // for average
 vector<unsigned int> v10;      // for average
 unsigned int apm25 = 0;        // last PM2.5 average
@@ -37,6 +11,7 @@ unsigned int apm10 = 0;        // last PM10 average
 int stime = 5;                 // sample time (send data each 5 sec)
 double lat,lon;                // Coordinates
 float alt, spd;                // Altitude and speed
+#define SENSOR_RETRY  1000     // Sensor read retry
 
 // Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();

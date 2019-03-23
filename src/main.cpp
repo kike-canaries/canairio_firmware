@@ -30,6 +30,34 @@
 #include "settings.h"
 
 /******************************************************************************
+* S E T U P  B O A R D   A N D  F I E L D S
+* ---------------------
+* please select board on platformio.ini file
+******************************************************************************/
+
+#ifdef WEMOSOLED // display via i2c for WeMOS OLED board
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+#elif HELTEC // display via i2c for Heltec board
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
+#else       // display via i2c for D1MINI board
+U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
+#endif
+
+// HPMA115S0 sensor config
+#ifdef WEMOSOLED
+#define HPMA_RX 13   // config for Wemos board
+#define HPMA_TX 15
+#elif HELTEC
+#define HPMA_RX 13  // config for Heltec board
+#define HPMA_TX 12
+#else
+#define HPMA_RX 17  // config for D1MIN1 board
+#define HPMA_TX 16
+#endif
+
+
+
+/******************************************************************************
 *   S E N S O R  M E T H O D S
 ******************************************************************************/
 /**
@@ -52,15 +80,14 @@ void sensorInit(){
   Serial.println("-->[HPMA] starting hpma115S0 sensor..");
   delay(100);
   hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
-  Serial.println("-->[HPMA] init hpma serial ready..");
-  Serial.println("-->[HPMA] sensor ready.");
   delay(100);
 }
 
 void wrongDataState(){
   Serial.println("-->[E][HPMA] !wrong data!");
   setErrorCode(ecode_sensor_read_fail);
-  txtMsg="";
+  gui.displaySensorAvarage(apm25);
+  gui.displaySensorData(0,0); 
   hpmaSerial.end();
   statusOff(bit_sensor);
   sensorInit();
@@ -99,13 +126,21 @@ void averageLoop(){
  * PM2.5 and PM10 read and visualization
  **/
 void sensorLoop(){
-  Serial.print("-->[HPMA] read.");
-  while (txtMsg.length() < 32) {
+  Serial.print("-->[HPMA] read..");
+  int try_sensor_read = 0;
+  String txtMsg = "";
+  while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
     while (hpmaSerial.available() > 0) {
       char inChar = hpmaSerial.read();
       txtMsg += inChar;
       Serial.print(".");
     }
+  }
+  if(try_sensor_read > SENSOR_RETRY){
+    setErrorCode(ecode_sensor_timeout);
+    Serial.println("fail"); 
+    Serial.println("-->[E][HPMA] disconnected ?"); 
+    delay(3000);  // waiting for sensor..
   }
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
@@ -113,10 +148,9 @@ void sensorLoop(){
       statusOn(bit_sensor);
       unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
-      txtMsg="";
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
-        gui.displaySensorData(pm25,pm10);
+        gui.displaySensorData(pm25,pm10); 
         saveDataForAverage(pm25,pm10);
       }
       else wrongDataState();
@@ -130,10 +164,10 @@ void statusLoop(){
   if (v25.size() == 0) {
     Serial.print("-->[STATUS] ");
     Serial.println(status.to_string().c_str());
-    gui.updateError(getErrorCode());
     updateStatusError();
     wifiCheck();
   }
+  gui.updateError(getErrorCode());
   gui.displayStatus(wifiOn,true,deviceConnected,dataSendToggle);
   if(dataSendToggle)dataSendToggle=false;
 }
@@ -244,7 +278,7 @@ void influxDbLoop() {
       Serial.print(".");
       delay(200);
     }
-    if(ifx_retry == IFX_RETRY_CONNECTION ) {
+    if(ifx_retry > IFX_RETRY_CONNECTION ) {
       Serial.println("failed!\n-->[E][INFLUXDB] write error, try wifi restart..");
       statusOff(bit_cloud);
       setErrorCode(ecode_ifdb_write_fail);
@@ -374,12 +408,13 @@ void setup() {
   printDeviceId();
   Serial.println("-->[SETUP] serial ready.");
   configInit();
+  gui.welcomeAddMessage("Sensors test..");
   sensorInit();
   am2320.begin();
-  gui.welcomeAddMessage("Sensors ready..");
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
-  gui.welcomeAddMessage("WiFi test..");
+  if(ssid.length()>0) gui.welcomeAddMessage("WiFi:"+ssid);
+  else gui.welcomeAddMessage("WiFi radio test..");
   wifiInit();
   gui.welcomeAddMessage("InfluxDB test..");
   influxDbReconnect();

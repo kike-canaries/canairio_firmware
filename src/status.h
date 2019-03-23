@@ -2,7 +2,7 @@
 // Status flags byte
 std::bitset<8> status;
 
-#define MAX_ERROR_LIFE_CYCLE  3
+#define MAX_ERROR_LIFE_CYCLE  5
 int error_cycle;
 
 const int bit_sensor  = 0;    // sensor

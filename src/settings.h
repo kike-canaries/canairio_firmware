@@ -63,8 +63,12 @@ bool configSave(const char* json){
     preferences.begin(app_name, false);
     preferences.putString("ifxdb", tifxdb );
     preferences.putString("ifxip", tifxip );
+    preferences.putString("ifxpt", tifxpt );
     preferences.putString("ifxid", tifxid );
     preferences.putString("ifxtg", tifxtg );
+    preferences.putString("iuser", iuser );
+    preferences.putString("ipass", ipass );
+    preferences.putString("icert", icert );
     preferences.end();
     isNewIfxdbConfig=true;
     Serial.println("-->[CONFIG] influxdb config saved!");

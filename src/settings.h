@@ -25,8 +25,11 @@ void configInit(){
   pass = preferences.getString("pass","");
   ifxdb = preferences.getString("ifxdb","");
   ifxip = preferences.getString("ifxip","");
+  ifxpt = preferences.getUInt("ifxpt",8086);
   ifxid = preferences.getString("ifxid","");
   ifxtg = preferences.getString("ifxtg","");
+  ifusr = preferences.getString("ifusr","");
+  ifpss = preferences.getString("ifpss","");
   stime = preferences.getInt("stime",5);
   lat   = preferences.getDouble("lat",0);
   lon   = preferences.getDouble("lon",0);
@@ -48,6 +51,9 @@ bool configSave(const char* json){
   String tifxdb = doc["ifxdb"] | "";
   String tifxip = doc["ifxip"] | "";
   String tifxid = doc["ifxid"] | "";
+  String tifusr = doc["ifusr"] | "";
+  String tifpss = doc["ifpss"] | "";
+  String tifcer = doc["ifcer"] | "";
   String tifxtg = doc["ifxtg"] | "";
   String tssid  = doc["ssid"]  | "";
   String tpass  = doc["pass"]  | "";
@@ -57,18 +63,27 @@ bool configSave(const char* json){
   float talt    = doc["alt"].as<float>();
   float tspd    = doc["spd"].as<float>();
   uint16_t cmd  = doc["cmd"].as<uint16_t>();
+  uint16_t tifxpt = doc["ifxpt"].as<uint16_t>();
   String act    = doc["act"]  | "";
 
   if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0) {
     preferences.begin(app_name, false);
     preferences.putString("ifxdb", tifxdb );
     preferences.putString("ifxip", tifxip );
-    preferences.putString("ifxpt", tifxpt );
     preferences.putString("ifxid", tifxid );
-    preferences.putString("ifxtg", tifxtg );
-    preferences.putString("iuser", iuser );
-    preferences.putString("ipass", ipass );
-    preferences.putString("icert", icert );
+    if (tifxtg.length() > 0){
+      preferences.putString("ifxtg", tifxtg);
+    }
+    if (tifxpt > 0) {
+      preferences.putUInt("ifxpt", tifxpt );
+    }
+    if (tifusr.length() > 0 && tifpss.length() > 0) {
+      preferences.putString("ifusr", tifusr);
+      preferences.putString("ifpss", tifpss);
+    }
+    if (tifcer.length() > 0) {
+      preferences.putString("ifcer", tifcer );
+    }
     preferences.end();
     isNewIfxdbConfig=true;
     Serial.println("-->[CONFIG] influxdb config saved!");

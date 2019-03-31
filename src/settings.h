@@ -10,8 +10,9 @@ String getConfigData(){
   doc["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
   doc["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name
   doc["ifxtg"]  =  preferences.getString("ifxtg",""); // influxdb sensor tags
+  doc["ifusr"]  =  preferences.getString("ifusr", "");  // influxdb sensorid name
+  doc["ifxpt"]  =  preferences.getUInt("ifxpt",8086); // influxdb sensor tags
   doc["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
-  doc["wmac"]    =  (uint16_t)(chipid >> 32);
   preferences.end();
   String output;
   serializeJson(doc,output);

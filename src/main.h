@@ -39,7 +39,8 @@ bool oldDeviceConnected = false;
 // InfluxDB fields
 #define IFX_RETRY_CONNECTION   5
 InfluxArduino influx;
-String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxtg;
+String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxtg, ifusr, ifpss, ifcer;
+uint16_t ifxpt;
 bool isNewIfxdbConfig;
 
 // GUI fields

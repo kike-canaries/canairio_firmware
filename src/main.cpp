@@ -19,7 +19,6 @@
 #include <BLE2902.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include <base64.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
@@ -216,12 +215,9 @@ void humidityLoop() {
 ******************************************************************************/
 
 void canairioWrite(const char *measurement,const char *tagString,const char *fieldString) {
-  Serial.println("-->[API] publish..");
+  Serial.println("\n-->[API] publish..");
   HTTPClient http;
   http.begin("http://canairio.herokuapp.com/points/save/");
-
-  // String auth = base64::encode("canairio" + ":" + "canairio_password");
-  // http.addHeader("Authorization", "Basic " + auth);
   http.setAuthorization(ifusr.c_str(),ifpss.c_str());
   //http.addHeader("Content-Type","application/json");
   http.addHeader("Content-Type", "text/plain"); // not sure what influx is looking for but this works?
@@ -233,20 +229,19 @@ void canairioWrite(const char *measurement,const char *tagString,const char *fie
   else { //no tags
     sprintf(writeBuf, "%s %s", measurement, fieldString); //no comma between tags and fields
   }
+  Serial.println(writeBuf);
   // String payload = "[{"measurement": "cpu_load_short","tags": {"host": "server01","region": "us-west"},"time": "2018-08-10T23:00:00Z","fields": {"value": 0.64}}]";
   int httpCode = http.POST(writeBuf);
 
-  if (httpCode == 204)
-  { //Check for the returning code
+  if (httpCode == 204) { //Check for the returning code
     String payload = http.getString();
+    Serial.print(payload);
+  }
+  else{
+    Serial.println("-->[API] Error HTTP: ");
     Serial.println(httpCode);
-    Serial.println(payload);
   }
-
-  else
-  {
-    Serial.println("Error on HTTP request");
-  }
+  Serial.println("-->[API] end");
 
   http.end();
 }
@@ -300,6 +295,7 @@ bool influxDbWrite() {
   influxDbAddTags(tags);
   char fields[256];
   influxDbParseFields(fields);
+  //canairioWrite(ifxid.c_str(), tags, fields);
   return influx.write(ifxid.c_str(), tags, fields);
 }
 

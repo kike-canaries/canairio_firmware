@@ -52,7 +52,12 @@ Preferences preferences;
 const char app_name[] = "canairio";
 
 // some prototypes
-void wifiRestart();
 bool wifiCheck();
+void wifiConnect(const char* ssid, const char* pass);
+void wifiInit();
+void wifiStop();
+void wifiRestart();
+void wifiLoop();
+
 void influxDbReconnect();
 void reboot();

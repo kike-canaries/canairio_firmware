@@ -18,6 +18,8 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <WiFi.h>
+#include <HTTPClient.h>
+#include <base64.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
@@ -26,7 +28,6 @@
 #include <bitset>
 #include "main.h"
 #include "status.h"
-#include "wifi.h"
 #include "settings.h"
 
 /******************************************************************************
@@ -211,6 +212,46 @@ void humidityLoop() {
 }
 
 /******************************************************************************
+*   C A N A I R I O  P U B L I S H   M E T H O D S
+******************************************************************************/
+
+void canairioWrite(const char *measurement,const char *tagString,const char *fieldString) {
+  Serial.println("-->[API] publish..");
+  HTTPClient http;
+  http.begin("http://canairio.herokuapp.com/points/save/");
+
+  // String auth = base64::encode("canairio" + ":" + "canairio_password");
+  // http.addHeader("Authorization", "Basic " + auth);
+  http.setAuthorization(ifusr.c_str(),ifpss.c_str());
+  //http.addHeader("Content-Type","application/json");
+  http.addHeader("Content-Type", "text/plain"); // not sure what influx is looking for but this works?
+
+  char writeBuf[512]; // ¯\_(ツ)_/¯
+  if (strlen(tagString) > 0){
+    sprintf(writeBuf, "%s,%s %s", measurement, tagString, fieldString); //no comma between tags and fields
+  }
+  else { //no tags
+    sprintf(writeBuf, "%s %s", measurement, fieldString); //no comma between tags and fields
+  }
+  // String payload = "[{"measurement": "cpu_load_short","tags": {"host": "server01","region": "us-west"},"time": "2018-08-10T23:00:00Z","fields": {"value": 0.64}}]";
+  int httpCode = http.POST(writeBuf);
+
+  if (httpCode == 204)
+  { //Check for the returning code
+    String payload = http.getString();
+    Serial.println(httpCode);
+    Serial.println(payload);
+  }
+
+  else
+  {
+    Serial.println("Error on HTTP request");
+  }
+
+  http.end();
+}
+
+/******************************************************************************
 *   I N F L U X D B   M E T H O D S
 ******************************************************************************/
 
@@ -289,6 +330,64 @@ void influxDbLoop() {
       statusOn(bit_cloud);
       dataSendToggle = true;
     }
+  }
+}
+
+/******************************************************************************
+*   W I F I   M E T H O D S
+******************************************************************************/
+
+bool wifiCheck(){
+  wifiOn = WiFi.isConnected();
+  if(wifiOn)statusOn(bit_wan);  // TODO: We need validate internet connection
+  else {
+    statusOff(bit_cloud);
+    statusOff(bit_wan);
+  }
+  return wifiOn;
+}
+
+void wifiConnect(const char* ssid, const char* pass) {
+  Serial.print("-->[WIFI] Connecting to "); Serial.print(ssid);
+  WiFi.begin(ssid, pass);
+  int wifi_retry = 0;
+  while (WiFi.status() != WL_CONNECTED && wifi_retry++ < WIFI_RETRY_CONNECTION) {
+    Serial.print(".");
+    delay(250);
+  }
+  if(wifiCheck()){
+    isNewWifi=false;  // flag for config via BLE
+    Serial.println("done\n-->[WIFI] connected!");
+  }
+  else{
+    Serial.println("fail!\n-->[E][WIFI] disconnected!");
+    setErrorCode(ecode_wifi_fail);
+  }
+}
+
+void wifiInit(){
+  if(wifiEnable && ssid.length() > 0 && pass.length() > 0) {
+    wifiConnect(ssid.c_str(), pass.c_str());
+  }
+}
+
+void wifiStop(){
+  if(wifiOn){
+    Serial.println("-->[WIFI] Disconnecting..");
+    WiFi.disconnect(true);
+    wifiCheck();
+  }
+}
+
+void wifiRestart(){
+  wifiStop();
+  wifiInit();
+}
+
+void wifiLoop(){
+  if(v25.size()==0 && wifiEnable && ssid.length()>0 && !wifiCheck()) {
+    wifiConnect(ssid.c_str(), pass.c_str());
+    influxDbReconnect();
   }
 }
 

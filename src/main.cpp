@@ -10,6 +10,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <InfluxArduino.hpp>
+#include <CanAirIoApi.hpp>
 #include <ArduinoJson.h>
 #include <numeric>
 #include <hpma115S0.h>

@@ -36,6 +36,9 @@ bool oldDeviceConnected = false;
 #define CHARAC_DATA_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
 #define CHARAC_CONFIG_UUID  "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
 
+// CanAirIO API fields
+CanAirIoApi api;
+
 // InfluxDB fields
 #define IFX_RETRY_CONNECTION   5
 InfluxArduino influx;

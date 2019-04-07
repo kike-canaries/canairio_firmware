@@ -214,37 +214,23 @@ void humidityLoop() {
 /******************************************************************************
 *   C A N A I R I O  P U B L I S H   M E T H O D S
 ******************************************************************************/
+void apiInit(){
+  Serial.println("-->[API] Starting..");
+  api = CanAirIoApi(true);
+  char id[13];
+  sprintf(id,"mac=%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
+  Serial.println("-->[API] configure id:"+String(id));
+  api.configure(id, "points/save/", "canairio.herokuapp.com"); //third argument (port number) defaults to 8086
+  // api.authorize(ifusr.c_str(),ifpss.c_str());
+  Serial.println("-->[API] authorize..");
+  api.authorize("canairio","canairio_password");
+  delay(1000);
+}
 
-void canairioWrite(const char *measurement,const char *tagString,const char *fieldString) {
-  Serial.println("\n-->[API] publish..");
-  HTTPClient http;
-  http.begin("http://canairio.herokuapp.com/points/save/");
-  http.setAuthorization(ifusr.c_str(),ifpss.c_str());
-  //http.addHeader("Content-Type","application/json");
-  http.addHeader("Content-Type", "text/plain"); // not sure what influx is looking for but this works?
-
-  char writeBuf[512]; // ¯\_(ツ)_/¯
-  if (strlen(tagString) > 0){
-    sprintf(writeBuf, "%s,%s %s", measurement, tagString, fieldString); //no comma between tags and fields
+void apiLoop() {
+  if (v25.size() == 0 && wifiOn) {
+    api.write(0,apm25,apm10,humi,temp,lat,lon,alt,spd,stime);
   }
-  else { //no tags
-    sprintf(writeBuf, "%s %s", measurement, fieldString); //no comma between tags and fields
-  }
-  Serial.println(writeBuf);
-  // String payload = "[{"measurement": "cpu_load_short","tags": {"host": "server01","region": "us-west"},"time": "2018-08-10T23:00:00Z","fields": {"value": 0.64}}]";
-  int httpCode = http.POST(writeBuf);
-
-  if (httpCode == 204) { //Check for the returning code
-    String payload = http.getString();
-    Serial.print(payload);
-  }
-  else{
-    Serial.println("-->[API] Error HTTP: ");
-    Serial.println(httpCode);
-  }
-  Serial.println("-->[API] end");
-
-  http.end();
 }
 
 /******************************************************************************
@@ -512,8 +498,9 @@ void setup() {
   if(ssid.length()>0) gui.welcomeAddMessage("WiFi:"+ssid);
   else gui.welcomeAddMessage("WiFi radio test..");
   wifiInit();
-  gui.welcomeAddMessage("InfluxDB test..");
+  gui.welcomeAddMessage("CanAirIO API..");
   influxDbReconnect();
+  apiInit();
   pinMode(LED,OUTPUT);
   gui.welcomeAddMessage("==SETUP READY==");
   delay(500);

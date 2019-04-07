@@ -56,8 +56,6 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_TX 16
 #endif
 
-
-
 /******************************************************************************
 *   S E N S O R  M E T H O D S
 ******************************************************************************/
@@ -214,17 +212,19 @@ void humidityLoop() {
 /******************************************************************************
 *   C A N A I R I O  P U B L I S H   M E T H O D S
 ******************************************************************************/
+
 void apiInit(){
   Serial.println("-->[API] Starting..");
-  char id[120];
-  sprintf(id,"mac=%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
-  Serial.println("-->[API] configure id:"+String(id));
-  api.configure(id, "points/save/", "canairio.herokuapp.com"); //third argument (port number) defaults to 8086
+  char deviceId[13];
+  sprintf(deviceId,"%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
+  Serial.println("-->[API] configure id:"+String(deviceId));
+  api.configure(ifxid.c_str(), deviceId, "points/save/", "canairio.herokuapp.com"); //third argument (port number) defaults to 8086
   //api.authorize(ifusr.c_str(),ifpss.c_str());
   Serial.println("-->[API] authorize..");
   api.authorize("canairio","canairio_password");
   delay(1000);
 }
+
 
 void apiLoop() {
   if (v25.size() == 0 && wifiOn) {
@@ -514,7 +514,7 @@ void loop(){
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
   influxDbLoop();  // influxDB publication
-  //apiLoop();
+  apiLoop();
   statusLoop();    // update sensor status GUI
   gui.pageEnd();
   delay(1000);

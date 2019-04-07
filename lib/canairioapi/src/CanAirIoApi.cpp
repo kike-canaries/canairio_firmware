@@ -38,19 +38,18 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, f
     char uri[32];
     sprintf(uri, "/%s", _endpoint);
 
-    if(_isSecure)
-    {
+    if(_isSecure) {
        http.begin(_host, _port, uri, _cert);
     }
-    else
-    {
+    else {
         http.begin(_host, _port, uri);
     }
+
     if(_debug)Serial.println("http begin ready!");
     http.addHeader("Content-Type","application/json");
     http.addHeader("cache-control","no-cache");
-        if(_isAuthorised)
-    {
+        
+    if(_isAuthorised) {
         http.setAuthorization(_username,_password);
     }
     if(_debug)Serial.println("http authorization ready!");
@@ -60,7 +59,7 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, f
 
     JsonObject data = doc.createNestedObject();
     data["id"] = _sensorId;
-    StaticJsonDocument<JSON_OBJECT_SIZE(11)> fields;
+    JsonObject fields = data.createNestedObject("fields");
     fields["pm1"] = pm1;
     fields["pm25"] = pm25;
     fields["pm10"] = pm10;
@@ -71,9 +70,6 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, f
     fields["alt"] = alt;
     fields["spd"] = spd;
     fields["stime"] = stime;
-    String sfields;
-    serializeJson(fields,sfields);
-    data["fields"] = sfields;
     if(_debug) serializeJsonPretty(doc, Serial);
     String writeBuf;
     serializeJson(doc,writeBuf);
@@ -81,42 +77,6 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, f
     http.end();
     return _latestResponse == 204;
 }
-
-/******************************************************************************
-*   C A N A I R I O  P U B L I S H   M E T H O D S
-******************************************************************************/
-
-// void canairioWrite(const char *measurement,const char *tagString,const char *fieldString) {
-//   Serial.println("\n-->[API] publish..");
-//   HTTPClient http;
-//   http.begin("http://canairio.herokuapp.com/points/save/");
-//   http.setAuthorization(ifusr.c_str(),ifpss.c_str());
-//   //http.addHeader("Content-Type","application/json");
-//   http.addHeader("Content-Type", "text/plain"); // not sure what influx is looking for but this works?
-
-//   char writeBuf[512]; // ¯\_(ツ)_/¯
-//   if (strlen(tagString) > 0){
-//     sprintf(writeBuf, "%s,%s %s", measurement, tagString, fieldString); //no comma between tags and fields
-//   }
-//   else { //no tags
-//     sprintf(writeBuf, "%s %s", measurement, fieldString); //no comma between tags and fields
-//   }
-//   Serial.println(writeBuf);
-//   // String payload = "[{"measurement": "cpu_load_short","tags": {"host": "server01","region": "us-west"},"time": "2018-08-10T23:00:00Z","fields": {"value": 0.64}}]";
-//   int httpCode = http.POST(writeBuf);
-
-//   if (httpCode == 204) { //Check for the returning code
-//     String payload = http.getString();
-//     Serial.print(payload);
-//   }
-//   else{
-//     Serial.println("-->[API] Error HTTP: ");
-//     Serial.println(httpCode);
-//   }
-//   Serial.println("-->[API] end");
-
-//   http.end();
-// }
 
 int CanAirIoApi::getResponse()
 {

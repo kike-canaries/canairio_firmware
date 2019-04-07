@@ -20,7 +20,7 @@ class CanAirIoApi
 
   public:
 
-  bool debug;
+  bool _debug;
 
   CanAirIoApi(bool debug = false);
 

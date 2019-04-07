@@ -6,6 +6,7 @@
 class CanAirIoApi
 {
   private:
+  char* _nameId;
   char* _sensorId;
   char* _endpoint;
   char* _host;
@@ -26,7 +27,7 @@ class CanAirIoApi
 
   ~CanAirIoApi();
 
-  void configure(const char sensorId[], const char endpoint[], const char host[], const uint16_t port = 80);
+  void configure(const char nameId[], const char deviceId[], const char endpoint[], const char host[], const uint16_t port = 80);
 
   void authorize(const char username[],const char password[]);
 

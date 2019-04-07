@@ -10,8 +10,10 @@ CanAirIoApi::~CanAirIoApi()
 {
 }
 
-void CanAirIoApi::configure(const char sensorId[], const char endpoint[],const char host[],const uint16_t port)
+void CanAirIoApi::configure(const char nameId[], const char sensorId[], const char endpoint[],const char host[],const uint16_t port)
 {   
+    _nameId = new char[strlen(nameId)+1];
+    strcpy(_nameId,nameId); 
     _sensorId = new char[strlen(sensorId)+1];
     strcpy(_sensorId,sensorId); 
     _endpoint = new char[strlen(endpoint)+1];
@@ -19,7 +21,7 @@ void CanAirIoApi::configure(const char sensorId[], const char endpoint[],const c
     _host = new char[strlen(host)+1];
     strcpy(_host,host);
     _port = port;
-    if(_debug)Serial.println("id:"+String(_sensorId)+" target:"+String(_endpoint)+" host:"+String(_host)+":"+String(port));
+    if(_debug)Serial.println("-->[API] configure with id: "+String(_sensorId));
 }
 
 void CanAirIoApi::authorize(const char username[], const char password[])
@@ -29,7 +31,7 @@ void CanAirIoApi::authorize(const char username[], const char password[])
     _password = new char[strlen(password)+1];
     strcpy(_password,password);
     _isAuthorised = true;
-    if(_debug)Serial.println("usr:"+String(_username)+" pss:"+String(_password));
+    if(_debug)Serial.println("-->[API] user:"+String(_username)+" pass:"+String(_password));
 }
 
 bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, float tmp, float lat, float lon, float alt, float spd, int stime)
@@ -45,20 +47,21 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, f
         http.begin(_host, _port, uri);
     }
 
-    if(_debug)Serial.println("http begin ready!");
     http.addHeader("Content-Type","application/json");
     http.addHeader("cache-control","no-cache");
         
     if(_isAuthorised) {
         http.setAuthorization(_username,_password);
     }
-    if(_debug)Serial.println("http authorization ready!");
 
-    const int capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(11);
+    const int capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(11);
     StaticJsonDocument <capacity> doc;
 
     JsonObject data = doc.createNestedObject();
-    data["id"] = _sensorId;
+
+    data["measurement"] = _nameId;
+    data["nameId"] = _nameId;
+    data["sensorId"] = _sensorId;
     JsonObject fields = data.createNestedObject("fields");
     fields["pm1"] = pm1;
     fields["pm25"] = pm25;
@@ -70,10 +73,11 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, f
     fields["alt"] = alt;
     fields["spd"] = spd;
     fields["stime"] = stime;
-    if(_debug) serializeJsonPretty(doc, Serial);
+    if(_debug)serializeJsonPretty(doc, Serial);
     String writeBuf;
     serializeJson(doc,writeBuf);
     _latestResponse = http.POST(writeBuf.c_str());
+    if(_debug)Serial.println("-->[API] response: "+String(_latestResponse));
     http.end();
     return _latestResponse == 204;
 }

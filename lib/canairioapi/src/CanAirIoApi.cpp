@@ -3,6 +3,7 @@
 
 CanAirIoApi::CanAirIoApi(bool debug)
 {
+    _debug=debug;
 }
 
 CanAirIoApi::~CanAirIoApi()
@@ -11,14 +12,14 @@ CanAirIoApi::~CanAirIoApi()
 
 void CanAirIoApi::configure(const char sensorId[], const char endpoint[],const char host[],const uint16_t port)
 {   
-    _sensorId = new char[strlen(sensorId) + 1];
+    _sensorId = new char[strlen(sensorId)+1];
     strcpy(_sensorId,sensorId); 
     _endpoint = new char[strlen(endpoint)+1];
     strcpy(_endpoint,endpoint);
     _host = new char[strlen(host)+1];
     strcpy(_host,host);
     _port = port;
-    if(debug)Serial.println("id:"+String(_sensorId)+" target:"+String(_endpoint)+" host:"+String(_host)+":"+String(port));
+    if(_debug)Serial.println("id:"+String(_sensorId)+" target:"+String(_endpoint)+" host:"+String(_host)+":"+String(port));
 }
 
 void CanAirIoApi::authorize(const char username[], const char password[])
@@ -28,7 +29,7 @@ void CanAirIoApi::authorize(const char username[], const char password[])
     _password = new char[strlen(password)+1];
     strcpy(_password,password);
     _isAuthorised = true;
-    if(debug)Serial.println("usr:"+String(_username)+" pss:"+String(_password));
+    if(_debug)Serial.println("usr:"+String(_username)+" pss:"+String(_password));
 }
 
 bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, float tmp, float lat, float lon, float alt, float spd, int stime)
@@ -45,12 +46,14 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, f
     {
         http.begin(_host, _port, uri);
     }
+    if(_debug)Serial.println("http begin ready!");
     http.addHeader("Content-Type","application/json");
     http.addHeader("cache-control","no-cache");
         if(_isAuthorised)
     {
         http.setAuthorization(_username,_password);
     }
+    if(_debug)Serial.println("http authorization ready!");
 
     const int capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(11);
     StaticJsonDocument <capacity> doc;
@@ -71,7 +74,7 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, f
     String sfields;
     serializeJson(fields,sfields);
     data["fields"] = sfields;
-    if(debug) serializeJsonPretty(doc, Serial);
+    if(_debug) serializeJsonPretty(doc, Serial);
     String writeBuf;
     serializeJson(doc,writeBuf);
     _latestResponse = http.POST(writeBuf.c_str());

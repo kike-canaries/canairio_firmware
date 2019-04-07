@@ -51,7 +51,7 @@ bool isNewWifi;
 uint64_t chipid;
 
 // CanAirIO API fields
-CanAirIoApi api(false);
+CanAirIoApi api(true);
 
 // InfluxDB fields
 #define IFX_RETRY_CONNECTION   5
@@ -137,10 +137,10 @@ void wifiLoop(){
 ******************************************************************************/
 void apiInit(){
   Serial.println("-->[API] Starting..");
-  char id[13];
-  sprintf(id,"%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
-  Serial.println("-->[API] configure id:"+String(id));
-  api.configure(id, "points/save/", "canairio.herokuapp.com"); //third argument (port number) defaults to 8086
+  char deviceId[13];
+  sprintf(deviceId,"%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
+  Serial.println("-->[API] configure id:"+String(deviceId));
+  api.configure(ifxid.c_str(), deviceId, "points/save/", "canairio.herokuapp.com"); //third argument (port number) defaults to 8086
   //api.authorize(ifusr.c_str(),ifpss.c_str());
   Serial.println("-->[API] authorize..");
   api.authorize("canairio","canairio_password");

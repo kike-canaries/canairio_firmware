@@ -216,10 +216,10 @@ void humidityLoop() {
 ******************************************************************************/
 void apiInit(){
   Serial.println("-->[API] Starting..");
-  //char id[13];
-  //sprintf(id,"mac=%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
-  // Serial.println("-->[API] configure id:"+String(id));
-  api.configure("ff23ff13ff", "points/save/", "canairio.herokuapp.com"); //third argument (port number) defaults to 8086
+  char id[120];
+  sprintf(id,"mac=%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
+  Serial.println("-->[API] configure id:"+String(id));
+  api.configure(id, "points/save/", "canairio.herokuapp.com"); //third argument (port number) defaults to 8086
   //api.authorize(ifusr.c_str(),ifpss.c_str());
   Serial.println("-->[API] authorize..");
   api.authorize("canairio","canairio_password");
@@ -514,6 +514,7 @@ void loop(){
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
   influxDbLoop();  // influxDB publication
+  //apiLoop();
   statusLoop();    // update sensor status GUI
   gui.pageEnd();
   delay(1000);

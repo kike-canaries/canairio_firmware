@@ -53,6 +53,7 @@ bool ConfigApp::save(const char *json){
   if (error) {
     Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
     Serial.println(error.c_str());
+
     // setErrorCode(ecode_json_parser_error);
     return false;
   }
@@ -150,7 +151,6 @@ bool ConfigApp::save(const char *json){
   }
   else {
     Serial.println("-->[E][CONFIG] invalid config file!");
-    // setErrorCode(ecode_invalid_config);
     return false;
   }
   return true;

@@ -408,6 +408,9 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
             wifiStop();
           }
         }
+        else{
+          setErrorCode(ecode_invalid_config);
+        }
         pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
         pCharactData->setValue(getSensorData().c_str());
       }

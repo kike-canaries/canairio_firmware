@@ -217,19 +217,19 @@ void apiInit(){
   Serial.println("-->[API] Starting..");
   char deviceId[13];
   sprintf(deviceId,"%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
-  Serial.println("-->[API] configure id:"+String(deviceId));
-  api.configure(ifxid.c_str(), deviceId, "points/save/", "canairio.herokuapp.com"); //third argument (port number) defaults to 8086
+  api.configure(ifxid.c_str(), deviceId); // stationId and deviceId, optional endpoint, host and port
   //api.authorize(ifusr.c_str(),ifpss.c_str());
-  Serial.println("-->[API] authorize..");
   api.authorize("canairio","canairio_password");
   delay(1000);
 }
 
-
 void apiLoop() {
   if (v25.size() == 0 && wifiOn) {
-    Serial.println("-->[API] write..");
-    api.write(0,apm25,apm10,humi,temp,lat,lon,alt,spd,stime);
+    Serial.print("-->[API] write..");
+    bool status = api.write(0,apm25,apm10,humi,temp,lat,lon,alt,spd,stime);
+    if(status) Serial.println("done");
+    else Serial.println("fail! "+String(api.getResponse()));
+    dataSendToggle = true;
   }
 }
 
@@ -513,8 +513,8 @@ void loop(){
   humidityLoop();  // read AM2320
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
-  influxDbLoop();  // influxDB publication
   apiLoop();
+  influxDbLoop();  // influxDB publication
   statusLoop();    // update sensor status GUI
   gui.pageEnd();
   delay(1000);

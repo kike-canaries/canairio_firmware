@@ -1,27 +1,14 @@
-/******************************************************************************
-*   C O N F I G  M E T H O D S
-******************************************************************************/
-String getConfigData(){
-  StaticJsonDocument<300> doc;
-  preferences.begin(app_name,false);
-  doc["wenb"]   =  preferences.getBool("wifiEnable",false);
-  doc["ssid"]   =  preferences.getString("ssid",""); // influxdb database name
-  doc["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
-  doc["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
-  doc["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name
-  doc["ifxtg"]  =  preferences.getString("ifxtg",""); // influxdb sensor tags
-  doc["ifusr"]  =  preferences.getString("ifusr", "");  // influxdb sensorid name
-  doc["ifxpt"]  =  preferences.getUInt("ifxpt",8086); // influxdb sensor tags
-  doc["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
-  doc["wmac"]   =  (uint16_t)(chipid >> 32);
-  preferences.end();
-  String output;
-  serializeJson(doc,output);
-  return output;
+#include "ConfigApp.hpp"
+
+void ConfigApp::init(const char app_name[]){
+  _app_name = new char[strlen(app_name)+1];
+  strcpy(_app_name,app_name); 
+  chipid=ESP.getEfuseMac();
+  reload();
 }
 
-void configInit(){
-  preferences.begin(app_name,false);
+void ConfigApp::reload(){
+  preferences.begin(_app_name,false);
   wifiEnable = preferences.getBool("wifiEnable",false);
   ssid = preferences.getString("ssid","");
   pass = preferences.getString("pass","");
@@ -40,14 +27,33 @@ void configInit(){
   preferences.end();
 }
 
-bool configSave(const char* json){
+String ConfigApp::getCurrentConfig(){
+  StaticJsonDocument<300> doc;
+  preferences.begin(_app_name,false);
+  doc["wenb"]   =  preferences.getBool("wifiEnable",false);
+  doc["ssid"]   =  preferences.getString("ssid",""); // influxdb database name
+  doc["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
+  doc["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
+  doc["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name
+  doc["ifxtg"]  =  preferences.getString("ifxtg",""); // influxdb sensor tags
+  doc["ifusr"]  =  preferences.getString("ifusr", "");  // influxdb sensorid name
+  doc["ifxpt"]  =  preferences.getUInt("ifxpt",8086); // influxdb sensor tags
+  doc["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
+  doc["wmac"]   =  (uint16_t)(chipid >> 32);
+  preferences.end();
+  String output;
+  serializeJson(doc,output);
+  return output;
+}
+
+bool ConfigApp::save(const char *json){
   StaticJsonDocument<1000> doc;
   auto error = deserializeJson(doc, json);
   // Test if parsing succeeds.
   if (error) {
     Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
     Serial.println(error.c_str());
-    setErrorCode(ecode_json_parser_error);
+    // setErrorCode(ecode_json_parser_error);
     return false;
   }
   String tifxdb = doc["ifxdb"] | "";
@@ -69,7 +75,7 @@ bool configSave(const char* json){
   String act    = doc["act"]  | "";
 
   if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0) {
-    preferences.begin(app_name, false);
+    preferences.begin(_app_name, false);
     preferences.putString("ifxdb", tifxdb );
     preferences.putString("ifxip", tifxip );
     preferences.putString("ifxid", tifxid );
@@ -90,10 +96,10 @@ bool configSave(const char* json){
     isNewIfxdbConfig=true;
     Serial.println("-->[CONFIG] influxdb config saved!");
     Serial.print("-->[CONFIG] ");
-    Serial.println(getConfigData());
+    Serial.println(getCurrentConfig());
   }
   else if (tssid.length()>0 && tpass.length()>0){
-    preferences.begin(app_name, false);
+    preferences.begin(_app_name, false);
     preferences.putString("ssid", tssid);
     preferences.putString("pass", tpass);
     preferences.putBool("wifiEnable",true);
@@ -103,7 +109,7 @@ bool configSave(const char* json){
     Serial.println("-->[AUTH] WiFi credentials saved!");
   }
   else if (tlat != 0 && tlon != 0) {
-    preferences.begin(app_name, false);
+    preferences.begin(_app_name, false);
     preferences.putDouble("lat",tlat);
     preferences.putDouble("lon",tlon);
     preferences.putFloat("alt",talt);
@@ -115,7 +121,7 @@ bool configSave(const char* json){
     Serial.print("-->[CONFIG] speed: "); Serial.println(tspd);
   }
   else if (tstime>=5) {
-    preferences.begin(app_name, false);
+    preferences.begin(_app_name, false);
     preferences.putInt("stime", tstime);
     preferences.end();
     Serial.println("-->[CONFIG] sensor sample time saved!");
@@ -128,25 +134,29 @@ bool configSave(const char* json){
     }
     // clear preferences command
     if (act.equals("cls")) {
-      preferences.begin(app_name, false);
+      preferences.begin(_app_name, false);
       preferences.clear();
       preferences.end();
       reboot();
     }
     // wifi disable command
     if (act.equals("wst")) {
-      preferences.begin(app_name, false);
+      preferences.begin(_app_name, false);
       preferences.putBool("wifiEnable", false);
       preferences.end();
       wifiEnable = false;
       Serial.println("-->[CONFIG] disabling WiFi and radio..");
-      wifiStop();
     }
   }
   else {
     Serial.println("-->[E][CONFIG] invalid config file!");
-    setErrorCode(ecode_invalid_config);
+    // setErrorCode(ecode_invalid_config);
     return false;
   }
   return true;
+}
+
+void ConfigApp::reboot(){
+  delay(100);
+  ESP.restart();
 }

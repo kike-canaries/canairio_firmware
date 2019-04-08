@@ -8,9 +8,6 @@ vector<unsigned int> v25;      // for average
 vector<unsigned int> v10;      // for average
 unsigned int apm25 = 0;        // last PM2.5 average
 unsigned int apm10 = 0;        // last PM10 average
-int stime = 5;                 // sample time (send data each 5 sec)
-double lat,lon;                // Coordinates
-float alt, spd;                // Altitude and speed
 #define SENSOR_RETRY  1000     // Sensor read retry
 
 // Humidity sensor
@@ -20,11 +17,8 @@ float temp = 0.0;              // Temperature (C)
 
 // WiFi fields
 #define WIFI_RETRY_CONNECTION    20
-String ssid, pass;
 bool dataSendToggle;
-bool wifiEnable, wifiOn;
-bool isNewWifi;
-uint64_t chipid;
+bool wifiOn;
 
 // Bluetooth fields
 BLEServer* pServer = NULL;
@@ -42,17 +36,13 @@ CanAirIoApi api(false);
 // InfluxDB fields
 #define IFX_RETRY_CONNECTION   5
 InfluxArduino influx;
-String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxtg, ifusr, ifpss, ifcer;
-uint16_t ifxpt;
-bool isNewIfxdbConfig;
+
+// Config and settings handler
+ConfigApp cfg;
 
 // GUI fields
 #define LED 2
 GUIUtils gui;
-
-// Config Settings
-Preferences preferences;
-const char app_name[] = "canairio";
 
 // some prototypes
 bool wifiCheck();
@@ -61,6 +51,4 @@ void wifiInit();
 void wifiStop();
 void wifiRestart();
 void wifiLoop();
-
 void influxDbReconnect();
-void reboot();

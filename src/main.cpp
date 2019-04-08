@@ -11,6 +11,7 @@
 #include <Wire.h>
 #include <InfluxArduino.hpp>
 #include <CanAirIoApi.hpp>
+#include <ConfigApp.hpp>
 #include <ArduinoJson.h>
 #include <numeric>
 #include <hpma115S0.h>
@@ -23,12 +24,10 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
-#include <Preferences.h>
 #include <vector>
 #include <bitset>
 #include "main.h"
 #include "status.h"
-#include "settings.h"
 
 /******************************************************************************
 * S E T U P  B O A R D   A N D  F I E L D S
@@ -115,7 +114,7 @@ unsigned int getPM10Average(){
 }
 
 void averageLoop(){
-  if (v25.size() >= stime){
+  if (v25.size() >= cfg.stime){
     apm25 = getPM25Average();  // global var for display
     apm10 = getPM10Average();
   }
@@ -183,10 +182,10 @@ String getSensorData(){
   StaticJsonDocument<150> doc;
   doc["P25"] = apm25;
   doc["P10"] = apm10;
-  doc["lat"] = lat;
-  doc["lon"] = lon;
-  doc["alt"] = alt;
-  doc["spd"] = spd;
+  doc["lat"] = cfg.lat;
+  doc["lon"] = cfg.lon;
+  doc["alt"] = cfg.alt;
+  doc["spd"] = cfg.spd;
   doc["sta"] = status.to_string().c_str();
   String json;
   serializeJson(doc,json);
@@ -216,8 +215,8 @@ void humidityLoop() {
 void apiInit(){
   Serial.println("-->[API] Starting..");
   char deviceId[13];
-  sprintf(deviceId,"%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
-  api.configure(ifxid.c_str(), deviceId); // stationId and deviceId, optional endpoint, host and port
+  sprintf(deviceId,"%04X%08X",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid);
+  api.configure(cfg.ifxid.c_str(), deviceId); // stationId and deviceId, optional endpoint, host and port
   //api.authorize(ifusr.c_str(),ifpss.c_str());
   api.authorize("canairio","canairio_password");
   delay(1000);
@@ -226,7 +225,7 @@ void apiInit(){
 void apiLoop() {
   if (v25.size() == 0 && wifiOn) {
     Serial.print("-->[API] write..");
-    bool status = api.write(0,apm25,apm10,humi,temp,lat,lon,alt,spd,stime);
+    bool status = api.write(0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
     if(status) Serial.println("done");
     else Serial.println("fail! "+String(api.getResponse()));
     dataSendToggle = true;
@@ -240,15 +239,15 @@ void apiLoop() {
 void influxDbInit()
 {
   Serial.println("-->[INFLUXDB] Starting..");
-  influx.configure(ifxdb.c_str(), ifxip.c_str()); //third argument (port number) defaults to 8086
+  influx.configure(cfg.ifxdb.c_str(), cfg.ifxip.c_str()); //third argument (port number) defaults to 8086
   Serial.print("-->[INFLUXDB] Using HTTPS: ");
   Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
-  isNewIfxdbConfig=false; // flag for config via BLE
+  cfg.isNewIfxdbConfig=false; // flag for config via BLE
   delay(1000);
 }
 
 bool influxDbIsConfigured(){
-  return ifxdb.length()>0 && ifxip.length()>0 && ifxid.length()>0;
+  return cfg.ifxdb.length()>0 && cfg.ifxip.length()>0 && cfg.ifxid.length()>0;
 }
 
 /**
@@ -262,16 +261,16 @@ void influxDbParseFields(char* fields){
   sprintf(
     fields,
     "pm1=%u,pm25=%u,pm10=%u,hum=%f,tmp=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
-    0,apm25,apm10,humi,temp,lat,lon,alt,spd,stime,0
+    0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime,0
   );
 }
 
 void influxDbAddTags(char* tags) {
   // default tag (ESP32 MacAdress)
-  if(ifxtg.length()>0)
-    sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(chipid >> 32),(uint32_t)chipid,ifxtg.c_str());
+  if(cfg.ifxtg.length()>0)
+    sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid,cfg.ifxtg.c_str());
   else
-    sprintf(tags,"mac=%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
+    sprintf(tags,"mac=%04X%08X",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid);
 }
 
 bool influxDbWrite() {
@@ -283,7 +282,7 @@ bool influxDbWrite() {
   char fields[256];
   influxDbParseFields(fields);
   //canairioWrite(ifxid.c_str(), tags, fields);
-  return influx.write(ifxid.c_str(), tags, fields);
+  return influx.write(cfg.ifxid.c_str(), tags, fields);
 }
 
 void influxDbReconnect(){
@@ -297,7 +296,7 @@ void influxDbLoop() {
   if(v25.size()==0 && influxDbIsConfigured() && wifiOn){
     int ifx_retry = 0;
     Serial.print("-->[INFLUXDB] writing to ");
-    Serial.print("" + ifxip + " db:" + ifxdb + " ..");
+    Serial.print("" + cfg.ifxip + " db:" + cfg.ifxdb + " ..");
     while(!influxDbWrite() && ifx_retry++ < IFX_RETRY_CONNECTION){
       Serial.print(".");
       delay(200);
@@ -339,7 +338,7 @@ void wifiConnect(const char* ssid, const char* pass) {
     delay(250);
   }
   if(wifiCheck()){
-    isNewWifi=false;  // flag for config via BLE
+    cfg.isNewWifi=false;  // flag for config via BLE
     Serial.println("done\n-->[WIFI] connected!");
   }
   else{
@@ -349,8 +348,8 @@ void wifiConnect(const char* ssid, const char* pass) {
 }
 
 void wifiInit(){
-  if(wifiEnable && ssid.length() > 0 && pass.length() > 0) {
-    wifiConnect(ssid.c_str(), pass.c_str());
+  if(cfg.wifiEnable && cfg.ssid.length() > 0 && cfg.pass.length() > 0) {
+    wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
   }
 }
 
@@ -368,8 +367,8 @@ void wifiRestart(){
 }
 
 void wifiLoop(){
-  if(v25.size()==0 && wifiEnable && ssid.length()>0 && !wifiCheck()) {
-    wifiConnect(ssid.c_str(), pass.c_str());
+  if(v25.size()==0 && cfg.wifiEnable && cfg.ssid.length()>0 && !wifiCheck()) {
+    wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
     influxDbReconnect();
   }
 }
@@ -396,17 +395,20 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
       if (value.length() > 0) {
-        if(configSave(value.c_str())){
-          configInit();
-          if(isNewWifi){
+        if(cfg.save(value.c_str())){
+          cfg.reload();
+          if(cfg.isNewWifi){
             wifiRestart();
             influxDbReconnect();
           }
-          if(isNewIfxdbConfig){
+          if(cfg.isNewIfxdbConfig){
             influxDbReconnect();
           }
+          if(!cfg.wifiEnable){
+            wifiStop();
+          }
         }
-        pCharactConfig->setValue(getConfigData().c_str());
+        pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
         pCharactData->setValue(getSensorData().c_str());
       }
     }
@@ -437,7 +439,7 @@ void bleServerInit(){
   // Setting Config callback
   pCharactConfig->setCallbacks(new MyConfigCallbacks());
   // Saved current config data
-  pCharactConfig->setValue(getConfigData().c_str());
+  pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
   // Start the service
   pService->start();
   // Start advertising
@@ -471,14 +473,9 @@ void bleLoop(){
 *  M A I N
 ******************************************************************************/
 
-void reboot() {
-  delay(100);
-  ESP.restart();
-}
-
 void printDeviceId(){
-  Serial.printf("-->[INFO] ESP32MAC: %04X", (uint16_t)(chipid >> 32)); //print High 2 bytes
-  Serial.printf("%08X\n", (uint32_t)chipid);                           //print Low 4bytes.
+  Serial.printf("-->[INFO] ESP32MAC: %04X", (uint16_t)(cfg.chipid >> 32)); //print High 2 bytes
+  Serial.printf("%08X\n", (uint32_t)cfg.chipid);                           //print Low 4bytes.
 }
 
 void setup() {
@@ -486,16 +483,15 @@ void setup() {
   gui.displayInit(u8g2);
   gui.showWelcome();
   Serial.println("\n== INIT SETUP ==\n");
-  chipid=ESP.getEfuseMac(); 
   printDeviceId();
   Serial.println("-->[SETUP] serial ready.");
-  configInit();
+  cfg.init("canairio");
   gui.welcomeAddMessage("Sensors test..");
   sensorInit();
   am2320.begin();
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
-  if(ssid.length()>0) gui.welcomeAddMessage("WiFi:"+ssid);
+  if(cfg.ssid.length()>0) gui.welcomeAddMessage("WiFi:"+cfg.ssid);
   else gui.welcomeAddMessage("WiFi radio test..");
   wifiInit();
   gui.welcomeAddMessage("CanAirIO API..");

@@ -139,10 +139,8 @@ void apiInit(){
   Serial.println("-->[API] Starting..");
   char deviceId[13];
   sprintf(deviceId,"%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
-  Serial.println("-->[API] configure id:"+String(deviceId));
-  api.configure(ifxid.c_str(), deviceId, "points/save/", "canairio.herokuapp.com"); //third argument (port number) defaults to 8086
+  api.configure(ifxid.c_str(), deviceId); // stationId and deviceId, optional endpoint, host and port
   //api.authorize(ifusr.c_str(),ifpss.c_str());
-  Serial.println("-->[API] authorize..");
   api.authorize("canairio","canairio_password");
   delay(1000);
 }
@@ -150,14 +148,13 @@ void apiInit(){
 void apiLoop() {
   if (wifiOn) {
     Serial.print("-->[API] write..");
-    if(api.write(0,apm25,apm10,0,0,lat,lon,alt,spd,stime)){
+    if(api.write(0,apm25,apm10,5.23,3.50,1.23,12.35,23.20,30.10,10)){
        Serial.println("done!");
        gui.welcomeAddMessage("test: pass!");
        while(1);
     }
     else{
        Serial.println("failed!");
-       Serial.println("-->[API] response: "+String(api.getResponse()));
        gui.welcomeAddMessage("test:fail! "+String(api.getResponse()));
        while(1);
     }

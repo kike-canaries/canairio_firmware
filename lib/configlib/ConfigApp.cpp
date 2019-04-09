@@ -4,6 +4,10 @@ void ConfigApp::init(const char app_name[]){
   _app_name = new char[strlen(app_name)+1];
   strcpy(_app_name,app_name); 
   chipid=ESP.getEfuseMac();
+  char devId[13];
+  sprintf(devId,"%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
+  deviceId = new char[strlen(devId)+1];
+  strcpy(deviceId,devId);
   reload();
 }
 

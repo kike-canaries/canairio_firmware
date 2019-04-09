@@ -14,6 +14,7 @@ class ConfigApp
 
   public:
   uint64_t chipid;
+  char* deviceId;
   bool wifiEnable;
   String ssid;   
   String pass;   

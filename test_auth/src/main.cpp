@@ -10,13 +10,13 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include <InfluxArduino.hpp>
 #include <CanAirIoApi.hpp>
+#include <ConfigApp.hpp>
 #include <ArduinoJson.h>
 #include <WiFi.h>
 #include <GUIUtils.hpp>
 #include <Preferences.h>
-#include <bitset>
+#include "status.h"
 
 /******************************************************************************
 * S E T U P  B O A R D   A N D  F I E L D S
@@ -44,35 +44,18 @@ float alt, spd;                // Altitude and speed
 
 // WiFi fields
 #define WIFI_RETRY_CONNECTION    20
-String ssid, pass;
 bool dataSendToggle;
-bool wifiEnable, wifiOn;
-bool isNewWifi;
-uint64_t chipid;
+bool wifiOn;
 
 // CanAirIO API fields
 CanAirIoApi api(true);
 
-// InfluxDB fields
-#define IFX_RETRY_CONNECTION   5
-InfluxArduino influx;
-String ifxdb, ifxip, ifxuser, ifxpassw, ifxid, ifxtg, ifusr, ifpss, ifcer;
-uint16_t ifxpt;
-bool isNewIfxdbConfig;
+// Config and settings handler
+ConfigApp cfg;
 
 // GUI fields
 #define LED 2
 GUIUtils gui;
-
-// Config Settings
-Preferences preferences;
-const char app_name[] = "canairio";
-
-void reboot();
-void wifiStop();
-
-#include "status.h"
-#include "settings.h"
 
 /******************************************************************************
 *   W I F I   M E T H O D S
@@ -97,7 +80,7 @@ void wifiConnect(const char* ssid, const char* pass) {
     delay(250);
   }
   if(wifiCheck()){
-    isNewWifi=false;  // flag for config via BLE
+    cfg.isNewWifi=false;  // flag for config via BLE
     Serial.println("done\n-->[WIFI] connected!");
   }
   else{
@@ -107,8 +90,8 @@ void wifiConnect(const char* ssid, const char* pass) {
 }
 
 void wifiInit(){
-  if(wifiEnable && ssid.length() > 0 && pass.length() > 0) {
-    wifiConnect(ssid.c_str(), pass.c_str());
+  if(cfg.wifiEnable && cfg.ssid.length() > 0 && cfg.pass.length() > 0) {
+    wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
   }
 }
 
@@ -126,9 +109,8 @@ void wifiRestart(){
 }
 
 void wifiLoop(){
-  if(v25.size()==0 && wifiEnable && ssid.length()>0 && !wifiCheck()) {
-    wifiConnect(ssid.c_str(), pass.c_str());
-    // influxDbReconnect();
+  if(v25.size()==0 && cfg.wifiEnable && cfg.ssid.length()>0 && !wifiCheck()) {
+    wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
   }
 }
  
@@ -137,9 +119,7 @@ void wifiLoop(){
 ******************************************************************************/
 void apiInit(){
   Serial.println("-->[API] Starting..");
-  char deviceId[13];
-  sprintf(deviceId,"%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
-  api.configure(ifxid.c_str(), deviceId); // stationId and deviceId, optional endpoint, host and port
+  api.configure(cfg.ifxid.c_str(), cfg.deviceId); // stationId and deviceId, optional endpoint, host and port
   //api.authorize(ifusr.c_str(),ifpss.c_str());
   api.authorize("canairio","canairio_password");
   delay(1000);
@@ -164,26 +144,15 @@ void apiLoop() {
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
-void printDeviceId(){
-  Serial.printf("-->[INFO] ESP32MAC: %04X", (uint16_t)(chipid >> 32)); //print High 2 bytes
-  Serial.printf("%08X\n", (uint32_t)chipid);                           //print Low 4bytes.
-}
-
-void reboot() {
-  delay(100);
-  ESP.restart();
-}
 
 void setup() {
   Serial.begin(115200);
+  Serial.println("\n== INIT SETUP ==\n");
   gui.displayInit(u8g2);
   gui.showWelcome();
-  Serial.println("\n== INIT SETUP ==\n");
-  chipid=ESP.getEfuseMac(); 
-  printDeviceId();
-  Serial.println("-->[SETUP] serial ready.");
-  configInit();
-  if(ssid.length()>0) gui.welcomeAddMessage("WiFi:"+ssid);
+  cfg.init("canairio");
+  Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
+  if(cfg.ssid.length()>0) gui.welcomeAddMessage("WiFi:"+cfg.ssid);
   else gui.welcomeAddMessage("WiFi radio test..");
   wifiInit();
   gui.welcomeAddMessage("CanAirIO API..");

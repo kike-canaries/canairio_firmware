@@ -6,11 +6,12 @@
 #include <Arduino.h>
 #include <U8g2lib.h>
 #include <GUIUtils.hpp>
+#include "status.h"
 
 unsigned int tcount = 0;
 bool toggle;
 
-#define WEMOSOLED 1
+// #define WEMOSOLED 1
 
 #ifdef WEMOSOLED // display via i2c for WeMOS OLED board
     U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
@@ -41,7 +42,7 @@ void loop(void) {
   gui.pageStart();
   gui.displaySensorAvarage(320); // it was calculated on bleLoop()
   gui.displaySensorData(120, 230);
-  gui.updateError();
+  gui.updateError(getErrorCode());
   gui.displayStatus(true,true,true,true);
   gui.pageEnd();
   delay(10);

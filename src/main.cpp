@@ -20,12 +20,10 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <WiFi.h>
-#include <HTTPClient.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
 #include <vector>
-#include <bitset>
 #include "main.h"
 #include "status.h"
 

@@ -212,9 +212,7 @@ void humidityLoop() {
 
 void apiInit(){
   Serial.println("-->[API] Starting..");
-  char deviceId[13];
-  sprintf(deviceId,"%04X%08X",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid);
-  api.configure(cfg.ifxid.c_str(), deviceId); // stationId and deviceId, optional endpoint, host and port
+  api.configure(cfg.ifxid.c_str(), cfg.deviceId); // stationId and deviceId, optional endpoint, host and port
   //api.authorize(ifusr.c_str(),ifpss.c_str());
   api.authorize("canairio","canairio_password");
   delay(1000);
@@ -474,19 +472,13 @@ void bleLoop(){
 *  M A I N
 ******************************************************************************/
 
-void printDeviceId(){
-  Serial.printf("-->[INFO] ESP32MAC: %04X", (uint16_t)(cfg.chipid >> 32)); //print High 2 bytes
-  Serial.printf("%08X\n", (uint32_t)cfg.chipid);                           //print Low 4bytes.
-}
-
 void setup() {
   Serial.begin(115200);
   gui.displayInit(u8g2);
   gui.showWelcome();
-  Serial.println("\n== INIT SETUP ==\n");
-  printDeviceId();
-  Serial.println("-->[SETUP] serial ready.");
   cfg.init("canairio");
+  Serial.println("\n== INIT SETUP ==\n");
+  Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
   gui.welcomeAddMessage("Sensors test..");
   sensorInit();
   am2320.begin();

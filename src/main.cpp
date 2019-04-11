@@ -210,17 +210,23 @@ void humidityLoop() {
 *   C A N A I R I O  P U B L I S H   M E T H O D S
 ******************************************************************************/
 
+bool apiIsConfigured(){
+  return cfg.apiusr.length() > 0 && cfg.apipss.length() > 0;
+}
+
 void apiInit(){
-  Serial.println("-->[API] Starting..");
-  api.configure(cfg.ifxid.c_str(), cfg.deviceId); // stationId and deviceId, optional endpoint, host and port
-  //api.authorize(ifusr.c_str(),ifpss.c_str());
-  api.authorize("canairio","canairio_password");
-  delay(1000);
+  if (wifiOn && apiIsConfigured()) {
+    Serial.println("-->[API] Connecting..");
+    api.configure(cfg.ifxid.c_str(), cfg.deviceId); // stationId and deviceId, optional endpoint, host and port
+    api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
+    delay(1000);
+  }
 }
 
 void apiLoop() {
-  if (v25.size() == 0 && wifiOn) {
-    Serial.print("-->[API] write..");
+  if (v25.size() == 0 && wifiOn && apiIsConfigured()) {
+    Serial.print("-->[API] writing to ");
+    Serial.print(""+String(api.ip)+"..");
     bool status = api.write(0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
     if(status) Serial.println("done");
     else Serial.println("fail! "+String(api.getResponse()));
@@ -232,18 +238,19 @@ void apiLoop() {
 *   I N F L U X D B   M E T H O D S
 ******************************************************************************/
 
-void influxDbInit()
-{
-  Serial.println("-->[INFLUXDB] Starting..");
-  influx.configure(cfg.ifxdb.c_str(), cfg.ifxip.c_str()); //third argument (port number) defaults to 8086
-  Serial.print("-->[INFLUXDB] Using HTTPS: ");
-  Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
-  cfg.isNewIfxdbConfig=false; // flag for config via BLE
-  delay(1000);
-}
-
 bool influxDbIsConfigured(){
   return cfg.ifxdb.length()>0 && cfg.ifxip.length()>0 && cfg.ifxid.length()>0;
+}
+
+void influxDbInit() {
+  if(wifiOn && influxDbIsConfigured()) {
+    Serial.println("-->[INFLUXDB] connecting..");
+    influx.configure(cfg.ifxdb.c_str(), cfg.ifxip.c_str()); //third argument (port number) defaults to 8086
+    Serial.print("-->[INFLUXDB] Using HTTPS: ");
+    Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
+    cfg.isNewIfxdbConfig=false; // flag for config via BLE
+    delay(1000);
+  }
 }
 
 /**
@@ -281,18 +288,11 @@ bool influxDbWrite() {
   return influx.write(cfg.ifxid.c_str(), tags, fields);
 }
 
-void influxDbReconnect(){
-  if (wifiOn && influxDbIsConfigured()) {
-    Serial.println("-->[INFLUXDB] reconnecting..");
-    influxDbInit();
-  }
-}
-
 void influxDbLoop() {
-  if(v25.size()==0 && influxDbIsConfigured() && wifiOn){
+  if(v25.size()==0 && wifiOn && influxDbIsConfigured()){
     int ifx_retry = 0;
     Serial.print("-->[INFLUXDB] writing to ");
-    Serial.print("" + cfg.ifxip + " db:" + cfg.ifxdb + " ..");
+    Serial.print("" + cfg.ifxip + "..");
     while(!influxDbWrite() && ifx_retry++ < IFX_RETRY_CONNECTION){
       Serial.print(".");
       delay(200);
@@ -304,7 +304,7 @@ void influxDbLoop() {
       wifiRestart();
     }
     else {
-      Serial.println("done\n-->[INFLUXDB] database write ready!");
+      Serial.println("done");
       statusOn(bit_cloud);
       dataSendToggle = true;
     }
@@ -365,7 +365,8 @@ void wifiRestart(){
 void wifiLoop(){
   if(v25.size()==0 && cfg.wifiEnable && cfg.ssid.length()>0 && !wifiCheck()) {
     wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
-    influxDbReconnect();
+    influxDbInit();
+    apiInit();
   }
 }
 
@@ -395,14 +396,12 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
           cfg.reload();
           if(cfg.isNewWifi){
             wifiRestart();
-            influxDbReconnect();
+            apiInit();
+            influxDbInit();
           }
-          if(cfg.isNewIfxdbConfig){
-            influxDbReconnect();
-          }
-          if(!cfg.wifiEnable){
-            wifiStop();
-          }
+          if(cfg.isNewIfxdbConfig) influxDbInit();
+          if(cfg.isNewAPIConfig) apiInit();
+          if(!cfg.wifiEnable) wifiStop();
         }
         else{
           setErrorCode(ecode_invalid_config);
@@ -488,7 +487,7 @@ void setup() {
   else gui.welcomeAddMessage("WiFi radio test..");
   wifiInit();
   gui.welcomeAddMessage("CanAirIO API..");
-  influxDbReconnect();
+  influxDbInit();
   apiInit();
   pinMode(LED,OUTPUT);
   gui.welcomeAddMessage("==SETUP READY==");

@@ -3,7 +3,7 @@
 
 CanAirIoApi::CanAirIoApi(bool debug)
 {
-    _debug=debug;
+    dev=debug;
 }
 
 CanAirIoApi::~CanAirIoApi()
@@ -12,16 +12,16 @@ CanAirIoApi::~CanAirIoApi()
 
 void CanAirIoApi::configure(const char nameId[], const char sensorId[], const char endpoint[],const char host[],const uint16_t port)
 {   
-    _nameId = new char[strlen(nameId)+1];
-    strcpy(_nameId,nameId); 
-    _sensorId = new char[strlen(sensorId)+1];
-    strcpy(_sensorId,sensorId); 
-    _endpoint = new char[strlen(endpoint)+1];
-    strcpy(_endpoint,endpoint);
-    _host = new char[strlen(host)+1];
-    strcpy(_host,host);
+    id = new char[strlen(nameId)+1];
+    strcpy(id,nameId); 
+    devId = new char[strlen(sensorId)+1];
+    strcpy(devId,sensorId); 
+    url = new char[strlen(endpoint)+1];
+    strcpy(url,endpoint);
+    ip = new char[strlen(host)+1];
+    strcpy(ip,host);
     _port = port;
-    if(_debug)Serial.println("-->[API] configure with id: "+String(_sensorId));
+    if(dev)Serial.println("-->[API] configure with id: "+String(devId));
 }
 
 void CanAirIoApi::authorize(const char username[], const char password[])
@@ -31,22 +31,22 @@ void CanAirIoApi::authorize(const char username[], const char password[])
     _password = new char[strlen(password)+1];
     strcpy(_password,password);
     _isAuthorised = true;
-    if(_debug)Serial.println("-->[API] user:"+String(_username)+" pass:"+String(_password));
+    if(dev)Serial.println("-->[API] user:"+String(_username)+" pass:"+String(_password));
 }
 
 bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, float tmp, float lat, float lon, float alt, float spd, int stime)
 {   
     HTTPClient http;
     char uri[32];
-    sprintf(uri, "/%s", _endpoint);
+    sprintf(uri, "/%s", url);
 
-    if(_debug)Serial.println("\n-->[API] target: "+String(_host)+":"+String(_port)+String(uri));
+    if(dev)Serial.println("\n-->[API] target: "+String(ip)+":"+String(_port)+String(uri));
 
     if(_isSecure) {
-       http.begin(_host, _port, uri, _cert);
+       http.begin(ip, _port, uri, _cert);
     }
     else {
-        http.begin(_host, _port, uri);
+        http.begin(ip, _port, uri);
     }
 
     http.addHeader("Content-Type","application/json");
@@ -61,9 +61,8 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, f
 
     JsonObject data = doc.createNestedObject();
 
-    data["measurement"] = _nameId;
-    // data["nameId"] = _nameId;
-    data["sensorId"] = _sensorId;
+    data["measurement"] = id;
+    data["sensorId"] = devId;
     JsonObject fields = data.createNestedObject("fields");
     if(pm1>0)  fields["pm1"] = pm1;
     if(pm25>0) fields["pm25"] = pm25;
@@ -76,7 +75,7 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, f
     if(spd!=0) fields["spd"] = spd;
     if(stime>0)fields["stime"] = stime;
 
-    if(_debug){
+    if(dev){
         Serial.print("-->[API] payload:");
         serializeJson(doc, Serial);
     }
@@ -84,7 +83,7 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, f
     String writeBuf;
     serializeJson(doc,writeBuf);
     _latestResponse = http.POST(writeBuf.c_str());
-    if(_debug)Serial.println("\n-->[API] response: "+String(_latestResponse));
+    if(dev)Serial.println("\n-->[API] response: "+String(_latestResponse));
     http.end();
     return _latestResponse == 200;
 }

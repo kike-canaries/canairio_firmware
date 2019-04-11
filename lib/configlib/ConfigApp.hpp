@@ -25,12 +25,15 @@ class ConfigApp
   String ifxtg;
   String ifusr;
   String ifpss;
+  String apiusr;
+  String apipss;
   int stime;
   double lat;
   double lon;
   float alt;
   float spd;
   bool isNewIfxdbConfig;
+  bool isNewAPIConfig;
   bool isNewWifi;
 
   void init(const char app_name[]);

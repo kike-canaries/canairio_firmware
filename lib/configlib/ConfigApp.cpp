@@ -13,9 +13,11 @@ void ConfigApp::init(const char app_name[]){
 
 void ConfigApp::reload(){
   preferences.begin(_app_name,false);
+  // wifi settings
   wifiEnable = preferences.getBool("wifiEnable",false);
   ssid = preferences.getString("ssid","");
   pass = preferences.getString("pass","");
+  // influx db optional settings
   ifxdb = preferences.getString("ifxdb","");
   ifxip = preferences.getString("ifxip","");
   ifxpt = preferences.getUInt("ifxpt",8086);
@@ -23,11 +25,16 @@ void ConfigApp::reload(){
   ifxtg = preferences.getString("ifxtg","");
   ifusr = preferences.getString("ifusr","");
   ifpss = preferences.getString("ifpss","");
-  stime = preferences.getInt("stime",5);
+  // canairio api settings
+  apiusr = preferences.getString("apiusr","");
+  apipss = preferences.getString("apipss","");
+  // station and sensor settings
   lat   = preferences.getDouble("lat",0);
   lon   = preferences.getDouble("lon",0);
   alt = preferences.getFloat("alt",0);
   spd = preferences.getFloat("spd",0);
+  stime = preferences.getInt("stime",5);
+
   preferences.end();
 }
 
@@ -43,6 +50,7 @@ String ConfigApp::getCurrentConfig(){
   doc["ifusr"]  =  preferences.getString("ifusr", "");  // influxdb sensorid name
   doc["ifxpt"]  =  preferences.getUInt("ifxpt",8086); // influxdb sensor tags
   doc["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
+  doc["apiusr"] =  preferences.getString("apiusr","");
   doc["wmac"]   =  (uint16_t)(chipid >> 32);
   preferences.end();
   String output;
@@ -70,6 +78,8 @@ bool ConfigApp::save(const char *json){
   String tifxtg = doc["ifxtg"] | "";
   String tssid  = doc["ssid"]  | "";
   String tpass  = doc["pass"]  | "";
+  String tapiusr= doc["apiusr"]| "";
+  String tapipss= doc["apipss"]| "";
   int tstime    = doc["stime"] | 0;
   double tlat   = doc["lat"].as<double>();
   double tlon   = doc["lon"].as<double>();
@@ -111,7 +121,15 @@ bool ConfigApp::save(const char *json){
     preferences.end();
     wifiEnable=true;
     isNewWifi=true;  // for execute wifi reconnect
-    Serial.println("-->[AUTH] WiFi credentials saved!");
+    Serial.println("-->[CONFIG] WiFi credentials saved!");
+  }
+  else if (tapiusr.length()>0 && tapipss.length()>0){
+    preferences.begin(_app_name, false);
+    preferences.putString("apiusr", tapiusr);
+    preferences.putString("apipss", tapipss);
+    preferences.end();
+    isNewAPIConfig = true;
+    Serial.println("-->[CONFIG] API credentials saved!");
   }
   else if (tlat != 0 && tlon != 0) {
     preferences.begin(_app_name, false);

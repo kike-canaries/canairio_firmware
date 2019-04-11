@@ -6,28 +6,27 @@
 class CanAirIoApi
 {
   private:
-  char* _nameId;
-  char* _sensorId;
-  char* _endpoint;
-  char* _host;
-  uint16_t _port;
-
+  
   char* _username;
   char* _password;
   char* _cert;
   bool _isAuthorised = false;
   bool _isSecure = false;
   int _latestResponse; //storing the latest response
+  uint16_t _port;
 
   public:
-
-  bool _debug;
+  char* id;
+  char* devId;
+  char* url;
+  char* ip;
+  bool dev;
 
   CanAirIoApi(bool debug = false);
 
   ~CanAirIoApi();
  
-  void configure(const char nameId[], const char deviceId[], const char endpoint[] = "points/save/", const char host[] = "canairio.herokuapp.com", const uint16_t port = 80);
+  void configure(const char nameId[], const char deviceId[], const char target[] = "points/save/", const char host[] = "canairio.herokuapp.com", const uint16_t port = 80);
 
   void authorize(const char username[],const char password[]);
 

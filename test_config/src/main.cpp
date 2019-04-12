@@ -4,14 +4,10 @@
  ***/
 
 #include <Arduino.h>
-#include <U8g2lib.h>
 #include <GUIUtils.hpp>
-#include "status.h"
+#include <ConfigApp.hpp>
 
-unsigned int tcount = 0;
-bool toggle;
-
-// #define WEMOSOLED 1
+#define D1MINI 1
 
 #ifdef WEMOSOLED // display via i2c for WeMOS OLED board
     U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
@@ -23,6 +19,7 @@ bool toggle;
 
 
 GUIUtils gui;
+ConfigApp cfg;
 
 void setup(void) {
   Serial.begin(115200);
@@ -30,21 +27,16 @@ void setup(void) {
   Serial.println("-->[SETUP] console ready");
   gui.displayInit(u8g2);
   gui.showWelcome();
-  gui.welcomeAddMessage("Sensor ready..");
-  gui.welcomeAddMessage("GATT server..");
-  gui.welcomeAddMessage("WiFi test..");
-  gui.welcomeAddMessage("InfluxDB test..");
+  cfg.init("canairio");
+  gui.welcomeAddMessage("ifid:"+String(cfg.ifxid));
+  gui.welcomeAddMessage("ifpt:"+String(cfg.ifxpt));
+  gui.welcomeAddMessage("espid:"+String((uint16_t)(cfg.chipid >> 32)));
+  gui.welcomeAddMessage("wifie:"+String(cfg.wifiEnable));
   gui.welcomeAddMessage("==SETUP READY==");
   delay(1000);
 }
 
 void loop(void) {
-  gui.pageStart();
-  gui.displaySensorAvarage(320); // it was calculated on bleLoop()
-  gui.displaySensorData(120, 230);
-  gui.updateError(getErrorCode());
-  gui.displayStatus(true,true,true,true);
-  gui.pageEnd();
-  delay(10);
+  
 }
 

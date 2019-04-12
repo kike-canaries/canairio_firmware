@@ -10,6 +10,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <InfluxArduino.hpp>
+#include <CanAirIoApi.hpp>
+#include <ConfigApp.hpp>
 #include <ArduinoJson.h>
 #include <numeric>
 #include <hpma115S0.h>
@@ -21,13 +23,9 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
-#include <Preferences.h>
 #include <vector>
-#include <bitset>
 #include "main.h"
 #include "status.h"
-#include "wifi.h"
-#include "settings.h"
 
 /******************************************************************************
 * S E T U P  B O A R D   A N D  F I E L D S
@@ -54,8 +52,6 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX 17  // config for D1MIN1 board
 #define HPMA_TX 16
 #endif
-
-
 
 /******************************************************************************
 *   S E N S O R  M E T H O D S
@@ -116,7 +112,7 @@ unsigned int getPM10Average(){
 }
 
 void averageLoop(){
-  if (v25.size() >= stime){
+  if (v25.size() >= cfg.stime){
     apm25 = getPM25Average();  // global var for display
     apm10 = getPM10Average();
   }
@@ -184,10 +180,10 @@ String getSensorData(){
   StaticJsonDocument<150> doc;
   doc["P25"] = apm25;
   doc["P10"] = apm10;
-  doc["lat"] = lat;
-  doc["lon"] = lon;
-  doc["alt"] = alt;
-  doc["spd"] = spd;
+  doc["lat"] = cfg.lat;
+  doc["lon"] = cfg.lon;
+  doc["alt"] = cfg.alt;
+  doc["spd"] = cfg.spd;
   doc["sta"] = status.to_string().c_str();
   String json;
   serializeJson(doc,json);
@@ -211,21 +207,50 @@ void humidityLoop() {
 }
 
 /******************************************************************************
+*   C A N A I R I O  P U B L I S H   M E T H O D S
+******************************************************************************/
+
+bool apiIsConfigured(){
+  return cfg.apiusr.length() > 0 && cfg.apipss.length() > 0 && cfg.dname.length() > 0;
+}
+
+void apiInit(){
+  if (wifiOn && apiIsConfigured()) {
+    Serial.println("-->[API] Connecting..");
+    api.configure(cfg.dname.c_str(), cfg.deviceId); // stationId and deviceId, optional endpoint, host and port
+    api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
+    delay(1000);
+  }
+}
+
+void apiLoop() {
+  if (v25.size() == 0 && wifiOn && apiIsConfigured()) {
+    Serial.print("-->[API] writing to ");
+    Serial.print(""+String(api.ip)+"..");
+    bool status = api.write(0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
+    if(status) Serial.println("done");
+    else Serial.println("fail! "+String(api.getResponse()));
+    dataSendToggle = true;
+  }
+}
+
+/******************************************************************************
 *   I N F L U X D B   M E T H O D S
 ******************************************************************************/
 
-void influxDbInit()
-{
-  Serial.println("-->[INFLUXDB] Starting..");
-  influx.configure(ifxdb.c_str(), ifxip.c_str()); //third argument (port number) defaults to 8086
-  Serial.print("-->[INFLUXDB] Using HTTPS: ");
-  Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
-  isNewIfxdbConfig=false; // flag for config via BLE
-  delay(1000);
+bool influxDbIsConfigured(){
+  return cfg.ifxdb.length()>0 && cfg.ifxip.length()>0 && cfg.dname.length()>0;
 }
 
-bool influxDbIsConfigured(){
-  return ifxdb.length()>0 && ifxip.length()>0 && ifxid.length()>0;
+void influxDbInit() {
+  if(wifiOn && influxDbIsConfigured()) {
+    Serial.println("-->[INFLUXDB] connecting..");
+    influx.configure(cfg.ifxdb.c_str(), cfg.ifxip.c_str()); //third argument (port number) defaults to 8086
+    Serial.print("-->[INFLUXDB] Using HTTPS: ");
+    Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
+    cfg.isNewIfxdbConfig=false; // flag for config via BLE
+    delay(1000);
+  }
 }
 
 /**
@@ -239,16 +264,16 @@ void influxDbParseFields(char* fields){
   sprintf(
     fields,
     "pm1=%u,pm25=%u,pm10=%u,hum=%f,tmp=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
-    0,apm25,apm10,humi,temp,lat,lon,alt,spd,stime,0
+    0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime,0
   );
 }
 
 void influxDbAddTags(char* tags) {
   // default tag (ESP32 MacAdress)
-  if(ifxtg.length()>0)
-    sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(chipid >> 32),(uint32_t)chipid,ifxtg.c_str());
+  if(cfg.ifxtg.length()>0)
+    sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid,cfg.ifxtg.c_str());
   else
-    sprintf(tags,"mac=%04X%08X",(uint16_t)(chipid >> 32),(uint32_t)chipid);
+    sprintf(tags,"mac=%04X%08X",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid);
 }
 
 bool influxDbWrite() {
@@ -259,21 +284,15 @@ bool influxDbWrite() {
   influxDbAddTags(tags);
   char fields[256];
   influxDbParseFields(fields);
-  return influx.write(ifxid.c_str(), tags, fields);
-}
-
-void influxDbReconnect(){
-  if (wifiOn && influxDbIsConfigured()) {
-    Serial.println("-->[INFLUXDB] reconnecting..");
-    influxDbInit();
-  }
+  //canairioWrite(ifxid.c_str(), tags, fields);
+  return influx.write(cfg.dname.c_str(), tags, fields);
 }
 
 void influxDbLoop() {
-  if(v25.size()==0 && influxDbIsConfigured() && wifiOn){
+  if(v25.size()==0 && wifiOn && influxDbIsConfigured()){
     int ifx_retry = 0;
     Serial.print("-->[INFLUXDB] writing to ");
-    Serial.print("" + ifxip + " db:" + ifxdb + " ..");
+    Serial.print("" + cfg.ifxip + "..");
     while(!influxDbWrite() && ifx_retry++ < IFX_RETRY_CONNECTION){
       Serial.print(".");
       delay(200);
@@ -285,10 +304,69 @@ void influxDbLoop() {
       wifiRestart();
     }
     else {
-      Serial.println("done\n-->[INFLUXDB] database write ready!");
+      Serial.println("done");
       statusOn(bit_cloud);
       dataSendToggle = true;
     }
+  }
+}
+
+/******************************************************************************
+*   W I F I   M E T H O D S
+******************************************************************************/
+
+bool wifiCheck(){
+  wifiOn = WiFi.isConnected();
+  if(wifiOn)statusOn(bit_wan);  // TODO: We need validate internet connection
+  else {
+    statusOff(bit_cloud);
+    statusOff(bit_wan);
+  }
+  return wifiOn;
+}
+
+void wifiConnect(const char* ssid, const char* pass) {
+  Serial.print("-->[WIFI] Connecting to "); Serial.print(ssid);
+  WiFi.begin(ssid, pass);
+  int wifi_retry = 0;
+  while (WiFi.status() != WL_CONNECTED && wifi_retry++ < WIFI_RETRY_CONNECTION) {
+    Serial.print(".");
+    delay(250);
+  }
+  if(wifiCheck()){
+    cfg.isNewWifi=false;  // flag for config via BLE
+    Serial.println("done\n-->[WIFI] connected!");
+  }
+  else{
+    Serial.println("fail!\n-->[E][WIFI] disconnected!");
+    setErrorCode(ecode_wifi_fail);
+  }
+}
+
+void wifiInit(){
+  if(cfg.wifiEnable && cfg.ssid.length() > 0 && cfg.pass.length() > 0) {
+    wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
+  }
+}
+
+void wifiStop(){
+  if(wifiOn){
+    Serial.println("-->[WIFI] Disconnecting..");
+    WiFi.disconnect(true);
+    wifiCheck();
+  }
+}
+
+void wifiRestart(){
+  wifiStop();
+  wifiInit();
+}
+
+void wifiLoop(){
+  if(v25.size()==0 && cfg.wifiEnable && cfg.ssid.length()>0 && !wifiCheck()) {
+    wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
+    influxDbInit();
+    apiInit();
   }
 }
 
@@ -314,17 +392,21 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
       if (value.length() > 0) {
-        if(configSave(value.c_str())){
-          configInit();
-          if(isNewWifi){
+        if(cfg.save(value.c_str())){
+          cfg.reload();
+          if(cfg.isNewWifi){
             wifiRestart();
-            influxDbReconnect();
+            apiInit();
+            influxDbInit();
           }
-          if(isNewIfxdbConfig){
-            influxDbReconnect();
-          }
+          if(cfg.isNewIfxdbConfig) influxDbInit();
+          if(cfg.isNewAPIConfig) apiInit();
+          if(!cfg.wifiEnable) wifiStop();
         }
-        pCharactConfig->setValue(getConfigData().c_str());
+        else{
+          setErrorCode(ecode_invalid_config);
+        }
+        pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
         pCharactData->setValue(getSensorData().c_str());
       }
     }
@@ -355,7 +437,7 @@ void bleServerInit(){
   // Setting Config callback
   pCharactConfig->setCallbacks(new MyConfigCallbacks());
   // Saved current config data
-  pCharactConfig->setValue(getConfigData().c_str());
+  pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
   // Start the service
   pService->start();
   // Start advertising
@@ -389,35 +471,24 @@ void bleLoop(){
 *  M A I N
 ******************************************************************************/
 
-void reboot() {
-  delay(100);
-  ESP.restart();
-}
-
-void printDeviceId(){
-  Serial.printf("-->[INFO] ESP32MAC: %04X", (uint16_t)(chipid >> 32)); //print High 2 bytes
-  Serial.printf("%08X\n", (uint32_t)chipid);                           //print Low 4bytes.
-}
-
 void setup() {
   Serial.begin(115200);
   gui.displayInit(u8g2);
   gui.showWelcome();
+  cfg.init("canairio");
   Serial.println("\n== INIT SETUP ==\n");
-  chipid=ESP.getEfuseMac(); 
-  printDeviceId();
-  Serial.println("-->[SETUP] serial ready.");
-  configInit();
+  Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
   gui.welcomeAddMessage("Sensors test..");
   sensorInit();
   am2320.begin();
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
-  if(ssid.length()>0) gui.welcomeAddMessage("WiFi:"+ssid);
+  if(cfg.ssid.length()>0) gui.welcomeAddMessage("WiFi:"+cfg.ssid);
   else gui.welcomeAddMessage("WiFi radio test..");
   wifiInit();
-  gui.welcomeAddMessage("InfluxDB test..");
-  influxDbReconnect();
+  gui.welcomeAddMessage("CanAirIO API..");
+  influxDbInit();
+  apiInit();
   pinMode(LED,OUTPUT);
   gui.welcomeAddMessage("==SETUP READY==");
   delay(500);
@@ -430,6 +501,7 @@ void loop(){
   humidityLoop();  // read AM2320
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
+  apiLoop();
   influxDbLoop();  // influxDB publication
   statusLoop();    // update sensor status GUI
   gui.pageEnd();

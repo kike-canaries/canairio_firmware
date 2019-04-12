@@ -42,11 +42,11 @@ void ConfigApp::reload(){
 String ConfigApp::getCurrentConfig(){
   StaticJsonDocument<300> doc;
   preferences.begin(_app_name,false);
+  doc["dname"]  =  preferences.getString("dname",""); // device or station name
   doc["wenb"]   =  preferences.getBool("wifiEnable",false);
   doc["ssid"]   =  preferences.getString("ssid",""); // influxdb database name
   doc["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
   doc["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
-  doc["ifxid"]  =  preferences.getString("ifxid",""); // influxdb sensorid name
   doc["ifxtg"]  =  preferences.getString("ifxtg",""); // influxdb sensor tags
   doc["ifusr"]  =  preferences.getString("ifusr", "");  // influxdb sensorid name
   doc["ifxpt"]  =  preferences.getUInt("ifxpt",8086); // influxdb sensor tags
@@ -70,9 +70,9 @@ bool ConfigApp::save(const char *json){
     // setErrorCode(ecode_json_parser_error);
     return false;
   }
+  String tdname = doc["dname"] | "";
   String tifxdb = doc["ifxdb"] | "";
   String tifxip = doc["ifxip"] | "";
-  String tifxid = doc["ifxid"] | "";
   String tifusr = doc["ifusr"] | "";
   String tifpss = doc["ifpss"] | "";
   String tifcer = doc["ifcer"] | "";
@@ -90,11 +90,15 @@ bool ConfigApp::save(const char *json){
   uint16_t tifxpt = doc["ifxpt"].as<uint16_t>();
   String act    = doc["act"]  | "";
 
-  if (tifxdb.length()>0 && tifxip.length()>0 && tifxid.length()>0) {
+  if (tdname.length()>0) {
     preferences.begin(_app_name, false);
+    preferences.putString("dname", tdname );
+    preferences.end();
+    Serial.println("-->[CONFIG] set device name to"+tdname);
+  }
+  else if (tifxdb.length()>0 && tifxip.length()>0) {
     preferences.putString("ifxdb", tifxdb );
     preferences.putString("ifxip", tifxip );
-    preferences.putString("ifxid", tifxid );
     if (tifxtg.length() > 0){
       preferences.putString("ifxtg", tifxtg);
     }

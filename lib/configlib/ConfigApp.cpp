@@ -13,6 +13,8 @@ void ConfigApp::init(const char app_name[]){
 
 void ConfigApp::reload(){
   preferences.begin(_app_name,false);
+  // device name or station name
+  dname = preferences.getString("dname","");
   // wifi settings
   wifiEnable = preferences.getBool("wifiEnable",false);
   ssid = preferences.getString("ssid","");
@@ -21,7 +23,6 @@ void ConfigApp::reload(){
   ifxdb = preferences.getString("ifxdb","");
   ifxip = preferences.getString("ifxip","");
   ifxpt = preferences.getUInt("ifxpt",8086);
-  ifxid = preferences.getString("ifxid","");
   ifxtg = preferences.getString("ifxtg","");
   ifusr = preferences.getString("ifusr","");
   ifpss = preferences.getString("ifpss","");

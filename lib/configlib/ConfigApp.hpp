@@ -15,13 +15,13 @@ class ConfigApp
   public:
   uint64_t chipid;
   char* deviceId;
+  String dname;
   bool wifiEnable;
   String ssid;   
   String pass;   
   String ifxdb;  
   String ifxip;  
   uint16_t ifxpt;
-  String ifxid;
   String ifxtg;
   String ifusr;
   String ifpss;

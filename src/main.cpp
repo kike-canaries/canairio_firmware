@@ -211,13 +211,13 @@ void humidityLoop() {
 ******************************************************************************/
 
 bool apiIsConfigured(){
-  return cfg.apiusr.length() > 0 && cfg.apipss.length() > 0;
+  return cfg.apiusr.length() > 0 && cfg.apipss.length() > 0 && cfg.dname.length() > 0;
 }
 
 void apiInit(){
   if (wifiOn && apiIsConfigured()) {
     Serial.println("-->[API] Connecting..");
-    api.configure(cfg.ifxid.c_str(), cfg.deviceId); // stationId and deviceId, optional endpoint, host and port
+    api.configure(cfg.dname.c_str(), cfg.deviceId); // stationId and deviceId, optional endpoint, host and port
     api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
     delay(1000);
   }
@@ -239,7 +239,7 @@ void apiLoop() {
 ******************************************************************************/
 
 bool influxDbIsConfigured(){
-  return cfg.ifxdb.length()>0 && cfg.ifxip.length()>0 && cfg.ifxid.length()>0;
+  return cfg.ifxdb.length()>0 && cfg.ifxip.length()>0 && cfg.dname.length()>0;
 }
 
 void influxDbInit() {
@@ -285,7 +285,7 @@ bool influxDbWrite() {
   char fields[256];
   influxDbParseFields(fields);
   //canairioWrite(ifxid.c_str(), tags, fields);
-  return influx.write(cfg.ifxid.c_str(), tags, fields);
+  return influx.write(cfg.dname.c_str(), tags, fields);
 }
 
 void influxDbLoop() {

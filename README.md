@@ -2,8 +2,6 @@
 
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" align="right" width="384" ></a>
 
-**W A R N I N G :** Project in development
-
 <a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://github.com/kike-canaries/android-hpma115s0/blob/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>
 
 Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5) using low-cost sensors and smartphones. Built with a `ESP32` module board and `HPMA115s0 Honeywell` dust sensor, interfaced with an [CanAirIO Android client app](https://github.com/kike-canaries/android-hpma115s0).
@@ -65,12 +63,20 @@ The current firmware [rev212](https://github.com/kike-canaries/esp32-hpma115s0/r
 7. Click on `send` button.
 8. On your serial messages your sensor will be log succesuful connection or on your display the wifi icon will be enable.
 
+### Device name config
+
+Repeat previous steps `1 to 6` but the payload for `dname` connection is for example:
+
+```json
+"{"dname":"PM25_Berlin_Pankow_E04"}"
+```
+
 ### InfluxDb config
 
 Repeat previous steps `1 to 6` but the payload for `InfluxDb` connection is:
 
 ```json
-"{"ifxdb":"","ifxip":"","ifxid":"","ifxtg":""}"
+"{"ifxdb":"","ifxip":"","ifxtg":""}"
 ```
 
 the fields mean:
@@ -82,7 +88,7 @@ the fields mean:
 #### Example:
 
 ```json
-{"ifxdb":"database_name","ifxip":"hostname_or_ip","ifxid":"sensor_station_name","ifxtg":"zone=north,zone=south"}
+{"ifxdb":"database_name","ifxip":"hostname_or_ip","ifxtg":"zone=north,zone=south"}
 ```
 ### Location config
 

@@ -14,31 +14,17 @@
 #include <ConfigApp.hpp>
 #include <ArduinoJson.h>
 #include <numeric>
-#include <hpma115S0.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <WiFi.h>
 #include <Adafruit_Sensor.h>
-#include <Adafruit_AM2320.h>
 #include "Adafruit_BME680.h"
 #include <GUIUtils.hpp>
 #include <vector>
 #include "main.h"
 #include "status.h"
-
-#define SEALEVELPRESSURE_HPA (1013.25)
-
-Adafruit_BME680 bme; // I2C
-
-float hum_weighting = 0.25; // so hum effect is 25% of the total air quality score
-float gas_weighting = 0.75; // so gas effect is 75% of the total air quality score
-
-float hum_score, gas_score;
-float gas_reference = 250000;
-float hum_reference = 40;
-int getgasreference_count = 0;
 
 /******************************************************************************
 * S E T U P  B O A R D   A N D  F I E L D S
@@ -54,123 +40,46 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
 #endif
 
-// HPMA115S0 sensor config
-#ifdef WEMOSOLED
-#define HPMA_RX 13   // config for Wemos board
-#define HPMA_TX 15
-#elif HELTEC
-#define HPMA_RX 13  // config for Heltec board
-#define HPMA_TX 12
-#else
-#define HPMA_RX 17  // config for D1MIN1 board
-#define HPMA_TX 16
-#endif
-
 /******************************************************************************
-*   S E N S O R  M E T H O D S
+*   S E N S O R S   M E T H O D S
 ******************************************************************************/
-/**
- * [DEPRECATED] sensorConfig:
- * The next method is only if sensor was config without autosend
- */
-void sensorConfig(){
-  Serial.println("-->[HPMA] configuration hpma115S0 sensor..");
-  hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
-  hpma115S0.Init();
-  delay(100);
-  hpma115S0.EnableAutoSend();
-  delay(100);
-  hpma115S0.StartParticleMeasurement();
-  delay(100);
-  Serial.println("-->[HPMA] sensor configured.");
-}
-
-void sensorInit(){
-  Serial.println("-->[HPMA] starting hpma115S0 sensor..");
-  delay(100);
-  hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
-  delay(100);
-}
-
-void wrongDataState(){
-  Serial.println("-->[E][HPMA] !wrong data!");
-  setErrorCode(ecode_sensor_read_fail);
-  gui.displaySensorAvarage(apm25);
-  gui.displaySensorData(0,0); 
-  hpmaSerial.end();
-  statusOff(bit_sensor);
-  sensorInit();
-  delay(1000);
-}
 
 /***
  * Average methods
  **/
 
-void saveDataForAverage(unsigned int pm25, unsigned int pm10){
-  v25.push_back(pm25);
-  v10.push_back(pm10);
+uint32_t getGASAverage(){
+  uint32_t avarage_GAS = accumulate( vGAS.begin(), vGAS.end(), 0.0)/vGAS.size();
+  vGAS.clear();
+  return avarage_GAS;
 }
 
-unsigned int getPM25Average(){
-  unsigned int pm25_average = accumulate( v25.begin(), v25.end(), 0.0)/v25.size();
-  v25.clear();
-  return pm25_average;
+float getAQSAverage(){
+  float avarage_AQS = accumulate( vAQS.begin(), vAQS.end(), 0.0)/vAQS.size();
+  vAQS.clear();
+  return avarage_AQS;
 }
 
-unsigned int getPM10Average(){
-  unsigned int pm10_average = accumulate( v10.begin(), v10.end(), 0.0)/v10.size();
-  v10.clear();
-  return pm10_average;
+float getIAQAverage(){
+  float avarage_IAQ = accumulate( vIAQ.begin(), vIAQ.end(), 0.0)/vIAQ.size();
+  vIAQ.clear();
+  return avarage_IAQ;
 }
 
 void averageLoop(){
-  if (v25.size() >= cfg.stime){
-    apm25 = getPM25Average();  // global var for display
-    apm10 = getPM10Average();
+  if (vIAQ.size() >= cfg.stime){
+    aGAS = getGASAverage();  // global var for display
+    aAQS = getAQSAverage();
+    aIAQ = getIAQAverage();
   }
 }
 
-/***
- * PM2.5 and PM10 read and visualization
- **/
-void sensorLoop(){
-  Serial.print("-->[HPMA] read..");
-  int try_sensor_read = 0;
-  String txtMsg = "";
-  while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
-    while (hpmaSerial.available() > 0) {
-      char inChar = hpmaSerial.read();
-      txtMsg += inChar;
-      Serial.print(".");
-    }
-  }
-  if(try_sensor_read > SENSOR_RETRY){
-    setErrorCode(ecode_sensor_timeout);
-    Serial.println("fail"); 
-    Serial.println("-->[E][HPMA] disconnected ?"); 
-    delay(3000);  // waiting for sensor..
-  }
-  if (txtMsg[0] == 66) {
-    if (txtMsg[1] == 77) {
-      Serial.print("done");
-      statusOn(bit_sensor);
-      unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
-      unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
-      if(pm25<1000&&pm10<1000){
-        gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
-        gui.displaySensorData(pm25,pm10); 
-        saveDataForAverage(pm25,pm10);
-      }
-      else wrongDataState();
-    }
-    else wrongDataState();
-  }
-  else wrongDataState();
+bool isStimeTick(){
+  return vIAQ.size()==0;
 }
 
 void statusLoop(){
-  if (v25.size() == 0) {
+  if (isStimeTick()) {
     Serial.print("-->[STATUS] ");
     Serial.println(status.to_string().c_str());
     updateStatusError();
@@ -183,7 +92,7 @@ void statusLoop(){
 
 String getNotificationData(){
   StaticJsonDocument<40> doc;
-  doc["P25"] = apm25;  // notification capacity is reduced, only main value
+  doc["P25"] = aIAQ;  // notification capacity is reduced, only main value
   String json;
   serializeJson(doc,json);
   return json;
@@ -191,11 +100,14 @@ String getNotificationData(){
 
 String getSensorData(){
   StaticJsonDocument<150> doc;
-  doc["P25"] = apm25;
-  doc["P10"] = apm10;
+  doc["aqs"] = aAQS;
+  doc["gas"] = aGAS;
+  doc["iaq"] = aIAQ;
+  doc["tmp"] = tmp;
+  doc["hum"] = hum;
   doc["lat"] = cfg.lat;
   doc["lon"] = cfg.lon;
-  doc["alt"] = cfg.alt;
+  doc["alt"] = alt;
   doc["spd"] = cfg.spd;
   doc["sta"] = status.to_string().c_str();
   String json;
@@ -203,25 +115,9 @@ String getSensorData(){
   return json;
 }
 
-void getHumidityRead() {
-  humi = am2320.readHumidity();
-  temp = am2320.readTemperature();
-  if (isnan(humi))
-    humi = 0.0;
-  if (isnan(temp))
-    temp = 0.0;
-  Serial.println("-->[AM2320] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
-}
-
-void humidityLoop() {
-  if (v25.size() == 0) {
-    getHumidityRead();
-  }
-}
-
 void GetGasReference(){
   // Now run the sensor for a burn-in period, then use combination of relative humidity and gas resistance to estimate indoor air quality as a percentage.
-  Serial.print("new gas reference..");
+  Serial.println("-->[BME680] New gas reference..");
   int readings = 10;
   for (int i = 1; i <= readings; i++){ // read gas for 10 x 0.150mS = 1.5secs
     gas_reference += bme.readGas();
@@ -230,8 +126,10 @@ void GetGasReference(){
 }
 
 String CalculateIAQ(float score){
-  String IAQ_text = " IAQ:";
   score = (100-score)*5;
+  String IAQ_text = " IAQ:"+String(score,1)+"=>";
+  vIAQ.push_back(score);
+  gui.displaySensorAvarage(aIAQ);  // it was calculated on bleLoop()
   if      (score >= 301)                  IAQ_text += "Hazardous";
   else if (score >= 201 && score <= 300 ) IAQ_text += "Very Unhealthy";
   else if (score >= 176 && score <= 200 ) IAQ_text += "Unhealthy";
@@ -243,21 +141,24 @@ String CalculateIAQ(float score){
 
 void bme680loop(){
   Serial.print("-->[BME680] Tmp:");
-
-  Serial.print(bme.readTemperature());
+  tmp = bme.readTemperature();
+  Serial.print(tmp);
   Serial.print("°C ");
 
   Serial.print("Prs:");
-
-  Serial.print(bme.readPressure() / 100.0F);
-  Serial.print("hPa ");
+  prs = bme.readPressure() / 100.0F;
+  Serial.print(prs);
+  Serial.print("HPa ");
 
   Serial.print("Hum:");
-  Serial.print(bme.readHumidity());
+  hum = bme.readHumidity();
+  Serial.print(hum);
   Serial.print("% ");
 
   Serial.print("Gas:");
-  Serial.print(bme.readGas());
+  uint32_t gas = bme.readGas();
+  vGAS.push_back(gas);
+  Serial.print(gas);
   Serial.print("R ");
 
   //Calculate humidity contribution to IAQ index
@@ -281,14 +182,14 @@ void bme680loop(){
   gas_score = (0.75/(gas_upper_limit-gas_lower_limit)*gas_reference -(gas_lower_limit*(0.75/(gas_upper_limit-gas_lower_limit))))*100;
   //Combine results for the final IAQ index value (0-100% where 100% is good quality air)
   float air_quality_score = hum_score + gas_score;
-
+  vAQS.push_back(air_quality_score);
   //Serial.println("Air Quality = "+String(air_quality_score,1)+"% derived from 25% of Humidity reading and 75% of Gas reading - 100% is good quality air");
-  Serial.print("IAQ:"+String(air_quality_score,1)+"% ");
-  Serial.print("HumE:"+String(hum_score/100)+" of 0.25 ");
-  Serial.print("GasE:"+String(gas_score/100)+" of 0.75 ");
-  if (bme.readGas() < 120000) Serial.print("** Poor air quality **");
-  if ((getgasreference_count++)%10==0) GetGasReference();
+  Serial.print("AQS:"+String(air_quality_score,1)+"% ");
+  Serial.print("HumE:"+String(hum_score/100)+" ");
+  Serial.print("GasE:"+String(gas_score/100)+" ");
+  if (gas < 120000) Serial.print("[Poor AQ]");
   Serial.println(CalculateIAQ(air_quality_score));
+  if ((getgasreference_count++)%10==0) GetGasReference();
 }
 
 void bme680init() {
@@ -324,10 +225,10 @@ void apiInit(){
 }
 
 void apiLoop() {
-  if (v25.size() == 0 && wifiOn && apiIsConfigured()) {
+  if (isStimeTick() && wifiOn && apiIsConfigured()) {
     Serial.print("-->[API] writing to ");
     Serial.print(""+String(api.ip)+"..");
-    bool status = api.write(0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
+    bool status = api.write(0,0,0,aGAS,aAQS,aIAQ,hum,tmp,prs,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
     if(status) Serial.println("done");
     else Serial.println("fail! "+String(api.getResponse()));
     dataSendToggle = true;
@@ -363,8 +264,8 @@ void influxDbInit() {
 void influxDbParseFields(char* fields){
   sprintf(
     fields,
-    "pm1=%u,pm25=%u,pm10=%u,hum=%f,tmp=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
-    0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime,0
+    "iaq=%f,gas=%u,aqs=%f,hum=%f,tmp=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
+    aIAQ,aGAS,aAQS,hum,tmp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime,0
   );
 }
 
@@ -377,7 +278,7 @@ void influxDbAddTags(char* tags) {
 }
 
 bool influxDbWrite() {
-  if(!influxDbIsConfigured() || apm25 == 0 || apm10 == 0) {
+  if(!influxDbIsConfigured() || aGAS == 0 ) {
     return false;
   }
   char tags[256];
@@ -389,7 +290,7 @@ bool influxDbWrite() {
 }
 
 void influxDbLoop() {
-  if(v25.size()==0 && wifiOn && influxDbIsConfigured()){
+  if(isStimeTick() && wifiOn && influxDbIsConfigured()){
     int ifx_retry = 0;
     Serial.print("-->[INFLUXDB] writing to ");
     Serial.print("" + cfg.ifxip + "..");
@@ -463,7 +364,7 @@ void wifiRestart(){
 }
 
 void wifiLoop(){
-  if(v25.size()==0 && cfg.wifiEnable && cfg.ssid.length()>0 && !wifiCheck()) {
+  if(isStimeTick() && cfg.wifiEnable && cfg.ssid.length()>0 && !wifiCheck()) {
     wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
     influxDbInit();
     apiInit();
@@ -547,7 +448,7 @@ void bleServerInit(){
 
 void bleLoop(){
   // notify changed value
-  if (deviceConnected && v25.size()==0) {  // v25 test for get each ~5 sec aprox
+  if (deviceConnected && isStimeTick()) {  // v25 test for get each ~5 sec aprox
     Serial.println("-->[BLE] sending notification..");
     pCharactData->setValue(getNotificationData().c_str());  // small payload for notification
     pCharactData->notify();
@@ -578,9 +479,7 @@ void setup() {
   cfg.init("canairio");
   Serial.println("\n== INIT SETUP ==\n");
   Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
-  gui.welcomeAddMessage("Sensors test..");
-  sensorInit();
-  am2320.begin();
+  gui.welcomeAddMessage("BME680 init..");
   bme680init();
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
@@ -597,9 +496,7 @@ void setup() {
 
 void loop(){
   gui.pageStart();
-  sensorLoop();    // read HPMA serial data and showed it
   averageLoop();   // calculated of sensor data average
-  humidityLoop();  // read AM2320
   bme680loop();    // read BME680
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it

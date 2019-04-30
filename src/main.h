@@ -1,19 +1,29 @@
 
 using namespace std;
 
-HardwareSerial hpmaSerial(1);
-HPMA115S0 hpma115S0(hpmaSerial);
+#define SEALEVELPRESSURE_HPA (1013.25)
 
-vector<unsigned int> v25;      // for average
-vector<unsigned int> v10;      // for average
-unsigned int apm25 = 0;        // last PM2.5 average
-unsigned int apm10 = 0;        // last PM10 average
+Adafruit_BME680 bme; // I2C
+
+float hum_weighting = 0.25; // so hum effect is 25% of the total air quality score
+float gas_weighting = 0.75; // so gas effect is 75% of the total air quality score
+
+float hum_score, gas_score;
+float gas_reference = 250000;
+float hum_reference = 40;
+int getgasreference_count = 0;
+uint32_t aGAS;
+float aAQS;
+float aIAQ;
+float prs;
+float alt;
+float hum;
+float tmp;
+
+vector<uint32_t> vGAS;   // GAS for average
+vector<float> vAQS;      // AQS for average
+vector<float> vIAQ;      // IAQ for average
 #define SENSOR_RETRY  1000     // Sensor read retry
-
-// Humidity sensor
-Adafruit_AM2320 am2320 = Adafruit_AM2320();
-float humi = 0.0;              // % Relative humidity 
-float temp = 0.0;              // Temperature (C)
 
 // WiFi fields
 #define WIFI_RETRY_CONNECTION    20

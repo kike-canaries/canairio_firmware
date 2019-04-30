@@ -496,11 +496,11 @@ void setup() {
 
 void loop(){
   gui.pageStart();
-  averageLoop();   // calculated of sensor data average
   bme680loop();    // read BME680
+  averageLoop();   // calculated of sensor data average
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
-  apiLoop();
+  apiLoop();       // CanAirio API publication
   influxDbLoop();  // influxDB publication
   statusLoop();    // update sensor status GUI
   gui.pageEnd();

@@ -69,7 +69,7 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, uint32_t gas
     if(pm10>0) fields["pm10"] = pm10;
     if(gas>0)  fields["gas"] = gas;
     if(aqs>0)  fields["aqs"] = aqs;
-    if(iaq>0)  fields["iaq"] = aqs;
+    if(iaq>0)  fields["iaq"] = iaq;
     if(hum!=0) fields["hum"] = hum;
     if(tmp!=0) fields["tmp"] = tmp;
     if(prs>0)  fields["prs"] = prs;

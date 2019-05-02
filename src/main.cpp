@@ -92,7 +92,7 @@ void statusLoop(){
 
 String getNotificationData(){
   StaticJsonDocument<40> doc;
-  doc["P25"] = aIAQ;  // notification capacity is reduced, only main value
+  doc["P25"] = (uint16_t) aIAQ;  // notification capacity is reduced, only main value
   String json;
   serializeJson(doc,json);
   return json;
@@ -117,12 +117,14 @@ String getSensorData(){
 
 void GetGasReference(){
   // Now run the sensor for a burn-in period, then use combination of relative humidity and gas resistance to estimate indoor air quality as a percentage.
-  Serial.println("-->[BME680] New gas reference..");
+  Serial.print("-->[BME680] New GAS reference");
   int readings = 10;
   for (int i = 1; i <= readings; i++){ // read gas for 10 x 0.150mS = 1.5secs
     gas_reference += bme.readGas();
+    Serial.print(".");
   }
   gas_reference = gas_reference / readings;
+  Serial.println(String(gas_reference,2));
 }
 
 String CalculateIAQ(float score){

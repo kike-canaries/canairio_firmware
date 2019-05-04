@@ -9,19 +9,18 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 **Full guide (Hackster.io):** [English](https://www.hackster.io/MetaKernel/canairio-citizen-network-for-air-quality-monitoring-bbf647) **|** [Spanish](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a)
 
 
-## Installation from binaries
+## Installation
 
 ### Linux and MacOSx
 
-**Prerequisites**: python2 or python3 with pyserial in your system
-
-You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. 
-
-Please uncompress zip file `canairio_installer_20190503rev312.zip` and execute the next command for your model board (D1Mini, WemosOLED, Heltec) like this:
+You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. Download the last release from `assets` section in releases and please uncompress zip file, connect your device and execute the next command for your model board (D1Mini, WemosOLED, Heltec) like this:
 
 ``` bash
+unzip canairio_installer_20190503rev312.zip
+cd canairio_installer
 ./install.sh canairio_d1mini_20190503rev312.bin
 ```
+**Note**: you need python2 or python3 with pyserial in your system.
 
 if you want clear all preferences and flash variables, please execute before:
 
@@ -34,12 +33,11 @@ if you want clear all preferences and flash variables, please execute before:
 Please read procedure on our [HacksterIO Guide]("https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a#toc-firmware-y-software-3") for details for load firmware via oficial **Espressif Download Tool**
 
 
-## Compiling and installing from source code
+## [Optional] Compiling and installing
 
 ### Software Dependencies
 
 Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
-
 
 For **default** board `D1Mini Kit`, clone and upload firmware via USB cable:
 
@@ -71,15 +69,19 @@ rm -rf .pioenvs .piolibdeps
 pio run --target upload
 ```
 
-## [OPTIONAL] WiFi, CanAirIO API and custom InfluxDb configs via Bluetooth 
+## Usage
 
-The current firmware [rev312](https://github.com/kike-canaries/esp32-hpma115s0/releases/tag/rev212) supports set WiFi crendentials, CanAirIO API and InfluxDb configs via Bluetooth. You can use the oficial [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) for send these settings to your device or you also can use [nRF Connect app](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp)
+From [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) you can connect to your device via Bluetooth and record mobile captures and save tracks on your sdcard. Also you can share these tracks to CanAirIO network. If you want set your device for static station, please configure Wifi and CanAirIO API or InfluxDb server. (see below)
+
+## [OPTIONAL] Set WiFi, CanAirIO API and custom InfluxDb configs via Bluetooth 
+
+The current firmware (https://github.com/kike-canaries/esp32-hpma115s0/releases) supports setup WiFi crendentials, CanAirIO API or InfluxDb configs via Bluetooth for static statations. You can use the oficial [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) for send these settings to your device or you also can use [nRF Connect app](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp) for the same tasks.
 
 ### Config via CanAirIO Android App:
 
 Please connect your device via Bluetooth and in the settings section configure parameters like `Sample Time Interval` and `Station Name`. If you want configure our API cloud or a custom influxDb instance too.
 
-### Config via nRF Connect App:
+### [Optional] Config via nRF Connect App:
 
 #### WiFi Credentials
 

@@ -30,7 +30,7 @@ if you want clear all preferences and flash variables, please execute before:
 
 ### Windows
 
-Please read procedure on our [HacksterIO Guide]("https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a#toc-firmware-y-software-3") for details for load firmware via oficial **Espressif Download Tool**
+Please read procedure on our [HacksterIO Guide](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a#toc-firmware-y-software-3) for details for load firmware via oficial **Espressif Download Tool**
 
 
 ## [Optional] Compiling and installing
@@ -73,15 +73,15 @@ pio run --target upload
 
 From [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) you can connect to your device via Bluetooth and record mobile captures and save tracks on your sdcard. Also you can share these tracks to CanAirIO network. If you want set your device for static station, please configure Wifi and CanAirIO API or InfluxDb server. (see below)
 
-## [OPTIONAL] Set WiFi, CanAirIO API and custom InfluxDb configs via Bluetooth 
+## [Optional] Setup WiFi, CanAirIO API or InfluxDb
 
 The current firmware (https://github.com/kike-canaries/esp32-hpma115s0/releases) supports setup WiFi crendentials, CanAirIO API or InfluxDb configs via Bluetooth for static statations. You can use the oficial [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) for send these settings to your device or you also can use [nRF Connect app](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp) for the same tasks.
 
-### Config via CanAirIO Android App:
+### Option 1: CanAirIO Android App:
 
 Please connect your device via Bluetooth and in the settings section configure parameters like `Sample Time Interval` and `Station Name`. If you want configure our API cloud or a custom influxDb instance too.
 
-### [Optional] Config via nRF Connect App:
+### Option 2: Config via nRF Connect App:
 
 #### WiFi Credentials
 

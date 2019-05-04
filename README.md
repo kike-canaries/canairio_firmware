@@ -79,9 +79,9 @@ The current firmware (https://github.com/kike-canaries/esp32-hpma115s0/releases)
 
 ### Option 1: CanAirIO Android App:
 
-Please connect your device via Bluetooth and in the settings section configure parameters like `Sample Time Interval` and `Station Name`. If you want configure our API cloud or a custom influxDb instance too.
+Please connect your device via Bluetooth and in the settings section configure parameters like `Sample Time Interval` and `Station Name`. If you want configure our API cloud or a custom influxDb instance too. You can get a username and password of our API on the next [link](http://canairiofront.herokuapp.com/register) and view captures [here](http://gblabs.co:8888/sources/1/dashboards/1)
 
-### Option 2: Config via nRF Connect App:
+### Option 2: nRF Connect App:
 
 #### WiFi Credentials
 
@@ -103,6 +103,14 @@ Repeat previous steps `1 to 6` but the payload for `dname` connection is for exa
 
 ```json
 "{"dname":"PM25_Berlin_Pankow_E04"}"
+```
+
+#### CanAirIO API credentials
+
+Repeat previous steps `1 to 6` and send the next payload with your credentials:
+
+```json
+"{"apiusr":"username","apipss":"password"}"
 ```
 
 #### InfluxDb config

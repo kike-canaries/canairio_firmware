@@ -8,11 +8,36 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 
 **Full guide (Hackster.io):** [English](https://www.hackster.io/MetaKernel/canairio-citizen-network-for-air-quality-monitoring-bbf647) **|** [Spanish](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a)
 
-## Software Dependencies
+
+## Installation
+
+### Linux and MacOSx
+
+You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. Download the last release from `assets` section in releases and please uncompress zip file, connect your device and execute the next command for your model board (D1Mini, WemosOLED, Heltec) like this:
+
+``` bash
+unzip canairio_installer_20190503rev312.zip
+cd canairio_installer
+./install.sh canairio_d1mini_20190503rev312.bin
+```
+**Note**: you need python2 or python3 with pyserial in your system.
+
+if you want clear all preferences and flash variables, please execute before:
+
+``` bash
+./install.sh canairio_d1mini_20190503rev312.bin
+```
+
+### Windows
+
+Please read procedure on our [HacksterIO Guide](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a#toc-firmware-y-software-3) for details for load firmware via oficial **Espressif Download Tool**
+
+
+## [Optional] Compiling and installing
+
+### Software Dependencies
 
 Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
-
-## Compiling and installing
 
 For **default** board `D1Mini Kit`, clone and upload firmware via USB cable:
 
@@ -31,7 +56,6 @@ build_flags =
 # -D D1MINI=1
  -D HELTEC=1
 ```
-You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. 
 
 ### Troubleshooting
 
@@ -45,11 +69,21 @@ rm -rf .pioenvs .piolibdeps
 pio run --target upload
 ```
 
-## WiFi and InfluxDb configs via Bluetooth [OPTIONAL]
+## Usage
 
-The current firmware [rev212](https://github.com/kike-canaries/esp32-hpma115s0/releases/tag/rev212) supports set WiFi crendentials and InfluxDb config via Bluetooth. The [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) does not support it yet, for now you can use [nRF Connect app](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp)
+From [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) you can connect to your device via Bluetooth and record mobile captures and save tracks on your sdcard. Also you can share these tracks to CanAirIO network. If you want set your device for static station, please configure Wifi and CanAirIO API or InfluxDb server. (see below)
 
-### Wifi config
+## [Optional] Setup WiFi, CanAirIO API or InfluxDb
+
+The [current firmware](https://github.com/kike-canaries/esp32-hpma115s0/releases) supports setup WiFi crendentials, CanAirIO API or InfluxDb configs via Bluetooth for static statations. You can use the oficial [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) for send these settings to your device or you also can use [nRF Connect app](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp) for the same tasks.
+
+### Option 1: CanAirIO Android App:
+
+Please connect your device via Bluetooth and in the settings section configure parameters like `Sample Time Interval` and `Station Name`. If you want configure our API cloud or a custom influxDb instance too. You can get a username and password of our API on the next [link](http://canairiofront.herokuapp.com/register) and view captures [here](http://gblabs.co:8888/sources/1/dashboards/1)
+
+### Option 2: nRF Connect App:
+
+#### WiFi Credentials
 
 1. Start your sensor with last firmware (rev212)
 2. Scan and connect to it with nRF connect App
@@ -63,7 +97,7 @@ The current firmware [rev212](https://github.com/kike-canaries/esp32-hpma115s0/r
 7. Click on `send` button.
 8. On your serial messages your sensor will be log succesuful connection or on your display the wifi icon will be enable.
 
-### Device name config
+#### Device name (station name)
 
 Repeat previous steps `1 to 6` but the payload for `dname` connection is for example:
 
@@ -71,7 +105,15 @@ Repeat previous steps `1 to 6` but the payload for `dname` connection is for exa
 "{"dname":"PM25_Berlin_Pankow_E04"}"
 ```
 
-### InfluxDb config
+#### CanAirIO API credentials
+
+Repeat previous steps `1 to 6` and send the next payload with your credentials:
+
+```json
+"{"apiusr":"username","apipss":"password"}"
+```
+
+#### InfluxDb config
 
 Repeat previous steps `1 to 6` but the payload for `InfluxDb` connection is:
 
@@ -82,15 +124,14 @@ Repeat previous steps `1 to 6` but the payload for `InfluxDb` connection is:
 the fields mean:
 - **ifxdb**: InfluxDb database name
 - **ifxip**: InflusDb hostname or ip
-- **ifxid**: Sensor ID or sensor name
 - **ifxtg**: Custom tags **(optional)**
 
-#### Example:
+##### Example:
 
 ```json
 {"ifxdb":"database_name","ifxip":"hostname_or_ip","ifxtg":"zone=north,zone=south"}
 ```
-### Location config
+#### Location config
 
 Repeat previous steps `1 to 6` but the payload for `sensor location` for example is:
 
@@ -98,7 +139,7 @@ Repeat previous steps `1 to 6` but the payload for `sensor location` for example
 "{"lat":52.53819,"lon":13.44024,"alt":220,"spd":34.5}"
 ```
 
-## InfluxDb payload
+#### InfluxDb payload
 
 The current version send the next variables to InfluxDb:
 
@@ -109,7 +150,7 @@ pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime"
 - **hum and tmp**, humidity and temperature if you connect AM2320 to your ESP32
 - **lat, lng, alt, spd**, variables that you already configured
 
-## Status vector
+## Device status vector
 
 The current flags status is represented on one byte and it is returned on config:
 

@@ -101,5 +101,5 @@ void GUIUtils::pageStart(){
 }
 
 void GUIUtils::pageEnd(){
-  do; while(u8g2.nextPage());
+  u8g2.nextPage();
 }

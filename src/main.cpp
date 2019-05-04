@@ -228,9 +228,18 @@ void apiLoop() {
     Serial.print("-->[API] writing to ");
     Serial.print(""+String(api.ip)+"..");
     bool status = api.write(0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
-    if(status) Serial.println("done");
-    else Serial.println("fail! "+String(api.getResponse()));
-    dataSendToggle = true;
+    if(status) {
+      Serial.println("done");
+      dataSendToggle = true;
+    }
+    else {
+      int code = api.getResponse();
+      Serial.println("fail! response code: "+String());
+      if (code == -1) {
+        Serial.println("-->[E][API] server error rebooting on 5 seg..");
+        delay(5000);
+      }
+    }
   }
 }
 
@@ -284,7 +293,6 @@ bool influxDbWrite() {
   influxDbAddTags(tags);
   char fields[256];
   influxDbParseFields(fields);
-  //canairioWrite(ifxid.c_str(), tags, fields);
   return influx.write(cfg.dname.c_str(), tags, fields);
 }
 
@@ -293,7 +301,7 @@ void influxDbLoop() {
     int ifx_retry = 0;
     Serial.print("-->[INFLUXDB] writing to ");
     Serial.print("" + cfg.ifxip + "..");
-    while(!influxDbWrite() && ifx_retry++ < IFX_RETRY_CONNECTION){
+    while(!influxDbWrite() && ( ifx_retry++ < IFX_RETRY_CONNECTION )){
       Serial.print(".");
       delay(200);
     }

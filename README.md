@@ -71,11 +71,17 @@ rm -rf .pioenvs .piolibdeps
 pio run --target upload
 ```
 
-## WiFi and InfluxDb configs via Bluetooth [OPTIONAL]
+## [OPTIONAL] WiFi, CanAirIO API and custom InfluxDb configs via Bluetooth 
 
-The current firmware [rev212](https://github.com/kike-canaries/esp32-hpma115s0/releases/tag/rev212) supports set WiFi crendentials and InfluxDb config via Bluetooth. The [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) does not support it yet, for now you can use [nRF Connect app](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp)
+The current firmware [rev312](https://github.com/kike-canaries/esp32-hpma115s0/releases/tag/rev212) supports set WiFi crendentials, CanAirIO API and InfluxDb configs via Bluetooth. You can use the oficial [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) for send these settings to your device or you also can use [nRF Connect app](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp)
 
-### Wifi config
+### Config via CanAirIO Android App:
+
+Please connect your device via Bluetooth and in the settings section configure parameters like `Sample Time Interval` and `Station Name`. If you want configure our API cloud or a custom influxDb instance too.
+
+### Config via nRF Connect App:
+
+#### WiFi Credentials
 
 1. Start your sensor with last firmware (rev212)
 2. Scan and connect to it with nRF connect App
@@ -89,7 +95,7 @@ The current firmware [rev212](https://github.com/kike-canaries/esp32-hpma115s0/r
 7. Click on `send` button.
 8. On your serial messages your sensor will be log succesuful connection or on your display the wifi icon will be enable.
 
-### Device name config
+#### Device name (station name)
 
 Repeat previous steps `1 to 6` but the payload for `dname` connection is for example:
 
@@ -97,7 +103,7 @@ Repeat previous steps `1 to 6` but the payload for `dname` connection is for exa
 "{"dname":"PM25_Berlin_Pankow_E04"}"
 ```
 
-### InfluxDb config
+#### InfluxDb config
 
 Repeat previous steps `1 to 6` but the payload for `InfluxDb` connection is:
 
@@ -108,15 +114,14 @@ Repeat previous steps `1 to 6` but the payload for `InfluxDb` connection is:
 the fields mean:
 - **ifxdb**: InfluxDb database name
 - **ifxip**: InflusDb hostname or ip
-- **ifxid**: Sensor ID or sensor name
 - **ifxtg**: Custom tags **(optional)**
 
-#### Example:
+##### Example:
 
 ```json
 {"ifxdb":"database_name","ifxip":"hostname_or_ip","ifxtg":"zone=north,zone=south"}
 ```
-### Location config
+#### Location config
 
 Repeat previous steps `1 to 6` but the payload for `sensor location` for example is:
 
@@ -124,7 +129,7 @@ Repeat previous steps `1 to 6` but the payload for `sensor location` for example
 "{"lat":52.53819,"lon":13.44024,"alt":220,"spd":34.5}"
 ```
 
-## InfluxDb payload
+#### InfluxDb payload
 
 The current version send the next variables to InfluxDb:
 
@@ -135,7 +140,7 @@ pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime"
 - **hum and tmp**, humidity and temperature if you connect AM2320 to your ESP32
 - **lat, lng, alt, spd**, variables that you already configured
 
-## Status vector
+## Device status vector
 
 The current flags status is represented on one byte and it is returned on config:
 

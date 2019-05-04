@@ -8,11 +8,38 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 
 **Full guide (Hackster.io):** [English](https://www.hackster.io/MetaKernel/canairio-citizen-network-for-air-quality-monitoring-bbf647) **|** [Spanish](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a)
 
-## Software Dependencies
+
+## Installation from binaries
+
+### Linux and MacOSx
+
+**Prerequisites**: python2 or python3 with pyserial in your system
+
+You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. 
+
+Please uncompress zip file `canairio_installer_20190503rev312.zip` and execute the next command for your model board (D1Mini, WemosOLED, Heltec) like this:
+
+``` bash
+./install.sh canairio_d1mini_20190503rev312.bin
+```
+
+if you want clear all preferences and flash variables, please execute before:
+
+``` bash
+./install.sh canairio_d1mini_20190503rev312.bin
+```
+
+### Windows
+
+Please read procedure on our [HacksterIO Guide]("https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a#toc-firmware-y-software-3") for details for load firmware via oficial **Espressif Download Tool**
+
+
+## Compiling and installing from source code
+
+### Software Dependencies
 
 Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
 
-## Compiling and installing
 
 For **default** board `D1Mini Kit`, clone and upload firmware via USB cable:
 
@@ -31,7 +58,6 @@ build_flags =
 # -D D1MINI=1
  -D HELTEC=1
 ```
-You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. 
 
 ### Troubleshooting
 

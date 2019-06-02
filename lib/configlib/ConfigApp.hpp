@@ -24,7 +24,7 @@ class ConfigApp
   String ifxdb;  
   String ifxip;  
   uint16_t ifxpt;
-  String ifxtg;
+  // String ifxtg;
   String ifusr;
   String ifpss;
   String apiusr;

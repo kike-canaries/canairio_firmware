@@ -24,7 +24,7 @@ void ConfigApp::reload(){
   ifxdb = preferences.getString("ifxdb","");
   ifxip = preferences.getString("ifxip","");
   ifxpt = preferences.getUInt("ifxpt",8086);
-  ifxtg = preferences.getString("ifxtg","");
+  // ifxtg = preferences.getString("ifxtg","");
   ifusr = preferences.getString("ifusr","");
   ifpss = preferences.getString("ifpss","");
   // canairio api settings
@@ -50,7 +50,7 @@ String ConfigApp::getCurrentConfig(){
   doc["ienb"]   =  preferences.getBool("ifxEnable",false);  // ifxdb on/off
   doc["ifxdb"]  =  preferences.getString("ifxdb","");       // influxdb database name
   doc["ifxip"]  =  preferences.getString("ifxip","");       // influxdb database ip
-  doc["ifxtg"]  =  preferences.getString("ifxtg","");       // influxdb sensor tags
+  // doc["ifxtg"]  =  preferences.getString("ifxtg","");       // influxdb sensor tags
   doc["ifusr"]  =  preferences.getString("ifusr", "");      // influxdb sensorid name
   doc["ifxpt"]  =  preferences.getUInt("ifxpt",8086);       // influxdb sensor tags
   doc["stime"]  =  preferences.getInt("stime",5);           // sensor measure time
@@ -107,9 +107,9 @@ bool ConfigApp::save(const char *json){
     preferences.begin(_app_name, false);
     preferences.putString("ifxdb", tifxdb );
     preferences.putString("ifxip", tifxip );
-    if (tifxtg.length() > 0){
-      preferences.putString("ifxtg", tifxtg);
-    }
+    // if (tifxtg.length() > 0){
+    //   preferences.putString("ifxtg", tifxtg);
+    // }
     if (tifxpt > 0) {
       preferences.putUInt("ifxpt", tifxpt );
     }

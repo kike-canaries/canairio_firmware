@@ -219,6 +219,7 @@ void apiInit(){
     Serial.println("-->[API] Connecting..");
     api.configure(cfg.dname.c_str(), cfg.deviceId); // stationId and deviceId, optional endpoint, host and port
     api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
+    cfg.isNewAPIConfig=false; // flag for config via BLE
     delay(1000);
   }
 }
@@ -279,17 +280,17 @@ void influxDbParseFields(char* fields){
 
 void influxDbAddTags(char* tags) {
   // default tag (ESP32 MacAdress)
-  if(cfg.ifxtg.length()>0)
-    sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid,cfg.ifxtg.c_str());
-  else
-    sprintf(tags,"mac=%04X%08X",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid);
+  // if(cfg.ifxtg.length()>0)
+    // sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid,cfg.ifxtg.c_str());
+  // else
+  sprintf(tags,"mac=%04X%08X",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid);
 }
 
 bool influxDbWrite() {
   if(apm25 == 0 || apm10 == 0) {
     return false;
   }
-  char tags[256];
+  char tags[64];
   influxDbAddTags(tags);
   char fields[256];
   influxDbParseFields(fields);
@@ -361,7 +362,8 @@ void wifiStop(){
   if(wifiOn){
     Serial.println("-->[WIFI] Disconnecting..");
     WiFi.disconnect(true);
-    wifiCheck();
+    wifiOn = false;
+    delay(1000);
   }
 }
 

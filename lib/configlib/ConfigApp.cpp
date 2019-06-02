@@ -1,11 +1,4 @@
 #include "ConfigApp.hpp"
-#include <bitset>
-
-// Status flags byte
-std::bitset<8> flags;
-const int bit_enable_wifi  = 0;    // flag bit for enable/disable wifi
-const int bit_enable_api   = 1;    // flag bit for CanAir.io API (on/off)
-const int bit_enable_ifx   = 2;    // flag bit for InfluxDb API (on/off)
 
 void ConfigApp::init(const char app_name[]){
   _app_name = new char[strlen(app_name)+1];

@@ -1,4 +1,11 @@
 #include "ConfigApp.hpp"
+#include <bitset>
+
+// Status flags byte
+std::bitset<8> flags;
+const int bit_enable_wifi  = 0;    // flag bit for enable/disable wifi
+const int bit_enable_api   = 1;    // flag bit for CanAir.io API (on/off)
+const int bit_enable_ifx   = 2;    // flag bit for InfluxDb API (on/off)
 
 void ConfigApp::init(const char app_name[]){
   _app_name = new char[strlen(app_name)+1];
@@ -20,6 +27,7 @@ void ConfigApp::reload(){
   ssid = preferences.getString("ssid","");
   pass = preferences.getString("pass","");
   // influx db optional settings
+  ifxEnable = preferences.getBool("ifxEnable",false);
   ifxdb = preferences.getString("ifxdb","");
   ifxip = preferences.getString("ifxip","");
   ifxpt = preferences.getUInt("ifxpt",8086);
@@ -27,6 +35,7 @@ void ConfigApp::reload(){
   ifusr = preferences.getString("ifusr","");
   ifpss = preferences.getString("ifpss","");
   // canairio api settings
+  apiEnable = preferences.getBool("apiEnable",false);
   apiusr = preferences.getString("apiusr","");
   apipss = preferences.getString("apipss","");
   // station and sensor settings
@@ -42,16 +51,18 @@ void ConfigApp::reload(){
 String ConfigApp::getCurrentConfig(){
   StaticJsonDocument<300> doc;
   preferences.begin(_app_name,false);
-  doc["dname"]  =  preferences.getString("dname",""); // device or station name
-  doc["wenb"]   =  preferences.getBool("wifiEnable",false);
-  doc["ssid"]   =  preferences.getString("ssid",""); // influxdb database name
-  doc["ifxdb"]  =  preferences.getString("ifxdb",""); // influxdb database name
-  doc["ifxip"]  =  preferences.getString("ifxip",""); // influxdb database ip
-  doc["ifxtg"]  =  preferences.getString("ifxtg",""); // influxdb sensor tags
-  doc["ifusr"]  =  preferences.getString("ifusr", "");  // influxdb sensorid name
-  doc["ifxpt"]  =  preferences.getUInt("ifxpt",8086); // influxdb sensor tags
-  doc["stime"]  =  preferences.getInt("stime",5);     // sensor measure time
-  doc["apiusr"] =  preferences.getString("apiusr","");
+  doc["dname"]  =  preferences.getString("dname","");       // device or station name
+  doc["wenb"]   =  preferences.getBool("wifiEnable",false); // wifi on/off
+  doc["ssid"]   =  preferences.getString("ssid","");        // influxdb database name
+  doc["ienb"]   =  preferences.getBool("ifxEnable",false);  // ifxdb on/off
+  doc["ifxdb"]  =  preferences.getString("ifxdb","");       // influxdb database name
+  doc["ifxip"]  =  preferences.getString("ifxip","");       // influxdb database ip
+  doc["ifxtg"]  =  preferences.getString("ifxtg","");       // influxdb sensor tags
+  doc["ifusr"]  =  preferences.getString("ifusr", "");      // influxdb sensorid name
+  doc["ifxpt"]  =  preferences.getUInt("ifxpt",8086);       // influxdb sensor tags
+  doc["stime"]  =  preferences.getInt("stime",5);           // sensor measure time
+  doc["aenb"]   =  preferences.getBool("apiEnable",false);  // CanAirIO API on/off
+  doc["apiusr"] =  preferences.getString("apiusr","");      // API username
   doc["wmac"]   =  (uint16_t)(chipid >> 32);
   preferences.end();
   String output;
@@ -89,6 +100,9 @@ bool ConfigApp::save(const char *json){
   uint16_t cmd  = doc["cmd"].as<uint16_t>();
   uint16_t tifxpt = doc["ifxpt"].as<uint16_t>();
   String act    = doc["act"]  | "";
+  bool wenb     = doc["wenb"].as<bool>();
+  bool ienb     = doc["ienb"].as<bool>();
+  bool aenb     = doc["aenb"].as<bool>();
 
   if (tdname.length()>0) {
     preferences.begin(_app_name, false);
@@ -168,13 +182,20 @@ bool ConfigApp::save(const char *json){
       preferences.end();
       reboot();
     }
-    // wifi disable command
+    // setting wifi flags
     if (act.equals("wst")) {
       preferences.begin(_app_name, false);
-      preferences.putBool("wifiEnable", false);
+      preferences.putBool("wifiEnable", wenb);
+      preferences.putBool("ifxEnable", ienb);
+      preferences.putBool("apiEnable", aenb);
       preferences.end();
-      wifiEnable = false;
-      Serial.println("-->[CONFIG] disabling WiFi and radio..");
+      wifiEnable = wenb;
+      ifxEnable = ienb && wenb;
+      apiEnable = aenb && wenb;
+      Serial.println("-->[CONFIG] Updating WAN services: ");
+      Serial.println("-->[CONFIG] WiFi: "+wenb);
+      Serial.println("-->[CONFIG] IfxDb: "+ienb);
+      Serial.println("-->[CONFIG] API: "+aenb);
     }
   }
   else {
@@ -182,6 +203,18 @@ bool ConfigApp::save(const char *json){
     return false;
   }
   return true;
+}
+
+bool ConfigApp::isWifiEnable(){
+  return wifiEnable;
+}
+
+bool ConfigApp::isApiEnable(){
+  return apiEnable;
+}
+
+bool ConfigApp::isIfxEnable(){
+  return ifxEnable;
 }
 
 void ConfigApp::reboot(){

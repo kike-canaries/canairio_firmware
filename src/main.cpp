@@ -224,7 +224,7 @@ void apiInit(){
 }
 
 void apiLoop() {
-  if (v25.size() == 0 && wifiOn && apiIsConfigured()) {
+  if (v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured()) {
     Serial.print("-->[API] writing to ");
     Serial.print(""+String(api.ip)+"..");
     bool status = api.write(0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
@@ -286,7 +286,7 @@ void influxDbAddTags(char* tags) {
 }
 
 bool influxDbWrite() {
-  if(!influxDbIsConfigured() || apm25 == 0 || apm10 == 0) {
+  if(apm25 == 0 || apm10 == 0) {
     return false;
   }
   char tags[256];
@@ -297,7 +297,7 @@ bool influxDbWrite() {
 }
 
 void influxDbLoop() {
-  if(v25.size()==0 && wifiOn && influxDbIsConfigured()){
+  if(v25.size()==0 && wifiOn && cfg.isIfxEnable() && influxDbIsConfigured()){
     int ifx_retry = 0;
     Serial.print("-->[INFLUXDB] writing to ");
     Serial.print("" + cfg.ifxip + "..");

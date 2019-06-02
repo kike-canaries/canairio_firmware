@@ -127,8 +127,10 @@ bool ConfigApp::save(const char *json){
     if (tifcer.length() > 0) {
       preferences.putString("ifcer", tifcer );
     }
+    preferences.putBool("ifxEnable",true);
     preferences.end();
     isNewIfxdbConfig=true;
+    ifxEnable = true;
     Serial.println("-->[CONFIG] influxdb config saved!");
     Serial.print("-->[CONFIG] ");
     Serial.println(getCurrentConfig());
@@ -147,8 +149,10 @@ bool ConfigApp::save(const char *json){
     preferences.begin(_app_name, false);
     preferences.putString("apiusr", tapiusr);
     preferences.putString("apipss", tapipss);
+    preferences.putBool("apiEnable",true);
     preferences.end();
     isNewAPIConfig = true;
+    apiEnable = true;
     Serial.println("-->[CONFIG] API credentials saved!");
   }
   else if (tlat != 0 && tlon != 0) {
@@ -182,20 +186,29 @@ bool ConfigApp::save(const char *json){
       preferences.end();
       reboot();
     }
-    // setting wifi flags
+    // enable/disable wifi
     if (act.equals("wst")) {
       preferences.begin(_app_name, false);
       preferences.putBool("wifiEnable", wenb);
-      preferences.putBool("ifxEnable", ienb);
-      preferences.putBool("apiEnable", aenb);
       preferences.end();
       wifiEnable = wenb;
-      ifxEnable = ienb && wenb;
-      apiEnable = aenb && wenb;
-      Serial.println("-->[CONFIG] Updating WAN services: ");
-      Serial.println("-->[CONFIG] WiFi: "+wenb);
-      Serial.println("-->[CONFIG] IfxDb: "+ienb);
-      Serial.println("-->[CONFIG] API: "+aenb);
+      Serial.println("-->[CONFIG] Updating WiFi state: "+wenb);
+    }
+    // enable/disable influxDb state
+    if (act.equals("ist")) {
+      preferences.begin(_app_name, false);
+      preferences.putBool("ifxEnable", ienb);
+      preferences.end();
+      ifxEnable = ienb;
+      Serial.println("-->[CONFIG] Updating InfluxDB state: "+ienb);
+    }
+    // enable/disable CanAirIO API state
+    if (act.equals("ast")) {
+      preferences.begin(_app_name, false);
+      preferences.putBool("apiEnable", aenb);
+      preferences.end();
+      apiEnable = aenb;
+      Serial.println("-->[CONFIG] Updating API state: "+aenb);
     }
   }
   else {

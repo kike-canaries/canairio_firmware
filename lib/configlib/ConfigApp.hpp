@@ -17,6 +17,8 @@ class ConfigApp
   char* deviceId;
   String dname;
   bool wifiEnable;
+  bool ifxEnable;
+  bool apiEnable;
   String ssid;   
   String pass;   
   String ifxdb;  
@@ -43,6 +45,12 @@ class ConfigApp
   bool save(const char *json);
   
   String getCurrentConfig();
+
+  bool isWifiEnable();
+  
+  bool isIfxEnable();
+  
+  bool isApiEnable();
 
   void reboot ();
 

@@ -38,6 +38,7 @@
 .travis.yml
 
 # PlatformIO work files
+.pio
 .pioenvs
 .piolibdeps
 *tags*

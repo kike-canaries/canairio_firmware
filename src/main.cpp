@@ -8,6 +8,7 @@
  */
 
 #include <Arduino.h>
+#include <OTAHandler.h>
 #include <Wire.h>
 #include <InfluxArduino.hpp>
 #include <CanAirIoApi.hpp>
@@ -345,6 +346,8 @@ void wifiConnect(const char* ssid, const char* pass) {
   if(wifiCheck()){
     cfg.isNewWifi=false;  // flag for config via BLE
     Serial.println("done\n-->[WIFI] connected!");
+    Serial.print("-->[WIFI][IP]"); Serial.println(WiFi.localIP());
+    ota.setup("CanAirIO","CanAirIO");
   }
   else{
     Serial.println("fail!\n-->[E][WIFI] disconnected!");
@@ -378,6 +381,10 @@ void wifiLoop(){
     influxDbInit();
     apiInit();
   }
+}
+
+void otaLoop(){
+  if(wifiOn)ota.loop();
 }
 
 
@@ -515,5 +522,6 @@ void loop(){
   influxDbLoop();  // influxDB publication
   statusLoop();    // update sensor status GUI
   gui.pageEnd();
+  otaLoop();
   delay(1000);
 }

@@ -19,6 +19,7 @@ float temp = 0.0;              // Temperature (C)
 #define WIFI_RETRY_CONNECTION    20
 bool dataSendToggle;
 bool wifiOn;
+OTAHandler ota; // please see platformio.ini
 
 // Bluetooth fields
 BLEServer* pServer = NULL;

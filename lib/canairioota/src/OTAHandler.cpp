@@ -20,7 +20,7 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
         .onStart([]() {
         })
         .onEnd([]() {
-        Serial.println("\n-->[OTA] End");
+        Serial.println("\n-->[OTA] success!");
         })
         .onProgress([](unsigned int progress, unsigned int total) {
         Serial.printf("-->[OTA] Progress: %u%%\r", (progress / (total / 100)));

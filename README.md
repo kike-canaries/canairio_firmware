@@ -41,7 +41,7 @@ Please install first [PlatformIO](http://platformio.org/) open source ecosystem 
 
 For **default** board `D1Mini Kit like`, clone and upload firmware via USB cable:
 
-``` python
+``` bash
 git clone https://github.com/kike-canaries/esp32-hpma115s0.git
 cd esp32-hpma115s0
 pio run -e d1mini --target upload
@@ -51,13 +51,13 @@ After that, it able for sending updates via OTA protocol using Wifi in your LAN,
 
 For **OTA updates** you only run
 
-``` python
+``` bash
 pio run --target upload
 ```
 
 **Optional** for other board, please select the right environment for example for `wemos` board:
 
-``` python
+``` bash
 pio run -e wemos --target upload
 ```
 
@@ -65,7 +65,7 @@ pio run -e wemos --target upload
 
 If you have some issues with Bluetooth library internals, please upgrade all frameworks and tools on PlatformIO:
 
-```
+``` bash
 pio update
 sudo pio upgrade
 pio run -t clean
@@ -204,12 +204,14 @@ sample:
 - [X] D1 MINI Kit OLED board supported
 - [X] LaserCut box for D1Mini board
 - [X] Config WiFi via Bluetooth
-- [X] Config InfluxDb (Cronograf) via Bluetooth (without auth for now)
+- [X] Config InfluxDb via Bluetooth (without auth for now)
 - [X] Config sample time via Bluetooth
 - [X] GUI: bluetooth, wifi and cloud status icons 
-- [ ] Real time clock or clock set via BT sync
-- [ ] Timestamp for GPS sync
-- [ ] Display graphs for PM2.5 and PM10
+- [X] Config CanAirIO API via Bluetooth
+- [X] Config location via Bluetooth
+- [X] enable/disable API, Wifi, influxDB
+- [X] OTA updates ready (LAN)
+- [ ] OTA updates ready (WAN)
 - [ ] ROM storage for offline issues
 
 ---

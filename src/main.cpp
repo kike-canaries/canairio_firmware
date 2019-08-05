@@ -8,6 +8,7 @@
  */
 
 #include <Arduino.h>
+#include <OTAHandler.h>
 #include <Wire.h>
 #include <InfluxArduino.hpp>
 #include <CanAirIoApi.hpp>
@@ -219,12 +220,13 @@ void apiInit(){
     Serial.println("-->[API] Connecting..");
     api.configure(cfg.dname.c_str(), cfg.deviceId); // stationId and deviceId, optional endpoint, host and port
     api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
+    cfg.isNewAPIConfig=false; // flag for config via BLE
     delay(1000);
   }
 }
 
 void apiLoop() {
-  if (v25.size() == 0 && wifiOn && apiIsConfigured()) {
+  if (v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured()) {
     Serial.print("-->[API] writing to ");
     Serial.print(""+String(api.ip)+"..");
     bool status = api.write(0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
@@ -279,17 +281,17 @@ void influxDbParseFields(char* fields){
 
 void influxDbAddTags(char* tags) {
   // default tag (ESP32 MacAdress)
-  if(cfg.ifxtg.length()>0)
-    sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid,cfg.ifxtg.c_str());
-  else
-    sprintf(tags,"mac=%04X%08X",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid);
+  // if(cfg.ifxtg.length()>0)
+    // sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid,cfg.ifxtg.c_str());
+  // else
+  sprintf(tags,"mac=%04X%08X",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid);
 }
 
 bool influxDbWrite() {
-  if(!influxDbIsConfigured() || apm25 == 0 || apm10 == 0) {
+  if(apm25 == 0 || apm10 == 0) {
     return false;
   }
-  char tags[256];
+  char tags[64];
   influxDbAddTags(tags);
   char fields[256];
   influxDbParseFields(fields);
@@ -297,7 +299,7 @@ bool influxDbWrite() {
 }
 
 void influxDbLoop() {
-  if(v25.size()==0 && wifiOn && influxDbIsConfigured()){
+  if(v25.size()==0 && wifiOn && cfg.isIfxEnable() && influxDbIsConfigured()){
     int ifx_retry = 0;
     Serial.print("-->[INFLUXDB] writing to ");
     Serial.print("" + cfg.ifxip + "..");
@@ -344,6 +346,8 @@ void wifiConnect(const char* ssid, const char* pass) {
   if(wifiCheck()){
     cfg.isNewWifi=false;  // flag for config via BLE
     Serial.println("done\n-->[WIFI] connected!");
+    Serial.print("-->[WIFI][IP]"); Serial.println(WiFi.localIP());
+    ota.setup("CanAirIO","CanAirIO");
   }
   else{
     Serial.println("fail!\n-->[E][WIFI] disconnected!");
@@ -361,7 +365,8 @@ void wifiStop(){
   if(wifiOn){
     Serial.println("-->[WIFI] Disconnecting..");
     WiFi.disconnect(true);
-    wifiCheck();
+    wifiOn = false;
+    delay(1000);
   }
 }
 
@@ -376,6 +381,10 @@ void wifiLoop(){
     influxDbInit();
     apiInit();
   }
+}
+
+void otaLoop(){
+  if(wifiOn)ota.loop();
 }
 
 
@@ -513,5 +522,6 @@ void loop(){
   influxDbLoop();  // influxDB publication
   statusLoop();    // update sensor status GUI
   gui.pageEnd();
+  otaLoop();
   delay(1000);
 }

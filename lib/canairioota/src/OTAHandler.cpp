@@ -17,6 +17,7 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
     //everloop blue
     ArduinoOTA.setHostname(_ESP_ID);  
     ArduinoOTA.setPassword(_ESP_PASS);
+
     ArduinoOTA
         .onStart([]() {
         })
@@ -24,7 +25,10 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
             Serial.println("\n-->[OTA] success!");
         })
         .onProgress([](unsigned int progress, unsigned int total) {
-            Serial.printf("-->[OTA] Progress: %u%%\r", (progress / (total / 100)));
+            // Serial.printf("-->[OTA] Progress: %u%%\r", (progress / (total / 100)));            
+	        // if(This->m_pOTAHandlerCallbacks!=nullptr)This->m_pOTAHandlerCallbacks->onProgress(This,progress,total);
+            if(ota.getInstance()->m_pOTAHandlerCallbacks!=nullptr)
+                ota.getInstance()->m_pOTAHandlerCallbacks->onProgress(ota.getInstance(),progress,total);
         })
         .onError([](ota_error_t error) {
             Serial.printf("-->[E][OTA] Error[%u]: ", error);
@@ -54,4 +58,13 @@ void OTAHandler::setBaud(int baud) {
 
 void OTAHandler::setCallbacks(OTAHandlerCallbacks* pCallbacks) {
 	m_pOTAHandlerCallbacks = pCallbacks;
-} // setCallbacks
+}
+
+OTAHandler* OTAHandler::getInstance() {
+	return this;
+}
+
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_OTAHANDLER)
+OTAHandler ota;
+#endif
+

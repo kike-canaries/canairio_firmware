@@ -325,6 +325,12 @@ void influxDbLoop() {
 *   W I F I   M E T H O D S
 ******************************************************************************/
 
+class MyOTAHandlerCallbacks: public OTAHandlerCallbacks{
+  void onProgress(OTAHandler* ota, unsigned int progress, unsigned int total){
+    Serial.printf("-->[OTA] Progress: %u%%\r", (progress / (total / 100)));
+  };
+};
+
 bool wifiCheck(){
   wifiOn = WiFi.isConnected();
   if(wifiOn)statusOn(bit_wan);  // TODO: We need validate internet connection
@@ -348,6 +354,7 @@ void wifiConnect(const char* ssid, const char* pass) {
     Serial.println("done\n-->[WIFI] connected!");
     Serial.print("-->[WIFI][IP]"); Serial.println(WiFi.localIP());
     ota.setup("CanAirIO","CanAirIO");
+    ota.setCallbacks(new MyOTAHandlerCallbacks());
   }
   else{
     Serial.println("fail!\n-->[E][WIFI] disconnected!");

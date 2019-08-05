@@ -9,6 +9,7 @@ class OTAHandler {
         void setCallbacks(OTAHandlerCallbacks* pCallbacks);
         void loop();
         void setBaud(int baud);
+        OTAHandler* getInstance();
     private:
         OTAHandlerCallbacks* m_pOTAHandlerCallbacks = nullptr;
         const char* _ESP_ID;
@@ -21,5 +22,9 @@ public:
     virtual ~OTAHandlerCallbacks() {};
 	virtual void onProgress(OTAHandler* pOtaHandler, unsigned int progress, unsigned int total);
 };
+
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_OTAHANDLER)
+extern OTAHandler ota;
+#endif
 
 #endif

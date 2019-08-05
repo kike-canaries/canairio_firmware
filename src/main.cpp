@@ -521,7 +521,7 @@ void loop(){
   apiLoop();
   influxDbLoop();  // influxDB publication
   statusLoop();    // update sensor status GUI
-  gui.pageEnd();
   otaLoop();
+  gui.pageEnd();
   delay(1000);
 }

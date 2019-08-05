@@ -31,6 +31,8 @@ public:
 
   void welcomeAddMessage(String msg);
 
+  void showProgress(unsigned int progress, unsigned int total);
+
   void displayCenterBig(String msg);
 
   void displayBottomLine(String msg);

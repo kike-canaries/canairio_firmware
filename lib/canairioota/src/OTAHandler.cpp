@@ -20,28 +20,28 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
 
     ArduinoOTA
         .onStart([]() {
+            if(ota.getInstance()->m_pOTAHandlerCallbacks!=nullptr)
+                ota.getInstance()->m_pOTAHandlerCallbacks->onStart();
         })
         .onEnd([]() {
             Serial.println("\n-->[OTA] success!");
+            if(ota.getInstance()->m_pOTAHandlerCallbacks!=nullptr)
+                ota.getInstance()->m_pOTAHandlerCallbacks->onEnd();
         })
         .onProgress([](unsigned int progress, unsigned int total) {
-            // Serial.printf("-->[OTA] Progress: %u%%\r", (progress / (total / 100)));            
-	        // if(This->m_pOTAHandlerCallbacks!=nullptr)This->m_pOTAHandlerCallbacks->onProgress(This,progress,total);
+            Serial.printf("-->[OTA] Progress: %u%%\r", (progress / (total / 100)));            
             if(ota.getInstance()->m_pOTAHandlerCallbacks!=nullptr)
-                ota.getInstance()->m_pOTAHandlerCallbacks->onProgress(ota.getInstance(),progress,total);
+                ota.getInstance()->m_pOTAHandlerCallbacks->onProgress(progress,total);
         })
         .onError([](ota_error_t error) {
             Serial.printf("-->[E][OTA] Error[%u]: ", error);
-            if (error == OTA_AUTH_ERROR)
-                Serial.println("Auth Failed");
-            else if (error == OTA_BEGIN_ERROR)
-                Serial.println("Begin Failed");
-            else if (error == OTA_CONNECT_ERROR)
-                Serial.println("Connect Failed");
-            else if (error == OTA_RECEIVE_ERROR)
-                Serial.println("Receive Failed");
-            else if (error == OTA_END_ERROR)
-                Serial.println("End Failed");
+            if (error == OTA_AUTH_ERROR)         Serial.println("Auth Failed");
+            else if (error == OTA_BEGIN_ERROR)   Serial.println("Begin Failed");
+            else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+            else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+            else if (error == OTA_END_ERROR)     Serial.println("End Failed");
+            if(ota.getInstance()->m_pOTAHandlerCallbacks!=nullptr)
+                ota.getInstance()->m_pOTAHandlerCallbacks->onError();
         });
 
     ArduinoOTA.begin();

@@ -20,7 +20,10 @@ class OTAHandler {
 class OTAHandlerCallbacks {
 public:
     virtual ~OTAHandlerCallbacks() {};
-	virtual void onProgress(OTAHandler* pOtaHandler, unsigned int progress, unsigned int total);
+    virtual void onStart();
+	virtual void onProgress(unsigned int progress, unsigned int total);
+    virtual void onEnd();
+    virtual void onError();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_OTAHANDLER)

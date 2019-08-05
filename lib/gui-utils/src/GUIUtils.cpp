@@ -34,6 +34,14 @@ void GUIUtils::showWelcome(){
   u8g2.sendBuffer();
 }
 
+void GUIUtils::showProgress(unsigned int progress, unsigned int total){
+  u8g2.setFont(u8g2_font_4x6_tf);
+  char output[12];
+  sprintf(output, "%03d%%" , (progress / (total / 100)));
+  u8g2.drawStr(0, lastDrawedLine, output);
+  u8g2.sendBuffer();
+}
+
 void GUIUtils::welcomeAddMessage(String msg){
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.drawStr(0, lastDrawedLine, msg.c_str());

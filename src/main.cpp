@@ -325,6 +325,34 @@ void influxDbLoop() {
 *   W I F I   M E T H O D S
 ******************************************************************************/
 
+class MyOTAHandlerCallbacks: public OTAHandlerCallbacks{
+  void onStart(){
+    gui.showWelcome();
+    gui.welcomeAddMessage("Upgrading..");
+  };
+  void onProgress(unsigned int progress, unsigned int total){
+    gui.showProgress(progress,total);
+  };
+  void onEnd(){
+    gui.welcomeAddMessage("");
+    gui.welcomeAddMessage("success!");    delay(1000);
+    gui.welcomeAddMessage("rebooting.."); delay(500);
+  }
+  void onError(){
+    gui.welcomeAddMessage("");
+    gui.welcomeAddMessage("error, try again!"); delay(2000);
+  }
+};
+
+void otaLoop(){
+  if(wifiOn)ota.loop();
+}
+
+void otaInit(){
+  ota.setup("CanAirIO","CanAirIO");
+  ota.setCallbacks(new MyOTAHandlerCallbacks());
+}
+
 bool wifiCheck(){
   wifiOn = WiFi.isConnected();
   if(wifiOn)statusOn(bit_wan);  // TODO: We need validate internet connection
@@ -347,7 +375,7 @@ void wifiConnect(const char* ssid, const char* pass) {
     cfg.isNewWifi=false;  // flag for config via BLE
     Serial.println("done\n-->[WIFI] connected!");
     Serial.print("-->[WIFI][IP]"); Serial.println(WiFi.localIP());
-    ota.setup("CanAirIO","CanAirIO");
+    otaInit();
   }
   else{
     Serial.println("fail!\n-->[E][WIFI] disconnected!");
@@ -382,11 +410,6 @@ void wifiLoop(){
     apiInit();
   }
 }
-
-void otaLoop(){
-  if(wifiOn)ota.loop();
-}
-
 
 /******************************************************************************
 *   B L U E T O O T H  M E T H O D S
@@ -521,7 +544,7 @@ void loop(){
   apiLoop();
   influxDbLoop();  // influxDB publication
   statusLoop();    // update sensor status GUI
-  gui.pageEnd();
   otaLoop();
+  gui.pageEnd();
   delay(1000);
 }

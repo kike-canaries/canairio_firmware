@@ -50,7 +50,7 @@ InfluxArduino influx;
 ConfigApp cfg;
 
 // GUI fields
-#define LED 0
+#define LED 2
 GUIUtils gui;
 
 // some prototypes

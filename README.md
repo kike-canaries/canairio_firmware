@@ -39,37 +39,33 @@ Please read procedure on our [HacksterIO Guide](https://www.hackster.io/114723/c
 
 Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
 
-For **default** board `D1Mini Kit like`, clone and upload firmware via USB cable:
+For **default** board `D1Mini Kit`, clone and upload firmware via USB cable:
 
 ``` bash
 git clone https://github.com/kike-canaries/esp32-hpma115s0.git
 cd esp32-hpma115s0
-pio run -e d1mini --target upload
-```
-
-After that, it able for sending updates via OTA protocol using Wifi in your LAN, is more fastest than USB and you can disconnect your board, but `you need first send Wifi credentials` via Android CanAirIO app (see below)
-
-For **OTA updates** you only run
-
-``` bash
 pio run --target upload
 ```
 
-**Optional** for other board, please select the right environment for example for `wemos` board:
+**Optional** for other board, please edit and select it on `platformio.ini` file and upload the new firmware, for example for `Heltec`:
 
-``` bash
-pio run -e wemos --target upload
+``` python
+build_flags =
+# Uncomment your board
+# -D WEMOSOLED=1
+# -D D1MINI=1
+ -D HELTEC=1
 ```
 
 ### Troubleshooting
 
 If you have some issues with Bluetooth library internals, please upgrade all frameworks and tools on PlatformIO:
 
-``` bash
+```
 pio update
 sudo pio upgrade
 pio run -t clean
-rm -rf .pio
+rm -rf .pioenvs .piolibdeps
 pio run --target upload
 ```
 
@@ -204,14 +200,12 @@ sample:
 - [X] D1 MINI Kit OLED board supported
 - [X] LaserCut box for D1Mini board
 - [X] Config WiFi via Bluetooth
-- [X] Config InfluxDb via Bluetooth (without auth for now)
+- [X] Config InfluxDb (Cronograf) via Bluetooth (without auth for now)
 - [X] Config sample time via Bluetooth
 - [X] GUI: bluetooth, wifi and cloud status icons 
-- [X] Config CanAirIO API via Bluetooth
-- [X] Config location via Bluetooth
-- [X] enable/disable API, Wifi, influxDB
-- [X] OTA updates ready (LAN)
-- [ ] OTA updates ready (WAN)
+- [ ] Real time clock or clock set via BT sync
+- [ ] Timestamp for GPS sync
+- [ ] Display graphs for PM2.5 and PM10
 - [ ] ROM storage for offline issues
 
 ---

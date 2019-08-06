@@ -10,6 +10,15 @@ unsigned int apm25 = 0;        // last PM2.5 average
 unsigned int apm10 = 0;        // last PM10 average
 #define SENSOR_RETRY  1000     // Sensor read retry
 
+
+const int IP5306_2 = 27;     // PIN2 IP5306
+const int IP5306_3 = 14;     // PIN3 IP5306
+//const int IN25 = 25;     // the number of the pushbutton pin
+
+unsigned int chargeLevel = 0;
+unsigned int Rdelay = 0;
+unsigned int resetvar = 0;
+
 // Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();
 float humi = 0.0;              // % Relative humidity 
@@ -41,7 +50,7 @@ InfluxArduino influx;
 ConfigApp cfg;
 
 // GUI fields
-#define LED 2
+#define LED 0
 GUIUtils gui;
 
 // some prototypes

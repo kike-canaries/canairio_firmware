@@ -228,10 +228,6 @@ void batteryloop() {
 
   if (TTGO_TQ == 1) {
       Rdelay = 0;
-        digitalWrite(LED, HIGH);
-        delayMicroseconds (50);
-        digitalWrite(LED, LOW);
-      
    while (digitalRead(IP5306_2) == HIGH) {   
         delayMicroseconds (100);             // Sincronization in 1
     }
@@ -249,9 +245,6 @@ void batteryloop() {
           return;
       }
         delayMicroseconds (1600);
-        digitalWrite(LED, HIGH);
-        delayMicroseconds (50);
-        digitalWrite(LED, LOW);
       if (digitalRead(IP5306_2) == HIGH) {
         delayMicroseconds (100);
         if (digitalRead(IP5306_2) == HIGH) {

@@ -230,16 +230,16 @@ void apiLoop() {
     Serial.print("-->[API] writing to ");
     Serial.print(""+String(api.ip)+"..");
     bool status = api.write(0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
+    int code = api.getResponse();
     if(status) {
-      Serial.println("done");
+      Serial.println("done. ["+String(code)+"]");
       dataSendToggle = true;
     }
     else {
-      int code = api.getResponse();
-      Serial.println("fail! response code: "+String());
+      Serial.println("fail! ["+String(code)+"]");
       if (code == -1) {
-        Serial.println("-->[E][API] server error rebooting on 5 seg..");
-        delay(5000);
+        Serial.println("-->[E][API] publish error (-1)");
+        delay(1000);
       }
     }
   }

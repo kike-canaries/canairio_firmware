@@ -81,14 +81,14 @@ void sensorInit(){
 }
 
 void wrongDataState(){
-  Serial.println("-->[E][HPMA] !wrong data!");
+  Serial.print("-->[E][HPMA] !wrong data!");
   setErrorCode(ecode_sensor_read_fail);
   gui.displaySensorAvarage(apm25);
   gui.displaySensorData(0,0); 
   hpmaSerial.end();
   statusOff(bit_sensor);
   sensorInit();
-  delay(1000);
+  delay(500);
 }
 
 /***
@@ -119,29 +119,34 @@ void averageLoop(){
   }
 }
 
+char getLoaderChar(){
+  char loader[] = {'/','|','\\','-'};
+  return loader[random(0,3)];
+}
+
 /***
  * PM2.5 and PM10 read and visualization
  **/
 void sensorLoop(){
-  Serial.print("-->[HPMA] read..");
   int try_sensor_read = 0;
   String txtMsg = "";
   while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
     while (hpmaSerial.available() > 0) {
       char inChar = hpmaSerial.read();
       txtMsg += inChar;
-      Serial.print(".");
+      Serial.print("-->[HPMA] read "+String(getLoaderChar())+"\r");
     }
+    Serial.print("-->[HPMA] read "+String(getLoaderChar())+"\r");
   }
   if(try_sensor_read > SENSOR_RETRY){
     setErrorCode(ecode_sensor_timeout);
-    Serial.println("fail"); 
+    Serial.println("-->[HPMA] read > fail!"); 
     Serial.println("-->[E][HPMA] disconnected ?"); 
-    delay(3000);  // waiting for sensor..
+    delay(500);  // waiting for sensor..
   }
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
-      Serial.print("done");
+      Serial.print("-->[HPMA] read > done!");
       statusOn(bit_sensor);
       unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);

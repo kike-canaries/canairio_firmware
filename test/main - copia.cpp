@@ -94,7 +94,7 @@ void wrongDataState(){
   Serial.println("-->[E][HPMA] !wrong data!");
   setErrorCode(ecode_sensor_read_fail);
   gui.displaySensorAvarage(apm25);
-  gui.displaySensorData(0,0,chargeLevel);
+  gui.displaySensorData(0,0,chargeLevel); 
   hpmaSerial.end();
   statusOff(bit_sensor);
   sensorInit();
@@ -157,7 +157,7 @@ void sensorLoop(){
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
-        gui.displaySensorData(pm25,pm10,chargeLevel);
+        gui.displaySensorData(pm25,pm10,chargeLevel); 
         saveDataForAverage(pm25,pm10);
       }
       else wrongDataState();
@@ -629,7 +629,7 @@ void loop(){
   gui.pageEnd();
   delay(1000);
 
-  /* 
+/* 
   if (resetvar == 599) {
   resetvar = 0;
   ESP.restart();   // 10 minutos

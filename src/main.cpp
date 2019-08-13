@@ -38,6 +38,10 @@
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 #elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
+#elif TTGO18650 // display via i2c for TTGO18650
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+#elif TTGO_TQ // display via i2c for TTGO_TQ
+U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, 4, 5);
 #else       // display via i2c for D1MINI board
 U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
 #endif
@@ -49,6 +53,12 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board
 #define HPMA_TX 12
+#elif TTGO18650
+#define HPMA_RX 18  // config for TTGO18650 board
+#define HPMA_TX 17
+#elif TTGO_TQ
+#define HPMA_RX 13  // config for TTGO_TQ board
+#define HPMA_TX 18
 #else
 #define HPMA_RX 17  // config for D1MIN1 board
 #define HPMA_TX 16

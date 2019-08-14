@@ -44,7 +44,8 @@ void GUIUtils::showProgress(unsigned int progress, unsigned int total){
 
 void GUIUtils::welcomeAddMessage(String msg){
   u8g2.setFont(u8g2_font_4x6_tf);
-if (TTGO_TQ == 1) {
+
+#ifdef TTGO_TQ
    if (lastDrawedLine<32) {
    u8g2.drawStr(0, lastDrawedLine, msg.c_str());
   lastDrawedLine = lastDrawedLine + 7;
@@ -55,48 +56,47 @@ else {
   lastDrawedLine = lastDrawedLine + 7;
   u8g2.sendBuffer();
   }
- }
- else {
+#else
   u8g2.drawStr(0, lastDrawedLine, msg.c_str());
   lastDrawedLine = lastDrawedLine + 7;
   u8g2.sendBuffer();
- }
+#endif
 }
 
 void GUIUtils::displayCenterBig(String msg){
   
-if (TTGO_TQ == 1) {
+#ifdef TTGO_TQ
   u8g2.setCursor(0,1);
   u8g2.setFont(u8g2_font_inb30_mn);
-}
-else {
+#else
   u8g2.setCursor(0,0);
   u8g2.setFont(u8g2_font_inb24_mn);
-}
+#endif
+
   u8g2.print(msg.c_str());
 }
 
 void GUIUtils::displayBottomLine(String msg){
   u8g2.setFont(u8g2_font_4x6_tf);
   
-if (TTGO_TQ == 1) {
+#ifdef TTGO_TQ
   u8g2.setCursor(97,5);
-  }
-else {
+#else
   u8g2.setCursor(0,29);
- }
+#endif
+
   u8g2.print(msg.c_str());
 }
 
 void GUIUtils::displayEndLine(String msg){
   u8g2.setFont(u8g2_font_5x7_tf);
 
-if (TTGO_TQ == 1) {
+#ifdef TTGO_TQ
   u8g2.setCursor(81, 14);
-}
-else {
+#else
   u8g2.setCursor(0, 41);
-}
+#endif
+
   u8g2.print(msg.c_str());
 }
 
@@ -114,13 +114,13 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel){
   sprintf(output, "%03d E%02d [S%05d]" , pm10, ecode, mcount);
   displayBottomLine(String(output));
 
-if (TTGO_TQ == 1) {
+#ifdef TTGO_TQ
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.setCursor(105,15);
   u8g2.print(mcount);
   u8g2.setCursor(80,5); 
   u8g2.print(chargeLevel);
-}
+#endif
   Serial.print(" PM10:"); Serial.print(output);
   sprintf(output, "P%03d" , pm25);
   displayEndLine(String(output));
@@ -130,7 +130,8 @@ if (TTGO_TQ == 1) {
 void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn){
 
 
-if (TTGO_TQ == 1) {
+#ifdef TTGO_TQ
+
   if(bleOn) u8g2.drawBitmap(115, 24, 1, 8, ic_bluetooth_on);
 
   if(blePair) u8g2.drawBitmap(115, 24, 1, 8, ic_bluetooth_pair);
@@ -138,8 +139,9 @@ if (TTGO_TQ == 1) {
   if(wifiOn) u8g2.drawBitmap(101, 24, 1, 8, ic_wifi_on);
 
   if(dataOn) u8g2.drawBitmap(86, 24, 1, 8, ic_data_on);
-}
-else {
+
+#else 
+
   if(bleOn) u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_on);
 
   if(blePair) u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_pair);
@@ -149,8 +151,8 @@ else {
   if(dataOn) u8g2.drawBitmap(34, 40, 1, 8, ic_data_on);
 
   u8g2.drawLine(0, 38, 63, 38);
-
-}
+  
+#endif
 
 }
 

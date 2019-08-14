@@ -226,7 +226,8 @@ void humidityLoop() {
 
 void batteryloop() {
 
-  if (TTGO_TQ == 1) {
+  #ifdef TTGO_TQ
+
       Rdelay = 0;
         digitalWrite(LED, HIGH);
         delayMicroseconds (50);
@@ -282,7 +283,8 @@ void batteryloop() {
          Serial.println("Charge level 50%");
          return;
     }
-  }        
+    
+  #endif        
 }
 
 /******************************************************************************

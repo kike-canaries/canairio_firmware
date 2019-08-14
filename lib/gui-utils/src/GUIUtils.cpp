@@ -44,7 +44,7 @@ void GUIUtils::showProgress(unsigned int progress, unsigned int total){
 
 void GUIUtils::welcomeAddMessage(String msg){
   u8g2.setFont(u8g2_font_4x6_tf);
-if (TTGO_FLAG == 1) {
+if (TTGO_TQ == 1) {
    if (lastDrawedLine<32) {
    u8g2.drawStr(0, lastDrawedLine, msg.c_str());
   lastDrawedLine = lastDrawedLine + 7;
@@ -65,7 +65,7 @@ else {
 
 void GUIUtils::displayCenterBig(String msg){
   
-if (TTGO_FLAG == 1) {
+if (TTGO_TQ == 1) {
   u8g2.setCursor(0,1);
   u8g2.setFont(u8g2_font_inb30_mn);
 }
@@ -79,7 +79,7 @@ else {
 void GUIUtils::displayBottomLine(String msg){
   u8g2.setFont(u8g2_font_4x6_tf);
   
-if (TTGO_FLAG == 1) {
+if (TTGO_TQ == 1) {
   u8g2.setCursor(97,5);
   }
 else {
@@ -91,7 +91,7 @@ else {
 void GUIUtils::displayEndLine(String msg){
   u8g2.setFont(u8g2_font_5x7_tf);
 
-if (TTGO_FLAG == 1) {
+if (TTGO_TQ == 1) {
   u8g2.setCursor(81, 14);
 }
 else {
@@ -114,7 +114,7 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel){
   sprintf(output, "%03d E%02d [S%05d]" , pm10, ecode, mcount);
   displayBottomLine(String(output));
 
-if (TTGO_FLAG == 1) {
+if (TTGO_TQ == 1) {
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.setCursor(105,15);
   u8g2.print(mcount);
@@ -129,7 +129,8 @@ if (TTGO_FLAG == 1) {
 
 void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn){
 
-if (TTGO_FLAG == 1) {
+
+if (TTGO_TQ == 1) {
   if(bleOn) u8g2.drawBitmap(115, 24, 1, 8, ic_bluetooth_on);
 
   if(blePair) u8g2.drawBitmap(115, 24, 1, 8, ic_bluetooth_pair);

@@ -50,23 +50,18 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #ifdef WEMOSOLED
 #define HPMA_RX 13   // config for Wemos board
 #define HPMA_TX 15
-//#define TTGO_FLAG 0
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board
 #define HPMA_TX 12
-//#define TTGO_FLAG 0
 #elif TTGO18650
 #define HPMA_RX 18  // config for TTGO18650 board
 #define HPMA_TX 17
-//#define TTGO_FLAG 0
 #elif TTGO_TQ
 #define HPMA_RX 13  // config for TTGO_TQ board
 #define HPMA_TX 18
-//#define TTGO_FLAG 1
 #else
 #define HPMA_RX 17  // config for D1MIN1 board
 #define HPMA_TX 16
-//#define TTGO_FLAG 0
 #endif
 
 /******************************************************************************

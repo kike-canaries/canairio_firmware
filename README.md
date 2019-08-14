@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/kike-canaries/esp32-hpma115s0.svg?branch=master)](https://travis-ci.com/kike-canaries/esp32-hpma115s0) 
+
 # ESP32-HPMA115S0 (CanAirIO sensor)
 
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" align="right" width="384" ></a>

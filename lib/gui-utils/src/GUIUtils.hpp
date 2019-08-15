@@ -43,7 +43,7 @@ public:
 
   void displaySensorAvarage(int avarage);
 
-  void displaySensorData(int pm25, int pm10);
+  void displaySensorData(int pm25, int pm10, int chargeLevel);
 
   void updateError(unsigned int error);
 

@@ -38,6 +38,10 @@
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 #elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
+#elif TTGO18650 // display via i2c for TTGO18650
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+#elif TTGO_TQ // display via i2c for TTGO_TQ
+U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, 4, 5);
 #else       // display via i2c for D1MINI board
 U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
 #endif
@@ -49,6 +53,12 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board
 #define HPMA_TX 12
+#elif TTGO18650
+#define HPMA_RX 18  // config for TTGO18650 board
+#define HPMA_TX 17
+#elif TTGO_TQ
+#define HPMA_RX 13  // config for TTGO_TQ board
+#define HPMA_TX 18
 #else
 #define HPMA_RX 17  // config for D1MIN1 board
 #define HPMA_TX 16
@@ -84,7 +94,7 @@ void wrongDataState(){
   Serial.println("-->[E][HPMA] !wrong data!");
   setErrorCode(ecode_sensor_read_fail);
   gui.displaySensorAvarage(apm25);
-  gui.displaySensorData(0,0); 
+  gui.displaySensorData(0,0,chargeLevel);
   hpmaSerial.end();
   statusOff(bit_sensor);
   sensorInit();
@@ -147,7 +157,7 @@ void sensorLoop(){
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
-        gui.displaySensorData(pm25,pm10); 
+        gui.displaySensorData(pm25,pm10,chargeLevel);
         saveDataForAverage(pm25,pm10);
       }
       else wrongDataState();
@@ -205,6 +215,76 @@ void humidityLoop() {
   if (v25.size() == 0) {
     getHumidityRead();
   }
+}
+
+
+/******************************************************************************
+*   B A T T E R Y   C H A R G E   S T A T U S   M E T H O D S
+******************************************************************************/
+// IP5306_2 = pin 27 ESP32, pin 2 IP5306
+// IP5306_3 = pin 26 ESP32, pin 3 IP5306
+
+void batteryloop() {
+
+  #ifdef TTGO_TQ
+
+      Rdelay = 0;
+        digitalWrite(LED, HIGH);
+        delayMicroseconds (50);
+        digitalWrite(LED, LOW);
+      
+   while (digitalRead(IP5306_2) == HIGH) {   
+        delayMicroseconds (100);             // Sincronization in 1
+    }
+        delayMicroseconds (50);              // Probably double shoot in 0  
+   while (digitalRead(IP5306_2) == HIGH) {   
+        delayMicroseconds (100);             // Sincronization in 1
+    }
+   while (digitalRead(IP5306_2) == LOW && Rdelay < 56) {
+        delayMicroseconds (100);             // Sincronization in 0
+        Rdelay = Rdelay + 1; 
+    }
+      if (Rdelay > 52) {
+          chargeLevel = 0; // 0%
+          Serial.println("Charge level 0%");         
+          return;
+      }
+        delayMicroseconds (1600);
+        digitalWrite(LED, HIGH);
+        delayMicroseconds (50);
+        digitalWrite(LED, LOW);
+      if (digitalRead(IP5306_2) == HIGH) {
+        delayMicroseconds (100);
+        if (digitalRead(IP5306_2) == HIGH) {
+          chargeLevel = 4; // 100%
+          Serial.println("Charge level 100%");
+          return;
+        }
+    }
+      if (digitalRead(IP5306_3) == LOW) {
+        delayMicroseconds (100);
+        if (digitalRead(IP5306_3) == LOW) {
+          chargeLevel = 1; // 25%
+          Serial.println("Charge level 25%");
+          return;
+        }
+    }
+        delayMicroseconds (1100);
+      if (digitalRead(IP5306_3) == HIGH) {
+        delayMicroseconds (100);
+        if (digitalRead(IP5306_3) == HIGH) {
+          chargeLevel = 3; // 75%
+          Serial.println("Charge level 75%");
+          return;
+        }
+    }
+     if (digitalRead(IP5306_3) == LOW) {
+         chargeLevel = 2; // 50%
+         Serial.println("Charge level 50%");
+         return;
+    }
+    
+  #endif        
 }
 
 /******************************************************************************
@@ -512,6 +592,8 @@ void bleLoop(){
 ******************************************************************************/
 
 void setup() {
+  pinMode(IP5306_2, INPUT);
+  pinMode(IP5306_3, INPUT);
   Serial.begin(115200);
   gui.displayInit(u8g2);
   gui.showWelcome();
@@ -539,6 +621,7 @@ void loop(){
   sensorLoop();    // read HPMA serial data and showed it
   averageLoop();   // calculated of sensor data average
   humidityLoop();  // read AM2320
+  batteryloop();   // battery charge status 
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
   apiLoop();
@@ -547,4 +630,12 @@ void loop(){
   otaLoop();
   gui.pageEnd();
   delay(1000);
+
+/* 
+  if (resetvar == 599) {
+  resetvar = 0;
+  ESP.restart();   // 10 minutos
+  }
+  resetvar = resetvar + 1;
+*/
 }

@@ -15,12 +15,14 @@ Adafruit_AM2320 am2320 = Adafruit_AM2320();
 float humi = 0.0;              // % Relative humidity 
 float temp = 0.0;              // Temperature (C)
 
+#ifdef TTGO_TQ
 // Battery level
 const int IP5306_2 = 27;     // PIN2 IP5306
 const int IP5306_3 = 14;     // PIN3 IP5306
 unsigned int chargeLevel = 0;
 unsigned int Rdelay = 0;
 unsigned int resetvar = 0;
+#endif
 
 // WiFi fields
 #define WIFI_RETRY_CONNECTION    20

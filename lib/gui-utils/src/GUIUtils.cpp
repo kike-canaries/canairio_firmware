@@ -99,6 +99,10 @@ void GUIUtils::displaySensorAvarage(int avarage) {
   displayCenterBig(output);
 }
 
+void GUIUtils::displaySensorData(int pm25, int pm10) {
+  displaySensorData(pm25,pm10,0);
+}
+
 // TODO: separate this function, format/display
 void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel) {
   if(mcount<65535)mcount++;

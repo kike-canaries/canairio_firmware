@@ -94,7 +94,11 @@ void wrongDataState(){
   Serial.print("-->[E][HPMA] !wrong data!");
   setErrorCode(ecode_sensor_read_fail);
   gui.displaySensorAvarage(apm25);
+  #ifdef TTGO_TQ
   gui.displaySensorData(0,0,chargeLevel);
+  #else
+  gui.displaySensorData(0,0);
+  #endif
   hpmaSerial.end();
   statusOff(bit_sensor);
   sensorInit();
@@ -162,7 +166,11 @@ void sensorLoop(){
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
+        #ifdef TTGO_TQ
         gui.displaySensorData(pm25,pm10,chargeLevel);
+        #else
+        gui.displaySensorData(pm25,pm10);
+        #endif
         saveDataForAverage(pm25,pm10);
       }
       else wrongDataState();
@@ -604,8 +612,10 @@ void bleLoop(){
 ******************************************************************************/
 
 void setup() {
+#ifdef TTGO_TQ
   pinMode(IP5306_2, INPUT);
   pinMode(IP5306_3, INPUT);
+#endif
   Serial.begin(115200);
   gui.displayInit(u8g2);
   gui.showWelcome();

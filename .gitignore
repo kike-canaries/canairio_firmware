@@ -35,9 +35,10 @@
 *.swp
 
 # travis
-.travis.yml
+#.travis.yml
 
 # PlatformIO work files
+.pio
 .pioenvs
 .piolibdeps
 *tags*

@@ -31,6 +31,8 @@ public:
 
   void welcomeAddMessage(String msg);
 
+  void showProgress(unsigned int progress, unsigned int total);
+
   void displayCenterBig(String msg);
 
   void displayBottomLine(String msg);
@@ -41,7 +43,7 @@ public:
 
   void displaySensorAvarage(int avarage);
 
-  void displaySensorData(int pm25, int pm10);
+  void displaySensorData(int pm25, int pm10, int chargeLevel);
 
   void updateError(unsigned int error);
 

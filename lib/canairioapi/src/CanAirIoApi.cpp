@@ -85,7 +85,7 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, f
     _latestResponse = http.POST(writeBuf.c_str());
     if(dev)Serial.println("\n-->[API] response: "+String(_latestResponse));
     http.end();
-    return _latestResponse == 200;
+    return (_latestResponse >= 200) && (_latestResponse < 300);
 }
 
 int CanAirIoApi::getResponse()

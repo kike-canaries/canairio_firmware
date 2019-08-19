@@ -380,10 +380,6 @@ void influxDbParseFields(char* fields){
 }
 
 void influxDbAddTags(char* tags) {
-  // default tag (ESP32 MacAdress)
-  // if(cfg.ifxtg.length()>0)
-    // sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid,cfg.ifxtg.c_str());
-  // else
   sprintf(tags,"mac=%04X%08X",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid);
 }
 
@@ -651,5 +647,5 @@ void loop(){
   statusLoop();    // update sensor status GUI
   otaLoop();
   gui.pageEnd();
-  delay(100);
+  delay(200);
 }

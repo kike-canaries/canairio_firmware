@@ -91,14 +91,18 @@ void sensorInit(){
 }
 
 void wrongDataState(){
-  Serial.println("-->[E][HPMA] !wrong data!");
+  Serial.print("-->[E][HPMA] !wrong data!");
   setErrorCode(ecode_sensor_read_fail);
   gui.displaySensorAvarage(apm25);
+  #ifdef TTGO_TQ
   gui.displaySensorData(0,0,chargeLevel);
+  #else
+  gui.displaySensorData(0,0);
+  #endif
   hpmaSerial.end();
   statusOff(bit_sensor);
   sensorInit();
-  delay(1000);
+  delay(500);
 }
 
 /***
@@ -129,35 +133,44 @@ void averageLoop(){
   }
 }
 
+char getLoaderChar(){
+  char loader[] = {'/','|','\\','-'};
+  return loader[random(0,3)];
+}
+
 /***
  * PM2.5 and PM10 read and visualization
  **/
 void sensorLoop(){
-  Serial.print("-->[HPMA] read..");
   int try_sensor_read = 0;
   String txtMsg = "";
   while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
     while (hpmaSerial.available() > 0) {
       char inChar = hpmaSerial.read();
       txtMsg += inChar;
-      Serial.print(".");
+      Serial.print("-->[HPMA] read "+String(getLoaderChar())+"\r");
     }
+    Serial.print("-->[HPMA] read "+String(getLoaderChar())+"\r");
   }
   if(try_sensor_read > SENSOR_RETRY){
     setErrorCode(ecode_sensor_timeout);
-    Serial.println("fail"); 
+    Serial.println("-->[HPMA] read > fail!"); 
     Serial.println("-->[E][HPMA] disconnected ?"); 
-    delay(3000);  // waiting for sensor..
+    delay(500);  // waiting for sensor..
   }
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
-      Serial.print("done");
+      Serial.print("-->[HPMA] read > done!");
       statusOn(bit_sensor);
       unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
+        #ifdef TTGO_TQ
         gui.displaySensorData(pm25,pm10,chargeLevel);
+        #else
+        gui.displaySensorData(pm25,pm10);
+        #endif
         saveDataForAverage(pm25,pm10);
       }
       else wrongDataState();
@@ -225,66 +238,73 @@ void humidityLoop() {
 // IP5306_3 = pin 26 ESP32, pin 3 IP5306
 
 void batteryloop() {
-
-  #ifdef TTGO_TQ
-
-      Rdelay = 0;
-        digitalWrite(LED, HIGH);
-        delayMicroseconds (50);
-        digitalWrite(LED, LOW);
-      
-   while (digitalRead(IP5306_2) == HIGH) {   
-        delayMicroseconds (100);             // Sincronization in 1
+#ifdef TTGO_TQ
+  Rdelay = 0;
+  digitalWrite(LED, HIGH);
+  delayMicroseconds(50);
+  digitalWrite(LED, LOW);
+  while (digitalRead(IP5306_2) == HIGH)
+  {
+    delayMicroseconds(100); // Sincronization in 1
+  }
+  delayMicroseconds(50); // Probably double shoot in 0
+  while (digitalRead(IP5306_2) == HIGH)
+  {
+    delayMicroseconds(100); // Sincronization in 1
+  }
+  while (digitalRead(IP5306_2) == LOW && Rdelay < 56)
+  {
+    delayMicroseconds(100); // Sincronization in 0
+    Rdelay = Rdelay + 1;
+  }
+  if (Rdelay > 52)
+  {
+    chargeLevel = 0; // 0%
+    Serial.println("Charge level 0%");
+    return;
+  }
+  delayMicroseconds(1600);
+  digitalWrite(LED, HIGH);
+  delayMicroseconds(50);
+  digitalWrite(LED, LOW);
+  if (digitalRead(IP5306_2) == HIGH)
+  {
+    delayMicroseconds(100);
+    if (digitalRead(IP5306_2) == HIGH)
+    {
+      chargeLevel = 4; // 100%
+      Serial.println("Charge level 100%");
+      return;
     }
-        delayMicroseconds (50);              // Probably double shoot in 0  
-   while (digitalRead(IP5306_2) == HIGH) {   
-        delayMicroseconds (100);             // Sincronization in 1
+  }
+  if (digitalRead(IP5306_3) == LOW)
+  {
+    delayMicroseconds(100);
+    if (digitalRead(IP5306_3) == LOW)
+    {
+      chargeLevel = 1; // 25%
+      Serial.println("Charge level 25%");
+      return;
     }
-   while (digitalRead(IP5306_2) == LOW && Rdelay < 56) {
-        delayMicroseconds (100);             // Sincronization in 0
-        Rdelay = Rdelay + 1; 
+  }
+  delayMicroseconds(1100);
+  if (digitalRead(IP5306_3) == HIGH)
+  {
+    delayMicroseconds(100);
+    if (digitalRead(IP5306_3) == HIGH)
+    {
+      chargeLevel = 3; // 75%
+      Serial.println("Charge level 75%");
+      return;
     }
-      if (Rdelay > 52) {
-          chargeLevel = 0; // 0%
-          Serial.println("Charge level 0%");         
-          return;
-      }
-        delayMicroseconds (1600);
-        digitalWrite(LED, HIGH);
-        delayMicroseconds (50);
-        digitalWrite(LED, LOW);
-      if (digitalRead(IP5306_2) == HIGH) {
-        delayMicroseconds (100);
-        if (digitalRead(IP5306_2) == HIGH) {
-          chargeLevel = 4; // 100%
-          Serial.println("Charge level 100%");
-          return;
-        }
-    }
-      if (digitalRead(IP5306_3) == LOW) {
-        delayMicroseconds (100);
-        if (digitalRead(IP5306_3) == LOW) {
-          chargeLevel = 1; // 25%
-          Serial.println("Charge level 25%");
-          return;
-        }
-    }
-        delayMicroseconds (1100);
-      if (digitalRead(IP5306_3) == HIGH) {
-        delayMicroseconds (100);
-        if (digitalRead(IP5306_3) == HIGH) {
-          chargeLevel = 3; // 75%
-          Serial.println("Charge level 75%");
-          return;
-        }
-    }
-     if (digitalRead(IP5306_3) == LOW) {
-         chargeLevel = 2; // 50%
-         Serial.println("Charge level 50%");
-         return;
-    }
-    
-  #endif        
+  }
+  if (digitalRead(IP5306_3) == LOW)
+  {
+    chargeLevel = 2; // 50%
+    Serial.println("Charge level 50%");
+    return;
+  }
+#endif
 }
 
 /******************************************************************************
@@ -360,10 +380,6 @@ void influxDbParseFields(char* fields){
 }
 
 void influxDbAddTags(char* tags) {
-  // default tag (ESP32 MacAdress)
-  // if(cfg.ifxtg.length()>0)
-    // sprintf(tags,"mac=%04X%08X,%s",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid,cfg.ifxtg.c_str());
-  // else
   sprintf(tags,"mac=%04X%08X",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid);
 }
 
@@ -592,8 +608,10 @@ void bleLoop(){
 ******************************************************************************/
 
 void setup() {
+#ifdef TTGO_TQ
   pinMode(IP5306_2, INPUT);
   pinMode(IP5306_3, INPUT);
+#endif
   Serial.begin(115200);
   gui.displayInit(u8g2);
   gui.showWelcome();
@@ -629,13 +647,5 @@ void loop(){
   statusLoop();    // update sensor status GUI
   otaLoop();
   gui.pageEnd();
-  delay(1000);
-
-/* 
-  if (resetvar == 599) {
-  resetvar = 0;
-  ESP.restart();   // 10 minutos
-  }
-  resetvar = resetvar + 1;
-*/
+  delay(200);
 }

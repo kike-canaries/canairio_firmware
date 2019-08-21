@@ -8,12 +8,16 @@ BINDIR="binaries"
 DEFAULT="d1mini"
 INSDIR=$RELDIR/installer/canairio_installer
 
-
 showHelp () {
   echo ""
   echo "***********************************************"
   echo "** Build release flavor"
   echo "***********************************************"
+  echo ""
+  echo "usage: ./build [board|all|help|print]"
+  echo ""
+  echo "example: ./build d1mini"
+  echo "example: ./build all"
   echo ""
   echo "supported boards: "
   echo "d1mini, Wemos, Heltec, TTGO18650, TTGO_TQ"
@@ -67,7 +71,7 @@ buildInstaller () {
   echo "** Building installer"
   echo "***********************************************"
   echo ""
-  mkdir -p $INSDIR
+  mkdir -p $INSDIR/system
   updateInstallerBinaries
   updateFlavorBinaries
   cd $INSDIR/..
@@ -79,11 +83,13 @@ buildInstaller () {
 }
 
 printOutput () {
+  echo ""
   FIRMDIR=$RELDIR/$BINDIR
   cd $FIRMDIR
   for flavor in *; do
     md5sum $flavor/canairio_${flavor}_rev${SRC_REV}_${DATE}.bin
   done
+  echo ""
 }
 
 
@@ -109,9 +115,7 @@ else
       build heltec
       build TTGO18650
       build TTGO_TQ
-      echo ""
       printOutput
-      echo ""
       ;;
 
     *)

@@ -133,9 +133,9 @@ void averageLoop(){
   }
 }
 
-char getLoaderChar(){
+char getLoaderChar(){ 
   char loader[] = {'/','|','\\','-'};
-  return loader[random(0,3)];
+  return loader[random(0,4)];
 }
 
 /***

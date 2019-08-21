@@ -11,7 +11,9 @@ INSDIR=$RELDIR/installer/canairio_installer
 
 showHelp () {
   echo ""
-  echo "Build release"
+  echo "***********************************************"
+  echo "** Build release flavor"
+  echo "***********************************************"
   echo ""
   echo "supported boards: "
   echo "d1mini, Wemos, Heltec, TTGO18650, TTGO_TQ"
@@ -76,24 +78,47 @@ buildInstaller () {
   echo ""
 }
 
-case "$1" in
-  installer)
-    buildInstaller
-    ;;
+printOutput () {
+  FIRMDIR=$RELDIR/$BINDIR
+  cd $FIRMDIR
+  for flavor in *; do
+    md5sum $flavor/canairio_${flavor}_rev${SRC_REV}_${DATE}.bin
+  done
+}
 
-  help)
-    showHelp
-    ;;
 
-  all)
-    build d1mini
-    build wemos
-    build heltec
-    build TTGO18650
-    build TTGO_TQ
-    ;;
+if [ "$1" = "" ]; then
+  showHelp
+else
+  case "$1" in
+    installer)
+      buildInstaller
+      ;;
 
-  *)
-    build $1
-    ;;
-esac
+    help)
+      showHelp
+      ;;
+
+    print)
+      printOutput
+      ;;
+
+    all)
+      build d1mini
+      build wemos
+      build heltec
+      build TTGO18650
+      build TTGO_TQ
+      echo ""
+      printOutput
+      echo ""
+      ;;
+
+    *)
+      build $1
+      ;;
+  esac
+fi
+
+exit 0
+

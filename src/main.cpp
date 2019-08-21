@@ -647,5 +647,5 @@ void loop(){
   statusLoop();    // update sensor status GUI
   otaLoop();
   gui.pageEnd();
-  delay(200);
+  delay(400);
 }

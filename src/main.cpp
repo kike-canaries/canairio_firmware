@@ -170,6 +170,7 @@ void sensorLoop(){
         gui.displaySensorData(pm25,pm10,chargeLevel);
         #else
         gui.displaySensorData(pm25,pm10);
+        gui.displayLiveIcon();
         #endif
         saveDataForAverage(pm25,pm10);
       }
@@ -189,6 +190,7 @@ void statusLoop(){
   }
   gui.updateError(getErrorCode());
   gui.displayStatus(wifiOn,true,deviceConnected,dataSendToggle);
+  if(iconSaveTick++==8)gui.displayPrefSaveIcon(false);
   if(dataSendToggle)dataSendToggle=false;
 }
 
@@ -529,6 +531,8 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
       std::string value = pCharacteristic->getValue();
       if (value.length() > 0) {
         if(cfg.save(value.c_str())){
+          gui.displayPrefSaveIcon(true);
+          iconSaveTick=0;
           cfg.reload();
           if(cfg.isNewWifi){
             wifiRestart();

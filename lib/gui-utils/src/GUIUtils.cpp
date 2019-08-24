@@ -119,8 +119,8 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel) {
 #endif
   Serial.print(" PM10:"); Serial.print(output);
   sprintf(output, "P%03d" , pm25);
-  displayEndLine(String(output));
   Serial.print(" PM2.5:"); Serial.println(output);
+  //displayEndLine(String(output));
 }
 
 void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn) {
@@ -136,6 +136,15 @@ void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn)
   if(dataOn) u8g2.drawBitmap(34, 40, 1, 8, ic_data_on);
   u8g2.drawLine(0, 38, 63, 38);
 #endif
+}
+
+void GUIUtils::displayLiveIcon() {
+  if(toggleLive)u8g2.drawBitmap(0,40,1,8,ic_sensor_live);
+  toggleLive=!toggleLive;
+}
+
+void GUIUtils::displayPrefSaveIcon(bool enable) {
+  if(enable)u8g2.drawBitmap(10,40,1,8,ic_pref_save);
 }
 
 void GUIUtils::updateError(unsigned int error) {

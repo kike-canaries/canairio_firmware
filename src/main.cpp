@@ -170,8 +170,8 @@ void sensorLoop(){
         gui.displaySensorData(pm25,pm10,chargeLevel);
         #else
         gui.displaySensorData(pm25,pm10);
-        gui.displayLiveIcon();
         #endif
+        gui.displayLiveIcon();
         saveDataForAverage(pm25,pm10);
       }
       else wrongDataState();

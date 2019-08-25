@@ -119,16 +119,16 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel) {
 #endif
   Serial.print(" PM10:"); Serial.print(output);
   sprintf(output, "P%03d" , pm25);
-  displayEndLine(String(output));
   Serial.print(" PM2.5:"); Serial.println(output);
+  //displayEndLine(String(output));
 }
 
 void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn) {
 #ifdef TTGO_TQ
   if(bleOn) u8g2.drawBitmap(115, 24, 1, 8, ic_bluetooth_on);
   if(blePair) u8g2.drawBitmap(115, 24, 1, 8, ic_bluetooth_pair);
-  if(wifiOn) u8g2.drawBitmap(101, 24, 1, 8, ic_wifi_on);
-  if(dataOn) u8g2.drawBitmap(86, 24, 1, 8, ic_data_on);
+  if(wifiOn) u8g2.drawBitmap(105, 24, 1, 8, ic_wifi_on);
+  if(dataOn) u8g2.drawBitmap(95, 24, 1, 8, ic_data_on);
 #else 
   if(bleOn) u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_on);
   if(blePair) u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_pair);
@@ -136,6 +136,23 @@ void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn)
   if(dataOn) u8g2.drawBitmap(34, 40, 1, 8, ic_data_on);
   u8g2.drawLine(0, 38, 63, 38);
 #endif
+}
+
+void GUIUtils::displayLiveIcon() {
+#ifdef TTGO_TQ
+  if(toggleLive)u8g2.drawBitmap(85, 24, 1, 8, ic_sensor_live);
+#else
+  if(toggleLive)u8g2.drawBitmap(0, 40, 1, 8, ic_sensor_live);
+#endif  
+  toggleLive=!toggleLive;
+}
+
+void GUIUtils::displayPrefSaveIcon(bool enable) {
+#ifdef TTGO_TQ
+  if(enable)u8g2.drawBitmap(75, 24, 1, 8, ic_pref_save);
+#else
+  if(enable)u8g2.drawBitmap(10, 40, 1, 8, ic_pref_save);
+#endif  
 }
 
 void GUIUtils::updateError(unsigned int error) {

@@ -127,8 +127,8 @@ void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn)
 #ifdef TTGO_TQ
   if(bleOn) u8g2.drawBitmap(115, 24, 1, 8, ic_bluetooth_on);
   if(blePair) u8g2.drawBitmap(115, 24, 1, 8, ic_bluetooth_pair);
-  if(wifiOn) u8g2.drawBitmap(101, 24, 1, 8, ic_wifi_on);
-  if(dataOn) u8g2.drawBitmap(86, 24, 1, 8, ic_data_on);
+  if(wifiOn) u8g2.drawBitmap(105, 24, 1, 8, ic_wifi_on);
+  if(dataOn) u8g2.drawBitmap(95, 24, 1, 8, ic_data_on);
 #else 
   if(bleOn) u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_on);
   if(blePair) u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_pair);
@@ -139,12 +139,20 @@ void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn)
 }
 
 void GUIUtils::displayLiveIcon() {
-  if(toggleLive)u8g2.drawBitmap(0,40,1,8,ic_sensor_live);
+#ifdef TTGO_TQ
+  if(toggleLive)u8g2.drawBitmap(85, 24, 1, 8, ic_sensor_live);
+#else
+  if(toggleLive)u8g2.drawBitmap(0, 40, 1, 8, ic_sensor_live);
+#endif  
   toggleLive=!toggleLive;
 }
 
 void GUIUtils::displayPrefSaveIcon(bool enable) {
-  if(enable)u8g2.drawBitmap(10,40,1,8,ic_pref_save);
+#ifdef TTGO_TQ
+  if(enable)u8g2.drawBitmap(75, 24, 1, 8, ic_pref_save);
+#else
+  if(enable)u8g2.drawBitmap(10, 40, 1, 8, ic_pref_save);
+#endif  
 }
 
 void GUIUtils::updateError(unsigned int error) {

@@ -7,6 +7,8 @@ class GUIUtils
 {
 private:
 
+  bool toggleLive;
+
 public:
 
   GUIUtils(void) {};
@@ -40,6 +42,10 @@ public:
   void displayEndLine(String msg);
 
   void displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn);
+
+  void displayLiveIcon();
+  
+  void displayPrefSaveIcon(bool enable);
 
   void displaySensorAvarage(int avarage);
 

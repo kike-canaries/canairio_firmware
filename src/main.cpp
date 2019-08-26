@@ -190,7 +190,8 @@ void statusLoop(){
   }
   gui.updateError(getErrorCode());
   gui.displayStatus(wifiOn,true,deviceConnected,dataSendToggle);
-  if(iconSaveTick++==8)gui.displayPrefSaveIcon(false);
+  if(triggerSaveIcon++<3)gui.displayPrefSaveIcon(true);
+  else gui.displayPrefSaveIcon(false);
   if(dataSendToggle)dataSendToggle=false;
 }
 
@@ -531,8 +532,7 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
       std::string value = pCharacteristic->getValue();
       if (value.length() > 0) {
         if(cfg.save(value.c_str())){
-          gui.displayPrefSaveIcon(true);
-          iconSaveTick=0;
+          triggerSaveIcon=0;
           cfg.reload();
           if(cfg.isNewWifi){
             wifiRestart();

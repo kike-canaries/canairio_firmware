@@ -48,7 +48,7 @@ InfluxArduino influx;
 
 // Config and settings handler
 ConfigApp cfg;
-int iconSaveTick = 0;
+int triggerSaveIcon = 0;
 
 // GUI fields
 #define LED 2

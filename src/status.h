@@ -23,6 +23,7 @@ const int ecode_ifdb_write_fail    =   4;
 const int ecode_ifdb_dns_fail      =   5;
 const int ecode_json_parser_error  =   6;
 const int ecode_invalid_config     =   7;
+const int ecode_api_write_fail     =   8;
 
 void statusOn(int bit){
   status.set(bit);

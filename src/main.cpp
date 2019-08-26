@@ -190,7 +190,8 @@ void statusLoop(){
   }
   gui.updateError(getErrorCode());
   gui.displayStatus(wifiOn,true,deviceConnected,dataSendToggle);
-  if(iconSaveTick++==8)gui.displayPrefSaveIcon(false);
+  if(triggerSaveIcon++<3)gui.displayPrefSaveIcon(true);
+  else gui.displayPrefSaveIcon(false);
   if(dataSendToggle)dataSendToggle=false;
 }
 
@@ -322,6 +323,7 @@ void apiInit(){
     Serial.println("-->[API] Connecting..");
     api.configure(cfg.dname.c_str(), cfg.deviceId); // stationId and deviceId, optional endpoint, host and port
     api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
+    //api.dev = true;
     cfg.isNewAPIConfig=false; // flag for config via BLE
     delay(1000);
   }
@@ -339,6 +341,7 @@ void apiLoop() {
     }
     else {
       Serial.println("fail! ["+String(code)+"]");
+      setErrorCode(ecode_api_write_fail);
       if (code == -1) {
         Serial.println("-->[E][API] publish error (-1)");
         delay(1000);
@@ -531,8 +534,7 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
       std::string value = pCharacteristic->getValue();
       if (value.length() > 0) {
         if(cfg.save(value.c_str())){
-          gui.displayPrefSaveIcon(true);
-          iconSaveTick=0;
+          triggerSaveIcon=0;
           cfg.reload();
           if(cfg.isNewWifi){
             wifiRestart();

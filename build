@@ -10,17 +10,21 @@ INSDIR=$RELDIR/installer/canairio_installer
 
 showHelp () {
   echo ""
-  echo "***********************************************"
-  echo "** Build release flavor"
-  echo "***********************************************"
+  echo "************************************************"
+  echo "** Build release flavor or installer package **"
+  echo "************************************************"
   echo ""
-  echo "usage: ./build [board|all|help|print]"
+  echo "Usage: ./build [board|all|installer|help|print]"
   echo ""
-  echo "example: ./build d1mini"
   echo "example: ./build all"
+  echo "example: ./build d1mini"
+  echo "example: ./build installer"
   echo ""
-  echo "supported boards: "
+  echo "Supported boards: "
   echo "d1mini, Wemos, Heltec, TTGO18650, TTGO_TQ"
+  echo ""
+  echo "Build installer option will make a installer package for Linux"
+  echo "with OTA support and USB support"
   echo ""
 }
 

@@ -323,7 +323,7 @@ void apiInit(){
     Serial.println("-->[API] Connecting..");
     api.configure(cfg.dname.c_str(), cfg.deviceId); // stationId and deviceId, optional endpoint, host and port
     api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
-    //api.dev = true;
+    // api.dev = true;
     cfg.isNewAPIConfig=false; // flag for config via BLE
     delay(1000);
   }
@@ -337,10 +337,12 @@ void apiLoop() {
     int code = api.getResponse();
     if(status) {
       Serial.println("done. ["+String(code)+"]");
+      statusOn(bit_cloud);
       dataSendToggle = true;
     }
     else {
       Serial.println("fail! ["+String(code)+"]");
+      statusOff(bit_cloud);
       setErrorCode(ecode_api_write_fail);
       if (code == -1) {
         Serial.println("-->[E][API] publish error (-1)");
@@ -415,7 +417,7 @@ void influxDbLoop() {
       wifiRestart();
     }
     else {
-      Serial.println("done");
+      Serial.println("done. ["+String(influx.getResponse())+"]");
       statusOn(bit_cloud);
       dataSendToggle = true;
     }

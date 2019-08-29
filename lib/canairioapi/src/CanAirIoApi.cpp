@@ -34,7 +34,7 @@ void CanAirIoApi::authorize(const char username[], const char password[])
     if(dev)Serial.println("-->[API] user:"+String(_username)+" pass:"+String(_password));
 }
 
-bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, float tmp, float lat, float lon, float alt, float spd, int stime)
+bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, float tmp, float lat, float lon, float alt, float spd, int stime, int tstp)
 {   
     HTTPClient http;
     char uri[32];
@@ -56,24 +56,26 @@ bool CanAirIoApi::write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum, f
         http.setAuthorization(_username,_password);
     }
 
-    const int capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(12);
+    const int capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(14);
     StaticJsonDocument <capacity> doc;
 
     JsonObject data = doc.createNestedObject();
 
     data["measurement"] = id;
     data["sensorId"] = devId;
+
     JsonObject fields = data.createNestedObject("fields");
-    if(pm1>0)  fields["pm1"] = pm1;
-    if(pm25>0) fields["pm25"] = pm25;
-    if(pm10>0) fields["pm10"] = pm10;
-    if(hum!=0) fields["hum"] = hum;
-    if(tmp!=0) fields["tmp"] = tmp;
-    if(lat!=0) fields["lat"] = lat;
-    if(lon!=0) fields["lon"] = lon;
-    if(alt!=0) fields["alt"] = alt;
-    if(spd!=0) fields["spd"] = spd;
-    if(stime>0)fields["stime"] = stime;
+    fields["pm1"] = (int) pm1;
+    fields["pm25"] = (int) pm25;
+    fields["pm10"] = (int) pm10;
+    fields["hum"] = serialized(String(hum));
+    fields["tmp"] = serialized(String(tmp));
+    fields["lat"] = serialized(String(lat,5));
+    fields["lon"] = serialized(String(lon,5));
+    fields["alt"] = serialized(String(alt));
+    fields["spd"] = serialized(String(spd));
+    fields["stime"] = (int) stime;
+    fields["tstp"] = (int) tstp;
 
     if(dev){
         Serial.print("-->[API] payload:");

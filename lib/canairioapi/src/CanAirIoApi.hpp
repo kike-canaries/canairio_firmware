@@ -30,7 +30,7 @@ class CanAirIoApi
 
   void authorize(const char username[],const char password[]);
 
-  bool write(uint16_t pm1, uint16_t pm25, uint16_t pm10, float hum = 0.0f, float tmp = 0.0f, float lat = 0.0f, float lon = 0.0f, float alt = 0.0f, float spd = 0.0f, int stime = 5);
+  bool write(uint16_t pm1 = 0, uint16_t pm25 = 0, uint16_t pm10 = 0, float hum = 0.0f, float tmp = 0.0f, float lat = 0.0f, float lon = 0.0f, float alt = 0.0f, float spd = 0.0f, int stime = 5, int tstp = 0);
 
   int getResponse();
 

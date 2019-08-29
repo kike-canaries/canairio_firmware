@@ -42,7 +42,7 @@ updateInstallerBinaries () {
 }
 
 updateFlavorBinaries() {
-  rm $INSDIR/*.bin
+  rm -f $INSDIR/*.bin
   cp $RELDIR/$BINDIR/*/*${DATE}.bin $INSDIR/
 }
 
@@ -71,13 +71,10 @@ build () {
 
 buildInstaller () {
   echo ""
-  echo "***********************************************"
-  echo "** Building installer"
-  echo "***********************************************"
-  echo ""
   mkdir -p $INSDIR/system
   updateInstallerBinaries
   updateFlavorBinaries
+  printOutput
   cd $INSDIR/..
   rm -f canairio_rev${SRC_REV}_${DATE}.zip
   zip -r canairio_rev${SRC_REV}_${DATE}.zip canairio_installer
@@ -88,12 +85,18 @@ buildInstaller () {
 
 printOutput () {
   echo ""
+  mkdir -p $INSDIR
   FIRMDIR=$RELDIR/$BINDIR
+  rm -f $INSDIR/md5output.txt
+  touch $INSDIR/md5output.txt
   cd $FIRMDIR
   for flavor in *; do
-    md5sum $flavor/canairio_${flavor}_rev${SRC_REV}_${DATE}.bin
+    MD5FLAVOR=`md5sum $flavor/canairio_${flavor}_rev${SRC_REV}_${DATE}.bin`
+    echo $MD5FLAVOR >> ../../$INSDIR/md5output.txt
   done
-  echo ""
+  cat ../../$INSDIR/md5output.txt
+  cd ../..
+  echo "" 
 }
 
 

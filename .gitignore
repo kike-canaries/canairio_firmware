@@ -49,6 +49,7 @@ secrets.load.*
 *.bin
 *.zip
 wiki
+web
 espota.py
 esptool.py
 md5output.txt

@@ -13,21 +13,24 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 
 ## Installation
 
+# Upload Firmware
+
 ### Linux and MacOSx
 
 You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. Download the last release from `assets` section in releases and please uncompress zip file, connect your device and execute the next command for your model board (D1Mini, WemosOLED, Heltec) like this:
 
 ``` bash
-unzip canairio_installer_20190503rev312.zip
+unzip canairio_rev414_20190829.zip
 cd canairio_installer
-./install.sh canairio_d1mini_20190503rev312.bin
-```
-**Note**: you need python2 or python3 with pyserial in your system.
+./install.sh canairio_d1mini_rev414_20190829.bin
 
-if you want clear all preferences and flash variables, please execute before:
+```
+
+**Note**: you need python2 or python3 with pyserial in your system.  
+**Tip**: if you want clear all preferences and flash variables, please execute before:
 
 ``` bash
-./install.sh canairio_d1mini_20190503rev312.bin
+esptool.py --port /dev/ttyUSB0 erase_flash
 ```
 
 ### Windows

@@ -112,6 +112,14 @@ else
       showHelp
       ;;
 
+    --help)
+      showHelp
+      ;;
+
+    -help)
+      showHelp
+      ;;
+
     print)
       printOutput
       ;;

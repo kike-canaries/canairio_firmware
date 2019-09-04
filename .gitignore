@@ -46,8 +46,12 @@
 # Project
 secrets.load
 secrets.load.*
-install/*
-releases/*
+*.bin
+*.zip
+wiki
+espota.py
+esptool.py
+md5output.txt
 
 # IDE
 .travis.yml

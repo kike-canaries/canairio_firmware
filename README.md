@@ -21,7 +21,6 @@ You can download the last firmware version in [releases](https://github.com/kike
 unzip canairio_rev414_20190829.zip
 cd canairio_installer
 ./install.sh canairio_d1mini_rev414_20190829.bin
-
 ```
 
 **Note**: you need python2 or python3 with pyserial in your system.  
@@ -31,14 +30,17 @@ cd canairio_installer
 esptool.py --port /dev/ttyUSB0 erase_flash
 ```
 
+After that you will able to send OTA updates to any board supported, like this:
+
+``` bash
+./install.sh ota canairio_d1mini_rev414_20190829.bin
+```
+
 ### Windows
 
-Please read procedure on our [HacksterIO Guide](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a#toc-firmware-y-software-3) for details for load firmware via oficial **Espressif Download Tool**
-
+Please read procedure on `firmware` section on [HacksterIO Guide](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a#toc-firmware-y-software-3) for details for load firmware via oficial **Espressif Download Tool** in Windows
 
 ## [Optional] Compiling and installing
-
-### Software Dependencies
 
 Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
 
@@ -64,19 +66,31 @@ pio run --target upload
 pio run -e wemos --target upload
 ```
 
+### Building Installer
+
+You can build `CanAirIO Installer` zip package with all binaries of all board flavors running the next command:
+
+``` bash
+./build all && ./build installer
+```
+
+The directory output is in: `releases/installer`  
+Also the binaries flavors directory: `releases/binaries/`
+
 ### Troubleshooting
 
-If you have some issues with Bluetooth library internals, please upgrade all frameworks and tools on PlatformIO:
+If you have some issues with Bluetooth library internals, or libraries issues, please upgrade all frameworks and tools on PlatformIO:
 
 ``` bash
 pio update
 sudo pio upgrade
 pio run -t clean
 rm -rf .pio
+pio lib update
 pio run --target upload
 ```
 
-## Usage
+## CanAirIO Firmware Usage
 
 From [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) you can connect to your device via Bluetooth and record mobile captures and save tracks on your sdcard. Also you can share these tracks to CanAirIO network. If you want set your device for static station, please configure Wifi and CanAirIO API or InfluxDb server. (see below)
 
@@ -219,28 +233,12 @@ sample:
 
 ---
 
-## Materials
+## CanAirIO device HOWTO guide
 
-Please for official materials and part list click on [wiki](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Hardware) or **full guide** on Hackster.io: [English](https://www.hackster.io/MetaKernel/canairio-citizen-network-for-air-quality-monitoring-bbf647) **|** [Spanish](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a)
+With the next guides, you will be able to build a device to measure air quality by using a Honeywell HPMA115SO sensor, which measures PM 2.5 and PM 10 particles and then if you want, publish it to CanAirio cloud or a personal server using [CanAirIO App](https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter)
 
+[CanAirIO guide [English]](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(EN))  
+[CanAirIO guide [Spanish]](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(ES))
 
-<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/materials.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/materials.jpg" align="right" width="384" ></a>
-
-### Supported boards:
-
-* [ESP32 Mini KIT (D1 mini compatible board)](http://bit.ly/2NLwtHK) (Recommended board)
-* [ESP32 compatible board (WeMOS like)](http://bit.ly/2lMbWH6)
-* [ESP32 Bluetooth WIFI Kit OLED](http://bit.ly/2neQI5f)
-
-### Pollution sensors
-
-* [Honeywell HPMA115S0](http://bit.ly/2II6647)
-
-### Optional hardware
-
-* [Battery module for ESP32 Mini KIT](http://bit.ly/2JSADuR) (Optional)
-* [USB Power module board](http://bit.ly/2lHSKdr) (Optional)
-* [Lipo Battery of 3.7v or similar](http://bit.ly/2KA3fdB) (Optional)
-
-Hardware details on Hackster.io: [English](https://www.hackster.io/MetaKernel/canairio-citizen-network-for-air-quality-monitoring-bbf647) **|** [Spanish](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a)
+<a href="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage_v2.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage_v2.jpg" height="324" ></a>
 

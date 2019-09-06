@@ -8,12 +8,10 @@
 
 Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5) using low-cost sensors and smartphones. Built with a `ESP32` module board and `HPMA115s0 Honeywell` dust sensor, interfaced with an [CanAirIO Android client app](https://github.com/kike-canaries/android-hpma115s0).
 
-**Full guide (Hackster.io):** [English](https://www.hackster.io/MetaKernel/canairio-citizen-network-for-air-quality-monitoring-bbf647) **|** [Spanish](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a)
-
+**Full howto guide**:
+[CanAirIO guide [English]](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(EN)) **|** [CanAirIO guide [Spanish]](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(ES))
 
 ## Installation
-
-# Upload Firmware
 
 ### Linux and MacOSx
 

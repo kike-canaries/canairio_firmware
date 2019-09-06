@@ -212,24 +212,13 @@ sample:
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" align="right" width="384" ></a>
 
 ## TODO
-- [X] HPMA115S0 fixes and libraries tests
-- [X] SSD1306 OLED display output (PM2.5 and PM10)
-- [X] Basic output via Bluetooth LE GATT server
-- [X] Gson output parser (for [Android client](https://github.com/kike-canaries/android-hpma115s0))
-- [X] WeMOS OLED board supported
-- [X] Heltec board supported
-- [X] D1 MINI Kit OLED board supported
-- [X] LaserCut box for D1Mini board
-- [X] Config WiFi via Bluetooth
-- [X] Config InfluxDb via Bluetooth (without auth for now)
-- [X] Config sample time via Bluetooth
-- [X] GUI: bluetooth, wifi and cloud status icons 
-- [X] Config CanAirIO API via Bluetooth
-- [X] Config location via Bluetooth
-- [X] enable/disable API, Wifi, influxDB
+
+- [X] Enable/Disable APIs from App (on testing)
+- [X] Locatitation settings via Bluetooth (on testing)
 - [X] OTA updates ready (LAN)
-- [ ] OTA updates ready (WAN)
-- [ ] ROM storage for offline issues
+- [ ] OTA updates (WAN)
+- [ ] Migrate `loop` to multithread RTOS implementation
+- [ ] Dinamic Humidity and Temperature visualization on Display
 
 ---
 

@@ -101,9 +101,9 @@ void wrongDataState(){
   setErrorCode(ecode_sensor_read_fail);
   gui.displaySensorAvarage(apm25);
   #ifdef TTGO_TQ
-  gui.displaySensorData(0,0,chargeLevel);
+  gui.displaySensorData(0,0,chargeLevel,0.0,0.0);
   #else
-  gui.displaySensorData(0,0);
+  gui.displaySensorData(0,0,0.0,0.0);
   #endif
   hpmaSerial.end();
   statusOff(bit_sensor);
@@ -173,9 +173,9 @@ void sensorLoop(){
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
         #ifdef TTGO_TQ
-        gui.displaySensorData(pm25,pm10,chargeLevel);
+        gui.displaySensorData(pm25,pm10,chargeLevel,humi,temp);
         #else
-        gui.displaySensorData(pm25,pm10);
+        gui.displaySensorData(pm25,pm10,humi,temp);
         #endif
         gui.displayLiveIcon();
         saveDataForAverage(pm25,pm10);

@@ -124,24 +124,24 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   u8g2.drawBox(102,11,24,9);
   u8g2.setDrawColor(1);
   u8g2.drawStr(89, 12, "%");
-if(chargeLevel<80){
-  u8g2.setCursor(80, 12);
-  u8g2.print(chargeLevel);
-}
-if(chargeLevel>24){
-   u8g2.drawBox(120,11,5,9);
-}
-if(chargeLevel>49){
-   u8g2.drawBox(114,11,5,9);
-}
-if(chargeLevel>74){
-   u8g2.drawBox(108,11,5,9);
-}
-if(chargeLevel>99){
-   u8g2.drawBox(102,11,5,9);
-   u8g2.setCursor(76, 12);
-   u8g2.print(chargeLevel);  
-}
+  if(chargeLevel<80){
+     u8g2.setCursor(80, 12);
+     u8g2.print(chargeLevel);
+  }
+  if(chargeLevel>24){
+     u8g2.drawBox(120,11,5,9);
+  }
+  if(chargeLevel>49){
+     u8g2.drawBox(114,11,5,9);
+  }
+  if(chargeLevel>74){
+     u8g2.drawBox(108,11,5,9);
+  }
+  if(chargeLevel>99){
+     u8g2.drawBox(102,11,5,9);
+     u8g2.setCursor(76, 12);
+     u8g2.print(chargeLevel);  
+  }
   Serial.print(" PM2.5:"); Serial.print(output); Serial.print (" Battery:");
   Serial.print(chargeLevel); Serial.println("%");
 #else

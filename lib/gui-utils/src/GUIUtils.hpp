@@ -17,6 +17,8 @@ public:
 
   int lastDrawedLine = 0;
 
+  unsigned int inthumi, inttemp = 0;
+
   U8G2 u8g2;
 
   // Firmware version from git rev-list command
@@ -49,9 +51,9 @@ public:
 
   void displaySensorAvarage(int avarage);
 
-  void displaySensorData(int pm25, int pm10);
+  void displaySensorData(int pm25, int pm10, float humi, float temp);
 
-  void displaySensorData(int pm25, int pm10, int chargeLevel);
+  void displaySensorData(int pm25, int pm10, int chargeLevel, float humi, float temp);
 
   void updateError(unsigned int error);
 

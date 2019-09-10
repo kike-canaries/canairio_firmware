@@ -2,14 +2,13 @@
 
 # ESP32-HPMA115S0 (CanAirIO sensor)
 
-<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" align="right" width="384" ></a>
+<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage.jpg" align="right" width="340" ></a>
 
 <a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://github.com/kike-canaries/android-hpma115s0/blob/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>
 
 Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5) using low-cost sensors and smartphones. Built with a `ESP32` module board and `HPMA115s0 Honeywell` dust sensor, interfaced with an [CanAirIO Android client app](https://github.com/kike-canaries/android-hpma115s0).
 
-**Full howto guide**:
-[CanAirIO guide [English]](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(EN)) **|** [CanAirIO guide [Spanish]](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(ES))
+**Full guide**: [English](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(EN)) **|** [Spanish](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(ES))<br/>
 
 ## Installation
 
@@ -92,15 +91,19 @@ pio run --target upload
 
 ## CanAirIO Firmware Usage
 
-From [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) you can connect to your device via Bluetooth and record mobile captures and save tracks on your sdcard. Also you can share these tracks to CanAirIO network. If you want set your device for static station, please configure Wifi and CanAirIO API or InfluxDb server. (see below)
+<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/influxdb00.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/influxdb00.jpg" width="640" ></a>
+
+From [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) you can connect to your device via Bluetooth and record mobile captures and save tracks on your sdcard. Also you can share these tracks to CanAirIO network. If you want set your device for static station, please configure Wifi and CanAirIO API or InfluxDb server, see below. Also, in our [guide](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(EN)) you have more information.
 
 ## [Optional] Setup WiFi, CanAirIO API or InfluxDb
+
+<a href="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/app_settings_tools.png" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/app_settings_tools.png" align="right" width="256" ></a>
 
 The [current firmware](https://github.com/kike-canaries/esp32-hpma115s0/releases) supports setup WiFi crendentials, CanAirIO API or InfluxDb configs via Bluetooth for static statations. You can use the oficial [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) for send these settings to your device or you also can use [nRF Connect app](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp) for the same tasks.
 
 ### Option 1: CanAirIO Android App:
 
-Please connect your device via Bluetooth and in the settings section configure parameters like `Sample Time Interval` and `Station Name`. If you want configure our API cloud or a custom influxDb instance too. You can get a username and password of our API on the next [link](http://canairiofront.herokuapp.com/register) and view captures [here](http://gblabs.co:8888/sources/1/dashboards/1)
+Please connect your device via Bluetooth and in the settings section configure parameters like `Sample Time Interval` and `Station Name`. If you want configure our API cloud or a custom influxDb instance too. You can get a username and password of our API on the next [link](http://canairiofront.herokuapp.com/register) and view captures [here](http://gblabs.co:8888/sources/1/dashboards/1).
 
 ### Option 2: nRF Connect App:
 
@@ -209,7 +212,7 @@ sample:
 ```
 ---
 
-<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" align="right" width="384" ></a>
+<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/rev212.jpg" align="right" width="340" ></a>
 
 ## TODO
 

@@ -76,7 +76,7 @@ void GUIUtils::displayCenterBig(String msg) {
 void GUIUtils::displayBottomLine(String msg) {
   u8g2.setFont(u8g2_font_4x6_tf);
 #ifdef TTGO_TQ
-  u8g2.setCursor(97,5);
+  u8g2.setCursor(80,5);
 #else
   u8g2.setCursor(0,29);
 #endif
@@ -99,26 +99,28 @@ void GUIUtils::displaySensorAvarage(int avarage) {
   displayCenterBig(output);
 }
 
-void GUIUtils::displaySensorData(int pm25, int pm10) {
-  displaySensorData(pm25,pm10,0);
+void GUIUtils::displaySensorData(int pm25, int pm10, float humi, float temp) {
+  displaySensorData(pm25,pm10,0,humi,temp);
 }
 
 // TODO: separate this function, format/display
-void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel) {
+void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi, float temp) {
   if(mcount<65535)mcount++;
   else mcount=0;
   char output[22];
-  sprintf(output, "%03d E%02d [S%05d]" , pm10, ecode, mcount);
+  inthumi = int(humi);
+  inttemp = int(temp);
+  sprintf(output, "%03d E%02d H%02d%% T%02d%°C" , pm25, ecode, inthumi, inttemp);    // 000 E00 H00% T00°C
   displayBottomLine(String(output));
 #ifdef TTGO_TQ
   u8g2.setFont(u8g2_font_4x6_tf);
-  u8g2.setCursor(105,15);
-  u8g2.print(mcount);
-  u8g2.setCursor(80,5); 
+  u8g2.drawStr(112, 15, "T");
+  u8g2.setCursor(116, 15);
+  u8g2.print(u8x8_u8toa(inttemp, 2));
+  u8g2.drawStr(124, 15, "C");
+  u8g2.setCursor(80, 15); 
   u8g2.print(chargeLevel);
 #endif
-  Serial.print(" PM10:"); Serial.print(output);
-  sprintf(output, "P%03d" , pm25);
   Serial.print(" PM2.5:"); Serial.println(output);
   //displayEndLine(String(output));
 }

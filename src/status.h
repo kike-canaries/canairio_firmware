@@ -44,6 +44,7 @@ void statusOff(int bit){
  * ecode_ifdb_dns_fail      =   5;
  * ecode_json_parser_error  =   6;
  * ecode_invalid_config     =   7;
+ * ecode_api_write_fail     =   8;
  **/
 void setErrorCode(unsigned int error) {
   status=((status.to_ulong() & ~0xf0) | ((error << 4) & 0xf0));

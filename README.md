@@ -89,130 +89,23 @@ pio lib update
 pio run --target upload
 ```
 
-## CanAirIO Firmware Usage
+## CanAirIO Firmware
 
-<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/influxdb00.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/influxdb00.jpg" width="640" ></a>
-
-From [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) you can connect to your device via Bluetooth and record mobile captures and save tracks on your sdcard. Also you can share these tracks to CanAirIO network. If you want set your device for static station, please configure Wifi and CanAirIO API or InfluxDb server, see below. Also, in our [guide](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(EN)) you have more information.
-
-## [Optional] Setup WiFi, CanAirIO API or InfluxDb
+<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/influxdb00.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/influxdb00.jpg" width="512" ></a>
 
 <a href="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/app_settings_tools.png" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/app_settings_tools.png" align="right" width="256" ></a>
 
-The [current firmware](https://github.com/kike-canaries/esp32-hpma115s0/releases) supports setup WiFi crendentials, CanAirIO API or InfluxDb configs via Bluetooth for static statations. You can use the oficial [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0) for send these settings to your device or you also can use [nRF Connect app](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp) for the same tasks.
+You can use it from [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0), you can connect to your device via Bluetooth and record mobile captures and save tracks on your sdcard. Also you can share these tracks to CanAirIO network. If you want set your device for static station, please configure Wifi and CanAirIO API or a custom InfluxDb server, please see details below. Also, in our [guide](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(EN)) you have more information of how using the Android app.
 
-### Option 1: CanAirIO Android App:
+### CanAirIO API configuration
 
-Please connect your device via Bluetooth and in the settings section configure parameters like `Sample Time Interval` and `Station Name`. If you want configure our API cloud or a custom influxDb instance too. You can get a username and password of our API on the next [link](http://canairiofront.herokuapp.com/register) and view captures [here](http://gblabs.co:8888/sources/1/dashboards/1).
+Please connect your device via Bluetooth and in the settings section configure parameters like `Sample Time Interval` and `Station Name`, these stuff is for configure our API cloud or a custom influxDb instance. You can get a username and password of our API on the next [link](http://canairiofront.herokuapp.com/register) and view captures [here](http://gblabs.co:8888/sources/1/dashboards/1).
 
-### Option 2: nRF Connect App:
+### [Optional] Custom InfluxDb server
 
-#### WiFi Credentials
+Also you can use any `influxdb` instance and configure it via CanAirIO Android app or via nRF connect app. Please see details in [Firmware-Protocol](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Firmware-Protocol) wiki page.
 
-1. Start your sensor with last firmware (rev212)
-2. Scan and connect to it with nRF connect App
-3. Expand the GATT service item (Unknown Service, ends in aaf3)
-4. Click on `upload button` on the `READ,WRITE` characteristic item (ends in ae02)
-5. Change value type to `TEXT`
-6. Put your credentials on `New Value` field, i.e. like this:
-    ```json
-    {"ssid":"YourWifiName","pass":"YourPassword"}
-    ```
-7. Click on `send` button.
-8. On your serial messages your sensor will be log succesuful connection or on your display the wifi icon will be enable.
-
-#### Device name (station name)
-
-Repeat previous steps `1 to 6` but the payload for `dname` connection is for example:
-
-```json
-"{"dname":"PM25_Berlin_Pankow_E04"}"
-```
-
-#### CanAirIO API credentials
-
-Repeat previous steps `1 to 6` and send the next payload with your credentials:
-
-```json
-"{"apiusr":"username","apipss":"password"}"
-```
-
-#### InfluxDb config
-
-Repeat previous steps `1 to 6` but the payload for `InfluxDb` connection is:
-
-```json
-"{"ifxdb":"","ifxip":"","ifxtg":""}"
-```
-
-the fields mean:
-- **ifxdb**: InfluxDb database name
-- **ifxip**: InflusDb hostname or ip
-- **ifxtg**: Custom tags **(optional)**
-
-##### Example:
-
-```json
-{"ifxdb":"database_name","ifxip":"hostname_or_ip","ifxtg":"zone=north,zone=south"}
-```
-#### Location config
-
-Repeat previous steps `1 to 6` but the payload for `sensor location` for example is:
-
-```json
-"{"lat":52.53819,"lon":13.44024,"alt":220,"spd":34.5}"
-```
-
-#### InfluxDb payload
-
-The current version send the next variables to InfluxDb:
-
-```
-pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime"
-```
-- **pm25 and pm10**, from Honeywell sensor (is a average of `stime` samples)
-- **hum and tmp**, humidity and temperature if you connect AM2320 to your ESP32
-- **lat, lng, alt, spd**, variables that you already configured
-
-## Device status vector
-
-The current flags status is represented on one byte and it is returned on config:
-
-``` java
-bit_sensor  = 0;    // sensor fail/ok
-bit_paired  = 1;    // bluetooth paired
-bit_wan     = 2;    // internet access
-bit_cloud   = 3;    // publish cloud
-bit_code0   = 4;    // code bit 0
-bit_code1   = 5;    // code bit 1
-bit_code2   = 6;    // code bit 2
-bit_code3   = 7;    // code bit 3
-
-```
-
-The error codes are represented on up four bits. Error code table:
-
-``` java
-ecode_sensor_ok          =   0;
-ecode_sensor_read_fail   =   1;
-ecode_sensor_timeout     =   2;
-ecode_wifi_fail          =   3;
-ecode_ifdb_write_fail    =   4;
-ecode_ifdb_dns_fail      =   5;
-ecode_json_parser_error  =   6;
-ecode_invalid_config     =   7;
-```
-
-sample:
-
-``` java
-    00000011 -> sensor ok, device paired
-    00001101 -> sensor ok, wan ok, ifxdb cloud ok
-    01000101 -> sensor ok, wan ok, ifxdb write fail
-```
 ---
-
-<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/rev212.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/rev212.jpg" align="right" width="340" ></a>
 
 ## TODO
 
@@ -232,5 +125,4 @@ With the next guides, you will be able to build a device to measure air quality 
 [CanAirIO guide [English]](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(EN))  
 [CanAirIO guide [Spanish]](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(ES))
 
-<a href="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage_v2.jpg" target="_blank"><img src="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage_v2.jpg" height="324" ></a>
-
+<a href="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage_v2.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage_v2.jpg" height="324" ></a>

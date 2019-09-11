@@ -36,6 +36,8 @@
 
 #ifdef WEMOSOLED // display via i2c for WeMOS OLED board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+//#elif ESP32Sboard // display via i2c for ESP32S board
+//ESP32Sboard don´t have screen
 #elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #elif TTGO18650 // display via i2c for TTGO18650
@@ -50,6 +52,9 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #ifdef WEMOSOLED
 #define HPMA_RX 13   // config for Wemos board
 #define HPMA_TX 15
+#elif ESP32Sboard
+#define HPMA_RX 27  // config for ESP32S board
+#define HPMA_TX 25
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board
 #define HPMA_TX 12
@@ -62,6 +67,7 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #else
 #define HPMA_RX 17  // config for D1MIN1 board
 #define HPMA_TX 16
+
 #endif
 
 /******************************************************************************
@@ -142,25 +148,25 @@ char getLoaderChar(){
  * PM2.5 and PM10 read and visualization
  **/
 void sensorLoop(){
+  Serial.print("-->[HPMA] read..");
   int try_sensor_read = 0;
   String txtMsg = "";
   while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
     while (hpmaSerial.available() > 0) {
       char inChar = hpmaSerial.read();
       txtMsg += inChar;
-      Serial.print("-->[HPMA] read "+String(getLoaderChar())+"\r");
+      Serial.print(".");
     }
-    Serial.print("-->[HPMA] read "+String(getLoaderChar())+"\r");
   }
   if(try_sensor_read > SENSOR_RETRY){
     setErrorCode(ecode_sensor_timeout);
-    Serial.println("-->[HPMA] read > fail!"); 
+    Serial.println("fail"); 
     Serial.println("-->[E][HPMA] disconnected ?"); 
-    delay(500);  // waiting for sensor..
+    delay(3000);  // waiting for sensor..
   }
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
-      Serial.print("-->[HPMA] read > done!");
+      Serial.print("done");
       statusOn(bit_sensor);
       unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
@@ -228,8 +234,14 @@ void getHumidityRead() {
 }
 
 void humidityLoop() {
+  #ifdef ESP32Sboard
+    digitalWrite (LED,LOW);
+  #endif
   if (v25.size() == 0) {
     getHumidityRead();
+  #ifdef ESP32Sboard
+    digitalWrite (LED,HIGH);
+  #endif
   }
 }
 
@@ -243,9 +255,9 @@ void humidityLoop() {
 void batteryloop() {
 #ifdef TTGO_TQ
   Rdelay = 0;
-  digitalWrite(LED, HIGH);
-  delayMicroseconds(50);
-  digitalWrite(LED, LOW);
+  //digitalWrite(LED, HIGH);
+  //delayMicroseconds(50);
+  //digitalWrite(LED, LOW);
   while (digitalRead(IP5306_2) == HIGH)
   {
     delayMicroseconds(100); // Sincronization in 1
@@ -267,9 +279,9 @@ void batteryloop() {
     return;
   }
   delayMicroseconds(1600);
-  digitalWrite(LED, HIGH);
-  delayMicroseconds(50);
-  digitalWrite(LED, LOW);
+  //digitalWrite(LED, HIGH);
+  //delayMicroseconds(50);
+  //digitalWrite(LED, LOW);
   if (digitalRead(IP5306_2) == HIGH)
   {
     delayMicroseconds(100);
@@ -655,5 +667,6 @@ void loop(){
   statusLoop();    // update sensor status GUI
   otaLoop();
   gui.pageEnd();
-  delay(400);
+  //delay(400);
+  delay(1000);
 }

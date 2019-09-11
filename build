@@ -130,6 +130,7 @@ else
       build heltec
       build TTGO18650
       build TTGO_TQ
+      build ESP32Sboard
       printOutput
       ;;
 

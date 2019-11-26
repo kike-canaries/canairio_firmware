@@ -54,6 +54,9 @@ int triggerSaveIcon = 0;
 #define LED 2
 GUIUtils gui;
 
+// Watchdog timer
+hw_timer_t *timer = NULL;
+
 // some prototypes
 bool wifiCheck();
 void wifiConnect(const char* ssid, const char* pass);

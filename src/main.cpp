@@ -627,6 +627,18 @@ void bleLoop(){
 *  M A I N
 ******************************************************************************/
 
+void IRAM_ATTR resetModule(){
+  Serial.println("\n-->[INFO] Watchdog reached, rebooting..");
+  ESP.restart();
+}
+
+void enableWatchdog(){
+  timer = timerBegin(0, 80, true);                 // timer 0, div 80
+  timerAttachInterrupt(timer, &resetModule, true); // setting callback
+  timerAlarmWrite(timer, 15000000, false);         // set time in us (15s)
+  timerAlarmEnable(timer);                         // enable interrupt
+}
+
 void setup() {
 #ifdef TTGO_TQ
   pinMode(IP5306_2, INPUT);
@@ -651,6 +663,7 @@ void setup() {
   apiInit();
   pinMode(LED,OUTPUT);
   gui.welcomeAddMessage("==SETUP READY==");
+  enableWatchdog();  // enable timer for reboot in any loop blocker
   delay(500);
 }
 
@@ -662,10 +675,11 @@ void loop(){
   batteryloop();   // battery charge status 
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
-  apiLoop();
+  apiLoop();       // CanAir.io API publication
   influxDbLoop();  // influxDB publication
   statusLoop();    // update sensor status GUI
-  otaLoop();
-  gui.pageEnd();
+  otaLoop();       // check for firmware updates
+  gui.pageEnd();   // gui changes push
   delay(500);
+  timerWrite(timer, 0);  //reset timer (feed watchdog)
 }

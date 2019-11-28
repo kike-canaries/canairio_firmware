@@ -101,9 +101,9 @@ void wrongDataState(){
   setErrorCode(ecode_sensor_read_fail);
   gui.displaySensorAvarage(apm25);
   #ifdef TTGO_TQ
-  gui.displaySensorData(0,0,chargeLevel);
+  gui.displaySensorData(0,0,chargeLevel,0.0,0.0);
   #else
-  gui.displaySensorData(0,0);
+  gui.displaySensorData(0,0,0.0,0.0);
   #endif
   hpmaSerial.end();
   statusOff(bit_sensor);
@@ -173,9 +173,9 @@ void sensorLoop(){
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
         #ifdef TTGO_TQ
-        gui.displaySensorData(pm25,pm10,chargeLevel);
+        gui.displaySensorData(pm25,pm10,chargeLevel,humi,temp);
         #else
-        gui.displaySensorData(pm25,pm10);
+        gui.displaySensorData(pm25,pm10,humi,temp);
         #endif
         gui.displayLiveIcon();
         saveDataForAverage(pm25,pm10);
@@ -255,9 +255,6 @@ void humidityLoop() {
 void batteryloop() {
 #ifdef TTGO_TQ
   Rdelay = 0;
-  //digitalWrite(LED, HIGH);
-  //delayMicroseconds(50);
-  //digitalWrite(LED, LOW);
   while (digitalRead(IP5306_2) == HIGH)
   {
     delayMicroseconds(100); // Sincronization in 1
@@ -275,20 +272,15 @@ void batteryloop() {
   if (Rdelay > 52)
   {
     chargeLevel = 0; // 0%
-    Serial.println("Charge level 0%");
     return;
   }
   delayMicroseconds(1600);
-  //digitalWrite(LED, HIGH);
-  //delayMicroseconds(50);
-  //digitalWrite(LED, LOW);
   if (digitalRead(IP5306_2) == HIGH)
   {
     delayMicroseconds(100);
     if (digitalRead(IP5306_2) == HIGH)
     {
-      chargeLevel = 4; // 100%
-      Serial.println("Charge level 100%");
+      chargeLevel = 100; // 100%
       return;
     }
   }
@@ -297,8 +289,7 @@ void batteryloop() {
     delayMicroseconds(100);
     if (digitalRead(IP5306_3) == LOW)
     {
-      chargeLevel = 1; // 25%
-      Serial.println("Charge level 25%");
+      chargeLevel = 25; // 25%
       return;
     }
   }
@@ -308,15 +299,13 @@ void batteryloop() {
     delayMicroseconds(100);
     if (digitalRead(IP5306_3) == HIGH)
     {
-      chargeLevel = 3; // 75%
-      Serial.println("Charge level 75%");
+      chargeLevel = 75; // 75%
       return;
     }
   }
   if (digitalRead(IP5306_3) == LOW)
   {
-    chargeLevel = 2; // 50%
-    Serial.println("Charge level 50%");
+    chargeLevel = 50; // 50%
     return;
   }
 #endif

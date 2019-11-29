@@ -473,7 +473,7 @@ void wifiConnect(const char* ssid, const char* pass) {
   int wifi_retry = 0;
   while (WiFi.status() != WL_CONNECTED && wifi_retry++ < WIFI_RETRY_CONNECTION) {
     Serial.print(".");
-    delay(250);
+    delay(500);           // increment this delay on possible reconnect issues
   }
   if(wifiCheck()){
     cfg.isNewWifi=false;  // flag for config via BLE

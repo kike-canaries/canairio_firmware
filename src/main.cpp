@@ -36,6 +36,8 @@
 
 #ifdef WEMOSOLED // display via i2c for WeMOS OLED board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
+//#elif ESP32Sboard // display via i2c for ESP32S board
+//ESP32Sboard don´t have screen
 #elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #elif TTGO18650 // display via i2c for TTGO18650
@@ -50,6 +52,9 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #ifdef WEMOSOLED
 #define HPMA_RX 13   // config for Wemos board
 #define HPMA_TX 15
+#elif ESP32Sboard
+#define HPMA_RX 27  // config for ESP32S board
+#define HPMA_TX 25
 #elif HELTEC
 #define HPMA_RX 13  // config for Heltec board
 #define HPMA_TX 12
@@ -62,6 +67,7 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #else
 #define HPMA_RX 17  // config for D1MIN1 board
 #define HPMA_TX 16
+
 #endif
 
 /******************************************************************************
@@ -95,9 +101,9 @@ void wrongDataState(){
   setErrorCode(ecode_sensor_read_fail);
   gui.displaySensorAvarage(apm25);
   #ifdef TTGO_TQ
-  gui.displaySensorData(0,0,chargeLevel);
+  gui.displaySensorData(0,0,chargeLevel,0.0,0.0);
   #else
-  gui.displaySensorData(0,0);
+  gui.displaySensorData(0,0,0.0,0.0);
   #endif
   hpmaSerial.end();
   statusOff(bit_sensor);
@@ -154,7 +160,7 @@ void sensorLoop(){
   }
   if(try_sensor_read > SENSOR_RETRY){
     setErrorCode(ecode_sensor_timeout);
-    Serial.println("-->[HPMA] read > fail!"); 
+    Serial.println("-->[HPMA] read > fail!");
     Serial.println("-->[E][HPMA] disconnected ?"); 
     delay(500);  // waiting for sensor..
   }
@@ -167,9 +173,9 @@ void sensorLoop(){
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
         #ifdef TTGO_TQ
-        gui.displaySensorData(pm25,pm10,chargeLevel);
+        gui.displaySensorData(pm25,pm10,chargeLevel,humi,temp);
         #else
-        gui.displaySensorData(pm25,pm10);
+        gui.displaySensorData(pm25,pm10,humi,temp);
         #endif
         gui.displayLiveIcon();
         saveDataForAverage(pm25,pm10);
@@ -228,8 +234,14 @@ void getHumidityRead() {
 }
 
 void humidityLoop() {
+  #ifdef ESP32Sboard
+    digitalWrite (LED,LOW);
+  #endif
   if (v25.size() == 0) {
     getHumidityRead();
+  #ifdef ESP32Sboard
+    digitalWrite (LED,HIGH);
+  #endif
   }
 }
 
@@ -243,9 +255,6 @@ void humidityLoop() {
 void batteryloop() {
 #ifdef TTGO_TQ
   Rdelay = 0;
-  digitalWrite(LED, HIGH);
-  delayMicroseconds(50);
-  digitalWrite(LED, LOW);
   while (digitalRead(IP5306_2) == HIGH)
   {
     delayMicroseconds(100); // Sincronization in 1
@@ -263,20 +272,15 @@ void batteryloop() {
   if (Rdelay > 52)
   {
     chargeLevel = 0; // 0%
-    Serial.println("Charge level 0%");
     return;
   }
   delayMicroseconds(1600);
-  digitalWrite(LED, HIGH);
-  delayMicroseconds(50);
-  digitalWrite(LED, LOW);
   if (digitalRead(IP5306_2) == HIGH)
   {
     delayMicroseconds(100);
     if (digitalRead(IP5306_2) == HIGH)
     {
-      chargeLevel = 4; // 100%
-      Serial.println("Charge level 100%");
+      chargeLevel = 100; // 100%
       return;
     }
   }
@@ -285,8 +289,7 @@ void batteryloop() {
     delayMicroseconds(100);
     if (digitalRead(IP5306_3) == LOW)
     {
-      chargeLevel = 1; // 25%
-      Serial.println("Charge level 25%");
+      chargeLevel = 25; // 25%
       return;
     }
   }
@@ -296,15 +299,13 @@ void batteryloop() {
     delayMicroseconds(100);
     if (digitalRead(IP5306_3) == HIGH)
     {
-      chargeLevel = 3; // 75%
-      Serial.println("Charge level 75%");
+      chargeLevel = 75; // 75%
       return;
     }
   }
   if (digitalRead(IP5306_3) == LOW)
   {
-    chargeLevel = 2; // 50%
-    Serial.println("Charge level 50%");
+    chargeLevel = 50; // 50%
     return;
   }
 #endif
@@ -472,7 +473,7 @@ void wifiConnect(const char* ssid, const char* pass) {
   int wifi_retry = 0;
   while (WiFi.status() != WL_CONNECTED && wifi_retry++ < WIFI_RETRY_CONNECTION) {
     Serial.print(".");
-    delay(250);
+    delay(500);           // increment this delay on possible reconnect issues
   }
   if(wifiCheck()){
     cfg.isNewWifi=false;  // flag for config via BLE
@@ -615,6 +616,18 @@ void bleLoop(){
 *  M A I N
 ******************************************************************************/
 
+void IRAM_ATTR resetModule(){
+  Serial.println("\n-->[INFO] Watchdog reached, rebooting..");
+  ESP.restart();
+}
+
+void enableWatchdog(){
+  timer = timerBegin(0, 80, true);                 // timer 0, div 80
+  timerAttachInterrupt(timer, &resetModule, true); // setting callback
+  timerAlarmWrite(timer, 15000000, false);         // set time in us (15s)
+  timerAlarmEnable(timer);                         // enable interrupt
+}
+
 void setup() {
 #ifdef TTGO_TQ
   pinMode(IP5306_2, INPUT);
@@ -639,6 +652,7 @@ void setup() {
   apiInit();
   pinMode(LED,OUTPUT);
   gui.welcomeAddMessage("==SETUP READY==");
+  enableWatchdog();  // enable timer for reboot in any loop blocker
   delay(500);
 }
 
@@ -650,10 +664,11 @@ void loop(){
   batteryloop();   // battery charge status 
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
-  apiLoop();
+  apiLoop();       // CanAir.io API publication
   influxDbLoop();  // influxDB publication
   statusLoop();    // update sensor status GUI
-  otaLoop();
-  gui.pageEnd();
-  delay(400);
+  otaLoop();       // check for firmware updates
+  gui.pageEnd();   // gui changes push
+  delay(500);
+  timerWrite(timer, 0);  //reset timer (feed watchdog)
 }

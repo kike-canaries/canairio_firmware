@@ -45,7 +45,7 @@ void ConfigApp::reload(){
 }
 
 String ConfigApp::getCurrentConfig(){
-  StaticJsonDocument<300> doc;
+  StaticJsonDocument<500> doc;
   preferences.begin(_app_name,false);
   doc["dname"]  =  preferences.getString("dname","");       // device or station name
   doc["wenb"]   =  preferences.getBool("wifiEnable",false); // wifi on/off
@@ -58,7 +58,7 @@ String ConfigApp::getCurrentConfig(){
   doc["stime"]  =  preferences.getInt("stime",5);           // sensor measure time
   doc["aenb"]   =  preferences.getBool("apiEnable",false);  // CanAirIO API on/off
   doc["apiusr"] =  preferences.getString("apiusr","");      // API username
-  doc["apiusr"] =  preferences.getString("apisrv","");      // API hostname
+  doc["apisrv"] =  preferences.getString("apisrv","");      // API hostname
   doc["apiuri"] =  preferences.getString("apiuri","");      // API uri endpoint
   doc["apiprt"] =  preferences.getInt("apiprt",80);         // API port
   doc["wmac"]   =  (uint16_t)(chipid >> 32);

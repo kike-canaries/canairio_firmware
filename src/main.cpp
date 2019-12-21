@@ -449,7 +449,9 @@ class MyOTAHandlerCallbacks: public OTAHandlerCallbacks{
 };
 
 void otaLoop(){
+  timerAlarmDisable(timer);                         // disable interrupt
   if(wifiOn)ota.loop();
+  timerAlarmEnable(timer);                         // enable interrupt
 }
 
 void otaInit(){

@@ -323,7 +323,7 @@ void apiInit(){
   if (wifiOn && apiIsConfigured()) {
     Serial.println("-->[API] Connecting..");
     // stationId and deviceId, optional endpoint, host and port
-    if(cfg.apiuri.length()==0 && cfg.apisrv.length()==0)
+    if(cfg.apiuri.equals("") && cfg.apisrv.equals(""))
       api.configure(cfg.dname.c_str(), cfg.deviceId); 
     else
       api.configure(cfg.dname.c_str(), cfg.deviceId, cfg.apiuri.c_str(), cfg.apisrv.c_str(), cfg.apiprt); 

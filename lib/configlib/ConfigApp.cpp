@@ -32,6 +32,8 @@ void ConfigApp::reload(){
   apiusr = preferences.getString("apiusr","");
   apipss = preferences.getString("apipss","");
   apisrv = preferences.getString("apisrv","");
+  apiuri = preferences.getString("apiuri","");
+  apiprt = preferences.getInt("apiprt",80);
   // station and sensor settings
   lat   = preferences.getDouble("lat",0);
   lon   = preferences.getDouble("lon",0);
@@ -51,13 +53,14 @@ String ConfigApp::getCurrentConfig(){
   doc["ienb"]   =  preferences.getBool("ifxEnable",false);  // ifxdb on/off
   doc["ifxdb"]  =  preferences.getString("ifxdb","");       // influxdb database name
   doc["ifxip"]  =  preferences.getString("ifxip","");       // influxdb database ip
-  // doc["ifxtg"]  =  preferences.getString("ifxtg","");       // influxdb sensor tags
   doc["ifusr"]  =  preferences.getString("ifusr", "");      // influxdb sensorid name
   doc["ifxpt"]  =  preferences.getUInt("ifxpt",8086);       // influxdb sensor tags
   doc["stime"]  =  preferences.getInt("stime",5);           // sensor measure time
   doc["aenb"]   =  preferences.getBool("apiEnable",false);  // CanAirIO API on/off
   doc["apiusr"] =  preferences.getString("apiusr","");      // API username
   doc["apiusr"] =  preferences.getString("apisrv","");      // API hostname
+  doc["apiuri"] =  preferences.getString("apiuri","");      // API uri endpoint
+  doc["apiprt"] =  preferences.getInt("apiprt",80);         // API port
   doc["wmac"]   =  (uint16_t)(chipid >> 32);
   preferences.end();
   String output;
@@ -88,6 +91,8 @@ bool ConfigApp::save(const char *json){
   String tapiusr= doc["apiusr"]| "";
   String tapipss= doc["apipss"]| "";
   String tapisrv= doc["apisrv"]| "";
+  String tapiuri= doc["apiuri"]| "";
+  int tapiprt   = doc["apiprt"] | 80;
   int tstime    = doc["stime"] | 0;
   double tlat   = doc["lat"].as<double>();
   double tlon   = doc["lon"].as<double>();
@@ -138,11 +143,13 @@ bool ConfigApp::save(const char *json){
     isNewWifi=true;  // for execute wifi reconnect
     Serial.println("-->[CONFIG] WiFi credentials saved!");
   }
-  else if (tapiusr.length()>0 && tapipss.length()>0 && tapisrv.length()>0){
+  else if (tapiusr.length()>0 && tapipss.length()>0 && tapisrv.length()>0 && tapiuri.length()>0){
     preferences.begin(_app_name, false);
     preferences.putString("apiusr", tapiusr);
     preferences.putString("apipss", tapipss);
     preferences.putString("apisrv", tapisrv);
+    preferences.putString("apiuri", tapiuri);
+    preferences.putInt("apiprt", tapiprt);
     preferences.putBool("apiEnable",true);
     preferences.end();
     isNewAPIConfig = true;

@@ -29,6 +29,7 @@ class ConfigApp
   String ifpss;
   String apiusr;
   String apipss;
+  String apisrv;
   int stime;
   double lat;
   double lon;

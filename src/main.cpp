@@ -322,7 +322,7 @@ bool apiIsConfigured(){
 void apiInit(){
   if (wifiOn && apiIsConfigured()) {
     Serial.println("-->[API] Connecting..");
-    api.configure(cfg.dname.c_str(), cfg.deviceId); // stationId and deviceId, optional endpoint, host and port
+    api.configure(cfg.dname.c_str(), cfg.deviceId, cfg.apisrv.c_str()); // stationId and deviceId, optional endpoint, host and port
     api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
     // api.dev = true;
     cfg.isNewAPIConfig=false; // flag for config via BLE

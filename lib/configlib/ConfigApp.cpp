@@ -31,6 +31,7 @@ void ConfigApp::reload(){
   apiEnable = preferences.getBool("apiEnable",false);
   apiusr = preferences.getString("apiusr","");
   apipss = preferences.getString("apipss","");
+  apisrv = preferences.getString("apisrv","");
   // station and sensor settings
   lat   = preferences.getDouble("lat",0);
   lon   = preferences.getDouble("lon",0);
@@ -56,6 +57,7 @@ String ConfigApp::getCurrentConfig(){
   doc["stime"]  =  preferences.getInt("stime",5);           // sensor measure time
   doc["aenb"]   =  preferences.getBool("apiEnable",false);  // CanAirIO API on/off
   doc["apiusr"] =  preferences.getString("apiusr","");      // API username
+  doc["apiusr"] =  preferences.getString("apisrv","");      // API hostname
   doc["wmac"]   =  (uint16_t)(chipid >> 32);
   preferences.end();
   String output;
@@ -85,6 +87,7 @@ bool ConfigApp::save(const char *json){
   String tpass  = doc["pass"]  | "";
   String tapiusr= doc["apiusr"]| "";
   String tapipss= doc["apipss"]| "";
+  String tapisrv= doc["apisrv"]| "";
   int tstime    = doc["stime"] | 0;
   double tlat   = doc["lat"].as<double>();
   double tlon   = doc["lon"].as<double>();
@@ -107,9 +110,6 @@ bool ConfigApp::save(const char *json){
     preferences.begin(_app_name, false);
     preferences.putString("ifxdb", tifxdb );
     preferences.putString("ifxip", tifxip );
-    // if (tifxtg.length() > 0){
-    //   preferences.putString("ifxtg", tifxtg);
-    // }
     if (tifxpt > 0) {
       preferences.putUInt("ifxpt", tifxpt );
     }
@@ -138,10 +138,11 @@ bool ConfigApp::save(const char *json){
     isNewWifi=true;  // for execute wifi reconnect
     Serial.println("-->[CONFIG] WiFi credentials saved!");
   }
-  else if (tapiusr.length()>0 && tapipss.length()>0){
+  else if (tapiusr.length()>0 && tapipss.length()>0 && tapisrv.length()>0){
     preferences.begin(_app_name, false);
     preferences.putString("apiusr", tapiusr);
     preferences.putString("apipss", tapipss);
+    preferences.putString("apisrv", tapisrv);
     preferences.putBool("apiEnable",true);
     preferences.end();
     isNewAPIConfig = true;

@@ -24,11 +24,13 @@ class ConfigApp
   String ifxdb;  
   String ifxip;  
   uint16_t ifxpt;
-  // String ifxtg;
   String ifusr;
   String ifpss;
   String apiusr;
   String apipss;
+  String apisrv;
+  String apiuri;
+  int apiprt;
   int stime;
   double lat;
   double lon;

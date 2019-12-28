@@ -630,7 +630,7 @@ void IRAM_ATTR resetModule(){
 void enableWatchdog(){
   timer = timerBegin(0, 80, true);                 // timer 0, div 80
   timerAttachInterrupt(timer, &resetModule, true); // setting callback
-  timerAlarmWrite(timer, 15000000, false);         // set time in us (15s)
+  timerAlarmWrite(timer, 60000000, false);         // set time in us (60s)
   timerAlarmEnable(timer);                         // enable interrupt
 }
 

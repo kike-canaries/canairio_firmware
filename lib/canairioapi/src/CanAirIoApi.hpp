@@ -26,7 +26,7 @@ class CanAirIoApi
 
   ~CanAirIoApi();
  
-  void configure(const char nameId[], const char deviceId[], const char target[] = "points/save/", const char host[] = "canairio.herokuapp.com", const uint16_t port = 80);
+  void configure(const char nameId[], const char deviceId[], const char target[] = "points/save/", const char host[] = "api.canair.io", const uint16_t port = 80);
 
   void authorize(const char username[],const char password[]);
 

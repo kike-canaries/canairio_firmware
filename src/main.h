@@ -43,7 +43,7 @@ bool oldDeviceConnected = false;
 CanAirIoApi api(false);
 
 // InfluxDB fields
-#define IFX_RETRY_CONNECTION   5
+#define IFX_RETRY_CONNECTION   2
 InfluxArduino influx;
 
 // Config and settings handler

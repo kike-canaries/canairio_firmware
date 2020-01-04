@@ -21,6 +21,7 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <WiFi.h>
+#include <esp_wifi.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
@@ -56,7 +57,7 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 #define HPMA_RX 27  // config for ESP32S board
 #define HPMA_TX 25
 #elif HELTEC
-#define HPMA_RX 13  // config for Heltec board
+#define HPMA_RX 13  // config for Heltec board, ESP32S & ESPDUINO-32
 #define HPMA_TX 12
 #elif TTGO18650
 #define HPMA_RX 18  // config for TTGO18650 board
@@ -100,11 +101,7 @@ void wrongDataState(){
   Serial.print("-->[E][HPMA] !wrong data!");
   setErrorCode(ecode_sensor_read_fail);
   gui.displaySensorAvarage(apm25);
-  #ifdef TTGO_TQ
   gui.displaySensorData(0,0,chargeLevel,0.0,0.0);
-  #else
-  gui.displaySensorData(0,0,0.0,0.0);
-  #endif
   hpmaSerial.end();
   statusOff(bit_sensor);
   sensorInit();
@@ -172,11 +169,7 @@ void sensorLoop(){
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
-        #ifdef TTGO_TQ
         gui.displaySensorData(pm25,pm10,chargeLevel,humi,temp);
-        #else
-        gui.displaySensorData(pm25,pm10,humi,temp);
-        #endif
         gui.displayLiveIcon();
         saveDataForAverage(pm25,pm10);
       }
@@ -272,6 +265,7 @@ void batteryloop() {
   if (Rdelay > 52)
   {
     chargeLevel = 0; // 0%
+    Serial.println("Charge level 0%");
     return;
   }
   delayMicroseconds(1600);
@@ -281,6 +275,7 @@ void batteryloop() {
     if (digitalRead(IP5306_2) == HIGH)
     {
       chargeLevel = 100; // 100%
+      Serial.println("Charge level 100%");
       return;
     }
   }
@@ -290,6 +285,7 @@ void batteryloop() {
     if (digitalRead(IP5306_3) == LOW)
     {
       chargeLevel = 25; // 25%
+      Serial.println("Charge level 25%");
       return;
     }
   }
@@ -300,12 +296,14 @@ void batteryloop() {
     if (digitalRead(IP5306_3) == HIGH)
     {
       chargeLevel = 75; // 75%
+      Serial.println("Charge level 75%");
       return;
     }
   }
   if (digitalRead(IP5306_3) == LOW)
   {
     chargeLevel = 50; // 50%
+    Serial.println("Charge level 50%");
     return;
   }
 #endif
@@ -624,6 +622,12 @@ void bleLoop(){
 
 void IRAM_ATTR resetModule(){
   Serial.println("\n-->[INFO] Watchdog reached, rebooting..");
+  esp_wifi_disconnect();
+  delay(200);
+  esp_wifi_stop();
+  delay(200);
+  esp_wifi_deinit();
+  delay(200);
   ESP.restart();
 }
 

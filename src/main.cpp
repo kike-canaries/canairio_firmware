@@ -161,23 +161,27 @@ void sensorLoop(){
     Serial.println("-->[E][HPMA] disconnected ?"); 
     delay(500);  // waiting for sensor..
   }
-  if (txtMsg[0] == 66) {
-    if (txtMsg[1] == 77) {
-      Serial.print("-->[HPMA] read > done!");
+  if (txtMsg[0] == 02) {
+//    if (txtMsg[1] == 77) {
+      Serial.print("done");
       statusOn(bit_sensor);
-      unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
-      unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
+      unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
+      unsigned int pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
       if(pm25<1000&&pm10<1000){
         gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
+        #ifdef TTGO_TQ
         gui.displaySensorData(pm25,pm10,chargeLevel,humi,temp);
+        #else
+        gui.displaySensorData(pm25,pm10,humi,temp);
+        #endif
         gui.displayLiveIcon();
         saveDataForAverage(pm25,pm10);
       }
       else wrongDataState();
     }
     else wrongDataState();
-  }
-  else wrongDataState();
+//  }
+//  else wrongDataState();
 }
 
 void statusLoop(){
@@ -616,6 +620,14 @@ void bleLoop(){
   }
 }
 
+void resetLoop(){
+  if (resetvar == 1199) {
+    resetvar = 0;
+    delay(45000);   // 45 seconds, reset at 30 seconds
+    }
+    resetvar = resetvar + 1;
+}
+
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
@@ -634,7 +646,7 @@ void IRAM_ATTR resetModule(){
 void enableWatchdog(){
   timer = timerBegin(0, 80, true);                 // timer 0, div 80
   timerAttachInterrupt(timer, &resetModule, true); // setting callback
-  timerAlarmWrite(timer, 60000000, false);         // set time in us (60s)
+  timerAlarmWrite(timer, 30000000, false);         // set time in us (30s)
   timerAlarmEnable(timer);                         // enable interrupt
 }
 
@@ -681,4 +693,7 @@ void loop(){
   gui.pageEnd();   // gui changes push
   delay(500);
   timerWrite(timer, 0);  //reset timer (feed watchdog)
+
+  resetLoop();     // reset every 20 minutes
+
 }

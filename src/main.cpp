@@ -163,7 +163,7 @@ void sensorLoop(){
   }
   if (txtMsg[0] == 02) {
 //    if (txtMsg[1] == 77) {
-      Serial.print("done");
+      Serial.print("-->[HPMA] read > done!");
       statusOn(bit_sensor);
       unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
       unsigned int pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);

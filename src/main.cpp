@@ -161,8 +161,8 @@ void sensorLoop(){
     Serial.println("-->[E][HPMA] disconnected ?"); 
     delay(500);  // waiting for sensor..
   }
-  if (txtMsg[0] == 02) {
-//    if (txtMsg[1] == 77) {
+  if (txtMsg[0] == 66) {
+    if (txtMsg[1] == 77) {
       Serial.print("-->[HPMA] read > done!");
       statusOn(bit_sensor);
       unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
@@ -180,8 +180,8 @@ void sensorLoop(){
       else wrongDataState();
     }
     else wrongDataState();
-//  }
-//  else wrongDataState();
+  }
+  else wrongDataState();
 }
 
 void statusLoop(){

@@ -51,17 +51,17 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 
 // HPMA115S0 sensor config
 #ifdef WEMOSOLED
-#define HPMA_RX 13   // config for Wemos board
+#define HPMA_RX 13   // config for Wemos board, TTGO18650
 #define HPMA_TX 15
 #elif ESP32Sboard
 #define HPMA_RX 27  // config for ESP32S board
 #define HPMA_TX 25
 #elif HELTEC
-#define HPMA_RX 13  // config for Heltec board, ESP32S & ESPDUINO-32
+#define HPMA_RX 13  // config for Heltec board, ESP32S & ESPDUINO-32 & TTGO18650
 #define HPMA_TX 12
-#elif TTGO18650
-#define HPMA_RX 18  // config for TTGO18650 board
-#define HPMA_TX 17
+//#elif TTGO18650
+//#define HPMA_RX 18  // config for TTGO18650 board
+//#define HPMA_TX 17
 #elif TTGO_TQ
 #define HPMA_RX 13  // config for TTGO_TQ board
 #define HPMA_TX 18

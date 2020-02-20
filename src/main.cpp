@@ -663,6 +663,10 @@ void setup() {
   Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
   gui.welcomeAddMessage("Sensors test..");
   sensorInit();
+
+  pinMode(21, INPUT_PULLUP);
+  pinMode(22, INPUT_PULLUP);
+
   am2320.begin();
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");

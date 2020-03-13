@@ -621,11 +621,13 @@ void bleLoop(){
 }
 
 void resetLoop(){
+  if (wifiOn){    
   if (resetvar == 1199) {
     resetvar = 0;
     delay(45000);   // 45 seconds, reset at 30 seconds
     }
     resetvar = resetvar + 1;
+  }
 }
 
 /******************************************************************************

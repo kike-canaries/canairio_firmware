@@ -337,7 +337,7 @@ void apiInit(){
 }
 
 void apiLoop() {
-  if (v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured()) {
+  if (v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0) {
     Serial.print("-->[API] writing to ");
     Serial.print(""+String(api.ip)+"..");
     bool status = api.write(0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
@@ -622,9 +622,9 @@ void bleLoop(){
 
 void resetLoop(){
   if (wifiOn){    
-  if (resetvar == 1199) {
-    resetvar = 0;
-    delay(45000);   // 45 seconds, reset at 30 seconds
+        if (resetvar == 1199) {      
+        resetvar = 0;
+        delay(45000);   // 45 seconds, reset at 30 seconds
     }
     resetvar = resetvar + 1;
   }

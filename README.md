@@ -2,6 +2,8 @@
 
 # ESP32-HPMA115S0 (CanAirIO sensor)
 
+<a href="https://liberapay.com/CanAirIO" target="_blank"><img src="http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay"></a>
+
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage.jpg" align="right" width="340" ></a>
 
 <a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://github.com/kike-canaries/android-hpma115s0/blob/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>

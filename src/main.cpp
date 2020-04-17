@@ -37,12 +37,8 @@
 
 #ifdef WEMOSOLED // display via i2c for WeMOS OLED board & TTGO18650
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
-//#elif ESP32Sboard // display via i2c for ESP32S board
-//ESP32Sboard don´t have screen
 #elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
-//#elif TTGO18650 // display via i2c for TTGO18650
-//U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 #elif TTGO_TQ // display via i2c for TTGO_TQ
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, 4, 5);
 #else       // display via i2c for D1MINI board
@@ -52,16 +48,10 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 // HPMA115S0 sensor config
 #ifdef WEMOSOLED
 #define HPMA_RX 13   // config for Wemos board & TTGO18650
-#define HPMA_TX 15
-#elif ESP32Sboard
-#define HPMA_RX 27  // config for ESP32S board
-#define HPMA_TX 25
+#define HPMA_TX 15   // some old TTGO18650 have HPMA_RX 18 & HPMA_TX 17
 #elif HELTEC
-#define HPMA_RX 13  // config for Heltec board, ESP32S & ESPDUINO-32
-#define HPMA_TX 12
-//#elif TTGO18650
-//#define HPMA_RX 18  // config for TTGO18650 board
-//#define HPMA_TX 17
+#define HPMA_RX 13  // config for Heltec board, ESP32Sboard & ESPDUINO-32
+#define HPMA_TX 12  // some old ESP32Sboard have HPMA_RX 27 & HPMA_TX 25
 #elif TTGO_TQ
 #define HPMA_RX 13  // config for TTGO_TQ board
 #define HPMA_TX 18
@@ -145,24 +135,25 @@ char getLoaderChar(){
  * PM2.5 and PM10 read and visualization
  **/
 void sensorLoop(){
+  Serial.print("-->[HPMA] read");
   int try_sensor_read = 0;
   String txtMsg = "";
   while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
     while (hpmaSerial.available() > 0) {
       char inChar = hpmaSerial.read();
       txtMsg += inChar;
-      Serial.print("-->[HPMA] read "+String(getLoaderChar())+"\r");
+      Serial.print(".");
     }
-    Serial.print("-->[HPMA] read "+String(getLoaderChar())+"\r");
   }
   if(try_sensor_read > SENSOR_RETRY){
     setErrorCode(ecode_sensor_timeout);
-    Serial.println("-->[HPMA] read > fail!");
+    Serial.println("fail");
     Serial.println("-->[E][HPMA] disconnected ?"); 
     delay(500);  // waiting for sensor..
   }
+
+#ifdef PANASONIC
   if (txtMsg[0] == 02) {
-  //  if (txtMsg[1] == 77) {
       Serial.print("-->[HPMA] read > done!");
       statusOn(bit_sensor);
       unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
@@ -180,9 +171,31 @@ void sensorLoop(){
       else wrongDataState();
     }
     else wrongDataState();
-//  }
-//  else wrongDataState();
-}
+  }
+#else
+  if (txtMsg[0] == 66) {
+    if (txtMsg[1] == 77) {
+      Serial.print("-->[HPMA] read > done!");
+      statusOn(bit_sensor);
+      unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
+      unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
+      if(pm25<1000&&pm10<1000){
+        gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
+        #ifdef TTGO_TQ
+        gui.displaySensorData(pm25,pm10,chargeLevel,humi,temp);
+        #else
+        gui.displaySensorData(pm25,pm10,humi,temp);
+        #endif
+        gui.displayLiveIcon();
+        saveDataForAverage(pm25,pm10);
+      }
+      else wrongDataState();
+    } 
+    else wrongDataState();
+  }
+  else wrongDataState();
+ }
+#endif
 
 void statusLoop(){
   if (v25.size() == 0) {
@@ -699,7 +712,5 @@ void loop(){
   gui.pageEnd();   // gui changes push
   delay(500);
   timerWrite(timer, 0);  //reset timer (feed watchdog)
-
-  resetLoop();     // reset every 20 minutes
-
+  resetLoop();     // reset every 20 minutes with Wifion
 }

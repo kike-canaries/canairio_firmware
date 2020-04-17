@@ -145,24 +145,25 @@ char getLoaderChar(){
  * PM2.5 and PM10 read and visualization
  **/
 void sensorLoop(){
+  Serial.print("-->[HPMA] read");
   int try_sensor_read = 0;
   String txtMsg = "";
   while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
     while (hpmaSerial.available() > 0) {
       char inChar = hpmaSerial.read();
       txtMsg += inChar;
-      Serial.print("-->[HPMA] read "+String(getLoaderChar())+"\r");
+      Serial.print(".");
     }
-    Serial.print("-->[HPMA] read "+String(getLoaderChar())+"\r");
   }
   if(try_sensor_read > SENSOR_RETRY){
     setErrorCode(ecode_sensor_timeout);
-    Serial.println("-->[HPMA] read > fail!");
+    Serial.println("fail");
     Serial.println("-->[E][HPMA] disconnected ?"); 
     delay(500);  // waiting for sensor..
   }
+
+#ifdef PANASONIC
   if (txtMsg[0] == 02) {
-  //  if (txtMsg[1] == 77) {
       Serial.print("-->[HPMA] read > done!");
       statusOn(bit_sensor);
       unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
@@ -180,9 +181,31 @@ void sensorLoop(){
       else wrongDataState();
     }
     else wrongDataState();
-//  }
-//  else wrongDataState();
-}
+  }
+#else
+  if (txtMsg[0] == 66) {
+    if (txtMsg[1] == 77) {
+      Serial.print("-->[HPMA] read > done!");
+      statusOn(bit_sensor);
+      unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
+      unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
+      if(pm25<1000&&pm10<1000){
+        gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
+        #ifdef TTGO_TQ
+        gui.displaySensorData(pm25,pm10,chargeLevel,humi,temp);
+        #else
+        gui.displaySensorData(pm25,pm10,humi,temp);
+        #endif
+        gui.displayLiveIcon();
+        saveDataForAverage(pm25,pm10);
+      }
+      else wrongDataState();
+    } 
+    else wrongDataState();
+  }
+  else wrongDataState();
+ }
+#endif
 
 void statusLoop(){
   if (v25.size() == 0) {

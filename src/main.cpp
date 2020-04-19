@@ -144,6 +144,7 @@ void sensorLoop(){
       txtMsg += inChar;
       Serial.print(".");
     }
+    delay(1);    // added for serial read errors
   }
   if(try_sensor_read > SENSOR_RETRY){
     setErrorCode(ecode_sensor_timeout);

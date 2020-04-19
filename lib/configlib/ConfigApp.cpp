@@ -14,32 +14,32 @@ void ConfigApp::init(const char app_name[]){
 void ConfigApp::reload(){
   preferences.begin(_app_name,false);
   // device name or station name
-  dname = preferences.getString("dname","");
+  dname = preferences.getString("dname","PM2.5_pruebas");
   // wifi settings
-  wifiEnable = preferences.getBool("wifiEnable",false);
-  ssid = preferences.getString("ssid","");
-  pass = preferences.getString("pass","");
+  wifiEnable = preferences.getBool("wifiEnable",true);
+  ssid = preferences.getString("ssid","TPred");
+  pass = preferences.getString("pass","apt413sago16");
   // influx db optional settings
-  ifxEnable = preferences.getBool("ifxEnable",false);
-  ifxdb = preferences.getString("ifxdb","");
-  ifxip = preferences.getString("ifxip","");
+  ifxEnable = preferences.getBool("ifxEnable",true);
+  ifxdb = preferences.getString("ifxdb","canairio");
+  ifxip = preferences.getString("ifxip","influxdb.canair.io");
   ifxpt = preferences.getUInt("ifxpt",8086);
   // ifxtg = preferences.getString("ifxtg","");
   ifusr = preferences.getString("ifusr","");
   ifpss = preferences.getString("ifpss","");
   // canairio api settings
-  apiEnable = preferences.getBool("apiEnable",false);
-  apiusr = preferences.getString("apiusr","");
-  apipss = preferences.getString("apipss","");
-  apisrv = preferences.getString("apisrv","");
-  apiuri = preferences.getString("apiuri","");
+  apiEnable = preferences.getBool("apiEnable",true);
+  apiusr = preferences.getString("apiusr","danielbernalb");
+  apipss = preferences.getString("apipss","danielchangeme");
+  apisrv = preferences.getString("apisrv","api.canair.io");
+  apiuri = preferences.getString("apiuri","points/save/");
   apiprt = preferences.getInt("apiprt",80);
   // station and sensor settings
   lat   = preferences.getDouble("lat",0);
   lon   = preferences.getDouble("lon",0);
   alt = preferences.getFloat("alt",0);
   spd = preferences.getFloat("spd",0);
-  stime = preferences.getInt("stime",5);
+  stime = preferences.getInt("stime",60);
 
   preferences.end();
 }

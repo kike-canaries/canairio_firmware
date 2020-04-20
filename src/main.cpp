@@ -155,7 +155,7 @@ void sensorLoop(){
 
 #ifdef PANASONIC
   if (txtMsg[0] == 02) {
-      Serial.print("-->[HPMA] read > done!");
+      Serial.print("done!");
       statusOn(bit_sensor);
       unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
       unsigned int pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
@@ -176,7 +176,7 @@ void sensorLoop(){
 #else
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
-      Serial.print("-->[HPMA] read > done!");
+      Serial.print("done!");
       statusOn(bit_sensor);
       unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
       unsigned int pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
@@ -283,7 +283,6 @@ void batteryloop() {
   if (Rdelay > 52)
   {
     chargeLevel = 0; // 0%
-    Serial.println("Charge level 0%");
     return;
   }
   delayMicroseconds(1600);
@@ -293,7 +292,6 @@ void batteryloop() {
     if (digitalRead(IP5306_2) == HIGH)
     {
       chargeLevel = 100; // 100%
-      Serial.println("Charge level 100%");
       return;
     }
   }
@@ -303,7 +301,6 @@ void batteryloop() {
     if (digitalRead(IP5306_3) == LOW)
     {
       chargeLevel = 25; // 25%
-      Serial.println("Charge level 25%");
       return;
     }
   }
@@ -314,14 +311,12 @@ void batteryloop() {
     if (digitalRead(IP5306_3) == HIGH)
     {
       chargeLevel = 75; // 75%
-      Serial.println("Charge level 75%");
       return;
     }
   }
   if (digitalRead(IP5306_3) == LOW)
   {
     chargeLevel = 50; // 50%
-    Serial.println("Charge level 50%");
     return;
   }
 #endif

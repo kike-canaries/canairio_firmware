@@ -21,6 +21,7 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <WiFi.h>
+#include <esp_wifi.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
@@ -34,14 +35,10 @@
 * please select board on platformio.ini file
 ******************************************************************************/
 
-#ifdef WEMOSOLED // display via i2c for WeMOS OLED board
+#ifdef WEMOSOLED // display via i2c for WeMOS OLED board & TTGO18650
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
-//#elif ESP32Sboard // display via i2c for ESP32S board
-//ESP32Sboard don´t have screen
 #elif HELTEC // display via i2c for Heltec board
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
-#elif TTGO18650 // display via i2c for TTGO18650
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 #elif TTGO_TQ // display via i2c for TTGO_TQ
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, 4, 5);
 #else       // display via i2c for D1MINI board
@@ -50,17 +47,11 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 
 // HPMA115S0 sensor config
 #ifdef WEMOSOLED
-#define HPMA_RX 13   // config for Wemos board
-#define HPMA_TX 15
-#elif ESP32Sboard
-#define HPMA_RX 27  // config for ESP32S board
-#define HPMA_TX 25
+#define HPMA_RX 13   // config for Wemos board & TTGO18650
+#define HPMA_TX 15   // some old TTGO18650 have HPMA_RX 18 & HPMA_TX 17
 #elif HELTEC
-#define HPMA_RX 13  // config for Heltec board
-#define HPMA_TX 12
-#elif TTGO18650
-#define HPMA_RX 18  // config for TTGO18650 board
-#define HPMA_TX 17
+#define HPMA_RX 13  // config for Heltec board, ESP32Sboard & ESPDUINO-32
+#define HPMA_TX 12  // some old ESP32Sboard have HPMA_RX 27 & HPMA_TX 25
 #elif TTGO_TQ
 #define HPMA_RX 13  // config for TTGO_TQ board
 #define HPMA_TX 18
@@ -100,11 +91,7 @@ void wrongDataState(){
   Serial.print("-->[E][HPMA] !wrong data!");
   setErrorCode(ecode_sensor_read_fail);
   gui.displaySensorAvarage(apm25);
-  #ifdef TTGO_TQ
   gui.displaySensorData(0,0,chargeLevel,0.0,0.0);
-  #else
-  gui.displaySensorData(0,0,0.0,0.0);
-  #endif
   hpmaSerial.end();
   statusOff(bit_sensor);
   sensorInit();
@@ -164,6 +151,28 @@ void sensorLoop(){
     Serial.println("-->[E][HPMA] disconnected ?"); 
     delay(500);  // waiting for sensor..
   }
+
+#ifdef PANASONIC
+  if (txtMsg[0] == 02) {
+      Serial.print("-->[HPMA] read > done!");
+      statusOn(bit_sensor);
+      unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
+      unsigned int pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
+      if(pm25<1000&&pm10<1000){
+        gui.displaySensorAvarage(apm25);  // it was calculated on bleLoop()
+        #ifdef TTGO_TQ
+        gui.displaySensorData(pm25,pm10,chargeLevel,humi,temp);
+        #else
+        gui.displaySensorData(pm25,pm10,humi,temp);
+        #endif
+        gui.displayLiveIcon();
+        saveDataForAverage(pm25,pm10);
+      }
+      else wrongDataState();
+    }
+    else wrongDataState();
+  }
+#else
   if (txtMsg[0] == 66) {
     if (txtMsg[1] == 77) {
       Serial.print("-->[HPMA] read > done!");
@@ -181,11 +190,12 @@ void sensorLoop(){
         saveDataForAverage(pm25,pm10);
       }
       else wrongDataState();
-    }
+    } 
     else wrongDataState();
   }
   else wrongDataState();
-}
+ }
+#endif
 
 void statusLoop(){
   if (v25.size() == 0) {
@@ -335,7 +345,7 @@ void apiInit(){
 }
 
 void apiLoop() {
-  if (v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured()) {
+  if (v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0) {
     Serial.print("-->[API] writing to ");
     Serial.print(""+String(api.ip)+"..");
     bool status = api.write(0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
@@ -618,19 +628,35 @@ void bleLoop(){
   }
 }
 
+void resetLoop(){
+  if (wifiOn){    
+        if (resetvar == 1199) {      
+        resetvar = 0;
+        delay(45000);   // 45 seconds, reset at 30 seconds
+    }
+    resetvar = resetvar + 1;
+  }
+}
+
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
 
 void IRAM_ATTR resetModule(){
   Serial.println("\n-->[INFO] Watchdog reached, rebooting..");
+  esp_wifi_disconnect();
+  delay(200);
+  esp_wifi_stop();
+  delay(200);
+  esp_wifi_deinit();
+  delay(200);
   ESP.restart();
 }
 
 void enableWatchdog(){
   timer = timerBegin(0, 80, true);                 // timer 0, div 80
   timerAttachInterrupt(timer, &resetModule, true); // setting callback
-  timerAlarmWrite(timer, 15000000, false);         // set time in us (15s)
+  timerAlarmWrite(timer, 30000000, false);         // set time in us (30s)
   timerAlarmEnable(timer);                         // enable interrupt
 }
 
@@ -647,6 +673,10 @@ void setup() {
   Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
   gui.welcomeAddMessage("Sensors test..");
   sensorInit();
+
+  pinMode(21, INPUT_PULLUP);
+  pinMode(22, INPUT_PULLUP);
+
   am2320.begin();
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
@@ -677,4 +707,5 @@ void loop(){
   gui.pageEnd();   // gui changes push
   delay(500);
   timerWrite(timer, 0);  //reset timer (feed watchdog)
+  resetLoop();     // reset every 20 minutes with Wifion
 }

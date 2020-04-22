@@ -15,13 +15,12 @@ Adafruit_AM2320 am2320 = Adafruit_AM2320();
 float humi = 0.0;              // % Relative humidity 
 float temp = 0.0;              // Temperature (C)
 
-#ifdef TTGO_TQ
 // Battery level
+unsigned int chargeLevel = 0;
+#ifdef TTGO_TQ
 const int IP5306_2 = 27;     // PIN2 IP5306
 const int IP5306_3 = 14;     // PIN3 IP5306
-unsigned int chargeLevel = 0;
 unsigned int Rdelay = 0;
-unsigned int resetvar = 0;
 #endif
 
 // WiFi fields
@@ -43,7 +42,7 @@ bool oldDeviceConnected = false;
 CanAirIoApi api(false);
 
 // InfluxDB fields
-#define IFX_RETRY_CONNECTION   5
+#define IFX_RETRY_CONNECTION   2
 InfluxArduino influx;
 
 // Config and settings handler
@@ -56,6 +55,7 @@ GUIUtils gui;
 
 // Watchdog timer
 hw_timer_t *timer = NULL;
+unsigned int resetvar = 0;
 
 // some prototypes
 bool wifiCheck();

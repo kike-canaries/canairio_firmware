@@ -76,7 +76,7 @@ void GUIUtils::displayCenterBig(String msg) {
 void GUIUtils::displayBottomLine(String msg) {
   u8g2.setFont(u8g2_font_4x6_tf);
 #ifdef TTGO_TQ
-  u8g2.setCursor(80,0);   ////
+  u8g2.setCursor(115,16);
 #else
   u8g2.setCursor(0,29);
 #endif
@@ -97,6 +97,50 @@ void GUIUtils::displaySensorAvarage(int avarage) {
   char output[4];
   sprintf(output, "%03d", avarage);
   displayCenterBig(output);
+
+if (avarage<13){
+  u8g2.setFont(u8g2_font_unifont_t_emoticons);
+  u8g2.drawGlyph(76, 12, 0x0024);
+  u8g2.setFont(u8g2_font_5x7_tf);
+  u8g2.setCursor(77, 16);
+  u8g2.print("GOOD");
+}
+else if (avarage<36){
+  u8g2.setFont(u8g2_font_unifont_t_emoticons);
+  u8g2.drawGlyph(76, 12, 0x0062);
+  u8g2.setFont(u8g2_font_4x6_tf);
+  u8g2.setCursor(77, 17);
+  u8g2.print("MODERATE");
+}
+else if (avarage<56){
+  u8g2.setFont(u8g2_font_unifont_t_emoticons);
+  u8g2.drawGlyph(76, 12, 0x0032);
+  u8g2.setFont(u8g2_font_4x6_tf);
+  u8g2.setCursor(77, 17);
+  u8g2.print("UNHEALT S");  
+}
+else if (avarage<151){
+  u8g2.setFont(u8g2_font_unifont_t_emoticons);
+  u8g2.drawGlyph(76, 12, 0x0051);
+  u8g2.setFont(u8g2_font_4x6_tf);
+  u8g2.setCursor(77, 17);
+  u8g2.print("UNHEALTY");  
+}
+else if (avarage<251){
+  u8g2.setFont(u8g2_font_unifont_t_emoticons);
+  u8g2.drawGlyph(76, 12, 0x0053);
+  u8g2.setFont(u8g2_font_4x6_tf);
+  u8g2.setCursor(77, 17);
+  u8g2.print("VERY UNH"); 
+}
+else {
+  u8g2.setFont(u8g2_font_unifont_t_emoticons);
+  u8g2.drawGlyph(76, 12, 0x0057);
+  u8g2.setFont(u8g2_font_4x6_tf);
+  u8g2.setCursor(77, 17);
+  u8g2.print("HAZARDOUS");  
+}  
+
 }
 
 void GUIUtils::displaySensorData(int pm25, int pm10, float humi, float temp) {
@@ -114,33 +158,27 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   displayBottomLine(String(output));
 #ifdef TTGO_TQ
   u8g2.setFont(u8g2_font_4x6_tf);
- // u8g2.drawStr(112, 15, "T");   //Optional temperature
- // u8g2.setCursor(116, 15);
- // u8g2.print(u8x8_u8toa(inttemp, 2));
- // u8g2.drawStr(124, 15, "C");
-  u8g2.drawFrame(100,9,27,13);
-  u8g2.drawBox(97,13,3,5);
+  u8g2.drawFrame(100,0,27,13);
+  u8g2.drawBox(97,4,3,5);
   u8g2.setDrawColor(0);
-  u8g2.drawBox(102,11,24,9);
+  u8g2.drawBox(102,2,24,9);
   u8g2.setDrawColor(1);
-  u8g2.drawStr(89, 12, "%");
+
   if(chargeLevel<80){
      u8g2.setCursor(80, 12);
-     u8g2.print(chargeLevel);
   }
   if(chargeLevel>24){
-     u8g2.drawBox(120,11,5,9);
+     u8g2.drawBox(120,2,5,9);
   }
   if(chargeLevel>49){
-     u8g2.drawBox(114,11,5,9);
+     u8g2.drawBox(114,2,5,9);
   }
   if(chargeLevel>74){
-     u8g2.drawBox(108,11,5,9);
+     u8g2.drawBox(108,2,5,9);
   }
   if(chargeLevel>99){
-     u8g2.drawBox(102,11,5,9);
+     u8g2.drawBox(102,2,5,9);
      u8g2.setCursor(76, 12);
-     u8g2.print(chargeLevel);  
   }
   Serial.print(" PM2.5:"); Serial.print(output); Serial.print (" Battery:");
   Serial.print(chargeLevel); Serial.println("%");
@@ -167,7 +205,7 @@ void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn)
 
 void GUIUtils::displayLiveIcon() {
 #ifdef TTGO_TQ
-  if(toggleLive)u8g2.drawBitmap(80, 24, 1, 8, ic_sensor_live);
+  if(toggleLive)u8g2.drawBitmap(80, 25, 1, 8, ic_sensor_live);
 #else
   if(toggleLive)u8g2.drawBitmap(0, 40, 1, 8, ic_sensor_live);
 #endif  

@@ -63,20 +63,30 @@ void GUIUtils::welcomeAddMessage(String msg) {
 }
 
 void GUIUtils::displayCenterBig(String msg) {
-#ifdef TTGO_TQ
+#ifndef Emoticons
+ #ifdef TTGO_TQ
   u8g2.setCursor(0,1);
   u8g2.setFont(u8g2_font_inb30_mn);
-#else
+ #else
   u8g2.setCursor(0,0);
   u8g2.setFont(u8g2_font_inb24_mn);
-#endif
+ #endif
   u8g2.print(msg.c_str());
+#else
+ u8g2.setCursor(36,10); //(36,8)
+ u8g2.setFont(u8g2_font_9x18B_tf);
+ u8g2.print(msg.c_str());
+#endif
 }
 
 void GUIUtils::displayBottomLine(String msg) {
   u8g2.setFont(u8g2_font_4x6_tf);
 #ifdef TTGO_TQ
+ #ifndef Emoticons
   u8g2.setCursor(115,16);
+ #else
+  u8g2.setCursor(115,16); //Falta nueva visualizacion para Vis1 TTGO!!!!!!!!!
+ #endif
 #else
   u8g2.setCursor(0,29);
 #endif
@@ -93,58 +103,139 @@ void GUIUtils::displayEndLine(String msg) {
   u8g2.print(msg.c_str());
 }
 
-void GUIUtils::displaySensorAvarage(int avarage) {
+void GUIUtils::displaySensorAvarage(int avarage) {  
+#ifndef Emoticons
+   #ifdef TTGO_TQ
+   if (avarage<13){
+    u8g2.setFont(u8g2_font_unifont_t_emoticons);
+    u8g2.drawGlyph(76, 12, 0x0024);
+    u8g2.setFont(u8g2_font_5x7_tf);
+    u8g2.setCursor(77, 16);
+    u8g2.print("GOOD");
+   }
+   else if (avarage<36){
+    u8g2.setFont(u8g2_font_unifont_t_emoticons);
+    u8g2.drawGlyph(76, 12, 0x0062);
+    u8g2.setFont(u8g2_font_4x6_tf);
+    u8g2.setCursor(77, 17);
+    u8g2.print("MODERATE");
+   }
+   else if (avarage<56){
+    u8g2.setFont(u8g2_font_unifont_t_emoticons);
+    u8g2.drawGlyph(76, 12, 0x0032);
+    u8g2.setFont(u8g2_font_4x6_tf);
+    u8g2.setCursor(77, 17);
+    u8g2.print("UNHEALT S");  
+   }
+   else if (avarage<151){
+    u8g2.setFont(u8g2_font_unifont_t_emoticons);
+    u8g2.drawGlyph(76, 12, 0x0051);
+    u8g2.setFont(u8g2_font_4x6_tf);
+    u8g2.setCursor(77, 17);
+    u8g2.print("UNHEALTY");  
+   }
+   else if (avarage<251){
+    u8g2.setFont(u8g2_font_unifont_t_emoticons);
+    u8g2.drawGlyph(76, 12, 0x0053);
+    u8g2.setFont(u8g2_font_4x6_tf);
+    u8g2.setCursor(77, 17);
+    u8g2.print("VERY UNH"); 
+   }
+   else {
+    u8g2.setFont(u8g2_font_unifont_t_emoticons);
+    u8g2.drawGlyph(76, 12, 0x0057);
+    u8g2.setFont(u8g2_font_4x6_tf);
+    u8g2.setCursor(77, 17);
+    u8g2.print("HAZARDOUS");  
+   }  
+  #else
+     delay (1);
+  #endif
+ #else
+  if (avarage<13){
+   #ifdef TTGO_TQ
+     u8g2.drawXBM( 0, 1, 32, 32, Smileface1);
+     u8g2.setFont(u8g2_font_6x12_tf);
+     u8g2.setCursor(35, 26);
+     u8g2.print("BUENO");
+   #else
+     u8g2.drawXBM( 0, 1, 32, 32, Smileface1);
+     u8g2.setFont(u8g2_font_6x12_tf);
+     u8g2.setCursor(35, 26);
+     u8g2.print("BUENO");
+   #endif
+  }
+  else if (avarage<36){
+   #ifdef TTGO_TQ
+     u8g2.drawXBM( 0, 1, 32, 32, Smileface2);
+     u8g2.setFont(u8g2_font_5x7_tf);
+     u8g2.setCursor(25, 29);
+     u8g2.print("MODERADO");
+   #else 
+     u8g2.drawXBM( 0, 1, 32, 32, Smileface2);
+     u8g2.setFont(u8g2_font_5x7_tf);
+     u8g2.setCursor(25, 29);
+     u8g2.print("MODERADO");
+   #endif
+  }
+  else if (avarage<56){
+   #ifdef TTGO_TQ
+     u8g2.drawXBM( 0, 1, 32, 32, Smileface3);
+     u8g2.setFont(u8g2_font_5x7_tf);
+     u8g2.setCursor(30, 29);
+     u8g2.print("REGULAR");
+   #else 
+     u8g2.drawXBM( 0, 1, 32, 32, Smileface3);
+     u8g2.setFont(u8g2_font_5x7_tf);
+     u8g2.setCursor(30, 29);
+     u8g2.print("REGULAR");
+   #endif
+  }
+  else if (avarage<151){
+   #ifdef TTGO_TQ
+     u8g2.drawXBM( 0, 1, 32, 32, Smileface4);
+     u8g2.setFont(u8g2_font_6x10_tf);
+     u8g2.setCursor(29, 28);
+     u8g2.print("DA INO");
+     u8g2.drawGlyph(41, 28, 0x00d1);
+   #else 
+     u8g2.drawXBM( 0, 1, 32, 32, Smileface4);
+     u8g2.setFont(u8g2_font_6x10_tf);
+     u8g2.setCursor(29, 28);
+     u8g2.print("DA INO");
+     u8g2.drawGlyph(41, 28, 0x00d1);
+   #endif
+  }
+  else if (avarage<251){
+  #ifdef TTGO_TQ
+     u8g2.drawXBM( 0, 1, 32, 32, Smileface5);
+     u8g2.setFont(u8g2_font_4x6_tf);
+     u8g2.setCursor(25, 30);
+     u8g2.print("MUY DANINO");
+   #else 
+     u8g2.drawXBM( 0, 1, 32, 32, Smileface5);
+     u8g2.setFont(u8g2_font_4x6_tf);
+     u8g2.setCursor(25, 30);
+     u8g2.print("MUY DANINO");
+   #endif
+   }
+  else {
+ #ifdef TTGO_TQ
+     u8g2.drawXBM( 0, 1, 32, 32, Smileface6);
+     u8g2.setFont(u8g2_font_5x7_tf);
+     u8g2.setCursor(30, 29);
+     u8g2.print("PELIGRO");
+   #else 
+     u8g2.drawXBM( 0, 1, 32, 32, Smileface6);
+     u8g2.setFont(u8g2_font_5x7_tf);
+     u8g2.setCursor(30, 29);
+     u8g2.print("PELIGRO");
+   }  
+  #endif
+ #endif
   char output[4];
   sprintf(output, "%03d", avarage);
   displayCenterBig(output);
-
-if (avarage<13){
-  u8g2.setFont(u8g2_font_unifont_t_emoticons);
-  u8g2.drawGlyph(76, 12, 0x0024);
-  u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.setCursor(77, 16);
-  u8g2.print("GOOD");
-}
-else if (avarage<36){
-  u8g2.setFont(u8g2_font_unifont_t_emoticons);
-  u8g2.drawGlyph(76, 12, 0x0062);
-  u8g2.setFont(u8g2_font_4x6_tf);
-  u8g2.setCursor(77, 17);
-  u8g2.print("MODERATE");
-}
-else if (avarage<56){
-  u8g2.setFont(u8g2_font_unifont_t_emoticons);
-  u8g2.drawGlyph(76, 12, 0x0032);
-  u8g2.setFont(u8g2_font_4x6_tf);
-  u8g2.setCursor(77, 17);
-  u8g2.print("UNHEALT S");  
-}
-else if (avarage<151){
-  u8g2.setFont(u8g2_font_unifont_t_emoticons);
-  u8g2.drawGlyph(76, 12, 0x0051);
-  u8g2.setFont(u8g2_font_4x6_tf);
-  u8g2.setCursor(77, 17);
-  u8g2.print("UNHEALTY");  
-}
-else if (avarage<251){
-  u8g2.setFont(u8g2_font_unifont_t_emoticons);
-  u8g2.drawGlyph(76, 12, 0x0053);
-  u8g2.setFont(u8g2_font_4x6_tf);
-  u8g2.setCursor(77, 17);
-  u8g2.print("VERY UNH"); 
-}
-else {
-  u8g2.setFont(u8g2_font_unifont_t_emoticons);
-  u8g2.drawGlyph(76, 12, 0x0057);
-  u8g2.setFont(u8g2_font_4x6_tf);
-  u8g2.setCursor(77, 17);
-  u8g2.print("HAZARDOUS");  
-}  
-
-}
-
-void GUIUtils::displaySensorData(int pm25, int pm10, float humi, float temp) {
-  displaySensorData(pm25,pm10,0,humi,temp);
 }
 
 // TODO: separate this function, format/display
@@ -152,10 +243,12 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   if(mcount<65535)mcount++;
   else mcount=0;
   char output[22];
-  inthumi = int(humi);
-  inttemp = int(temp);
+  inthumi = (int) humi;
+  inttemp = (int) temp;
   sprintf(output, "%03d E%02d H%02d%% T%02d%°C" , pm25, ecode, inthumi, inttemp);    // 000 E00 H00% T00°C
-  displayBottomLine(String(output));
+   #ifndef Emoticons
+     displayBottomLine(String(output));
+   #endif
 #ifdef TTGO_TQ
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.drawFrame(100,0,27,13);
@@ -184,6 +277,12 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   Serial.print(chargeLevel); Serial.println("%");
 #else
   Serial.print(" PM2.5:"); Serial.println(output);
+ #ifdef Emoticons
+  u8g2.setFont(u8g2_font_4x6_tf);
+  u8g2.setCursor(51, 0);
+  sprintf(output, "%03d", pm25);
+  u8g2.print(output);
+ #endif
 #endif  
   //displayEndLine(String(output));
 }

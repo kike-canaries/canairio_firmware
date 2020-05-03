@@ -17,7 +17,8 @@ public:
 
   int lastDrawedLine = 0;
 
-  unsigned int inthumi, inttemp = 0;
+  unsigned int inthumi = 0;
+  unsigned int inttemp = 0;
 
   U8G2 u8g2;
 
@@ -33,9 +34,9 @@ public:
 
   void showWelcome();
 
-  void welcomeAddMessage(String msg);
-
   void showProgress(unsigned int progress, unsigned int total);
+
+  void welcomeAddMessage(String msg);
 
   void displayCenterBig(String msg);
 
@@ -43,17 +44,17 @@ public:
 
   void displayEndLine(String msg);
 
+  void displaySensorAvarage(int avarage);
+
+  void displaySensorData(int pm25, int pm10, int chargeLevel, float humi, float temp);
+
   void displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn);
 
   void displayLiveIcon();
   
   void displayPrefSaveIcon(bool enable);
 
-  void displaySensorAvarage(int avarage);
-
-  void displaySensorData(int pm25, int pm10, float humi, float temp);
-
-  void displaySensorData(int pm25, int pm10, int chargeLevel, float humi, float temp);
+  //void displaySensorData(int pm25, int pm10, float humi, float temp);
 
   void updateError(unsigned int error);
 

@@ -134,11 +134,7 @@ char getLoaderChar(){
 void showValues(int pm25, int pm10)
 {
   gui.displaySensorAvarage(apm25); // it was calculated on bleLoop()
-#ifdef TTGO_TQ
   gui.displaySensorData(pm25, pm10, chargeLevel, humi, temp);
-#else
-  gui.displaySensorData(pm25, pm10, humi, temp);
-#endif
   gui.displayLiveIcon();
   saveDataForAverage(pm25, pm10);
 }

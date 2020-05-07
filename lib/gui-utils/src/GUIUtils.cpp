@@ -70,7 +70,7 @@ void GUIUtils::welcomeAddMessage(String msg)
 
 void GUIUtils::displayCenterBig(String msg)
 {
-#ifndef Emoticons
+#ifndef EMOTICONS
 #ifdef TTGO_TQ
   u8g2.setCursor(0, 1);
   u8g2.setFont(u8g2_font_inb30_mn);
@@ -96,7 +96,7 @@ void GUIUtils::displayBottomLine(String msg)
 {
   u8g2.setFont(u8g2_font_4x6_tf);
 #ifdef TTGO_TQ
-#ifndef Emoticons
+#ifndef EMOTICONS
   u8g2.setCursor(115, 16);
 #else
   u8g2.setCursor(115, 16); //Falta nueva visualizacion para Vis1 TTGO!!!!!!!!!
@@ -120,7 +120,7 @@ void GUIUtils::displayEndLine(String msg)
 
 void GUIUtils::displaySensorAvarage(int avarage)
 {
-#ifndef Emoticons
+#ifndef EMOTICONS
 #ifdef TTGO_TQ
   if (avarage < 13)
   {
@@ -214,11 +214,7 @@ void GUIUtils::displaySensorAvarage(int avarage)
     u8g2.drawXBM(1, 0, 32, 32, SmilefaceUnhealthySensitiveGroups);
     u8g2.setFont(u8g2_font_6x12_tf);
     u8g2.setCursor(38, 15);
-<<<<<<< HEAD
     u8g2.print("UNH SEN/");
-=======
-    u8g2.print("UNH SEN/"); 
->>>>>>> 218f387b40e29e3f7872a6e4e9d8ae82f7b1be3e
     u8g2.setFont(u8g2_font_5x8_tf);
     u8g2.setCursor(86, 16);
     u8g2.print("orang");
@@ -300,7 +296,7 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   inthumi = (int)humi;
   inttemp = (int)temp;
   sprintf(output, "%03d E%02d H%02d%% T%02d%°C", pm25, ecode, inthumi, inttemp); // 000 E00 H00% T00°C
-//#ifndef Emoticons
+//#ifndef EMOTICONS
   displayBottomLine(String(output));
 ///#endif
 #ifdef TTGO_TQ
@@ -340,7 +336,7 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
 #else
   Serial.print(" PM2.5:");
   Serial.println(output);
-#ifdef Emoticons
+#ifdef EMOTICONS
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.setCursor(51, 0);
   sprintf(output, "%03d", pm25);

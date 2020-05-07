@@ -118,57 +118,42 @@ void GUIUtils::displayEndLine(String msg)
   u8g2.print(msg.c_str());
 }
 
+void GUIUtils::displayEmoticonLabel(int numsmile, String msg)
+{
+    u8g2.setFont(u8g2_font_unifont_t_emoticons);
+    u8g2.drawGlyph(76, 12, numsmile);
+    u8g2.setFont(u8g2_font_4x6_tf);
+    u8g2.setCursor(77, 17);
+    u8g2.print(msg);
+}
+
 void GUIUtils::displaySensorAvarage(int avarage)
 {
 #ifndef EMOTICONS
 #ifdef TTGO_TQ
   if (avarage < 13)
   {
-    u8g2.setFont(u8g2_font_unifont_t_emoticons);
-    u8g2.drawGlyph(76, 12, 0x0024);
-    u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.setCursor(77, 16);
-    u8g2.print("GOOD");
+    displayEmoticonLabel(0x0024,"GOOD");
   }
   else if (avarage < 36)
   {
-    u8g2.setFont(u8g2_font_unifont_t_emoticons);
-    u8g2.drawGlyph(76, 12, 0x0062);
-    u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.setCursor(77, 17);
-    u8g2.print("MODERATE");
+    displayEmoticonLabel(0x0062,"MODERATE");
   }
   else if (avarage < 56)
   {
-    u8g2.setFont(u8g2_font_unifont_t_emoticons);
-    u8g2.drawGlyph(76, 12, 0x0032);
-    u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.setCursor(77, 17);
-    u8g2.print("UNH SEN G");
+    displayEmoticonLabel(0x0032,"UNH SEN G");
   }
   else if (avarage < 151)
   {
-    u8g2.setFont(u8g2_font_unifont_t_emoticons);
-    u8g2.drawGlyph(76, 12, 0x0051);
-    u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.setCursor(77, 17);
-    u8g2.print("UNHEALTY");
+    displayEmoticonLabel(0x0051,"UNHEALTY");
   }
   else if (avarage < 251)
   {
-    u8g2.setFont(u8g2_font_unifont_t_emoticons);
-    u8g2.drawGlyph(76, 12, 0x0053);
-    u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.setCursor(77, 17);
-    u8g2.print("VERY UNH");
+    displayEmoticonLabel(0x0053,"VERY UNH");
   }
   else
   {
-    u8g2.setFont(u8g2_font_unifont_t_emoticons);
-    u8g2.drawGlyph(76, 12, 0x0057);
-    u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.setCursor(77, 17);
-    u8g2.print("HAZARDOUS");
+    displayEmoticonLabel(0x0057,"HAZARDOUS");
   }
 #else
   delay(1);

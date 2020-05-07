@@ -214,7 +214,11 @@ void GUIUtils::displaySensorAvarage(int avarage)
     u8g2.drawXBM(1, 0, 32, 32, SmilefaceUnhealthySensitiveGroups);
     u8g2.setFont(u8g2_font_6x12_tf);
     u8g2.setCursor(38, 15);
+<<<<<<< HEAD
     u8g2.print("UNH SEN/");
+=======
+    u8g2.print("UNH SEN/"); 
+>>>>>>> 218f387b40e29e3f7872a6e4e9d8ae82f7b1be3e
     u8g2.setFont(u8g2_font_5x8_tf);
     u8g2.setCursor(86, 16);
     u8g2.print("orang");

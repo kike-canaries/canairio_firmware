@@ -144,7 +144,7 @@ void GUIUtils::displaySensorAvarage(int avarage)
     u8g2.drawGlyph(76, 12, 0x0032);
     u8g2.setFont(u8g2_font_4x6_tf);
     u8g2.setCursor(77, 17);
-    u8g2.print("UNHEALT S");
+    u8g2.print("UNH SEN G");
   }
   else if (avarage < 151)
   {
@@ -177,106 +177,106 @@ void GUIUtils::displaySensorAvarage(int avarage)
   if (avarage < 13)
   {
 #ifdef TTGO_TQ
-    u8g2.drawXBM(1, 0, 32, 32, Smileface1);
+    u8g2.drawXBM(1, 0, 32, 32, SmilefaceGood);
     u8g2.setFont(u8g2_font_6x12_tf);
     u8g2.setCursor(40, 15);
-    u8g2.print("BUENO/");
+    u8g2.print("GOOD/");
     u8g2.setFont(u8g2_font_5x8_tf);
-    u8g2.setCursor(76, 16);
-    u8g2.print("verde");
+    u8g2.setCursor(70, 16);
+    u8g2.print("green");
 #else
-    u8g2.drawXBM(0, 1, 32, 32, Smileface1);
+    u8g2.drawXBM(0, 1, 32, 32, SmilefaceGood);
     u8g2.setFont(u8g2_font_6x12_tf);
     u8g2.setCursor(40, 15);
-    u8g2.print("BUENO");
+    u8g2.print("GOOD");
 #endif
   }
   else if (avarage < 36)
   {
 #ifdef TTGO_TQ
-    u8g2.drawXBM(1, 0, 32, 32, Smileface2);
+    u8g2.drawXBM(1, 0, 32, 32, SmilefaceModerate);
     u8g2.setFont(u8g2_font_6x12_tf);
     u8g2.setCursor(38, 15);
-    u8g2.print("MODERADO/");
+    u8g2.print("MODERATE/");
     u8g2.setFont(u8g2_font_6x10_tf);
     u8g2.setCursor(92, 16);
-    u8g2.print("ama");
+    u8g2.print("yell");
 #else
-    u8g2.drawXBM(0, 1, 32, 32, Smileface2);
+    u8g2.drawXBM(0, 1, 32, 32, SmilefaceModerate);
     u8g2.setFont(u8g2_font_5x7_tf);
     u8g2.setCursor(25, 29);
-    u8g2.print("MODERADO");
+    u8g2.print("MODERATE");
 #endif
   }
   else if (avarage < 56)
   {
 #ifdef TTGO_TQ
-    u8g2.drawXBM(1, 0, 32, 32, Smileface3);
+    u8g2.drawXBM(1, 0, 32, 32, SmilefaceUnhealthySensitiveGroups);
     u8g2.setFont(u8g2_font_6x12_tf);
     u8g2.setCursor(38, 15);
-    u8g2.print("REGULAR/");
+    u8g2.print("UNH SEN/"); REGULAR 
     u8g2.setFont(u8g2_font_5x8_tf);
     u8g2.setCursor(86, 16);
-    u8g2.print("naran");
+    u8g2.print("orang");
 #else
-    u8g2.drawXBM(0, 1, 32, 32, Smileface3);
+    u8g2.drawXBM(0, 1, 32, 32, SmilefaceUnhealthySensitiveGroups);
     u8g2.setFont(u8g2_font_5x7_tf);
     u8g2.setCursor(30, 29);
-    u8g2.print("REGULAR");
+    u8g2.print("UNH SEN");
 #endif
   }
   else if (avarage < 151)
   {
 #ifdef TTGO_TQ
-    u8g2.drawXBM(1, 0, 32, 32, Smileface4);
+    u8g2.drawXBM(1, 0, 32, 32, SmilefaceUnhealthy);
     u8g2.setFont(u8g2_font_6x12_tf);
     u8g2.setCursor(40, 15);
-    u8g2.print("DA INO/");
+    u8g2.print("UNHEAL/");
     u8g2.drawGlyph(52, 15, 0x00d1);
     u8g2.setFont(u8g2_font_5x8_tf);
     u8g2.setCursor(82, 16);
-    u8g2.print("rojo");
+    u8g2.print("red");
 #else
-    u8g2.drawXBM(0, 1, 32, 32, Smileface4);
+    u8g2.drawXBM(0, 1, 32, 32, SmilefaceUnhealthy);
     u8g2.setFont(u8g2_font_6x10_tf);
     u8g2.setCursor(29, 28);
-    u8g2.print("DA INO");
+    u8g2.print("UNHEAL");
     u8g2.drawGlyph(41, 28, 0x00d1);
 #endif
   }
   else if (avarage < 251)
   {
 #ifdef TTGO_TQ
-    u8g2.drawXBM(1, 0, 32, 32, Smileface5);
+    u8g2.drawXBM(1, 0, 32, 32, SmilefaceVeryUnhealthy);
     u8g2.setFont(u8g2_font_6x12_tf);
     u8g2.setCursor(38, 15);
-    u8g2.print("MUY DA /");
+    u8g2.print("V UNHEA/");
     u8g2.drawGlyph(76, 15, 0x00d1);
     u8g2.setFont(u8g2_font_5x8_tf);
     u8g2.setCursor(88, 16);
-    u8g2.print("mora");
+    u8g2.print("viol");
 #else
-    u8g2.drawXBM(0, 1, 32, 32, Smileface5);
+    u8g2.drawXBM(0, 1, 32, 32, SmilefaceVeryUnhealthy);
     u8g2.setFont(u8g2_font_4x6_tf);
     u8g2.setCursor(25, 30);
-    u8g2.print("MUY DANINO");
+    u8g2.print("V UNHEA");
 #endif
   }
   else
   {
 #ifdef TTGO_TQ
-    u8g2.drawXBM(1, 0, 32, 32, Smileface6);
+    u8g2.drawXBM(1, 0, 32, 32, SmilefaceHazardous);
     u8g2.setFont(u8g2_font_6x12_tf);
-    u8g2.setCursor(38, 15);
-    u8g2.print("PELIGRO/");
+    u8g2.setCursor(40, 15);
+    u8g2.print("HAZARD/");
     u8g2.setFont(u8g2_font_5x8_tf);
-    u8g2.setCursor(88, 16);
-    u8g2.print("cafe");
+    u8g2.setCursor(90, 16);
+    u8g2.print("brown");
 #else
-    u8g2.drawXBM(0, 1, 32, 32, Smileface6);
+    u8g2.drawXBM(0, 1, 32, 32, SmilefaceHazardous);
     u8g2.setFont(u8g2_font_5x7_tf);
     u8g2.setCursor(30, 29);
-    u8g2.print("PELIGRO");
+    u8g2.print("HAZARD");
 #endif
   }
 #endif

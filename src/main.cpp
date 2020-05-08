@@ -90,7 +90,7 @@ void sensorInit(){
 void wrongDataState(){
   Serial.print("-->[E][HPMA] !wrong data!");
   setErrorCode(ecode_sensor_read_fail);
-  gui.displaySensorAvarage(apm25);
+  gui.displaySensorAverage(apm25);
   gui.displaySensorData(0,0,chargeLevel,0.0,0.0);
   hpmaSerial.end();
   statusOff(bit_sensor);
@@ -133,7 +133,7 @@ char getLoaderChar(){
 
 void showValues(int pm25, int pm10)
 {
-  gui.displaySensorAvarage(apm25); // it was calculated on bleLoop()
+  gui.displaySensorAverage(apm25); // it was calculated on bleLoop()
   gui.displaySensorData(pm25, pm10, chargeLevel, humi, temp);
   gui.displayLiveIcon();
   saveDataForAverage(pm25, pm10);

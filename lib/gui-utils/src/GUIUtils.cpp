@@ -81,11 +81,11 @@ void GUIUtils::displayCenterBig(String msg)
   u8g2.print(msg.c_str());
 #else
 #ifdef TTGO_TQ
-  u8g2.setCursor(52, 01); //(36,8)
+  u8g2.setCursor(50, 01);
   u8g2.setFont(u8g2_font_9x18B_tf);
   u8g2.print(msg.c_str());
 #else
-  u8g2.setCursor(46, 01); //(36,8)
+  u8g2.setCursor(36, 6);
   u8g2.setFont(u8g2_font_9x18B_tf);
   u8g2.print(msg.c_str());
 #endif
@@ -98,8 +98,6 @@ void GUIUtils::displayBottomLine(String msg)
 #ifdef TTGO_TQ
 #ifndef EMOTICONS
   u8g2.setCursor(115, 16);
-#else
-  u8g2.setCursor(115, 16); //Falta nueva visualizacion para Vis1 TTGO!!!!!!!!!
 #endif
 #else
   u8g2.setCursor(0, 29);
@@ -120,153 +118,148 @@ void GUIUtils::displayEndLine(String msg)
 
 void GUIUtils::displayEmoticonLabel(int numsmile, String msg)
 {
-    u8g2.setFont(u8g2_font_unifont_t_emoticons);
-    u8g2.drawGlyph(76, 12, numsmile);
-    u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.setCursor(77, 17);
-    u8g2.print(msg);
+  u8g2.setFont(u8g2_font_unifont_t_emoticons);
+  u8g2.drawGlyph(76, 12, numsmile);
+  u8g2.setFont(u8g2_font_4x6_tf);
+  u8g2.setCursor(77, 17);
+  u8g2.print(msg);
 }
 
-void GUIUtils::displaySensorAvarage(int avarage)
+void GUIUtils::displayBigEmoticon(String msg)
+{
+#ifdef EMOTICONS
+#ifdef TTGO_TQ
+  u8g2.setFont(u8g2_font_6x12_tf);
+  u8g2.setCursor(40, 15);
+  u8g2.print(msg);
+#else
+  u8g2.setFont(u8g2_font_5x7_tf); //5x7 5x7 6x10 4x6 5x7
+  u8g2.setCursor(29, 28);         //(35, 26);; (25, 29); (30, 29); (29, 28); (25, 30)(30, 29)
+  u8g2.print(msg);                //4 8 7 6 7 6
+#endif
+#endif
+}
+
+void GUIUtils::displayBigLabel(int cursor, String msg)
+{
+#ifdef EMOTICONS
+#ifdef TTGO_TQ
+  u8g2.setFont(u8g2_font_5x7_tf); //5x7 5x7 6x10 4x6 5x7
+  u8g2.setCursor(cursor, 16);     //70 94 88 82 90 90
+  u8g2.print(msg);
+#else
+  u8g2.setFont(u8g2_font_4x6_tf); 
+  u8g2.setCursor(35, 20);
+  u8g2.print(msg);
+#endif                //4 8 7 6 7 6
+#endif
+}
+
+void GUIUtils::displaySensorAverage(int average)
 {
 #ifndef EMOTICONS
 #ifdef TTGO_TQ
-  if (avarage < 13)
+  if (average < 13)
   {
-    displayEmoticonLabel(0x0024,"GOOD");
+    displayEmoticonLabel(0x0024, "GOOD");
   }
-  else if (avarage < 36)
+  else if (average < 36)
   {
-    displayEmoticonLabel(0x0062,"MODERATE");
+    displayEmoticonLabel(0x0062, "MODERATE");
   }
-  else if (avarage < 56)
+  else if (average < 56)
   {
-    displayEmoticonLabel(0x0032,"UNH SEN G");
+    displayEmoticonLabel(0x0032, "UNH SEN G");
   }
-  else if (avarage < 151)
+  else if (average < 151)
   {
-    displayEmoticonLabel(0x0051,"UNHEALTY");
+    displayEmoticonLabel(0x0051, "UNHEALTY");
   }
-  else if (avarage < 251)
+  else if (average < 251)
   {
-    displayEmoticonLabel(0x0053,"VERY UNH");
+    displayEmoticonLabel(0x0053, "VERY UNH");
   }
   else
   {
-    displayEmoticonLabel(0x0057,"HAZARDOUS");
+    displayEmoticonLabel(0x0057, "HAZARDOUS");
   }
-#else
-  delay(1);
 #endif
 #else
-  if (avarage < 13)
+  if (average < 13)
   {
 #ifdef TTGO_TQ
-    u8g2.drawXBM(1, 0, 32, 32, SmilefaceGood);
-    u8g2.setFont(u8g2_font_6x12_tf);
-    u8g2.setCursor(40, 15);
-    u8g2.print("GOOD/");
-    u8g2.setFont(u8g2_font_5x8_tf);
-    u8g2.setCursor(70, 16);
-    u8g2.print("green");
+    u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
+    displayBigEmoticon("GOOD");
+    displayBigLabel(66, "/green");
 #else
-    u8g2.drawXBM(0, 1, 32, 32, SmilefaceGood);
-    u8g2.setFont(u8g2_font_6x12_tf);
-    u8g2.setCursor(40, 15);
-    u8g2.print("GOOD");
+    u8g2.drawXBM(0, 1, 32, 32, SmileFaceGood);
+    displayBigEmoticon("  GOOD");
+    displayBigLabel(0, " green");
 #endif
   }
-  else if (avarage < 36)
+  else if (average < 36)
   {
 #ifdef TTGO_TQ
-    u8g2.drawXBM(1, 0, 32, 32, SmilefaceModerate);
-    u8g2.setFont(u8g2_font_6x12_tf);
-    u8g2.setCursor(38, 15);
-    u8g2.print("MODERATE/");
-    u8g2.setFont(u8g2_font_6x10_tf);
-    u8g2.setCursor(92, 16);
-    u8g2.print("yell");
+    u8g2.drawXBM(1, 0, 32, 32, SmileFaceModerate);
+    displayBigEmoticon("MODERATE");
+    displayBigLabel(90, "/yel");
 #else
-    u8g2.drawXBM(0, 1, 32, 32, SmilefaceModerate);
-    u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.setCursor(25, 29);
-    u8g2.print("MODERATE");
+    u8g2.drawXBM(0, 1, 32, 32, SmileFaceModerate);
+    displayBigEmoticon("MODERATE");
+    displayBigLabel(0, "yellow");
 #endif
   }
-  else if (avarage < 56)
+  else if (average < 56)
   {
 #ifdef TTGO_TQ
-    u8g2.drawXBM(1, 0, 32, 32, SmilefaceUnhealthySensitiveGroups);
-    u8g2.setFont(u8g2_font_6x12_tf);
-    u8g2.setCursor(38, 15);
-    u8g2.print("UNH SEN/");
-    u8g2.setFont(u8g2_font_5x8_tf);
-    u8g2.setCursor(86, 16);
-    u8g2.print("orang");
+    u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthySGroups);
+    displayBigEmoticon("UNH SEN");
+    displayBigLabel(84, "/oran");
 #else
-    u8g2.drawXBM(0, 1, 32, 32, SmilefaceUnhealthySensitiveGroups);
-    u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.setCursor(30, 29);
-    u8g2.print("UNH SEN");
+    u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthySGroups);
+    displayBigEmoticon("UNH SEN");
+    displayBigLabel(0, "orange");
 #endif
   }
-  else if (avarage < 151)
+  else if (average < 151)
   {
 #ifdef TTGO_TQ
-    u8g2.drawXBM(1, 0, 32, 32, SmilefaceUnhealthy);
-    u8g2.setFont(u8g2_font_6x12_tf);
-    u8g2.setCursor(40, 15);
-    u8g2.print("UNHEAL/");
-    u8g2.drawGlyph(52, 15, 0x00d1);
-    u8g2.setFont(u8g2_font_5x8_tf);
-    u8g2.setCursor(82, 16);
-    u8g2.print("red");
+    u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthy);
+    displayBigEmoticon("UNHEALT");
+    displayBigLabel(84, "/red"); //OK
 #else
-    u8g2.drawXBM(0, 1, 32, 32, SmilefaceUnhealthy);
-    u8g2.setFont(u8g2_font_6x10_tf);
-    u8g2.setCursor(29, 28);
-    u8g2.print("UNHEAL");
-    u8g2.drawGlyph(41, 28, 0x00d1);
+    u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthy);
+    displayBigEmoticon("UNHEALT");
+    displayBigLabel(0, "  red");
 #endif
   }
-  else if (avarage < 251)
+  else if (average < 251)
   {
 #ifdef TTGO_TQ
-    u8g2.drawXBM(1, 0, 32, 32, SmilefaceVeryUnhealthy);
-    u8g2.setFont(u8g2_font_6x12_tf);
-    u8g2.setCursor(38, 15);
-    u8g2.print("V UNHEA/");
-    u8g2.drawGlyph(76, 15, 0x00d1);
-    u8g2.setFont(u8g2_font_5x8_tf);
-    u8g2.setCursor(88, 16);
-    u8g2.print("viol");
+    u8g2.drawXBM(1, 0, 32, 32, SmileFaceVeryUnhealthy);
+    displayBigEmoticon("V UNHEA");
+    displayBigLabel(84, "/viol"); //OK
 #else
-    u8g2.drawXBM(0, 1, 32, 32, SmilefaceVeryUnhealthy);
-    u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.setCursor(25, 30);
-    u8g2.print("V UNHEA");
+    u8g2.drawXBM(0, 1, 32, 32, SmileFaceVeryUnhealthy);
+    displayBigEmoticon("V UNHEA");
+    displayBigLabel(0, "violet");
 #endif
   }
   else
   {
 #ifdef TTGO_TQ
-    u8g2.drawXBM(1, 0, 32, 32, SmilefaceHazardous);
-    u8g2.setFont(u8g2_font_6x12_tf);
-    u8g2.setCursor(40, 15);
-    u8g2.print("HAZARD/");
-    u8g2.setFont(u8g2_font_5x8_tf);
-    u8g2.setCursor(90, 16);
-    u8g2.print("brown");
+    u8g2.drawXBM(1, 0, 32, 32, SmileFaceHazardous);
+    displayBigEmoticon("HAZARD");
+    displayBigLabel(78, "/brown");
 #else
-    u8g2.drawXBM(0, 1, 32, 32, SmilefaceHazardous);
-    u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.setCursor(30, 29);
-    u8g2.print("HAZARD");
+    u8g2.drawXBM(0, 1, 32, 32, SmileFaceHazardous);
+    displayBigEmoticon("HAZARD");
+    displayBigLabel(0, " brown");
 #endif
   }
 #endif
   char output[4];
-  sprintf(output, "%03d", avarage);
+  sprintf(output, "%03d", average);
   displayCenterBig(output);
 }
 
@@ -281,9 +274,9 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   inthumi = (int)humi;
   inttemp = (int)temp;
   sprintf(output, "%03d E%02d H%02d%% T%02d%°C", pm25, ecode, inthumi, inttemp); // 000 E00 H00% T00°C
-//#ifndef EMOTICONS
+#ifndef EMOTICONS
   displayBottomLine(String(output));
-///#endif
+#endif
 #ifdef TTGO_TQ
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.drawFrame(100, 0, 27, 13);
@@ -328,7 +321,6 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   u8g2.print(output);
 #endif
 #endif
-  //displayEndLine(String(output));
 }
 
 void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn)

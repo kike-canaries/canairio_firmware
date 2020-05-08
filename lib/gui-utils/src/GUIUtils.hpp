@@ -20,7 +20,7 @@ public:
   unsigned int inthumi = 0;
   unsigned int inttemp = 0;
 
-  unsigned int numsmile = 0;
+  unsigned int cursor = 0;
 
   U8G2 u8g2;
 

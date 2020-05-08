@@ -96,13 +96,14 @@ void GUIUtils::displayBottomLine(String msg)
 {
   u8g2.setFont(u8g2_font_4x6_tf);
 #ifdef TTGO_TQ
-#ifndef EMOTICONS
   u8g2.setCursor(115, 16);
-#endif
-#else
-  u8g2.setCursor(0, 29);
-#endif
   u8g2.print(msg.c_str());
+#else
+#ifndef EMOTICONS
+  u8g2.setCursor(0, 29);
+  u8g2.print(msg.c_str());
+#endif
+#endif 
 }
 
 void GUIUtils::displayEndLine(String msg)
@@ -116,10 +117,10 @@ void GUIUtils::displayEndLine(String msg)
   u8g2.print(msg.c_str());
 }
 
-void GUIUtils::displayEmoticonLabel(int numsmile, String msg)
+void GUIUtils::displayEmoticonLabel(int cursor, String msg)
 {
   u8g2.setFont(u8g2_font_unifont_t_emoticons);
-  u8g2.drawGlyph(76, 12, numsmile);
+  u8g2.drawGlyph(76, 12, cursor);
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.setCursor(77, 17);
   u8g2.print(msg);
@@ -274,9 +275,7 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   inthumi = (int)humi;
   inttemp = (int)temp;
   sprintf(output, "%03d E%02d H%02d%% T%02d%°C", pm25, ecode, inthumi, inttemp); // 000 E00 H00% T00°C
-#ifndef EMOTICONS
   displayBottomLine(String(output));
-#endif
 #ifdef TTGO_TQ
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.drawFrame(100, 0, 27, 13);

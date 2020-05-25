@@ -21,7 +21,7 @@ showHelp () {
   echo "example: ./build installer"
   echo ""
   echo "Supported boards: "
-  echo "d1mini, Wemos, Heltec, TTGO18650, TTGO_TQ"
+  echo "d1mini, Wemos, Heltec, TTGO_TQ"
   echo ""
   echo "Build installer option will make a installer package for Linux"
   echo "with OTA support and USB support"
@@ -44,6 +44,10 @@ updateInstallerBinaries () {
 updateFlavorBinaries() {
   rm -f $INSDIR/*.bin
   cp $RELDIR/$BINDIR/*/*${DATE}.bin $INSDIR/
+}
+
+clean () {
+  rm -r $RELDIR/$BINDIR
 }
 
 build () {
@@ -104,6 +108,10 @@ if [ "$1" = "" ]; then
   showHelp
 else
   case "$1" in
+    clean)
+      clean
+      ;;
+
     installer)
       buildInstaller
       ;;
@@ -125,12 +133,11 @@ else
       ;;
 
     all)
+      clean
       build d1mini
       build wemos
       build heltec
-      build TTGO18650
       build TTGO_TQ
-      build ESP32Sboard
       printOutput
       ;;
 

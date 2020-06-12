@@ -27,6 +27,7 @@ unsigned int Rdelay = 0;
 #define WIFI_RETRY_CONNECTION    20
 bool dataSendToggle;
 bool wifiOn;
+int rssi = 0;
 
 // Bluetooth fields
 BLEServer* pServer = NULL;

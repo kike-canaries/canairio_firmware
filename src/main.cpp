@@ -26,6 +26,7 @@
 #include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
 #include <vector>
+#include <sps30.h>
 #include "main.h"
 #include "status.h"
 
@@ -61,12 +62,49 @@ U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN
 
 #endif
 
+SPS30 sps30;
+
 /******************************************************************************
 *   S E N S O R  M E T H O D S
 ******************************************************************************/
+
+#ifdef SENSIRION
+/*
+ *  @brief : display error message
+ *  @param mess : message to display
+ *  @param r : error code
+ *
+ */
+void ErrtoMess(char *mess, uint8_t r)
+{
+  char buf[80];
+
+  Serial.print(mess);
+
+  sps30.GetErrDescription(r, buf, 80);
+  Serial.println(buf);
+}
+/*
+ *  @brief : continued loop after fatal error
+ *  @param mess : message to display
+ *  @param r : error code
+ *
+ *  if r is zero, it will only display the message
+ */
+void Errorloop(char *mess, uint8_t r)
+{
+  if (r) ErrtoMess(mess, r);
+  else Serial.println(mess);
+  Serial.println(F("Program on hold"));
+  //for(;;) delay(100000);
+  for(;;) delay(500);
+}
+#endif
+
+
 /**
  * [DEPRECATED] sensorConfig:
- * The next method is only if sensor was config without autosend
+ * The next method is only if Honeywell sensor was config without autosend
  */
 void sensorConfig(){
   Serial.println("-->[HPMA] configuration hpma115S0 sensor..");
@@ -81,18 +119,57 @@ void sensorConfig(){
 }
 
 void sensorInit(){
+  #ifdef HONEYWELL
   Serial.println("-->[HPMA] starting hpma115S0 sensor..");
   delay(100);
   hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
   delay(100);
+  #elif PANASONIC
+  Serial.println("-->[SN] starting SN-GCJA5 sensor..");
+  delay(100);
+  hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
+  delay(100);
+  #else
+  Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
+  // Begin communication channel;
+  if (sps30.begin(SP30_COMMS) == false) {
+    Errorloop((char *) "-->[E][SPS30] could not initialize communication channel.", 0);
+  }
+  // check for SPS30 connection
+  if (sps30.probe() == false) {
+    Errorloop((char *) "-->[E][SPS30] could not probe / connect with SPS30.", 0);
+  }
+  else
+    Serial.println(F("-->[SPS30] Detected SPS30."));
+  // reset SPS30 connection
+  if (sps30.reset() == false) {
+    Errorloop((char *) "-->[E][SPS30] could not reset.", 0);
+  }
+  // start measurement
+  if (sps30.start() == true)
+    Serial.println(F("-->[SPS30] Measurement started"));
+  else
+    Errorloop((char *) "-->[E][SPS30] Could NOT start measurement", 0);
+  if (SP30_COMMS == I2C_COMMS) {
+    if (sps30.I2C_expect() == 4)
+      Serial.println(F("-->[E][SPS30] Due to I2C buffersize only the SPS30 MASS concentration is available !!! \n"));
+  }
+  #endif
 }
 
 void wrongDataState(){
-  Serial.print("-->[E][HPMA] !wrong data!");
   setErrorCode(ecode_sensor_read_fail);
   gui.displaySensorAverage(apm25);
   gui.displaySensorData(0,0,chargeLevel,0.0,0.0,0);
+  #ifdef HONEYWELL
+  Serial.print("-->[E][HPMA] !wrong data!");
   hpmaSerial.end();
+  #elif PANASONIC
+  Serial.print("-->[E][SNGC] !wrong data!");
+  hpmaSerial.end();
+  #else
+  Serial.print("-->[E][SPS30] !wrong data!");
+  #endif
   statusOff(bit_sensor);
   sensorInit();
   delay(500);
@@ -145,6 +222,7 @@ void showValues(int pm25, int pm10)
 
 void sensorLoop()
 {
+#ifndef SENSIRION  
   int try_sensor_read = 0;
   String txtMsg = "";
   while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY)
@@ -153,27 +231,40 @@ void sensorLoop()
     {
       char inChar = hpmaSerial.read();
       txtMsg += inChar;
+      #ifdef HONEYWELL
       Serial.print("-->[HPMA] read " + String(getLoaderChar()) + "\r");
+      #else
+      Serial.print("-->[SNGC] read " + String(getLoaderChar()) + "\r");
+      #endif
     }
+    #ifdef HONEYWELL
     Serial.print("-->[HPMA] read " + String(getLoaderChar()) + "\r");
+    #else
+    Serial.print("-->[SNGC] read " + String(getLoaderChar()) + "\r");
+    #endif
   }
   if (try_sensor_read > SENSOR_RETRY)
   {
     setErrorCode(ecode_sensor_timeout);
+    #ifdef HONEYWELL
     Serial.println("-->[HPMA] read > fail!");
     Serial.println("-->[E][HPMA] disconnected ?");
+    #else
+    Serial.println("-->[SNGC] read > fail!");
+    Serial.println("-->[E][SNGC] disconnected ?");
+    #endif
     delay(500); // waiting for sensor..
   }
+#endif
 
 #ifdef PANASONIC
-
   if (txtMsg[0] == 02)
   {
-    Serial.print("-->[HPMA] read > done!");
+    Serial.print("-->[SNGC] read > done!");
     statusOn(bit_sensor);
     unsigned int pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
     unsigned int pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
-    if (pm25 < 1000 && pm10 < 1000)
+    if (pm25 < 2000 && pm10 < 2000)
     {
       showValues(pm25, pm10);
     }
@@ -183,8 +274,7 @@ void sensorLoop()
   else
     wrongDataState();
 
-#else  // HONEYWELL
-
+#elif HONEYWELL  // HONEYWELL
   if (txtMsg[0] == 66)
   {
     if (txtMsg[1] == 77)
@@ -205,6 +295,55 @@ void sensorLoop()
   }
   else
     wrongDataState();
+
+#else // SENSIRION
+  Serial.print("..........");
+  delay(35);      //Delay for sincronization
+  //static bool header = true;
+  uint8_t ret, error_cnt = 0;
+  struct sps_values val;
+  // loop to get data
+  do {
+    ret = sps30.GetValues(&val);
+    // data might not have been ready
+    if (ret == ERR_DATALENGTH){
+        if (error_cnt++ > 3) {
+          ErrtoMess((char *) "-->[E][SPS30] Error during reading values: ",ret);
+          //return(false);
+          return;
+        }
+        delay(1000);
+    }
+    // if other error
+    else if(ret != ERR_OK) {
+      ErrtoMess((char *) "-->[E][SPS30] Error during reading values: ",ret);
+      //return(false);
+      return;
+    }
+  } while (ret != ERR_OK);
+
+      Serial.print("-->[SPS30] read > done!");
+      statusOn(bit_sensor);
+  
+  unsigned int pm25 = round (val.MassPM2);
+  unsigned int pm10 = round (val.MassPM10);
+
+  if (pm25 < 1000 && pm10 < 1000)
+    {
+      showValues(pm25, pm10);
+      Serial.print("//////////");
+
+    //  Serial.print("PM2.5: ");
+    //  Serial.print(val.MassPM2);
+    //  Serial.print(" ug/m3");
+
+    //  Serial.print("  ");
+    //  Serial.print(pm25);
+    //  Serial.println(" ug/m3");
+    }
+    else
+      wrongDataState();
+
 #endif
 }
 
@@ -265,7 +404,6 @@ void humidityLoop() {
   #endif
   }
 }
-
 
 /******************************************************************************
 *   B A T T E R Y   C H A R G E   S T A T U S   M E T H O D S
@@ -680,18 +818,20 @@ void setup() {
   pinMode(IP5306_2, INPUT);
   pinMode(IP5306_3, INPUT);
 #endif
+  pinMode(21, INPUT_PULLUP);
+  pinMode(22, INPUT_PULLUP);
   Serial.begin(115200);
   gui.displayInit(u8g2);
   gui.showWelcome();
   cfg.init("canairio");
   Serial.println("\n== INIT SETUP ==\n");
   Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
+  ///
+  delay(1000);
   gui.welcomeAddMessage("Sensors test..");
   sensorInit();
-
-  pinMode(21, INPUT_PULLUP);
-  pinMode(22, INPUT_PULLUP);
-
+  delay(1000);
+  ///
   am2320.begin();
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
@@ -709,7 +849,7 @@ void setup() {
 
 void loop(){
   gui.pageStart();
-  sensorLoop();    // read HPMA serial data and showed it
+  sensorLoop();    // read sensor data and showed it
   averageLoop();   // calculated of sensor data average
   humidityLoop();  // read AM2320
   batteryloop();   // battery charge status 
@@ -720,7 +860,13 @@ void loop(){
   statusLoop();    // update sensor status GUI
   otaLoop();       // check for firmware updates
   gui.pageEnd();   // gui changes push
+  #ifdef HONEYWELL
   delay(500);
+  #elif PANASONIC
+  delay (500);
+  #else
+  delay (950);
+  #endif
   timerWrite(timer, 0);  //reset timer (feed watchdog)
   resetLoop();     // reset every 20 minutes with Wifion
 }

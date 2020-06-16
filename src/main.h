@@ -10,6 +10,10 @@ unsigned int apm25 = 0;        // last PM2.5 average
 unsigned int apm10 = 0;        // last PM10 average
 #define SENSOR_RETRY  1000     // Sensor read retry
 
+// Sensirion SPS30 sensor
+#define SP30_COMMS I2C_COMMS        // UART OR I2C  !!!!!!!!!!!!!!!!!!!
+//int PM25 = 0;
+
 // Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();
 float humi = 0.0;              // % Relative humidity 

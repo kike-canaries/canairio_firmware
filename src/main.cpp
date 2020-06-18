@@ -120,34 +120,30 @@ void sensorInit()
   delay(100);
   hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
   delay(100);
-#else
+#else //SENSIRION
   Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
-  // Begin communication channel;
-  if (sps30.begin(SP30_COMMS) == false)
+  if (sps30.begin(SP30_COMMS) == false) // Begin communication channel;
   {
     Errorloop((char *)"-->[E][SPS30] could not initialize communication channel.", 0);
   }
-  // check for SPS30 connection
-  if (sps30.probe() == false)
+  if (sps30.probe() == false) // check for SPS30 connection
   {
     Errorloop((char *)"-->[E][SPS30] could not probe / connect with SPS30.", 0);
   }
   else
     Serial.println(F("-->[SPS30] Detected SPS30."));
-  // reset SPS30 connection
-  if (sps30.reset() == false)
+  if (sps30.reset() == false) // reset SPS30 connection
   {
     Errorloop((char *)"-->[E][SPS30] could not reset.", 0);
   }
-  // start measurement
-  if (sps30.start() == true)
-    Serial.println(F("-->[SPS30] Measurement started"));
+  if (sps30.start() == true) // start measurement
+    Serial.println(F("-->[SPS30] Measurement OK"));
   else
     Errorloop((char *)"-->[E][SPS30] Could NOT start measurement", 0);
   if (SP30_COMMS == I2C_COMMS)
   {
     if (sps30.I2C_expect() == 4)
-      Serial.println(F("-->[E][SPS30] Due to I2C buffersize only the SPS30 MASS concentration is available !!! \n"));
+      Serial.println(F("-->[E][SPS30] Due to I2C buffersize only PM values  \n"));
   }
 #endif
 }

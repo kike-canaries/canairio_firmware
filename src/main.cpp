@@ -67,8 +67,26 @@ SPS30 sps30;
 *   S E N S O R  M E T H O D S
 ******************************************************************************/
 
-#ifdef SENSIRION
+/**
+ * [DEPRECATED] sensorConfig:
+ * The next method is only if Honeywell sensor was config without autosend
+ */
+#ifdef HONEYWELL
+void sensorConfig()
+{
+  Serial.println("-->[HPMA] configuration hpma115S0 sensor..");
+  hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
+  hpma115S0.Init();
+  delay(100);
+  hpma115S0.EnableAutoSend();
+  delay(100);
+  hpma115S0.StartParticleMeasurement();
+  delay(100);
+  Serial.println("-->[HPMA] sensor configured.");
+}
+#endif
 
+#ifdef SENSIRION
 void ErrtoMess(char *mess, uint8_t r)
 {
   char buf[80];
@@ -89,23 +107,6 @@ void Errorloop(char *mess, uint8_t r)
     delay(500);
 }
 #endif
-
-/**
- * [DEPRECATED] sensorConfig:
- * The next method is only if Honeywell sensor was config without autosend
- */
-void sensorConfig()
-{
-  Serial.println("-->[HPMA] configuration hpma115S0 sensor..");
-  hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
-  hpma115S0.Init();
-  delay(100);
-  hpma115S0.EnableAutoSend();
-  delay(100);
-  hpma115S0.StartParticleMeasurement();
-  delay(100);
-  Serial.println("-->[HPMA] sensor configured.");
-}
 
 void sensorInit()
 {

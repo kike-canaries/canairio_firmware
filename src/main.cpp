@@ -260,11 +260,11 @@ void sensorLoop()
   {
     Serial.print("-->[SNGC] read > done!");
     statusOn(bit_sensor);
-    apm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
-    apm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
-    if (apm25 < 2000 && apm10 < 2000)
+    pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
+    pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
+    if (pm25 < 2000 && pm10 < 2000)
     {
-      showValues(apm25, apm10);
+      showValues(pm25, pm10);
     }
     else
       wrongDataState();
@@ -279,11 +279,11 @@ void sensorLoop()
     {
       Serial.print("-->[HPMA] read > done!");
       statusOn(bit_sensor);
-      apm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
-      apm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
-      if (apm25 < 1000 && apm10 < 1000)
+      pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
+      pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
+      if (pm25 < 1000 && pm10 < 1000)
       {
-        showValues(apm25, apm10);
+        showValues(pm25, pm10);
       }
       else
         wrongDataState();
@@ -323,12 +323,12 @@ void sensorLoop()
   Serial.print("-->[SPS30] read > done!");
   statusOn(bit_sensor);
 
-  apm25 = round(val.MassPM2);
-  apm10 = round(val.MassPM10);
+  pm25 = round(val.MassPM2);
+  pm10 = round(val.MassPM10);
 
-  if (apm25 < 1000 && apm10 < 1000)
+  if (pm25 < 1000 && pm10 < 1000)
   {
-    showValues(apm25, apm10);
+    showValues(pm25, pm10);
   }
   else
     wrongDataState();

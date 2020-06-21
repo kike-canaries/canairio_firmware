@@ -8,6 +8,8 @@ vector<unsigned int> v25; // for average
 vector<unsigned int> v10; // for average
 unsigned int apm25 = 0;   // last PM2.5 average
 unsigned int apm10 = 0;   // last PM10 average
+unsigned int pm25 = 0;
+unsigned int pm10 = 0;
 #define SENSOR_RETRY 1000 // Sensor read retry
 
 // Sensirion SPS30 sensor

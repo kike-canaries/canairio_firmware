@@ -92,15 +92,12 @@ void ErrtoMess(char *mess, uint8_t r){
   Serial.println(buf);
 }
 
-void Errorloop(char *mess, uint8_t r)
-  if (r)
-    ErrtoMess(mess, r);
-  else
-    Serial.println(mess);
+void Errorloop(char *mess, uint8_t r){
+  if (r) ErrtoMess(mess, r);
+  else Serial.println(mess);
   Serial.println(F("Program on hold"));
   //for(;;) delay(100000);
-  for (;;)
-    delay(500);
+  for(;;) delay(500);
 }
 #endif
 

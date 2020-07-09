@@ -1,13 +1,12 @@
 [![Build Status](https://travis-ci.com/kike-canaries/esp32-hpma115s0.svg?branch=master)](https://travis-ci.com/kike-canaries/esp32-hpma115s0) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO)
 
-# ESP32-HPMA115S0 (CanAirIO sensor)
-
+# CanAirIO firmware
 
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage.jpg" align="right" width="340" ></a>
 
 <a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://github.com/kike-canaries/android-hpma115s0/blob/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>
 
-Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5) using low-cost sensors and smartphones. Built with a `ESP32` module board and `HPMA115s0 Honeywell` dust sensor, interfaced with an [CanAirIO Android client app](https://github.com/kike-canaries/android-hpma115s0).
+Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5) using low-cost sensors and smartphones. Built with a `ESP32` module board and a dust sensor, interfaced with an [CanAirIO Android client app](https://github.com/kike-canaries/android-hpma115s0). The current firmware supports multiple boards and sensors, please review the **DIY guides** in our [wiki](https://github.com/kike-canaries/esp32-hpma115s0/wiki) 
 
 **Full guide**: [English](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(EN)) **|** [Spanish](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(ES))<br/>
 
@@ -121,9 +120,9 @@ Also you can use any `influxdb` instance and configure it via CanAirIO Android a
 
 ## CanAirIO device HOWTO guide
 
-With the next guides, you will be able to build a device to measure air quality by using a Honeywell HPMA115SO sensor, which measures PM 2.5 and PM 10 particles and then if you want, publish it to CanAirio cloud or a personal server using [CanAirIO App](https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter)
+You can build a device to measure air quality by using a PM2.5 or similar sensor, for then publish it to CanAirio cloud or a personal server using [CanAirIO App](https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter), more info here:
 
-[CanAirIO guide [English]](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(EN))  
-[CanAirIO guide [Spanish]](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(ES))
+[CanAirIO guide wiki](https://github.com/kike-canaries/esp32-hpma115s0/wiki)  
+
 
 <a href="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage_v2.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage_v2.jpg" height="324" ></a>

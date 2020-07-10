@@ -65,3 +65,4 @@ void wifiInit();
 void wifiStop();
 void wifiRestart();
 void wifiLoop();
+void wifiRSSI();

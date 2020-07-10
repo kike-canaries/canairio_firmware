@@ -535,11 +535,19 @@ void wifiRestart(){
 }
 
 void wifiLoop(){
+  wifiRSSI();
   if(v25.size()==0 && cfg.wifiEnable && cfg.ssid.length()>0 && !wifiCheck()) {
     wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
     influxDbInit();
     apiInit();
   }
+}
+
+void wifiRSSI(){
+  if (wifiOn)
+    rssi = WiFi.RSSI();
+  else
+    rssi = 0;
 }
 
 /******************************************************************************
@@ -639,18 +647,17 @@ void bleLoop(){
   }
 }
 
+/******************************************************************************
+*   R E S E T
+******************************************************************************/
 void resetLoop(){
-  if (wifiOn){
-        rssi = WiFi.RSSI();
-        if (resetvar == 1199) {
+  if (wifiOn){    
+        if (resetvar == 1199) {      
         resetvar = 0;
         delay(45000);   // 45 seconds, reset at 30 seconds
     }
     resetvar = resetvar + 1;
   }
-  else {
-       rssi = 0;
-       }
 }
 
 /******************************************************************************

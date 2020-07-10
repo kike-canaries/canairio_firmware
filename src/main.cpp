@@ -95,9 +95,8 @@ void ErrtoMess(char *mess, uint8_t r){
 void Errorloop(char *mess, uint8_t r){
   if (r) ErrtoMess(mess, r);
   else Serial.println(mess);
-  Serial.println(F("Program on hold"));
-  //for(;;) delay(100000);
-  for(;;) delay(500);
+  setErrorCode(ecode_sensor_timeout);
+  delay(500); // waiting for sensor..
 }
 #endif
 
@@ -267,22 +266,17 @@ void sensorLoop(){
 
 #else // SENSIRION
   delay(35); //Delay for sincronization
-  // loop to get data
   do {
     ret = sps30.GetValues(&val);
-    // data might not have been ready
     if (ret == ERR_DATALENGTH){
       if (error_cnt++ > 3) {
         ErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
-        //return(false);
         return;
       }
       delay(1000);
     }
-    // if other error
     else if (ret != ERR_OK){
       ErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
-      //return(false);
       return;
     }
   } while (ret != ERR_OK);
@@ -688,11 +682,13 @@ void bleServerInit(){
   // Create a BLE Characteristic for PM 2.5
   pCharactData = pService->createCharacteristic(
       CHARAC_DATA_UUID,
-      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY
+  );
   // Create a BLE Characteristic for Sensor mode: STATIC/MOVIL
   pCharactConfig = pService->createCharacteristic(
       CHARAC_CONFIG_UUID,
-      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
+  );
   // Create a Data Descriptor (for notifications)
   pCharactData->addDescriptor(new BLE2902());
   // Saved current sensor data

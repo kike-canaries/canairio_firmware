@@ -19,7 +19,7 @@ struct sps_values val;
 // Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();
 float humi = 0.0;              // % Relative humidity 
-float temp = 0.0;              // Temperature (C)
+float temp = 0.0;              // Temperature (°C)
 
 // Battery level
 unsigned int chargeLevel = 0;

@@ -44,8 +44,6 @@ public:
 
   void displayBottomLine(String msg);
 
-  void displayEndLine(String msg);
-
   void displayEmoticonLabel(int numsmile, String msg);
 
   void displayBigEmoticon(String msg);
@@ -54,15 +52,13 @@ public:
 
   void displaySensorAverage(int average);
 
-  void displaySensorData(int pm25, int pm10, int chargeLevel, float humi, float temp);
+  void displaySensorData(int pm25, int pm10, int chargeLevel, float humi, float temp, int rssi);
 
   void displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn);
 
   void displayLiveIcon();
   
   void displayPrefSaveIcon(bool enable);
-
-  //void displaySensorData(int pm25, int pm10, float humi, float temp);
 
   void updateError(unsigned int error);
 

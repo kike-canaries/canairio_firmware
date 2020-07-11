@@ -91,7 +91,7 @@ void wrongDataState(){
   Serial.print("-->[E][HPMA] !wrong data!");
   setErrorCode(ecode_sensor_read_fail);
   gui.displaySensorAverage(apm25);
-  gui.displaySensorData(0,0,chargeLevel,0.0,0.0);
+  gui.displaySensorData(0,0,chargeLevel,0.0,0.0,0);
   hpmaSerial.end();
   statusOff(bit_sensor);
   sensorInit();
@@ -134,7 +134,7 @@ char getLoaderChar(){
 void showValues(int pm25, int pm10)
 {
   gui.displaySensorAverage(apm25); // it was calculated on bleLoop()
-  gui.displaySensorData(pm25, pm10, chargeLevel, humi, temp);
+  gui.displaySensorData(pm25, pm10, chargeLevel, humi, temp, rssi);
   gui.displayLiveIcon();
   saveDataForAverage(pm25, pm10);
 }
@@ -535,11 +535,19 @@ void wifiRestart(){
 }
 
 void wifiLoop(){
+  wifiRSSI();
   if(v25.size()==0 && cfg.wifiEnable && cfg.ssid.length()>0 && !wifiCheck()) {
     wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
     influxDbInit();
     apiInit();
   }
+}
+
+void wifiRSSI(){
+  if (wifiOn)
+    rssi = WiFi.RSSI();
+  else
+    rssi = 0;
 }
 
 /******************************************************************************
@@ -639,6 +647,9 @@ void bleLoop(){
   }
 }
 
+/******************************************************************************
+*   R E S E T
+******************************************************************************/
 void resetLoop(){
   if (wifiOn){    
         if (resetvar == 1199) {      

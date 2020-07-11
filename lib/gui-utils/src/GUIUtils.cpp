@@ -106,17 +106,6 @@ void GUIUtils::displayBottomLine(String msg)
 #endif 
 }
 
-void GUIUtils::displayEndLine(String msg)
-{
-  u8g2.setFont(u8g2_font_5x7_tf);
-#ifdef TTGO_TQ
-  u8g2.setCursor(81, 14);
-#else
-  u8g2.setCursor(0, 41);
-#endif
-  u8g2.print(msg.c_str());
-}
-
 void GUIUtils::displayEmoticonLabel(int cursor, String msg)
 {
   u8g2.setFont(u8g2_font_unifont_t_emoticons);
@@ -265,7 +254,7 @@ void GUIUtils::displaySensorAverage(int average)
 }
 
 // TODO: separate this function, format/display
-void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi, float temp)
+void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi, float temp, int rssi)
 {
   if (mcount < 65535)
     mcount++;
@@ -309,16 +298,29 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
   Serial.print(output);
   Serial.print(" Battery:");
   Serial.print(chargeLevel);
-  Serial.println("%");
+  Serial.print("%");
 #else
   Serial.print(" PM2.5:");
-  Serial.println(output);
+  Serial.print(output);
 #ifdef EMOTICONS
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.setCursor(51, 0);
   sprintf(output, "%03d", pm25);
   u8g2.print(output);
 #endif
+  u8g2.setFont(u8g2_font_6x12_tf);
+  u8g2.setCursor(20, 39);
+    if (rssi == 0) {
+      u8g2.print("   ");
+      Serial.println("");
+    }
+    else{
+      Serial.print(" RSSI:");
+      Serial.println(rssi);
+      rssi = abs (rssi); 
+      sprintf(output, "%02d", rssi);
+      u8g2.print(rssi);       
+    }
 #endif
 }
 

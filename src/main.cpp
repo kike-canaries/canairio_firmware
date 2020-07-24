@@ -417,9 +417,6 @@ void influxDbAddTags(char* tags) {
 }
 
 bool influxDbWrite() {
-  if(apm25 == 0 || apm10 == 0) {
-    return false;
-  }
   char tags[64];
   influxDbAddTags(tags);
   char fields[256];

@@ -8,8 +8,6 @@
 
 Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5) using low-cost sensors and smartphones. Built with a `ESP32` module board and a dust sensor, interfaced with an [CanAirIO Android client app](https://github.com/kike-canaries/android-hpma115s0). The current firmware supports multiple boards and sensors, please review the **DIY guides** in our [wiki](https://github.com/kike-canaries/esp32-hpma115s0/wiki) 
 
-**Full guide**: [English](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(EN)) **|** [Spanish](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(ES))<br/>
-
 ## Installation
 
 ### Linux and MacOSx
@@ -95,7 +93,7 @@ pio run --target upload
 
 <a href="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/app_settings_tools.png" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/app_settings_tools.png" align="right" width="256" ></a>
 
-You can use it from [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0), you can connect to your device via Bluetooth and record mobile captures and save tracks on your sdcard. Also you can share these tracks to CanAirIO network. If you want set your device for static station, please configure Wifi and CanAirIO API or a custom InfluxDb server, please see details below. Also, in our [guide](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Official-Guide-(EN)) you have more information of how using the Android app.
+You can use it from [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0), you can connect to your device via Bluetooth and record mobile captures and save tracks on your sdcard. Also you can share these tracks to CanAirIO network. If you want set your device for static station, please configure Wifi and CanAirIO API or a custom InfluxDb server, please see details below. Also, in our [guide](https://github.com/kike-canaries/esp32-hpma115s0/wiki) you have more information of how using the Android app.
 
 ### CanAirIO API configuration
 

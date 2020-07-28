@@ -1,10 +1,10 @@
-[![Build Status](https://travis-ci.com/kike-canaries/esp32-hpma115s0.svg?branch=master)](https://travis-ci.com/kike-canaries/esp32-hpma115s0) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO)
-
+[![Build Status](https://travis-ci.com/kike-canaries/esp32-hpma115s0.svg?branch=master)](https://travis-ci.com/kike-canaries/esp32-hpma115s0) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO) 
+ 
 # CanAirIO firmware
 
 <a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage.jpg" align="right" width="340" ></a>
 
-<a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://github.com/kike-canaries/android-hpma115s0/blob/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>
+<a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/android-hpma115s0/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>
 
 Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5) using low-cost sensors and smartphones. Built with a `ESP32` module board and a dust sensor, interfaced with an [CanAirIO Android client app](https://github.com/kike-canaries/android-hpma115s0). The current firmware supports multiple boards and sensors, please review the **DIY guides** in our [wiki](https://github.com/kike-canaries/esp32-hpma115s0/wiki) 
 
@@ -87,23 +87,54 @@ pio lib update
 pio run --target upload
 ```
 
-## CanAirIO Firmware
+# Android CanAirIO App
 
-<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/influxdb00.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/influxdb00.jpg" width="512" ></a>
+For now you need any Android device with Bluetooth 4 or above. You can download the CanAirIO app from [GooglePlay](https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter), keep in mind that it is in continuos development then please any feedback, report errors, or any thing please let us knowed it via our [contact form](http://canair.io/#three) or on our [Telegram chat](https://t.me/canairio)
 
-<a href="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/app_settings_tools.png" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/app_settings_tools.png" align="right" width="256" ></a>
+You have **two configuration options or modes** of your CanAirIO device from the app:
 
-You can use it from [CanAirIO Android app](https://github.com/kike-canaries/android-hpma115s0), you can connect to your device via Bluetooth and record mobile captures and save tracks on your sdcard. Also you can share these tracks to CanAirIO network. If you want set your device for static station, please configure Wifi and CanAirIO API or a custom InfluxDb server, please see details below. Also, in our [guide](https://github.com/kike-canaries/esp32-hpma115s0/wiki) you have more information of how using the Android app.
+## Mobile Station Mode
 
-### CanAirIO API configuration
+For record tracks on your device (Sdcard) or publish it to the cloud (share), please follow the next steps:
 
-Please connect your device via Bluetooth and in the settings section configure parameters like `Sample Time Interval` and `Station Name`, these stuff is for configure our API cloud or a custom influxDb instance. You can get a username and password of our API on the next [link](http://canairiofront.herokuapp.com/register) and view captures [here](http://gblabs.co:8888/sources/1/dashboards/1).
+### Connection to device
 
-### [Optional] Custom InfluxDb server
+<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/device_connection.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/device_connection.jpg" width="512" align="center" ></a>
 
-Also you can use any `influxdb` instance and configure it via CanAirIO Android app or via nRF connect app. Please see details in [Firmware-Protocol](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Firmware-Protocol) wiki page.
+### Recording track and share
+
+<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/app_track_record.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/app_track_record.jpg" width="512" align="center" ></a>
+
+**NOTE**: Also all recorded tracks will be saved in the `/sdcard/canairio/` directory on `json` format.
 
 ---
+
+## Static Station Mode
+
+<img width="640" src="screenshots/influxdb_grafana.jpg">
+
+Also, you can connect your CanAirIO device to the WiFi and leave this like a fixed station. In this mode you only need the Android app only for initial settings, after that the device could be publish data without the phone. For this you need configure it in `settings` section:
+
+### Settings
+
+<img align="right" width="400" src="screenshots/canairio_app_settings.png">
+
+
+- **Station Name**: for example: `PM25_Berlin_Pankow`
+- **Wifi Name and Password**:
+  - Your Wifi network credentials.
+  - Save the credentials with the switch.
+- **InfluxDB Cloud**: add the next values,
+  - Database name: `canairio`  
+  - Hostname: `influxdb.canair.io`
+  - Save the settings with the switch.
+
+The data will be configured and showed in [CanAirIO Grafana Server](https://bit.ly/3bLpz0H).
+
+### Settings Tools
+
+- Reboot device: Only for restart your CanAirIO device
+- Factory Reset: For set all settings to default on your CanAirIO device
 
 ## TODO
 

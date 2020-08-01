@@ -12,6 +12,7 @@ float apm25f = 0.0;            // last PM2.5 float average
 unsigned int pm25 = 0;
 unsigned int pm10 = 0;
 float pm25f = 0.0;
+bool WrongSerialData = false;
 #define SENSOR_RETRY  1000     // Sensor read retry
 
 // Sensirion SPS30 sensor

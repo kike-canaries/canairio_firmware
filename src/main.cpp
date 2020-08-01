@@ -104,13 +104,25 @@ void sensorInit(){
 #ifdef HONEYWELL
   Serial.println("-->[HPMA] starting hpma115S0 sensor..");
   delay(100);
+  #ifndef TTGO_TQ
   hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
+  #else
+  if(WrongSerialData == false){
+    hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
+  }
   delay(100);
+  #endif
 #elif PANASONIC
   Serial.println("-->[SN] starting SN-GCJA5 sensor..");
   delay(100);
+  #ifndef TTGO_TQ
   hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
+  #else
+  if(WrongSerialData == false){
+    hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
+  }
   delay(100);
+  #endif
 #else //SENSIRION
 // Begin communication channel
   Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
@@ -145,14 +157,19 @@ void wrongDataState(){
   gui.displaySensorData(0,0,chargeLevel,0.0,0.0,0);
 #ifdef HONEYWELL
   Serial.print("-->[E][HPMA] !wrong data!");
-  hpmaSerial.end();
+  #ifndef TTGO_TQ
+    hpmaSerial.end();
+  #endif
 #elif PANASONIC
   Serial.print("-->[E][SNGC] !wrong data!");
-  hpmaSerial.end();
+  #ifndef TTGO_TQ
+    hpmaSerial.end();
+  #endif
 #else
   Serial.print("-->[E][SPS30] !wrong data!");
 #endif
   statusOff(bit_sensor);
+  WrongSerialData = true;
   sensorInit();
   delay(500);
 }

@@ -112,19 +112,23 @@ void sensorInit(){
   hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
   delay(100);
 #else //SENSIRION
+// Begin communication channel
   Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
-  if (sps30.begin(SP30_COMMS) == false){ // Begin communication channel;
+  if (sps30.begin(SP30_COMMS) == false){
     Errorloop((char *)"-->[E][SPS30] could not initialize communication channel.", 0);
   }
-  if (sps30.probe() == false){ // check for SPS30 connection  
+  // check for SPS30 connection
+  if (sps30.probe() == false){
     Errorloop((char *)"-->[E][SPS30] could not probe / connect with SPS30.", 0);
   }
   else
     Serial.println(F("-->[SPS30] Detected SPS30."));
-  if (sps30.reset() == false){ // reset SPS30 connection 
+  // reset SPS30 connection
+  if (sps30.reset() == false){
     Errorloop((char *)"-->[E][SPS30] could not reset.", 0);
   }
-  if (sps30.start() == true) // start measurement
+  // start measurement
+  if (sps30.start() == true)
     Serial.println(F("-->[SPS30] Measurement OK"));
   else
     Errorloop((char *)"-->[E][SPS30] Could NOT start measurement", 0);
@@ -157,27 +161,47 @@ void wrongDataState(){
  * Average methods
  **/
 
+#ifndef SENSIRION
 void saveDataForAverage(unsigned int pm25, unsigned int pm10){
   v25.push_back(pm25);
   v10.push_back(pm10);
 }
+#else
+void saveDataForAverage(unsigned int pm25, unsigned int pm10, float pm25f){
+  v25.push_back(pm25);
+  v10.push_back(pm10);
+  v25f.push_back(pm25f);
+}
+#endif
 
 unsigned int getPM25Average(){
-  unsigned int pm25_average = accumulate( v25.begin(), v25.end(), 0.0)/v25.size();
+  unsigned int pm25_average = round(accumulate(v25.begin(), v25.end(), 0.0) / v25.size());
   v25.clear();
   return pm25_average;
 }
 
 unsigned int getPM10Average(){
-  unsigned int pm10_average = accumulate( v10.begin(), v10.end(), 0.0)/v10.size();
+  unsigned int pm10_average = round(accumulate(v10.begin(), v10.end(), 0.0) / v10.size());
   v10.clear();
   return pm10_average;
 }
+
+#ifdef SENSIRION
+float getPM25fAverage(){
+  float pm25f_average = accumulate(v25f.begin(), v25f.end(), 0.0) / v25f.size();
+  v25f.clear();
+  cfg.spd = pm25f_average;
+  return pm25f_average;
+}
+#endif
 
 void averageLoop(){
   if (v25.size() >= cfg.stime){
     apm25 = getPM25Average();  // global var for display
     apm10 = getPM10Average();
+  #ifdef SENSIRION
+    apm25f = getPM25fAverage();
+  #endif
   }
 }
 
@@ -186,12 +210,21 @@ char getLoaderChar(){
   return loader[random(0,4)];
 }
 
+#ifndef SENSIRION
 void showValues(int pm25, int pm10){
   gui.displaySensorAverage(apm25); // it was calculated on bleLoop()
   gui.displaySensorData(pm25, pm10, chargeLevel, humi, temp, rssi);
   gui.displayLiveIcon();
   saveDataForAverage(pm25, pm10);
 }
+#else
+void showValues(int pm25, int pm10, float pm25f){
+  gui.displaySensorAverage(apm25); // it was calculated on bleLoop()
+  gui.displaySensorData(pm25, pm10, chargeLevel, humi, temp, rssi);
+  gui.displayLiveIcon();
+  saveDataForAverage(pm25, pm10, pm25f);
+}
+#endif
 
 /***
  * PM2.5 and PM10 read and visualization
@@ -286,9 +319,10 @@ void sensorLoop(){
 
   pm25 = round(val.MassPM2);
   pm10 = round(val.MassPM10);
+  pm25f = val.MassPM2;
 
   if (pm25 < 1000 && pm10 < 1000){
-    showValues(pm25, pm10);
+    showValues(pm25, pm10, pm25f);
   }
   else
     wrongDataState();
@@ -334,25 +368,20 @@ String getSensorData(){
 void getHumidityRead() {
   humi = am2320.readHumidity();
   temp = am2320.readTemperature();
-  if (isnan(humi))
+  if (isnan(humi)){
     humi = 0.0;
+    am2320.begin();
+  }
   if (isnan(temp))
     temp = 0.0;
   Serial.println("-->[AM2320] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
 }
 
-void humidityLoop() {
-  #ifdef ESP32Sboard
-    digitalWrite (LED,LOW);
-  #endif
-  if (v25.size() == 0) {
+void humidityLoop(){
+  if (v25.size() == 0){
     getHumidityRead();
-  #ifdef ESP32Sboard
-    digitalWrite (LED,HIGH);
-  #endif
   }
 }
-
 
 /******************************************************************************
 *   B A T T E R Y   C H A R G E   S T A T U S   M E T H O D S
@@ -504,9 +533,6 @@ void influxDbAddTags(char* tags) {
 }
 
 bool influxDbWrite() {
-  if(apm25 == 0 || apm10 == 0) {
-    return false;
-  }
   char tags[64];
   influxDbAddTags(tags);
   char fields[256];
@@ -737,6 +763,7 @@ void bleLoop(){
 /******************************************************************************
 *   R E S E T
 ******************************************************************************/
+
 void resetLoop(){
   if (wifiOn){    
         if (resetvar == 1199) {      
@@ -769,7 +796,7 @@ void enableWatchdog(){
   timerAlarmEnable(timer);                         // enable interrupt
 }
 
-void setup() {
+void setup(){
 #ifdef TTGO_TQ
   pinMode(IP5306_2, INPUT);
   pinMode(IP5306_3, INPUT);
@@ -782,6 +809,7 @@ void setup() {
   cfg.init("canairio");
   Serial.println("\n== INIT SETUP ==\n");
   Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
+  enableWatchdog();  // enable timer for reboot in any loop blocker
   gui.welcomeAddMessage("Sensors test..");
   sensorInit();
   am2320.begin();
@@ -795,7 +823,6 @@ void setup() {
   apiInit();
   pinMode(LED,OUTPUT);
   gui.welcomeAddMessage("==SETUP READY==");
-  enableWatchdog();  // enable timer for reboot in any loop blocker
   delay(500);
 }
 

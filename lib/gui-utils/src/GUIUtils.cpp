@@ -81,7 +81,7 @@ void GUIUtils::displayCenterBig(String msg)
   u8g2.print(msg.c_str());
 #else
 #ifdef TTGO_TQ
-  u8g2.setCursor(50, 01);
+  u8g2.setCursor(52, 00);
   u8g2.setFont(u8g2_font_9x18B_tf);
   u8g2.print(msg.c_str());
 #else
@@ -120,7 +120,7 @@ void GUIUtils::displayBigEmoticon(String msg)
 #ifdef EMOTICONS
 #ifdef TTGO_TQ
   u8g2.setFont(u8g2_font_6x12_tf);
-  u8g2.setCursor(40, 15);
+  u8g2.setCursor(40, 14);
   u8g2.print(msg);
 #else
   u8g2.setFont(u8g2_font_5x7_tf); //5x7 5x7 6x10 4x6 5x7
@@ -302,14 +302,25 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
 #else
   Serial.print(" PM2.5:");
   Serial.print(output);
+#endif  
 #ifdef EMOTICONS
+ #ifndef TTGO_TQ
   u8g2.setFont(u8g2_font_4x6_tf);
   u8g2.setCursor(51, 0);
   sprintf(output, "%03d", pm25);
   u8g2.print(output);
+ #endif
 #endif
   u8g2.setFont(u8g2_font_6x12_tf);
-  u8g2.setCursor(20, 39);
+  #ifndef TTGO_TQ
+    u8g2.setCursor(20, 39);
+  #else
+    #ifdef EMOTICONS
+      u8g2.setCursor(40, 23);   // valor RSSI
+    #else
+      u8g2.setCursor(100, 13);   // valor RSSI
+    #endif
+  #endif
     if (rssi == 0) {
       u8g2.print("   ");
       Serial.println("");
@@ -321,7 +332,6 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
       sprintf(output, "%02d", rssi);
       u8g2.print(rssi);       
     }
-#endif
 }
 
 void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn)

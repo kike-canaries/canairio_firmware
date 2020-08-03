@@ -233,6 +233,7 @@ void showValues(int pm25, int pm10){
   gui.displaySensorData(pm25, pm10, chargeLevel, humi, temp, rssi);
   gui.displayLiveIcon();
   saveDataForAverage(pm25, pm10);
+  WrongSerialData = false;
 }
 #else
 void showValues(int pm25, int pm10, float pm25f){
@@ -240,6 +241,7 @@ void showValues(int pm25, int pm10, float pm25f){
   gui.displaySensorData(pm25, pm10, chargeLevel, humi, temp, rssi);
   gui.displayLiveIcon();
   saveDataForAverage(pm25, pm10, pm25f);
+  WrongSerialData = false;
 }
 #endif
 
@@ -355,9 +357,9 @@ void statusLoop(){
   }
   gui.updateError(getErrorCode());
   gui.displayStatus(wifiOn,true,deviceConnected,dataSendToggle);
-  if(triggerSaveIcon++<3)gui.displayPrefSaveIcon(true);
+  if(triggerSaveIcon++<3) gui.displayPrefSaveIcon(true);
   else gui.displayPrefSaveIcon(false);
-  if(dataSendToggle)dataSendToggle=false;
+  if(dataSendToggle) dataSendToggle=false;
 }
 
 String getNotificationData(){
@@ -489,7 +491,7 @@ void apiInit(){
 }
 
 void apiLoop() {
-  if (v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0) {
+  if (v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0 && WrongSerialData == 0) {
     Serial.print("-->[API] writing to ");
     Serial.print(""+String(api.ip)+"..");
     bool status = api.write(0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
@@ -558,7 +560,7 @@ bool influxDbWrite() {
 }
 
 void influxDbLoop() {
-  if(v25.size()==0 && wifiOn && cfg.isIfxEnable() && influxDbIsConfigured()){
+  if(v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0 && WrongSerialData == 0){
     int ifx_retry = 0;
     Serial.print("-->[INFLUXDB] writing to ");
     Serial.print("" + cfg.ifxip + "..");

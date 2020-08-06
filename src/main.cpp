@@ -460,7 +460,7 @@ void apiInit(){
 }
 
 void apiLoop() {
-  if (v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0) {
+  if (v25.size()==0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0) {
     Serial.print("-->[API] writing to ");
     Serial.print(""+String(api.ip)+"..");
     bool status = api.write(0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
@@ -529,7 +529,7 @@ bool influxDbWrite() {
 }
 
 void influxDbLoop() {
-  if(v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0){
+  if(v25.size()==0 && wifiOn && cfg.isIfxEnable() && influxDbIsConfigured() && resetvar != 0){
     int ifx_retry = 0;
     Serial.print("-->[INFLUXDB] writing to ");
     Serial.print("" + cfg.ifxip + "..");

@@ -8,10 +8,8 @@ vector<unsigned int> v10;      // for average
 vector<float> v25f;            // for average
 unsigned int apm25 = 0;        // last PM2.5 average
 unsigned int apm10 = 0;        // last PM10 average
-float apm25f = 0.0;            // last PM2.5 float average
 unsigned int pm25 = 0;
 unsigned int pm10 = 0;
-float pm25f = 0.0;
 bool WrongSerialData = false;
 #define SENSOR_RETRY  1000     // Sensor read retry
 

@@ -178,18 +178,10 @@ void wrongDataState(){
  * Average methods
  **/
 
-#ifndef SENSIRION
 void saveDataForAverage(unsigned int pm25, unsigned int pm10){
   v25.push_back(pm25);
   v10.push_back(pm10);
 }
-#else
-void saveDataForAverage(unsigned int pm25, unsigned int pm10, float pm25f){
-  v25.push_back(pm25);
-  v10.push_back(pm10);
-  v25f.push_back(pm25f);
-}
-#endif
 
 unsigned int getPM25Average(){
   unsigned int pm25_average = round(accumulate(v25.begin(), v25.end(), 0.0) / v25.size());
@@ -203,22 +195,10 @@ unsigned int getPM10Average(){
   return pm10_average;
 }
 
-#ifdef SENSIRION
-float getPM25fAverage(){
-  float pm25f_average = accumulate(v25f.begin(), v25f.end(), 0.0) / v25f.size();
-  v25f.clear();
-  cfg.spd = pm25f_average;
-  return pm25f_average;
-}
-#endif
-
 void averageLoop(){
   if (v25.size() >= cfg.stime){
     apm25 = getPM25Average();  // global var for display
     apm10 = getPM10Average();
-  #ifdef SENSIRION
-    apm25f = getPM25fAverage();
-  #endif
   }
 }
 
@@ -227,7 +207,6 @@ char getLoaderChar(){
   return loader[random(0,4)];
 }
 
-#ifndef SENSIRION
 void showValues(int pm25, int pm10){
   gui.displaySensorAverage(apm25); // it was calculated on bleLoop()
   gui.displaySensorData(pm25, pm10, chargeLevel, humi, temp, rssi);
@@ -235,15 +214,6 @@ void showValues(int pm25, int pm10){
   saveDataForAverage(pm25, pm10);
   WrongSerialData = false;
 }
-#else
-void showValues(int pm25, int pm10, float pm25f){
-  gui.displaySensorAverage(apm25); // it was calculated on bleLoop()
-  gui.displaySensorData(pm25, pm10, chargeLevel, humi, temp, rssi);
-  gui.displayLiveIcon();
-  saveDataForAverage(pm25, pm10, pm25f);
-  WrongSerialData = false;
-}
-#endif
 
 /***
  * PM2.5 and PM10 read and visualization
@@ -338,10 +308,9 @@ void sensorLoop(){
 
   pm25 = round(val.MassPM2);
   pm10 = round(val.MassPM10);
-  pm25f = val.MassPM2;
 
   if (pm25 < 1000 && pm10 < 1000){
-    showValues(pm25, pm10, pm25f);
+    showValues(pm25, pm10);
   }
   else
     wrongDataState();
@@ -491,7 +460,6 @@ void apiInit(){
 }
 
 void apiLoop() {
-  //if (v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0 && WrongSerialData == 0) {
   if (v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0) {
     Serial.print("-->[API] writing to ");
     Serial.print(""+String(api.ip)+"..");
@@ -561,7 +529,6 @@ bool influxDbWrite() {
 }
 
 void influxDbLoop() {
-  //if(v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0 && WrongSerialData == 0){
   if(v25.size() == 0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0){
     int ifx_retry = 0;
     Serial.print("-->[INFLUXDB] writing to ");

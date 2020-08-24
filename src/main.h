@@ -1,4 +1,3 @@
-
 using namespace std;
 
 HardwareSerial hpmaSerial(1);
@@ -6,14 +5,23 @@ HPMA115S0 hpma115S0(hpmaSerial);
 
 vector<unsigned int> v25;      // for average
 vector<unsigned int> v10;      // for average
+vector<float> v25f;            // for average
 unsigned int apm25 = 0;        // last PM2.5 average
 unsigned int apm10 = 0;        // last PM10 average
+unsigned int pm25 = 0;
+unsigned int pm10 = 0;
+bool WrongSerialData = false;
 #define SENSOR_RETRY  1000     // Sensor read retry
+
+// Sensirion SPS30 sensor
+#define SP30_COMMS SERIALPORT2 // UART OR I2C
+uint8_t ret, error_cnt = 0;
+struct sps_values val;
 
 // Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();
 float humi = 0.0;              // % Relative humidity 
-float temp = 0.0;              // Temperature (C)
+float temp = 0.0;              // Temperature (°C)
 
 // Battery level
 unsigned int chargeLevel = 0;

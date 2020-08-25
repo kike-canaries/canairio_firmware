@@ -695,7 +695,7 @@ class MyConfigCallbacks: public BLECharacteristicCallbacks {
 
 void bleServerInit(){
   // Create the BLE Device
-  BLEDevice::init("ESP32_HPMA115S0");
+  BLEDevice::init("CanAirIO_ESP32");
   // Create the BLE Server
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());

@@ -598,6 +598,7 @@ bool wifiCheck(){
 void wifiConnect(const char* ssid, const char* pass) {
   Serial.print("-->[WIFI] Connecting to "); Serial.print(ssid);
   WiFi.begin(ssid, pass);
+  WiFi.setHostname("CanAirIO");
   int wifi_retry = 0;
   while (WiFi.status() != WL_CONNECTED && wifi_retry++ < WIFI_RETRY_CONNECTION) {
     Serial.print(".");

@@ -5,7 +5,7 @@ DATE=`date +%Y%m%d`
 OUTDIR=".pio/build"
 RELDIR="releases"
 BINDIR="binaries"
-DEFAULT="d1mini"
+DEFAULT="TTGO_T7"
 INSDIR=$RELDIR/installer/canairio_installer
 
 showHelp () {
@@ -17,11 +17,11 @@ showHelp () {
   echo "Usage: ./build [board|all|installer|help|print]"
   echo ""
   echo "example: ./build all"
-  echo "example: ./build d1mini"
+  echo "example: ./build TTGO_T7"
   echo "example: ./build installer"
   echo ""
   echo "Supported boards: "
-  echo "d1mini, Wemos, Heltec, TTGO_TQ"
+  echo "TTGO_T7_OTA, TTGO_T7, TTGO_T7_LEGACY, WEMOSOLED, HELTEC, TTGO_TQ"
   echo ""
   echo "Build installer option will make a installer package for Linux"
   echo "with OTA support and USB support"
@@ -134,9 +134,11 @@ else
 
     all)
       clean
-      build d1mini
-      build wemos
-      build heltec
+      build TTGO_T7_OTA
+      build TTGO_T7
+      build TTGO_T7_LEGACY
+      build WEMOSOLED
+      build HELTEC
       build TTGO_TQ
       printOutput
       ;;

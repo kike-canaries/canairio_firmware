@@ -395,3 +395,8 @@ void GUIUtils::pageEnd()
 {
   u8g2.nextPage();
 }
+
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_GUIHANDLER)
+GUIUtils gui;
+#endif
+

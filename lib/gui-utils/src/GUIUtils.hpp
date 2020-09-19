@@ -68,4 +68,8 @@ public:
 
 };
 
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_GUIHANDLER)
+extern GUIUtils gui;
+#endif
+
 #endif

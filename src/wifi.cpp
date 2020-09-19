@@ -81,6 +81,8 @@ void influxDbLoop() {
                 wifiRestart();
             } else {
                 Serial.println("done. [" + String(influx.getResponse()) + "]");
+                statusOn(bit_cloud);
+                dataSendToggle = true;
                 showDataIcon(true);
                 showUptime(ifxdbwcount);
                 delay(200);  // --> because the ESP go to then to light sleep, not remove it!
@@ -149,27 +151,29 @@ void apiLoop() {
 *   W I F I   M E T H O D S
 ******************************************************************************/
 
-class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
-    void onStart(){
-        // gui.showWelcome();
-        // gui.welcomeAddMessage("Upgrading..");
-    };
-    void onProgress(unsigned int progress, unsigned int total){
-        // gui.showProgress(progress,total);
-    };
-    void onEnd(){
-        // gui.welcomeAddMessage("");
-        // gui.welcomeAddMessage("success!");    delay(1000);
-        // gui.welcomeAddMessage("rebooting.."); delay(500);
-    };
-    void onError(){
-        // gui.welcomeAddMessage("");
-        // gui.welcomeAddMessage("error, try again!"); delay(2000);
-    };
+class MyOTAHandlerCallbacks: public OTAHandlerCallbacks{
+  void onStart(){
+    gui.showWelcome();
+    gui.welcomeAddMessage("Upgrading..");
+  };
+  void onProgress(unsigned int progress, unsigned int total){
+    gui.showProgress(progress,total);
+  };
+  void onEnd(){
+    gui.welcomeAddMessage("");
+    gui.welcomeAddMessage("success!");    delay(1000);
+    gui.welcomeAddMessage("rebooting.."); delay(500);
+  }
+  void onError(){
+    gui.welcomeAddMessage("");
+    gui.welcomeAddMessage("error, try again!"); delay(2000);
+  }
 };
 
 void otaLoop() {
+    // timerAlarmDisable(timer);  // disable interrupt
     if (wifiOn) ota.loop();
+    // timerAlarmEnable(timer);  // enable interrupt
 }
 
 void otaInit() {
@@ -179,6 +183,11 @@ void otaInit() {
 
 bool wifiCheck() {
     wifiOn = WiFi.isConnected();
+    if(wifiOn)statusOn(bit_wan);  // TODO: We need validate internet connection
+    else {
+        statusOff(bit_cloud);
+        statusOff(bit_wan);
+    }
     showWifiIcon(wifiOn);
     return wifiOn;
 }
@@ -200,6 +209,7 @@ void wifiConnect(const char* ssid, const char* pass) {
         otaInit();
     } else {
         Serial.println("fail!\n-->[E][WIFI] disconnected!");
+        setErrorCode(ecode_wifi_fail);
     }
 }
 
@@ -224,10 +234,18 @@ void wifiRestart() {
     wifiInit();
 }
 
+void wifiRSSI(){
+  if (wifiOn)
+    rssi = WiFi.RSSI();
+  else
+    rssi = 0;
+}
+
 void wifiLoop() {
     static uint_least64_t wifiTimeStamp = 0;
     if (millis() - wifiTimeStamp > 5000  && cfg.wifiEnable && cfg.ssid.length() > 0 && !wifiCheck()) {
         wifiTimeStamp = millis();
+        wifiRSSI();
         wifiInit();
         influxDbInit();
         apiInit();

@@ -235,3 +235,8 @@ void ConfigApp::reboot(){
   delay(100);
   ESP.restart();
 }
+
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_CFGHANDLER)
+ConfigApp cfg;
+#endif
+

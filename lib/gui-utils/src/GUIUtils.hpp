@@ -7,7 +7,7 @@ class GUIUtils
 {
 private:
 
-  bool toggleLive;
+ bool toggleLive;
 
 public:
 
@@ -18,6 +18,7 @@ public:
   int lastDrawedLine = 0;
 
   unsigned int inthumi = 0;
+  
   unsigned int inttemp = 0;
 
   unsigned int cursor = 0;
@@ -32,7 +33,7 @@ public:
   int VCODE = 0;
 #endif
 
-  void displayInit(U8G2 &u8g2);
+  void displayInit();
 
   void showWelcome();
 

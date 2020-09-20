@@ -1,8 +1,8 @@
 /**
  * @file main.cpp
  * @author Antonio Vanegas @hpsaturn
- * @date June 2018 - 2019
- * @brief HPMA115S0 sensor on ESP32 with bluetooth GATT notify server
+ * @date June 2018 - 2020
+ * @brief Particle meter sensor on ESP32 with bluetooth GATT notify server
  * @license GPL3
  */
 
@@ -10,9 +10,10 @@
 #include <ConfigApp.hpp>
 #include <Sensors.hpp>
 #include <GUIUtils.hpp>
-#include <watchdog.hpp>
 #include <bluetooth.hpp>
 #include <wifi.hpp>
+#include <watchdog.hpp>
+#include <battery.hpp>
 
 // void showValues(int pm25, int pm10){
 //   gui.displaySensorAverage(apm25); // it was calculated on bleLoop()
@@ -42,20 +43,14 @@
 // }
 
 void setup(){
-#ifdef TTGO_TQ
-  pinMode(IP5306_2, INPUT);
-  pinMode(IP5306_3, INPUT);
-#endif
-  pinMode(21, INPUT_PULLUP);
-  pinMode(22, INPUT_PULLUP);
   Serial.begin(115200);
   gui.displayInit();
   gui.showWelcome();
   cfg.init("canairio");
   Serial.println("\n== INIT SETUP ==\n");
   Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
-  watchdogInit();  // enable timer for reboot in any loop blocker
   gui.welcomeAddMessage("Sensors test..");
+  batteryInit();
   sensors.init();
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
@@ -67,13 +62,14 @@ void setup(){
   apiInit();
   pinMode(LED,OUTPUT);
   gui.welcomeAddMessage("==SETUP READY==");
+  watchdogInit();  // enable timer for reboot in any loop blocker
   delay(500);
 }
 
 void loop(){
   gui.pageStart();
   sensors.loop();    // read sensor data and showed it
-  // batteryloop();   // battery charge status
+  batteryloop();   // battery charge status
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
   apiLoop();       // CanAir.io API publication

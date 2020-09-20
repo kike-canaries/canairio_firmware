@@ -12,7 +12,7 @@ bool oldDeviceConnected = false;
 
 String getNotificationData() {
     StaticJsonDocument<40> doc;
-    doc["P25"] = getPM25();  // notification capacity is reduced, only main value
+    doc["P25"] = sensors.getPM25();  // notification capacity is reduced, only main value
     String json;
     serializeJson(doc, json);
     return json;
@@ -20,8 +20,8 @@ String getNotificationData() {
 
 String getSensorData() {
     StaticJsonDocument<150> doc;
-    doc["P25"] = getPM25();
-    doc["P10"] = getPM10();
+    doc["P25"] = sensors.getPM25();
+    doc["P10"] = sensors.getPM10();
     doc["lat"] = cfg.lat;
     doc["lon"] = cfg.lon;
     doc["alt"] = cfg.alt;
@@ -38,13 +38,13 @@ String getSensorData() {
 class MyServerCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
         deviceConnected = true;
-        showBTIcon(true);
+        // showBTIcon(true);
         Serial.println("-->[BLE] onConnect");
     };
 
     void onDisconnect(BLEServer* pServer) {
         deviceConnected = false;
-        showBTIcon(false);
+        // showBTIcon(false);
         Serial.println("-->[BLE] onDisconnect");
     };
 };  // BLEServerCallbacks
@@ -72,7 +72,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
 
 void bleServerInit() {
     // Create the BLE Device
-    BLEDevice::init("ESP32_HPMA115S0");
+    BLEDevice::init("CanAirIO_ESP32");
     // Create the BLE Server
     pServer = BLEDevice::createServer();
     pServer->setCallbacks(new MyServerCallbacks());
@@ -104,7 +104,7 @@ void bleServerInit() {
 void bleLoop() {
     static uint_fast64_t bleTimeStamp = 0;
     // notify changed value
-    if (deviceConnected && pmsensorDataReady() && (millis() - bleTimeStamp > 5000)) {  // each 5 secs
+    if (deviceConnected && sensors.isDataReady() && (millis() - bleTimeStamp > 5000)) {  // each 5 secs
         Serial.println("-->[BLE] sending notification..");
         bleTimeStamp = millis();
         pCharactData->setValue(getNotificationData().c_str());  // small payload for notification

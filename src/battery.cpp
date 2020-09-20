@@ -81,3 +81,7 @@ void batteryloop() {
   }
 #endif
 }
+
+unsigned int getChargeLevel() {
+  return chargeLevel;
+}

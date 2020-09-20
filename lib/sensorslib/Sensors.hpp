@@ -51,16 +51,11 @@ class Sensors
 {
     private:
 
-
     // Sensirion SPS30 sensor
     uint8_t ret, error_cnt = 0;
     struct sps_values val;
 
-    int scount = 0;
-    bool isInitSetup = true;
-    int initSetupCount = 0;
     bool dataReady;
-    bool isPmsensorEnable = false;
 
     uint16_t pm1;      // PM1
     uint16_t pm25;     // PM2.5

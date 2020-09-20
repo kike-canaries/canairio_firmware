@@ -19,6 +19,7 @@ void wifiInit();
 void wifiStop();
 void wifiRestart();
 void wifiLoop();
+int  getWifiRSSI();
 
 bool apiIsConfigured();
 void apiInit();

@@ -256,3 +256,7 @@ void wifiLoop() {
         apiInit();
     }
 }
+
+int getWifiRSSI(){
+    return rssi;
+}

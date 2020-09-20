@@ -10,6 +10,7 @@
 #include <ConfigApp.hpp>
 #include <Sensors.hpp>
 #include <GUIUtils.hpp>
+#include <watchdog.hpp>
 #include <bluetooth.hpp>
 #include <wifi.hpp>
 // #include <OTAHandler.h>
@@ -25,20 +26,6 @@
 //   WrongSerialData = false;
 // }
 
-
-/******************************************************************************
-*   R E S E T
-******************************************************************************/
-
-// void resetLoop(){
-//   if (wifiOn){    
-//         if (resetvar == 1199) {      
-//         resetvar = 0;
-//         delay(45000);   // 45 seconds, reset at 30 seconds
-//     }
-//     resetvar = resetvar + 1;
-//   }
-// }
 
 /******************************************************************************
 *  M A I N
@@ -81,24 +68,6 @@
 //   if(dataSendToggle) dataSendToggle=false;
 // }
 
-void IRAM_ATTR resetModule(){
-  Serial.println("\n-->[INFO] Watchdog reached, rebooting..");
-  esp_wifi_disconnect();
-  delay(200);
-  esp_wifi_stop();
-  delay(200);
-  esp_wifi_deinit();
-  delay(200);
-  ESP.restart();
-}
-
-// void enableWatchdog(){
-//   timer = timerBegin(0, 80, true);                 // timer 0, div 80
-//   timerAttachInterrupt(timer, &resetModule, true); // setting callback
-//   timerAlarmWrite(timer, 30000000, false);         // set time in us (30s)
-//   timerAlarmEnable(timer);                         // enable interrupt
-// }
-
 void setup(){
 #ifdef TTGO_TQ
   pinMode(IP5306_2, INPUT);
@@ -112,7 +81,7 @@ void setup(){
   cfg.init("canairio");
   Serial.println("\n== INIT SETUP ==\n");
   Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
-  // enableWatchdog();  // enable timer for reboot in any loop blocker
+  watchdogInit();  // enable timer for reboot in any loop blocker
   gui.welcomeAddMessage("Sensors test..");
   sensors.init();
   bleServerInit();
@@ -148,6 +117,5 @@ void loop(){
 #else
   delay(900);
 #endif
-  // timerWrite(timer, 0);  //reset timer (feed watchdog)
-  // resetLoop();     // reset every 20 minutes with Wifion
+  watchdogLoop();     // reset every 20 minutes with Wifion
 }

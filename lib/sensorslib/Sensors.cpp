@@ -10,73 +10,12 @@ SPS30 sps30;
 // Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();
 
-bool WrongSerialData = false;
 
 /******************************************************************************
 *   S E N S O R  M E T H O D S
 ******************************************************************************/
 
-#ifdef SENSIRION
-void ErrtoMess(char *mess, uint8_t r) {
-    char buf[80];
-    Serial.print(mess);
-    sps30.GetErrDescription(r, buf, 80);
-    Serial.println(buf);
-}
-
-void Errorloop(char *mess, uint8_t r) {
-    if (r)
-        ErrtoMess(mess, r);
-    else
-        Serial.println(mess);
-    setErrorCode(ecode_sensor_timeout);
-    delay(500);  // waiting for sensor..
-}
-
-void pmSensirionInit() {
-    pinMode(21, INPUT_PULLUP);
-    pinMode(22, INPUT_PULLUP);
-    // Begin communication channel
-    Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
-    if (sps30.begin(SP30_COMMS) == false) {
-        Errorloop((char *)"-->[E][SPS30] could not initialize communication channel.", 0);
-    }
-    // check for SPS30 connection
-    if (sps30.probe() == false) {
-        Errorloop((char *)"-->[E][SPS30] could not probe / connect with SPS30.", 0);
-    } else
-        Serial.println(F("-->[SPS30] Detected SPS30."));
-    // reset SPS30 connection
-    if (sps30.reset() == false) {
-        Errorloop((char *)"-->[E][SPS30] could not reset.", 0);
-    }
-    // start measurement
-    if (sps30.start() == true)
-        Serial.println(F("-->[SPS30] Measurement OK"));
-    else
-        Errorloop((char *)"-->[E][SPS30] Could NOT start measurement", 0);
-    if (SP30_COMMS == I2C_COMMS) {
-        if (sps30.I2C_expect() == 4)
-            Serial.println(F("-->[E][SPS30] Due to I2C buffersize only PM values  \n"));
-    }
-}
-#endif
-
-/***
- * PM2.5 and PM10 read and visualization
- **/
-
-void wrongDataState() {
-    Serial.println("-->[E][PMSENSOR] !wrong data!");
-#ifndef TTGO_TQ
-    hpmaSerial.end();
-#endif
-    WrongSerialData = true;
-    init();
-    delay(500);
-}
-
-void Sensors::loop() {
+void Sensors::pmsensorRead(){
 #ifndef SENSIRION
     int try_sensor_read = 0;
     String txtMsg = "";
@@ -124,18 +63,17 @@ void Sensors::loop() {
         ret = sps30.GetValues(&val);
         if (ret == ERR_DATALENGTH) {
             if (error_cnt++ > 3) {
-                ErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
+                pmSensirionErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
                 return;
             }
             delay(1000);
         } else if (ret != ERR_OK) {
-            ErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
+            pmSensirionErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
             return;
         }
     } while (ret != ERR_OK);
 
     Serial.print("-->[SPS30] read > done!");
-    statusOn(bit_sensor);
 
     pm25 = round(val.MassPM2);
     pm10 = round(val.MassPM10);
@@ -146,30 +84,7 @@ void Sensors::loop() {
 #endif
 }
 
-void pmSerialSensorInit() {
-    delay(100);
-#ifndef TTGO_TQ
-    hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
-#else
-    if (WrongSerialData == false) {
-        hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
-    }
-    delay(100);
-#endif
-}
-void Sensors::init() {
-    Serial.println("-->[SENSORS] starting PM sensor..");
-#if defined HONEYWELL || defined PANASONIC
-    pmSerialSensorInit();
-#else  //SENSIRION
-    pmSensirionInit();
-#endif
-    // TODO: enable/disable via flag
-    Serial.println("-->[SENSORS] starting AM2320 sensor..");
-    am2320.begin();  // temp/humidity sensor
-}
-
-void Sensors::getHumidityRead() {
+void Sensors::am2320Read() {
     humi = am2320.readHumidity();
     temp = am2320.readTemperature();
     if (isnan(humi))
@@ -177,6 +92,100 @@ void Sensors::getHumidityRead() {
     if (isnan(temp))
         temp = 0.0;
     Serial.println("-->[AM2320] Humidity: " + String(humi) + " % Temp: " + String(temp) + " °C");
+}
+
+void Sensors::loop() {
+    am2320Read();
+    pmsensorRead();
+}
+
+void Sensors::pmSensorInit() {
+#if defined HONEYWELL || defined PANASONIC
+    hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
+    delay(100);
+#endif
+}
+
+void Sensors::wrongDataState() {
+    Serial.println("-->[E][PMSENSOR] !wrong data!");
+#if defined HONEYWELL || defined PANASONIC
+    hpmaSerial.end();
+#endif
+    init();
+    delay(500);
+}
+
+void Sensors::pmSensirionErrtoMess(char *mess, uint8_t r) {
+#ifdef SENSIRION
+    char buf[80];
+    Serial.print(mess);
+    sps30.GetErrDescription(r, buf, 80);
+    Serial.println(buf);
+#endif
+}
+
+void Sensors::pmSensirionErrorloop(char *mess, uint8_t r) {
+#ifdef SENSIRION
+    if (r)
+        pmSensirionErrtoMess(mess, r);
+    else
+        Serial.println(mess);
+    delay(500);  // waiting for sensor..
+#endif
+}
+
+void Sensors::pmSensirionInit() {
+#ifdef SENSIRION
+    // Begin communication channel
+    Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
+    if (sps30.begin(SP30_COMMS) == false) {
+        pmSensirionErrorloop((char *)"-->[E][SPS30] could not initialize communication channel.", 0);
+    }
+    // check for SPS30 connection
+    if (sps30.probe() == false) {
+        pmSensirionErrorloop((char *)"-->[E][SPS30] could not probe / connect with SPS30.", 0);
+    } else
+        Serial.println(F("-->[SPS30] Detected SPS30."));
+    // reset SPS30 connection
+    if (sps30.reset() == false) {
+        pmSensirionErrorloop((char *)"-->[E][SPS30] could not reset.", 0);
+    }
+    // start measurement
+    if (sps30.start() == true)
+        Serial.println(F("-->[SPS30] Measurement OK"));
+    else
+        pmSensirionErrorloop((char *)"-->[E][SPS30] Could NOT start measurement", 0);
+    if (SP30_COMMS == I2C_COMMS) {
+        if (sps30.I2C_expect() == 4)
+            Serial.println(F("-->[E][SPS30] Due to I2C buffersize only PM values  \n"));
+    }
+#endif
+}
+
+void Sensors::am2320Init() {
+    // pinMode(21, INPUT_PULLUP);  ???
+    // pinMode(22, INPUT_PULLUP);  ???
+    am2320.begin();  // temp/humidity sensor
+}
+
+/**
+ * All sensors init()
+ * 
+ * Particle meter and AM2320 sensors init.
+ * Please see the platformio.ini file for 
+ * know what sensors is enable
+ */
+
+void Sensors::init() {
+    Serial.println("-->[SENSORS] starting PM sensor..");
+#if defined HONEYWELL || defined PANASONIC
+    pmSensorInit();
+#else  //SENSIRION
+    pmSensirionInit();
+#endif
+    // TODO: enable/disable via flag
+    Serial.println("-->[SENSORS] starting AM2320 sensor..");
+    am2320Init();
 }
 
 bool Sensors::isDataReady() {

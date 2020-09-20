@@ -72,7 +72,14 @@ class Sensors
     float alt  = 0.0;
     float gas  = 0.0;
 
-    void getHumidityRead();
+    void am2320Init();
+    void am2320Read();
+    void pmSensorInit();
+    void pmsensorRead();
+    void wrongDataState();
+    void pmSensirionInit();
+    void pmSensirionErrtoMess(char *mess, uint8_t r);
+    void pmSensirionErrorloop(char *mess, uint8_t r);
 
     public: 
 

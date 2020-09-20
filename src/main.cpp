@@ -13,10 +13,6 @@
 #include <watchdog.hpp>
 #include <bluetooth.hpp>
 #include <wifi.hpp>
-// #include <OTAHandler.h>
-// #include <Wire.h>
-// #include <numeric>
-// #include "main.h"
 
 // void showValues(int pm25, int pm10){
 //   gui.displaySensorAverage(apm25); // it was calculated on bleLoop()
@@ -30,29 +26,6 @@
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
-
-// void wrongDataState(){
-//   setErrorCode(ecode_sensor_read_fail);
-//   gui.displaySensorAverage(apm25);
-//   gui.displaySensorData(0,0,chargeLevel,0.0,0.0,0);
-// #ifdef HONEYWELL
-//   Serial.print("-->[E][HPMA] !wrong data!");
-//   #ifndef TTGO_TQ
-//     hpmaSerial.end();
-//   #endif
-// #elif PANASONIC
-//   Serial.print("-->[E][SNGC] !wrong data!");
-//   #ifndef TTGO_TQ
-//     hpmaSerial.end();
-//   #endif
-// #else
-//   Serial.print("-->[E][SPS30] !wrong data!");
-// #endif
-//   statusOff(bit_sensor);
-//   WrongSerialData = true;
-//   sensorInit();
-//   delay(500);
-// }
 
 // void statusLoop(){
 //   if () {
@@ -100,8 +73,6 @@ void setup(){
 void loop(){
   gui.pageStart();
   sensors.loop();    // read sensor data and showed it
-  // averageLoop();   // calculated of sensor data average
-  // humidityLoop();  // read AM2320
   // batteryloop();   // battery charge status
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
@@ -110,12 +81,5 @@ void loop(){
   // statusLoop();    // update sensor status GUI
   otaLoop();       // check for firmware updates
   gui.pageEnd();   // gui changes push
-#ifdef HONEYWELL
-  delay(500);
-#elif PANASONIC
-  delay(500);
-#else
-  delay(900);
-#endif
   watchdogLoop();     // reset every 20 minutes with Wifion
 }

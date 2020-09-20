@@ -15,35 +15,26 @@
 #include <watchdog.hpp>
 #include <battery.hpp>
 
-// void showValues(int pm25, int pm10){
-//   gui.displaySensorAverage(apm25); // it was calculated on bleLoop()
-//   gui.displaySensorData(pm25, pm10, chargeLevel, humi, temp, rssi);
-//   gui.displayLiveIcon();
-//   saveDataForAverage(pm25, pm10);
-//   WrongSerialData = false;
-// }
-
+void showValues(){
+  gui.displaySensorAverage(sensors.getPM25());
+  gui.displaySensorData(
+    sensors.getPM25(), 
+    sensors.getPM10(), 
+    getChargeLevel(), 
+    sensors.getHumidity(), 
+    sensors.getTemperature(),
+    getWifiRSSI()
+  );
+  gui.displayLiveIcon();
+}
 
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
 
-// void statusLoop(){
-//   if () {
-//     Serial.print("-->[STATUS] ");
-//     Serial.println(status.to_string().c_str());
-//     updateStatusError();
-//     wifiCheck();
-//   }
-//   gui.updateError(getErrorCode());
-//   gui.displayStatus(wifiOn,true,deviceConnected,dataSendToggle);
-//   if(triggerSaveIcon++<3) gui.displayPrefSaveIcon(true);
-//   else gui.displayPrefSaveIcon(false);
-//   if(dataSendToggle) dataSendToggle=false;
-// }
-
 void setup(){
   Serial.begin(115200);
+  pinMode(LED,OUTPUT);
   gui.displayInit();
   gui.showWelcome();
   cfg.init("canairio");
@@ -60,7 +51,6 @@ void setup(){
   gui.welcomeAddMessage("CanAirIO API..");
   influxDbInit();
   apiInit();
-  pinMode(LED,OUTPUT);
   gui.welcomeAddMessage("==SETUP READY==");
   watchdogInit();  // enable timer for reboot in any loop blocker
   delay(500);

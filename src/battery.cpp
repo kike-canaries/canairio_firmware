@@ -1,3 +1,6 @@
+
+#include <battery.hpp>
+
 /******************************************************************************
 *   B A T T E R Y   C H A R G E   S T A T U S   M E T H O D S
 ******************************************************************************/
@@ -13,7 +16,12 @@ unsigned int chargeLevel = 0;
     unsigned int Rdelay = 0;
 #endif
 
-
+void batteryInit() {
+#ifdef TTGO_TQ
+  pinMode(IP5306_2, INPUT);
+  pinMode(IP5306_3, INPUT);
+#endif
+}
 
 void batteryloop() {
 #ifdef TTGO_TQ

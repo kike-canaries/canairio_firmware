@@ -34,6 +34,8 @@ void Errorloop(char *mess, uint8_t r) {
 }
 
 void pmSensirionInit() {
+    pinMode(21, INPUT_PULLUP);
+    pinMode(22, INPUT_PULLUP);
     // Begin communication channel
     Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
     if (sps30.begin(SP30_COMMS) == false) {

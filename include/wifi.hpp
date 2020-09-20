@@ -5,9 +5,7 @@
 #include <CanAirIoApi.hpp>
 #include <ConfigApp.hpp>
 #include <InfluxArduino.hpp>
-#include <bme680.hpp>
-#include <pmsensor.hpp>
-#include <gui.hpp>
+#include <Sensors.hpp>
 
 #define PUBLISH_INTERVAL 30  // publish to cloud each 30 seconds
 #define WIFI_RETRY_CONNECTION 5

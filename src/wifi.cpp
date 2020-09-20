@@ -2,6 +2,7 @@
 
 bool wifiOn;
 uint32_t ifxdbwcount;
+int rssi = 0;
 
 InfluxArduino influx;
 CanAirIoApi api(false);
@@ -36,16 +37,16 @@ void influxDbParseFields(char* fields) {
     sprintf(
         fields,
         "pm1=%u,pm25=%u,pm10=%u,hum=%f,tmp=%f,prs=%f,gas=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
-        getPM1(),
-        getPM25(),
-        getPM10(),
-        getHumidity(),
-        getTemperature(),
-        getPressure(),
-        getGas(),
+        sensors.getPM1(),
+        sensors.getPM25(),
+        sensors.getPM10(),
+        sensors.getHumidity(),
+        sensors.getTemperature(),
+        sensors.getPressure(),
+        sensors.getGas(),
         cfg.lat,
         cfg.lon,
-        getAltitude(),
+        sensors.getAltitude(),
         cfg.spd,
         cfg.stime,
         0);
@@ -67,7 +68,7 @@ void influxDbLoop() {
     static uint_fast64_t timeStamp = 0;
     if (millis() - timeStamp > PUBLISH_INTERVAL * 1000) {
         timeStamp = millis();
-        if (pmsensorDataReady() && wifiOn && cfg.wifiEnable && cfg.isIfxEnable() && influxDbIsConfigured()) {
+        if (sensors.isDataReady() && wifiOn && cfg.wifiEnable && cfg.isIfxEnable() && influxDbIsConfigured()) {
             int ifx_retry = 0;
             Serial.printf("-->[INFLUXDB][%s]\n", cfg.dname.c_str());
             Serial.printf("-->[INFLUXDB][%010d] writing to ", ifxdbwcount++);
@@ -81,15 +82,15 @@ void influxDbLoop() {
                 wifiRestart();
             } else {
                 Serial.println("done. [" + String(influx.getResponse()) + "]");
-                statusOn(bit_cloud);
-                dataSendToggle = true;
-                showDataIcon(true);
-                showUptime(ifxdbwcount);
+                // st.statusOn(st.bit_cloud);
+                // dataSendToggle = true;
+                // showDataIcon(true);
+                // showUptime(ifxdbwcount);
                 delay(200);  // --> because the ESP go to then to light sleep, not remove it!
             }
         }
-    } else
-        showDataIcon(false);
+    }   // else
+        // showDataIcon(false);
 }
 
 /******************************************************************************
@@ -119,15 +120,15 @@ void apiLoop() {
     static uint_fast64_t timeStamp = 0;
     if (millis() - timeStamp > PUBLISH_INTERVAL * 1000) {
         timeStamp = millis();
-        if (pmsensorDataReady() && wifiOn && cfg.wifiEnable && cfg.isApiEnable() && apiIsConfigured()) {
+        if (sensors.isDataReady() && wifiOn && cfg.wifiEnable && cfg.isApiEnable() && apiIsConfigured()) {
             Serial.print("-->[API] writing to ");
             Serial.print("" + String(api.ip) + "..");
             bool status = api.write(
-                getPM1(),
-                getPM25(),
-                getPM10(),
-                getHumidity(),
-                getTemperature(),
+                sensors.getPM1(),
+                sensors.getPM25(),
+                sensors.getPM10(),
+                sensors.getHumidity(),
+                sensors.getTemperature(),
                 cfg.lat,
                 cfg.lon,
                 cfg.alt,
@@ -136,8 +137,12 @@ void apiLoop() {
             int code = api.getResponse();
             if (status) {
                 Serial.println("done. [" + String(code) + "]");
+                // st.statusOn(st.bit_cloud);
+                // st.dataSendToggle = true;
             } else {
                 Serial.println("fail! [" + String(code) + "]");
+                // st.statusOff(st.bit_cloud);
+                // st.setErrorCode(st.ecode_api_write_fail);
                 if (code == -1) {
                     Serial.println("-->[E][API] publish error (-1)");
                     delay(100);
@@ -183,12 +188,12 @@ void otaInit() {
 
 bool wifiCheck() {
     wifiOn = WiFi.isConnected();
-    if(wifiOn)statusOn(bit_wan);  // TODO: We need validate internet connection
-    else {
-        statusOff(bit_cloud);
-        statusOff(bit_wan);
-    }
-    showWifiIcon(wifiOn);
+    // if(wifiOn)st.statusOn(st.bit_wan);  // TODO: We need validate internet connection
+    // else {
+    //     st.statusOff(st.bit_cloud);
+    //     st.statusOff(st.bit_wan);
+    // }
+    // showWifiIcon(wifiOn);
     return wifiOn;
 }
 
@@ -209,7 +214,7 @@ void wifiConnect(const char* ssid, const char* pass) {
         otaInit();
     } else {
         Serial.println("fail!\n-->[E][WIFI] disconnected!");
-        setErrorCode(ecode_wifi_fail);
+        // st.setErrorCode(st.ecode_wifi_fail);
     }
 }
 

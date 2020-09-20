@@ -5,8 +5,11 @@
 HardwareSerial hpmaSerial(1);
 HPMA115S0 hpma115S0(hpmaSerial);
 #endif
+
 // Sensirium
+#ifdef SENSIRION
 SPS30 sps30;
+#endif
 // Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();
 
@@ -56,7 +59,7 @@ void Sensors::pmsensorRead(){
             wrongDataState();
     } else
         wrongDataState();
-#else  // SENSIRION
+#elif SENSIRION
     delay(35);  //Delay for sincronization
     do {
         ret = sps30.GetValues(&val);

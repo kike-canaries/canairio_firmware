@@ -41,7 +41,8 @@ using namespace std;
 // Sensirion SPS30 sensor
 #define SP30_COMMS SERIALPORT2 // UART OR I2C
 
-typedef void (*voidCbFn)(const char *msg);
+typedef void (*errorCbFn)(const char *msg);
+typedef void (*voidCbFn)();
 
 class Sensors
 {
@@ -51,7 +52,8 @@ class Sensors
     void init();
     void loop();
     bool isDataReady();
-    void setErrorCallBack(voidCbFn cb);
+    void setOnDataCallBack(voidCbFn cb);
+    void setOnErrorCallBack(errorCbFn cb);
 
     uint16_t getPM1();
     uint16_t getPM25();
@@ -76,7 +78,8 @@ class Sensors
 
     private:
 
-    voidCbFn _onErrorCb;
+    errorCbFn _onErrorCb;
+    voidCbFn _onDataCb;
 
     // Sensirion SPS30 sensor
     uint8_t ret, error_cnt = 0;

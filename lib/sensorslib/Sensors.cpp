@@ -29,8 +29,7 @@ void Sensors::pmsensorRead(){
         }
     }
     if (try_sensor_read > SENSOR_RETRY) {
-        Serial.println("-->[E][PMSENSOR] read > fail!");
-        Serial.println("-->[E][PMSENSOR] disconnected ?");
+        onPmSensorErr("pm sensor read fail!");
         delay(500);  // waiting for sensor..
     }
 #endif
@@ -41,10 +40,10 @@ void Sensors::pmsensorRead(){
         pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
         pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
         if (pm25 > 2000 && pm10 > 2000) {
-            wrongDataState();
+            onPmSensorErr("Panasonic out of range pm25 > 2000");
         }
     } else
-        wrongDataState();
+        onPmSensorErr("invalid Panasonic sensor header!");
 
 #elif HONEYWELL  // HONEYWELL
     if (txtMsg[0] == 66) {
@@ -53,12 +52,12 @@ void Sensors::pmsensorRead(){
             pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
             pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
             if (pm25 > 1000 && pm10 > 1000) {
-                wrongDataState();
+              onPmSensorErr("Honeywell out of range pm25 > 1000");
             }
         } else
-            wrongDataState();
+            onPmSensorErr("invalid Panasonic sensor header!");
     } else
-        wrongDataState();
+        onPmSensorErr("invalid Panasonic sensor header!");
 #elif SENSIRION
     delay(35);  //Delay for sincronization
     do {
@@ -81,7 +80,7 @@ void Sensors::pmsensorRead(){
     pm10 = round(val.MassPM10);
 
     if (pm25 > 1000 && pm10 > 1000) {
-        wrongDataState();
+        onPmSensorErr("Sensirion out of range pm25 > 1000");
     }
 #endif
 }
@@ -112,13 +111,15 @@ void Sensors::pmSensorInit() {
 #endif
 }
 
-void Sensors::wrongDataState() {
-    Serial.println("-->[E][PMSENSOR] !wrong data!");
-#if defined HONEYWELL || defined PANASONIC
-    hpmaSerial.end();
-#endif
-    init();
-    delay(500);
+void Sensors::onPmSensorErr(const char *msg) {
+    Serial.print("-->[E][PMSENSOR] ");
+    Serial.println(msg);
+    if(_onErrorCb)_onErrorCb(msg);
+// #if defined HONEYWELL || defined PANASONIC
+//     hpmaSerial.end();
+// #endif
+//     init();
+//     delay(500);
 }
 
 void Sensors::pmSensirionErrtoMess(char *mess, uint8_t r) {
@@ -127,6 +128,7 @@ void Sensors::pmSensirionErrtoMess(char *mess, uint8_t r) {
     Serial.print(mess);
     sps30.GetErrDescription(r, buf, 80);
     Serial.println(buf);
+    onPmSensorErr(mess);
 #endif
 }
 

@@ -15,7 +15,7 @@ Adafruit_AM2320 am2320 = Adafruit_AM2320();
 
 
 /******************************************************************************
-*   S E N S O R  M E T H O D S
+*   S E N S O R   P R I V A T E   M E T H O D S
 ******************************************************************************/
 
 void Sensors::pmsensorRead(){
@@ -29,7 +29,7 @@ void Sensors::pmsensorRead(){
         }
     }
     if (try_sensor_read > SENSOR_RETRY) {
-        onPmSensorErr("pm sensor read fail!");
+        onPmSensorError("pm sensor read fail!");
         delay(500);  // waiting for sensor..
     }
 #endif
@@ -40,10 +40,10 @@ void Sensors::pmsensorRead(){
         pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
         pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
         if (pm25 > 2000 && pm10 > 2000) {
-            onPmSensorErr("Panasonic out of range pm25 > 2000");
+            onPmSensorError("Panasonic out of range pm25 > 2000");
         }
     } else
-        onPmSensorErr("invalid Panasonic sensor header!");
+        onPmSensorError("invalid Panasonic sensor header!");
 
 #elif HONEYWELL  // HONEYWELL
     if (txtMsg[0] == 66) {
@@ -52,12 +52,12 @@ void Sensors::pmsensorRead(){
             pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
             pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
             if (pm25 > 1000 && pm10 > 1000) {
-              onPmSensorErr("Honeywell out of range pm25 > 1000");
+              onPmSensorError("Honeywell out of range pm25 > 1000");
             }
         } else
-            onPmSensorErr("invalid Panasonic sensor header!");
+            onPmSensorError("invalid Panasonic sensor header!");
     } else
-        onPmSensorErr("invalid Panasonic sensor header!");
+        onPmSensorError("invalid Panasonic sensor header!");
 #elif SENSIRION
     delay(35);  //Delay for sincronization
     do {
@@ -80,7 +80,7 @@ void Sensors::pmsensorRead(){
     pm10 = round(val.MassPM10);
 
     if (pm25 > 1000 && pm10 > 1000) {
-        onPmSensorErr("Sensirion out of range pm25 > 1000");
+        onPmSensorError("Sensirion out of range pm25 > 1000");
     }
 #endif
 }
@@ -96,36 +96,7 @@ void Sensors::am2320Read() {
 }
 
 
-void Sensors::setOnDataCallBack(voidCbFn cb){
-    _onDataCb = cb;
-}
-
-void Sensors::setOnErrorCallBack(errorCbFn cb){
-    _onErrorCb = cb;
-}
-
-void Sensors::loop() {
-    static uint_fast64_t pmLoopTimeStamp = 0;  // timestamp for loop check
-    if ((millis() - pmLoopTimeStamp > 1000)) {
-        dataReady = false;
-        pmLoopTimeStamp = millis();
-        am2320Read();
-        pmsensorRead();
-        if(_onDataCb)_onDataCb();
-        dataReady = true;
-    }
-}
-
-void Sensors::pmSensorInit() {
-#if defined HONEYWELL || defined PANASONIC
-    hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
-    delay(100);
-#endif
-}
-
-
-
-void Sensors::onPmSensorErr(const char *msg) {
+void Sensors::onPmSensorError(const char *msg) {
     Serial.print("-->[E][PMSENSOR] ");
     Serial.println(msg);
     if(_onErrorCb)_onErrorCb(msg);
@@ -134,10 +105,11 @@ void Sensors::onPmSensorErr(const char *msg) {
 void Sensors::pmSensirionErrtoMess(char *mess, uint8_t r) {
 #ifdef SENSIRION
     char buf[80];
+    Serial.print("-->[E][SENSIRION] ");
     Serial.print(mess);
     sps30.GetErrDescription(r, buf, 80);
     Serial.println(buf);
-    onPmSensorErr(mess);
+    onPmSensorError(mess);
 #endif
 }
 
@@ -148,6 +120,14 @@ void Sensors::pmSensirionErrorloop(char *mess, uint8_t r) {
     else
         Serial.println(mess);
     delay(500);  // waiting for sensor..
+#endif
+}
+
+void Sensors::pmSensorInit() {
+#if defined HONEYWELL || defined PANASONIC
+    Serial.println(F("-->[PMSENSOR] starting HPMA/PANASONIC sensor.."));
+    hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
+    delay(100);
 #endif
 }
 
@@ -185,14 +165,34 @@ void Sensors::am2320Init() {
     am2320.begin();  // temp/humidity sensor
 }
 
+/***********************************************************************************
+ *  P U B L I C   M E T H O D S
+ * *********************************************************************************/
+
 /**
- * All sensors init()
+ * Main sensor loop.
+ * 
+ * all sensor read methods here, please call it on main loop.
+ */
+void Sensors::loop() {
+    static uint_fast64_t pmLoopTimeStamp = 0;  // timestamp for loop check
+    if ((millis() - pmLoopTimeStamp > 1000)) {
+        dataReady = false;
+        pmLoopTimeStamp = millis();
+        am2320Read();
+        pmsensorRead();
+        if(_onDataCb)_onDataCb();
+        dataReady = true;
+    }
+}
+
+/**
+ * All sensors init.
  * 
  * Particle meter and AM2320 sensors init.
  * Please see the platformio.ini file for 
  * know what sensors is enable
  */
-
 void Sensors::init() {
     Serial.println("-->[SENSORS] starting PM sensor..");
 #if defined HONEYWELL || defined PANASONIC
@@ -211,6 +211,14 @@ void Sensors::restart(){
 #endif
     init();
     delay(500);
+}
+
+void Sensors::setOnDataCallBack(voidCbFn cb){
+    _onDataCb = cb;
+}
+
+void Sensors::setOnErrorCallBack(errorCbFn cb){
+    _onErrorCb = cb;
 }
 
 bool Sensors::isDataReady() {

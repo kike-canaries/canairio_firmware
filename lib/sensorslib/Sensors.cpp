@@ -95,13 +95,23 @@ void Sensors::am2320Read() {
     Serial.println("-->[AM2320] Humidity: " + String(humi) + " % Temp: " + String(temp) + " °C");
 }
 
-void Sensors::setErrorCallBack(voidCbFn cb){
+
+void Sensors::setOnDataCallBack(voidCbFn cb){
+    _onDataCb = cb;
+}
+
+void Sensors::setOnErrorCallBack(errorCbFn cb){
     _onErrorCb = cb;
 }
 
 void Sensors::loop() {
-    am2320Read();
-    pmsensorRead();
+    static uint_fast64_t pmLoopTimeStamp = 0;  // timestamp for loop check
+    if ((millis() - pmLoopTimeStamp > 1000)) {
+        pmLoopTimeStamp = millis();
+        am2320Read();
+        pmsensorRead();
+        if(_onDataCb)_onDataCb();
+    }
 }
 
 void Sensors::pmSensorInit() {

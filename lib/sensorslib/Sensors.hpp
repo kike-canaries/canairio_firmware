@@ -101,7 +101,7 @@ class Sensors
     void am2320Init();
     void am2320Read();
     void pmSensorInit();
-    void pmsensorRead();
+    bool pmsensorRead();
     void onPmSensorError(const char *msg);
     void pmSensirionInit();
     void pmSensirionErrtoMess(char *mess, uint8_t r);

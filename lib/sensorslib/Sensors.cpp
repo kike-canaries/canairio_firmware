@@ -111,15 +111,12 @@ void Sensors::pmSensorInit() {
 #endif
 }
 
+
+
 void Sensors::onPmSensorErr(const char *msg) {
     Serial.print("-->[E][PMSENSOR] ");
     Serial.println(msg);
     if(_onErrorCb)_onErrorCb(msg);
-// #if defined HONEYWELL || defined PANASONIC
-//     hpmaSerial.end();
-// #endif
-//     init();
-//     delay(500);
 }
 
 void Sensors::pmSensirionErrtoMess(char *mess, uint8_t r) {
@@ -194,6 +191,14 @@ void Sensors::init() {
     // TODO: enable/disable via flag
     Serial.println("-->[SENSORS] starting AM2320 sensor..");
     am2320Init();
+}
+
+void Sensors::restart(){
+#if defined HONEYWELL || defined PANASONIC
+    hpmaSerial.end();
+#endif
+    init();
+    delay(500);
 }
 
 bool Sensors::isDataReady() {

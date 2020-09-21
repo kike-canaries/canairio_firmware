@@ -94,6 +94,7 @@ class Sensors
     float alt  = 0.0;
     float gas  = 0.0;
 
+    void restart();
     void am2320Init();
     void am2320Read();
     void pmSensorInit();

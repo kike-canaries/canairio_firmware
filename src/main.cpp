@@ -15,17 +15,22 @@
 #include <watchdog.hpp>
 #include <battery.hpp>
 
-void showValues(){
-  gui.displaySensorAverage(sensors.getPM25());
-  gui.displaySensorData(
-    sensors.getPM25(), 
-    sensors.getPM10(), 
-    getChargeLevel(), 
-    sensors.getHumidity(), 
-    sensors.getTemperature(),
-    getWifiRSSI()
-  );
-  gui.displayLiveIcon();
+void showValues() {
+    static uint_fast64_t timeStamp = 0;  // timestamp for loop check
+    if ((millis() - timeStamp > 1000)) {
+        timeStamp = millis();
+        gui.pageStart();
+        gui.displaySensorAverage(sensors.getPM25());
+        gui.displaySensorData(
+            sensors.getPM25(),
+            sensors.getPM10(),
+            getChargeLevel(),
+            sensors.getHumidity(),
+            sensors.getTemperature(),
+            getWifiRSSI());
+        gui.displayLiveIcon();
+        gui.pageEnd();
+    }
 }
 
 /******************************************************************************
@@ -43,6 +48,7 @@ void setup(){
   Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
   gui.welcomeAddMessage("Sensors test..");
   batteryInit();
+  sensors.setOnDataCallBack(&showValues);
   sensors.init();
   bleServerInit();
   gui.welcomeAddMessage("GATT server..");
@@ -58,7 +64,6 @@ void setup(){
 }
 
 void loop(){
-  // gui.pageStart();
   sensors.loop();    // read sensor data and showed it
   batteryloop();   // battery charge status
   bleLoop();       // notify data to connected devices
@@ -67,6 +72,5 @@ void loop(){
   influxDbLoop();  // influxDB publication
   // statusLoop();    // update sensor status GUI
   otaLoop();       // check for firmware updates
-  // gui.pageEnd();   // gui changes push
   // watchdogLoop();     // reset every 20 minutes with Wifion
 }

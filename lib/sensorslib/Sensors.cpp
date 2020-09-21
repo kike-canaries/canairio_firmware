@@ -18,7 +18,7 @@ Adafruit_AM2320 am2320 = Adafruit_AM2320();
 *   S E N S O R   P R I V A T E   M E T H O D S
 ******************************************************************************/
 
-void Sensors::pmsensorRead(){
+bool Sensors::pmsensorRead(){
 #ifndef SENSIRION
     int try_sensor_read = 0;
     String txtMsg = "";
@@ -30,7 +30,7 @@ void Sensors::pmsensorRead(){
     }
     if (try_sensor_read > SENSOR_RETRY) {
         onPmSensorError("pm sensor read fail!");
-        delay(500);  // waiting for sensor..
+        return false;
     }
 #endif
 
@@ -41,9 +41,12 @@ void Sensors::pmsensorRead(){
         pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
         if (pm25 > 2000 && pm10 > 2000) {
             onPmSensorError("Panasonic out of range pm25 > 2000");
+            return false;
         }
-    } else
+    } else {
         onPmSensorError("invalid Panasonic sensor header!");
+        return false;
+    }
 
 #elif HONEYWELL  // HONEYWELL
     if (txtMsg[0] == 66) {
@@ -52,12 +55,18 @@ void Sensors::pmsensorRead(){
             pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
             pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
             if (pm25 > 1000 && pm10 > 1000) {
-              onPmSensorError("Honeywell out of range pm25 > 1000");
+                onPmSensorError("Honeywell out of range pm25 > 1000");
+                return false;
             }
-        } else
+        } else {
             onPmSensorError("invalid Panasonic sensor header!");
-    } else
+            return false;
+        }
+    } else {
         onPmSensorError("invalid Panasonic sensor header!");
+        return false;
+    }
+
 #elif SENSIRION
     delay(35);  //Delay for sincronization
     do {
@@ -65,12 +74,12 @@ void Sensors::pmsensorRead(){
         if (ret == ERR_DATALENGTH) {
             if (error_cnt++ > 3) {
                 pmSensirionErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
-                return;
+                return false;
             }
             delay(1000);
         } else if (ret != ERR_OK) {
             pmSensirionErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
-            return;
+            return false;
         }
     } while (ret != ERR_OK);
 
@@ -81,17 +90,17 @@ void Sensors::pmsensorRead(){
 
     if (pm25 > 1000 && pm10 > 1000) {
         onPmSensorError("Sensirion out of range pm25 > 1000");
+        return false;
     }
 #endif
+    return true;
 }
 
 void Sensors::am2320Read() {
     humi = am2320.readHumidity();
     temp = am2320.readTemperature();
-    if (isnan(humi))
-        humi = 0.0;
-    if (isnan(temp))
-        temp = 0.0;
+    if (isnan(humi)) humi = 0.0;
+    if (isnan(temp)) temp = 0.0;
     Serial.println("-->[AM2320] Humidity: " + String(humi) + " % Temp: " + String(temp) + " °C");
 }
 
@@ -115,11 +124,8 @@ void Sensors::pmSensirionErrtoMess(char *mess, uint8_t r) {
 
 void Sensors::pmSensirionErrorloop(char *mess, uint8_t r) {
 #ifdef SENSIRION
-    if (r)
-        pmSensirionErrtoMess(mess, r);
-    else
-        Serial.println(mess);
-    delay(500);  // waiting for sensor..
+    if (r) pmSensirionErrtoMess(mess, r);
+    else Serial.println(mess);
 #endif
 }
 
@@ -180,8 +186,8 @@ void Sensors::loop() {
         dataReady = false;
         pmLoopTimeStamp = millis();
         am2320Read();
-        pmsensorRead();
-        if(_onDataCb)_onDataCb();
+        bool pmsuccess = pmsensorRead();
+        if(_onDataCb && pmsuccess) _onDataCb();
         dataReady = true;
     }
 }

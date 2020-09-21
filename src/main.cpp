@@ -64,6 +64,7 @@ void setup(){
   gui.welcomeAddMessage("==SETUP READY==");
   // watchdogInit();  // enable timer for reboot in any loop blocker
   delay(500);
+  showValues();
 }
 
 void loop(){

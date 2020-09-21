@@ -34,11 +34,12 @@ void showValues(){
 
 void setup(){
   Serial.begin(115200);
+  delay(1000);
+  Serial.println("\n== INIT SETUP ==\n");
   pinMode(BUILTIN_LED,OUTPUT);
   gui.displayInit();
   gui.showWelcome();
   cfg.init("canairio");
-  Serial.println("\n== INIT SETUP ==\n");
   Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
   gui.welcomeAddMessage("Sensors test..");
   batteryInit();
@@ -52,12 +53,12 @@ void setup(){
   influxDbInit();
   apiInit();
   gui.welcomeAddMessage("==SETUP READY==");
-  watchdogInit();  // enable timer for reboot in any loop blocker
+  // watchdogInit();  // enable timer for reboot in any loop blocker
   delay(500);
 }
 
 void loop(){
-  gui.pageStart();
+  // gui.pageStart();
   sensors.loop();    // read sensor data and showed it
   batteryloop();   // battery charge status
   bleLoop();       // notify data to connected devices
@@ -66,6 +67,6 @@ void loop(){
   influxDbLoop();  // influxDB publication
   // statusLoop();    // update sensor status GUI
   otaLoop();       // check for firmware updates
-  gui.pageEnd();   // gui changes push
-  watchdogLoop();     // reset every 20 minutes with Wifion
+  // gui.pageEnd();   // gui changes push
+  // watchdogLoop();     // reset every 20 minutes with Wifion
 }

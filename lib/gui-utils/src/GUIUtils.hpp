@@ -24,7 +24,7 @@ public:
   unsigned int cursor = 0;
 
   U8G2 u8g2;
-
+  
   // Firmware version from git rev-list command
   String VERSION_CODE = "r";
 #ifdef SRC_REV

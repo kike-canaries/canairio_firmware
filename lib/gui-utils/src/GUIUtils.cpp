@@ -1,6 +1,13 @@
 #include "GUIUtils.hpp"
 #include "GUIIcons.h"
 
+/******************************************************************************
+*   D I S P L A Y  M E T H O D S
+******************************************************************************/
+
+void GUIUtils::displayInit()
+{
+
 #ifdef WEMOSOLED  // display via i2c for WeMOS OLED board & TTGO18650
  U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 #elif HELTEC   // display via i2c for Heltec board
@@ -11,12 +18,6 @@
  U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
 #endif
 
-/******************************************************************************
-*   D I S P L A Y  M E T H O D S
-******************************************************************************/
-
-void GUIUtils::displayInit()
-{
   u8g2.begin();
   u8g2.setFont(u8g2_font_6x10_tf);
   u8g2.setContrast(255);

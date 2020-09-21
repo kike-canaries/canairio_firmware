@@ -107,10 +107,12 @@ void Sensors::setOnErrorCallBack(errorCbFn cb){
 void Sensors::loop() {
     static uint_fast64_t pmLoopTimeStamp = 0;  // timestamp for loop check
     if ((millis() - pmLoopTimeStamp > 1000)) {
+        dataReady = false;
         pmLoopTimeStamp = millis();
         am2320Read();
         pmsensorRead();
         if(_onDataCb)_onDataCb();
+        dataReady = true;
     }
 }
 

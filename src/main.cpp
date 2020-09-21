@@ -29,6 +29,9 @@ void showValues() {
             sensors.getTemperature(),
             getWifiRSSI());
         gui.displayLiveIcon();
+        // TODO: we need a callback from wifi class on publication,
+        // also we need data send toggle.
+        gui.displayStatus(WiFi.isConnected(), true, bleIsConnected(), true);
         gui.pageEnd();
     }
 }
@@ -64,13 +67,12 @@ void setup(){
 }
 
 void loop(){
-  sensors.loop();    // read sensor data and showed it
-  batteryloop();   // battery charge status
-  bleLoop();       // notify data to connected devices
-  wifiLoop();      // check wifi and reconnect it
-  apiLoop();       // CanAir.io API !! D E P R E C A T E D !!
-  influxDbLoop();  // influxDB publication
-  // statusLoop();    // update sensor status GUI
-  otaLoop();       // check for firmware updates
+  sensors.loop();     // read sensor data and showed it
+  batteryloop();      // battery charge status
+  bleLoop();          // notify data to connected devices
+  wifiLoop();         // check wifi and reconnect it
+  apiLoop();          // CanAir.io API !! D E P R E C A T E D !!
+  influxDbLoop();     // influxDB publication
+  otaLoop();          // check for firmware updates
   // watchdogLoop();     // reset every 20 minutes with Wifion
 }

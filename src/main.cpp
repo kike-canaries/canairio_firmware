@@ -34,7 +34,7 @@ void showValues(){
 
 void setup(){
   Serial.begin(115200);
-  pinMode(LED,OUTPUT);
+  pinMode(BUILTIN_LED,OUTPUT);
   gui.displayInit();
   gui.showWelcome();
   cfg.init("canairio");
@@ -62,7 +62,7 @@ void loop(){
   batteryloop();   // battery charge status
   bleLoop();       // notify data to connected devices
   wifiLoop();      // check wifi and reconnect it
-  apiLoop();       // CanAir.io API publication
+  apiLoop();       // CanAir.io API !! D E P R E C A T E D !!
   influxDbLoop();  // influxDB publication
   // statusLoop();    // update sensor status GUI
   otaLoop();       // check for firmware updates

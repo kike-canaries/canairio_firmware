@@ -96,6 +96,10 @@ void Sensors::am2320Read() {
     Serial.println("-->[AM2320] Humidity: " + String(humi) + " % Temp: " + String(temp) + " °C");
 }
 
+void Sensors::setErrorCallBack(voidCbFn cb){
+    _onErrorCb = cb;
+}
+
 void Sensors::loop() {
     am2320Read();
     pmsensorRead();

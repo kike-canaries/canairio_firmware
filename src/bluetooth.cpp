@@ -38,14 +38,12 @@ String getSensorData() {
 class MyServerCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
         deviceConnected = true;
-        // showBTIcon(true);
-        Serial.println("-->[BLE] onConnect");
+        Serial.println("-->[BLE] device client is connected.");
     };
 
     void onDisconnect(BLEServer* pServer) {
         deviceConnected = false;
-        // showBTIcon(false);
-        Serial.println("-->[BLE] onDisconnect");
+        Serial.println("-->[BLE] device client is disconnected.");
     };
 };  // BLEServerCallbacks
 
@@ -105,7 +103,7 @@ void bleLoop() {
     static uint_fast64_t bleTimeStamp = 0;
     // notify changed value
     if (deviceConnected && sensors.isDataReady() && (millis() - bleTimeStamp > 5000)) {  // each 5 secs
-        Serial.println("-->[BLE] sending notification..");
+        log_i("[BLE] sending notification..");
         bleTimeStamp = millis();
         pCharactData->setValue(getNotificationData().c_str());  // small payload for notification
         pCharactData->notify();
@@ -115,7 +113,7 @@ void bleLoop() {
     if (!deviceConnected && oldDeviceConnected) {
         delay(250);                   // give the bluetooth stack the chance to get things ready
         pServer->startAdvertising();  // restart advertising
-        Serial.println("-->[BLE] start advertising");
+        Serial.println("-->[BLE] start advertising..");
         oldDeviceConnected = deviceConnected;
     }
     // connecting

@@ -73,12 +73,12 @@ bool Sensors::pmsensorRead(){
         ret = sps30.GetValues(&val);
         if (ret == ERR_DATALENGTH) {
             if (error_cnt++ > 3) {
-                pmSensirionErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
+                pmSensirionErrtoMess((char *)"-->[W][SPS30] Error during reading values: ", ret);
                 return false;
             }
             delay(1000);
         } else if (ret != ERR_OK) {
-            pmSensirionErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
+            pmSensirionErrtoMess((char *)"-->[W][SPS30] Error during reading values: ", ret);
             return false;
         }
     } while (ret != ERR_OK);
@@ -103,9 +103,8 @@ void Sensors::am2320Read() {
     if (isnan(temp)) temp = 0.0;
 }
 
-
 void Sensors::onPmSensorError(const char *msg) {
-    Serial.print("-->[E][PMSENSOR] ");
+    Serial.print("-->[W][PMSENSOR] ");
     Serial.println(msg);
     if(_onErrorCb)_onErrorCb(msg);
 }
@@ -113,7 +112,7 @@ void Sensors::onPmSensorError(const char *msg) {
 void Sensors::pmSensirionErrtoMess(char *mess, uint8_t r) {
 #ifdef SENSIRION
     char buf[80];
-    Serial.print("-->[E][SENSIRION] ");
+    Serial.print("-->[W][SENSIRION] ");
     Serial.print(mess);
     sps30.GetErrDescription(r, buf, 80);
     Serial.println(buf);
@@ -218,6 +217,7 @@ void Sensors::init(bool debug) {
     Serial.println("-->[SENSORS] starting AM2320 sensor..");
     am2320Init();
     debug = debug;
+    if (!debug) Serial.println("-->[SENSORS] debugging is disable.");
 }
 
 void Sensors::restart(){

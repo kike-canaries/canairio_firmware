@@ -196,9 +196,9 @@ void wifiConnect(const char* ssid, const char* pass) {
     Serial.print(ssid);
     WiFi.begin(ssid, pass);
     int wifi_retry = 0;
-    while (WiFi.isConnected() && wifi_retry++ < WIFI_RETRY_CONNECTION) {
+    while (!WiFi.isConnected() && wifi_retry++ < WIFI_RETRY_CONNECTION) {
         Serial.print(".");
-        delay(1000);  // increment this delay on possible reconnect issues
+        delay(100);  // increment this delay on possible reconnect issues
     }
     if (wifiCheck()) {
         cfg.isNewWifi = false;  // flag for config via BLE

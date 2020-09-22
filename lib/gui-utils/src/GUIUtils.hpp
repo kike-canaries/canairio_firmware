@@ -19,12 +19,12 @@ public:
 
   unsigned int inthumi = 0;
   
-  unsigned int inttemp = 0;
+  int inttemp = 0;
 
   unsigned int cursor = 0;
 
   U8G2 u8g2;
-  
+
   // Firmware version from git rev-list command
   String VERSION_CODE = "r";
 #ifdef SRC_REV
@@ -60,8 +60,6 @@ public:
   void displayLiveIcon();
   
   void displayPrefSaveIcon(bool enable);
-
-  void updateError(unsigned int error);
 
   void pageStart();
 

@@ -176,6 +176,9 @@ class MyOTAHandlerCallbacks: public OTAHandlerCallbacks{
 };
 
 void otaLoop() {
+    // TODO: we need this call in watchdog class!
+    // OTA for now, is not working yet.
+
     // timerAlarmDisable(timer);  // disable interrupt
     if (wifiOn) ota.loop();
     // timerAlarmEnable(timer);  // enable interrupt
@@ -192,7 +195,7 @@ bool wifiCheck() {
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
-    Serial.print("-->[WIFI] Connecting to ");
+    Serial.print("-->[WIFI] connecting to ");
     Serial.print(ssid);
     WiFi.begin(ssid, pass);
     int wifi_retry = 0;
@@ -202,7 +205,7 @@ void wifiConnect(const char* ssid, const char* pass) {
     }
     if (wifiCheck()) {
         cfg.isNewWifi = false;  // flag for config via BLE
-        Serial.println("done\n-->[WIFI] connected!");
+        Serial.println("done.\n-->[WIFI] connected!");
         Serial.print("-->[WIFI] ");
         Serial.println(WiFi.localIP());
         otaInit();

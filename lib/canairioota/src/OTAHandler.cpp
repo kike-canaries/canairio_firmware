@@ -45,7 +45,7 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
         });
 
     ArduinoOTA.begin();
-    Serial.println("-->[OTA] Ready");
+    Serial.println("-->[OTA] Ready.");
 }
 
 void OTAHandler::loop() {

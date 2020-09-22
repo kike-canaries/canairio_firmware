@@ -46,10 +46,11 @@ typedef void (*voidCbFn)();
 
 class Sensors
 {
-
     public: 
 
-    void init();
+    bool debug;
+
+    void init(bool debug=false);
     void loop();
     bool isDataReady();
     void setOnDataCallBack(voidCbFn cb);
@@ -103,6 +104,7 @@ class Sensors
     void pmSensorInit();
     bool pmsensorRead();
     void onPmSensorError(const char *msg);
+    void printValues();
     void pmSensirionInit();
     void pmSensirionErrtoMess(char *mess, uint8_t r);
     void pmSensirionErrorloop(char *mess, uint8_t r);

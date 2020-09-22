@@ -36,7 +36,7 @@ bool Sensors::pmsensorRead(){
 
 #ifdef PANASONIC
     if (txtMsg[0] == 02) {
-        Serial.print("-->[SNGC] read > done!");
+        if(debug) Serial.print("-->[SNGC] read > done!");
         pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
         pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
         if (pm25 > 2000 && pm10 > 2000) {
@@ -51,7 +51,7 @@ bool Sensors::pmsensorRead(){
 #elif HONEYWELL  // HONEYWELL
     if (txtMsg[0] == 66) {
         if (txtMsg[1] == 77) {
-            Serial.print("-->[HPMA] read > done!");
+            if (debug) Serial.print("-->[HPMA] read > done!");
             pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
             pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
             if (pm25 > 1000 && pm10 > 1000) {
@@ -83,7 +83,7 @@ bool Sensors::pmsensorRead(){
         }
     } while (ret != ERR_OK);
 
-    Serial.print("-->[SPS30] read > done!");
+    if (debug) Serial.print("-->[SPS30] read > done!");
 
     pm25 = round(val.MassPM2);
     pm10 = round(val.MassPM10);
@@ -101,7 +101,6 @@ void Sensors::am2320Read() {
     temp = am2320.readTemperature();
     if (isnan(humi)) humi = 0.0;
     if (isnan(temp)) temp = 0.0;
-    Serial.println("-->[AM2320] Humidity: " + String(humi) + " % Temp: " + String(temp) + " °C");
 }
 
 
@@ -166,9 +165,18 @@ void Sensors::pmSensirionInit() {
 }
 
 void Sensors::am2320Init() {
-    // pinMode(21, INPUT_PULLUP);  ???
-    // pinMode(22, INPUT_PULLUP);  ???
+    // pinMode(21, INPUT_PULLUP);  
+    // pinMode(22, INPUT_PULLUP);  
     am2320.begin();  // temp/humidity sensor
+}
+
+/// Print some sensors values
+void Sensors::printValues() {
+    if (debug) {
+        char output[100];
+        sprintf(output, " PM1:%03d PM25:%03d PM10:%03d H:%02d%% T:%02d°C", pm1, pm25, pm10, (int)humi, (int)temp);
+        Serial.println(output);
+    }
 }
 
 /***********************************************************************************
@@ -177,8 +185,7 @@ void Sensors::am2320Init() {
 
 /**
  * Main sensor loop.
- * 
- * all sensor read methods here, please call it on main loop.
+ * All sensor read methods here, please call it on main loop.
  */
 void Sensors::loop() {
     static uint_fast64_t pmLoopTimeStamp = 0;  // timestamp for loop check
@@ -187,6 +194,7 @@ void Sensors::loop() {
         pmLoopTimeStamp = millis();
         am2320Read();
         bool pmsuccess = pmsensorRead();
+        printValues();
         if(_onDataCb && pmsuccess) _onDataCb();
         dataReady = true;
     }
@@ -199,7 +207,7 @@ void Sensors::loop() {
  * Please see the platformio.ini file for 
  * know what sensors is enable
  */
-void Sensors::init() {
+void Sensors::init(bool debug) {
     Serial.println("-->[SENSORS] starting PM sensor..");
 #if defined HONEYWELL || defined PANASONIC
     pmSensorInit();
@@ -209,6 +217,7 @@ void Sensors::init() {
     // TODO: enable/disable via flag
     Serial.println("-->[SENSORS] starting AM2320 sensor..");
     am2320Init();
+    debug = debug;
 }
 
 void Sensors::restart(){

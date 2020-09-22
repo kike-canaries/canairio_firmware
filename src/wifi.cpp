@@ -188,12 +188,6 @@ void otaInit() {
 
 bool wifiCheck() {
     wifiOn = WiFi.isConnected();
-    // if(wifiOn)st.statusOn(st.bit_wan);  // TODO: We need validate internet connection
-    // else {
-    //     st.statusOff(st.bit_cloud);
-    //     st.statusOff(st.bit_wan);
-    // }
-    // showWifiIcon(wifiOn);
     return wifiOn;
 }
 
@@ -202,19 +196,18 @@ void wifiConnect(const char* ssid, const char* pass) {
     Serial.print(ssid);
     WiFi.begin(ssid, pass);
     int wifi_retry = 0;
-    while (WiFi.status() != WL_CONNECTED && wifi_retry++ < WIFI_RETRY_CONNECTION) {
+    while (WiFi.isConnected() && wifi_retry++ < WIFI_RETRY_CONNECTION) {
         Serial.print(".");
-        delay(100);  // increment this delay on possible reconnect issues
+        delay(1000);  // increment this delay on possible reconnect issues
     }
     if (wifiCheck()) {
         cfg.isNewWifi = false;  // flag for config via BLE
         Serial.println("done\n-->[WIFI] connected!");
-        Serial.print("-->[WIFI][IP]");
+        Serial.print("-->[WIFI] ");
         Serial.println(WiFi.localIP());
         otaInit();
     } else {
         Serial.println("fail!\n-->[E][WIFI] disconnected!");
-        // st.setErrorCode(st.ecode_wifi_fail);
     }
 }
 

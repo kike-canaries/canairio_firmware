@@ -74,8 +74,10 @@ void batteryloop() {
 }
 
 unsigned int getChargeLevel() {
+#ifdef TTGO_TQ
     Serial.print("-->[BATT] chargelevel: ");
     Serial.print(chargeLevel);
     Serial.println("%");
+#endif
     return chargeLevel;
 }

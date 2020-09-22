@@ -7,9 +7,9 @@
 #include <InfluxArduino.hpp>
 #include <Sensors.hpp>
 
-#define PUBLISH_INTERVAL 30  // publish to cloud each 30 seconds
-#define WIFI_RETRY_CONNECTION 5
-#define IFX_RETRY_CONNECTION 5
+#define PUBLISH_INTERVAL 30       // publish to cloud each 30 seconds
+#define WIFI_RETRY_CONNECTION 30  // 30 seconds wait for wifi connection
+#define IFX_RETRY_CONNECTION 5    // influxdb publish retry 
 
 void otaLoop();
 void otaInit();

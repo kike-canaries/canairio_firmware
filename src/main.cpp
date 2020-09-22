@@ -62,7 +62,7 @@ void setup(){
   influxDbInit();
   apiInit();
   gui.welcomeAddMessage("==SETUP READY==");
-  // watchdogInit();  // enable timer for reboot in any loop blocker
+  watchdogInit();  // enable timer for reboot in any loop blocker
   delay(500);
   showValues();
 }
@@ -75,5 +75,5 @@ void loop(){
   apiLoop();          // CanAir.io API !! D E P R E C A T E D !!
   influxDbLoop();     // influxDB publication
   otaLoop();          // check for firmware updates
-  // watchdogLoop();     // reset every 20 minutes with Wifion
+  watchdogLoop();     // check loop blockers
 }

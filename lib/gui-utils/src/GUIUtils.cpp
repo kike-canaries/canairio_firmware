@@ -26,7 +26,7 @@ void GUIUtils::displayInit() {
     u8g2.setFontDirection(0);
     u8g2.setFontMode(0);
     this->u8g2 = u8g2;
-    Serial.println("-->[OLED] display ready.");
+    Serial.println("-->[OLED] display config ready.");
 }
 
 void GUIUtils::showWelcome() {
@@ -34,14 +34,12 @@ void GUIUtils::showWelcome() {
     u8g2.setFont(u8g2_font_5x8_tf);
     u8g2.drawStr(0, 0, "CanAirIO");
     u8g2.sendBuffer();
-    String version = String(VERSION_CODE + VCODE);
     u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.drawStr(46, 1, version.c_str());
+    u8g2.drawStr(46, 1, getFirmwareVersionCode().c_str());
     u8g2.drawLine(0, 9, 63, 9);
     u8g2.sendBuffer();
     lastDrawedLine = 12;
     // only for first screen
-    Serial.println("-->[OLED] welcome screen ready.");
     u8g2.sendBuffer();
 }
 
@@ -232,9 +230,7 @@ void GUIUtils::displaySensorAverage(int average) {
 // TODO: separate this function, format/display
 void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi, float temp, int rssi) {
     char output[22];
-    inthumi = (int)humi;
-    inttemp = (int)temp;
-    sprintf(output, "%03d E%02d H%02d%% T%02d°C", pm25, ecode, inthumi, inttemp);  // 000 E00 H00% T00°C
+    sprintf(output, "%03d E%02d H%02d%% T%02d°C", pm25, 0, (int) humi, (int) temp);
     displayBottomLine(String(output));
 #ifdef TTGO_TQ
     u8g2.setFont(u8g2_font_4x6_tf);
@@ -289,7 +285,7 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
     }
 }
 
-void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn) {
+void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
 #ifdef TTGO_TQ
     if (bleOn)
         u8g2.drawBitmap(119, 24, 1, 8, ic_bluetooth_on);
@@ -299,6 +295,11 @@ void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn)
         u8g2.drawBitmap(106, 24, 1, 8, ic_wifi_on);
     if (dataOn)
         u8g2.drawBitmap(93, 24, 1, 8, ic_data_on);
+    if (preferenceSave)
+        u8g2.drawBitmap(71, 24, 1, 8, ic_pref_save);
+    if (sensorLive)
+        u8g2.drawBitmap(80, 25, 1, 8, ic_sensor_live);
+    
 #else
     if (bleOn)
         u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_on);
@@ -308,29 +309,31 @@ void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn)
         u8g2.drawBitmap(44, 40, 1, 8, ic_wifi_on);
     if (dataOn)
         u8g2.drawBitmap(34, 40, 1, 8, ic_data_on);
+    if (preferenceSave)
+        u8g2.drawBitmap(10, 40, 1, 8, ic_pref_save);
+    if (sensorLive)
+        u8g2.drawBitmap(0, 40, 1, 8, ic_sensor_live);
+
     u8g2.drawLine(0, 38, 63, 38);
 #endif
+    if(dataOn) dataOn = false;                      // reset trigger for publish data ok.
+    if(preferenceSave) preferenceSave = false;      // reset trigger for save preference ok.
+    if(sensorLive) sensorLive = false;
 }
 
-void GUIUtils::displayLiveIcon() {
-#ifdef TTGO_TQ
-    if (toggleLive)
-        u8g2.drawBitmap(80, 25, 1, 8, ic_sensor_live);
-#else
-    if (toggleLive)
-        u8g2.drawBitmap(0, 40, 1, 8, ic_sensor_live);
-#endif
-    toggleLive = !toggleLive;
+/// enable trigger for show data ok icon, one time.
+void GUIUtils::displayDataOnIcon(){
+    dataOn = true;
 }
 
-void GUIUtils::displayPrefSaveIcon(bool enable) {
-#ifdef TTGO_TQ
-    if (enable)
-        u8g2.drawBitmap(71, 24, 1, 8, ic_pref_save);
-#else
-    if (enable)
-        u8g2.drawBitmap(10, 40, 1, 8, ic_pref_save);
-#endif
+/// enable trigger for sensor live icon, one time.
+void GUIUtils::displaySensorLiveIcon() {
+    sensorLive = true;
+}
+
+/// enable trigger for save preference ok, one time.
+void GUIUtils::displayPreferenceSaveIcon() {
+    preferenceSave = true;
 }
 
 void GUIUtils::pageStart() {
@@ -339,6 +342,17 @@ void GUIUtils::pageStart() {
 
 void GUIUtils::pageEnd() {
     u8g2.nextPage();
+}
+
+/// Firmware version from platformio.ini
+String GUIUtils::getFirmwareVersionCode(){
+    String VERSION_CODE = "r";
+#ifdef SRC_REV
+    int VCODE = SRC_REV;
+#else
+    int VCODE = 0;
+#endif
+    return String(VERSION_CODE + VCODE);
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_GUIHANDLER)

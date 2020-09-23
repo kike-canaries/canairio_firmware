@@ -53,6 +53,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
         if (value.length() > 0) {
             if (cfg.save(value.c_str())) {
                 cfg.reload();
+                gui.displayPreferenceSaveIcon();
                 if (cfg.isNewWifi) {
                     wifiRestart();
                     apiInit();

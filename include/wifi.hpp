@@ -1,10 +1,10 @@
-#include <OTAHandler.h>
 #include <WiFi.h>
+#include <OTAHandler.h>
 #include <esp_wifi.h>
-
 #include <CanAirIoApi.hpp>
 #include <ConfigApp.hpp>
 #include <InfluxArduino.hpp>
+#include <GUIUtils.hpp>
 #include <Sensors.hpp>
 
 #define PUBLISH_INTERVAL 30       // publish to cloud each 30 seconds

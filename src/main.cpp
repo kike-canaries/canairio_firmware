@@ -15,10 +15,10 @@
 #include <watchdog.hpp>
 #include <battery.hpp>
 
-void showValues() {
-    static uint_fast64_t timeStamp = 0;  // timestamp for loop check
-    if ((millis() - timeStamp > 1000)) {
-        timeStamp = millis();
+void displayGUI() {
+    static uint_fast64_t timeStampGUI = 0;  // timestamp for GUI refresh
+    if ((millis() - timeStampGUI > 1000)) { // it should be minor than sensor loop
+        timeStampGUI = millis();
         gui.pageStart();
         gui.displaySensorAverage(sensors.getPM25());
         gui.displaySensorData(
@@ -28,12 +28,13 @@ void showValues() {
             sensors.getHumidity(),
             sensors.getTemperature(),
             getWifiRSSI());
-        gui.displayLiveIcon();
-        // TODO: we need a callback from wifi class on publication,
-        // also we need data send toggle.
-        gui.displayStatus(WiFi.isConnected(), true, bleIsConnected(), true);
+        gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
         gui.pageEnd();
     }
+}
+
+void onSensorDataOk () {
+    gui.displaySensorLiveIcon();     // all sensors read are ok
 }
 
 /******************************************************************************
@@ -42,29 +43,39 @@ void showValues() {
 
 void setup(){
   Serial.begin(115200);
-  delay(1000);
+  delay(200);
   Serial.println("\n== INIT SETUP ==\n");
   pinMode(BUILTIN_LED,OUTPUT);
+  // init graphic user interface
   gui.displayInit();
   gui.showWelcome();
+  // init app preferences and load settings
   cfg.init("canairio");
+  // device wifi macaddress and firmware version
   Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
-  gui.welcomeAddMessage("Sensors test..");
+  Serial.println("-->[INFO] Firmware "+gui.getFirmwareVersionCode());
+  // init all sensors
+  sensors.setOnDataCallBack(&onSensorDataOk);    // all data read callback
+  sensors.setSampleTime(cfg.stime);              // config sensors sample time
+  sensors.init();                                // start all sensors
+  gui.welcomeAddMessage("Sensors ready.");
+  // init battery (only for some boards)
   batteryInit();
-  sensors.setOnDataCallBack(&showValues);
-  sensors.init();
+  // Bluetooth low energy init (GATT server for device config)
   bleServerInit();
-  gui.welcomeAddMessage("GATT server..");
-  if(cfg.ssid.length()>0) gui.welcomeAddMessage("WiFi:"+cfg.ssid);
-  else gui.welcomeAddMessage("WiFi radio test..");
+  gui.welcomeAddMessage("Bluetooth ready.");
+  // WiFi and cloud communication
   wifiInit();
-  gui.welcomeAddMessage("CanAirIO API..");
+  if(WiFi.isConnected()) gui.welcomeAddMessage("WiFi:"+cfg.ssid);
+  else gui.welcomeAddMessage("WiFi: disabled.");
   influxDbInit();
-  apiInit();
+  apiInit();       // DEPRECATED
+  if(WiFi.isConnected()) gui.welcomeAddMessage("API clouds ready.");
+  // init timer for reboot in any loop blocker
+  watchdogInit();  
   gui.welcomeAddMessage("==SETUP READY==");
-  watchdogInit();  // enable timer for reboot in any loop blocker
-  delay(500);
-  showValues();
+  delay(3000);
+  displayGUI();
 }
 
 void loop(){
@@ -76,4 +87,5 @@ void loop(){
   influxDbLoop();     // influxDB publication
   otaLoop();          // check for firmware updates
   watchdogLoop();     // check loop blockers
+  displayGUI();       // run GUI page
 }

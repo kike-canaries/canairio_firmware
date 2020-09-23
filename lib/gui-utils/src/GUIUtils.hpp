@@ -3,68 +3,57 @@
 
 #include <U8g2lib.h>
 
-class GUIUtils
-{
-private:
+class GUIUtils {
+   public:
+    GUIUtils(void){};
 
- bool toggleLive;
+    void displayInit();
 
-public:
+    void showWelcome();
 
-  GUIUtils(void) {};
+    void showProgress(unsigned int progress, unsigned int total);
 
-  unsigned int mcount, ecode = 0;
+    void welcomeAddMessage(String msg);
 
-  int lastDrawedLine = 0;
+    void displaySensorAverage(int average);
 
-  unsigned int inthumi = 0;
-  
-  int inttemp = 0;
+    void displaySensorData(int pm25, int pm10, int chargeLevel, float humi, float temp, int rssi);
 
-  unsigned int cursor = 0;
+    void displayStatus(bool wifiOn, bool bleOn, bool blePair);
 
-  U8G2 u8g2;
+    void displayDataOnIcon();
 
-  // Firmware version from git rev-list command
-  String VERSION_CODE = "r";
-#ifdef SRC_REV
-  int VCODE = SRC_REV;
-#else
-  int VCODE = 0;
-#endif
+    void displaySensorLiveIcon();
 
-  void displayInit();
+    void displayPreferenceSaveIcon();
 
-  void showWelcome();
+    void pageStart();
 
-  void showProgress(unsigned int progress, unsigned int total);
+    void pageEnd();
 
-  void welcomeAddMessage(String msg);
+    String getFirmwareVersionCode ();
 
-  void displayCenterBig(String msg);
+   private:
 
-  void displayBottomLine(String msg);
+    int lastDrawedLine = 0;
 
-  void displayEmoticonLabel(int numsmile, String msg);
+    bool dataOn;
 
-  void displayBigEmoticon(String msg);
+    bool preferenceSave;
 
-  void displayBigLabel(int cursor, String msg);
+    bool sensorLive;
 
-  void displaySensorAverage(int average);
+    U8G2 u8g2;
 
-  void displaySensorData(int pm25, int pm10, int chargeLevel, float humi, float temp, int rssi);
+    void displayCenterBig(String msg);
 
-  void displayStatus(bool wifiOn, bool bleOn, bool blePair, bool dataOn);
+    void displayBottomLine(String msg);
 
-  void displayLiveIcon();
-  
-  void displayPrefSaveIcon(bool enable);
+    void displayEmoticonLabel(int numsmile, String msg);
 
-  void pageStart();
+    void displayBigEmoticon(String msg);
 
-  void pageEnd();
-
+    void displayBigLabel(int cursor, String msg);
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_GUIHANDLER)

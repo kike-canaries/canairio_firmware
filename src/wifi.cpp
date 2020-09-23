@@ -1,6 +1,5 @@
 #include <wifi.hpp>
 
-bool wifiOn;
 uint32_t ifxdbwcount;
 int rssi = 0;
 
@@ -12,11 +11,12 @@ CanAirIoApi api(false);
 ******************************************************************************/
 
 bool influxDbIsConfigured() {
+    log_d("ifxdb %d ifxip %d dname %d",cfg.ifxdb.length(),cfg.ifxip.length(),cfg.dname.length());
     return cfg.ifxdb.length() > 0 && cfg.ifxip.length() > 0 && cfg.dname.length() > 0;
 }
 
 void influxDbInit() {
-    if (wifiOn && influxDbIsConfigured()) {
+    if (WiFi.isConnected() && influxDbIsConfigured()) {
         Serial.println("-->[INFLUXDB] connecting..");
         influx.configure(cfg.ifxdb.c_str(), cfg.ifxip.c_str());  //third argument (port number) defaults to 8086
         Serial.print("-->[INFLUXDB] Using HTTPS: ");
@@ -66,24 +66,21 @@ bool influxDbWrite() {
 
 void influxDbLoop() {
     static uint_fast64_t timeStamp = 0;
-    if (millis() - timeStamp > PUBLISH_INTERVAL * 30000) {
+    if (millis() - timeStamp > PUBLISH_INTERVAL * 1000) {
         timeStamp = millis();
-        if (sensors.isDataReady() && wifiOn && cfg.wifiEnable && cfg.isIfxEnable() && influxDbIsConfigured()) {
+        if (sensors.isDataReady() && WiFi.isConnected() && cfg.wifiEnable && cfg.isIfxEnable() && influxDbIsConfigured()) {
             int ifx_retry = 0;
-            Serial.printf("-->[INFLUXDB][%s]\n", cfg.dname.c_str());
-            Serial.printf("-->[INFLUXDB][%010d] writing to ", ifxdbwcount++);
-            Serial.print("" + cfg.ifxip + "..");
+            log_i("[INFLUXDB][ %s ]", cfg.dname.c_str());
+            log_i("[INFLUXDB][ %010d ] writing to %s", ifxdbwcount++, cfg.ifxip.c_str());
             while (!influxDbWrite() && (ifx_retry++ < IFX_RETRY_CONNECTION)) {
-                Serial.print(".");
                 delay(200);
             }
             if (ifx_retry > IFX_RETRY_CONNECTION) {
-                Serial.println("failed!\n-->[E][INFLUXDB] write error, try wifi restart..");
+                Serial.println("-->[E][INFLUXDB] write error, try wifi restart..");
                 wifiRestart();
             } else {
-                Serial.println("done. [" + String(influx.getResponse()) + "]");
+                log_i("[INFLUXDB] write done. Response: %d", influx.getResponse());
                 gui.displayDataOnIcon();
-                delay(200);  // --> because the ESP go to then to light sleep, not remove it!
             }
         }
     }  
@@ -98,7 +95,7 @@ bool apiIsConfigured() {
 }
 
 void apiInit() {
-    if (wifiOn && apiIsConfigured()) {
+    if (WiFi.isConnected() && apiIsConfigured() && cfg.isApiEnable()) {
         Serial.println("-->[API] Connecting..");
         // stationId and deviceId, optional endpoint, host and port
         if (cfg.apiuri.equals("") && cfg.apisrv.equals(""))
@@ -114,10 +111,10 @@ void apiInit() {
 
 void apiLoop() {
     static uint_fast64_t timeStamp = 0;
-    if (millis() - timeStamp > PUBLISH_INTERVAL * 45000) {
+    if (millis() - timeStamp > PUBLISH_INTERVAL * 1000) {
         timeStamp = millis();
-        if (sensors.isDataReady() && wifiOn && cfg.wifiEnable && cfg.isApiEnable() && apiIsConfigured()) {
-            Serial.print("-->[API] writing to ");
+        if (sensors.isDataReady() && WiFi.isConnected() && cfg.wifiEnable && cfg.isApiEnable() && apiIsConfigured()) {
+            log_d("-->[API] writing to ");
             Serial.print("" + String(api.ip) + "..");
             bool status = api.write(
                 sensors.getPM1(),
@@ -173,18 +170,13 @@ void otaLoop() {
     // OTA for now, is not working yet.
 
     // timerAlarmDisable(timer);  // disable interrupt
-    if (wifiOn) ota.loop();
+    if (WiFi.isConnected()) ota.loop();
     // timerAlarmEnable(timer);  // enable interrupt
 }
 
 void otaInit() {
     ota.setup("CanAirIO", "CanAirIO");
     ota.setCallbacks(new MyOTAHandlerCallbacks());
-}
-
-bool wifiCheck() {
-    wifiOn = WiFi.isConnected();
-    return wifiOn;
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
@@ -196,7 +188,7 @@ void wifiConnect(const char* ssid, const char* pass) {
         Serial.print(".");
         delay(100);  // increment this delay on possible reconnect issues
     }
-    if (wifiCheck()) {
+    if (WiFi.isConnected()) {
         cfg.isNewWifi = false;  // flag for config via BLE
         Serial.println("done.\n-->[WIFI] connected!");
         Serial.print("-->[WIFI] ");
@@ -214,12 +206,10 @@ void wifiInit() {
 }
 
 void wifiStop() {
-    if (wifiOn) {
+    if (WiFi.isConnected()) {
         Serial.println("-->[WIFI] Disconnecting..");
         WiFi.disconnect(true);
-        wifiOn = false;
         delay(1000);
-        wifiCheck();
     }
 }
 
@@ -229,7 +219,7 @@ void wifiRestart() {
 }
 
 void wifiRSSI(){
-  if (wifiOn)
+  if (WiFi.isConnected())
     rssi = WiFi.RSSI();
   else
     rssi = 0;
@@ -237,7 +227,7 @@ void wifiRSSI(){
 
 void wifiLoop() {
     static uint_least64_t wifiTimeStamp = 0;
-    if (millis() - wifiTimeStamp > 5000  && cfg.wifiEnable && cfg.ssid.length() > 0 && !wifiCheck()) {
+    if (millis() - wifiTimeStamp > 5000  && cfg.wifiEnable && cfg.ssid.length() > 0 && !WiFi.isConnected()) {
         wifiTimeStamp = millis();
         wifiRSSI();
         wifiInit();

@@ -109,7 +109,7 @@ bool ConfigApp::save(const char *json){
     preferences.begin(_app_name, false);
     preferences.putString("dname", tdname );
     preferences.end();
-    Serial.println("-->[CONFIG] set device name to"+tdname);
+    Serial.println("-->[CONFIG] set device name to: "+tdname);
   }
   else if (tifxdb.length()>0 && tifxip.length()>0) {
     preferences.begin(_app_name, false);

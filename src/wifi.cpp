@@ -66,7 +66,7 @@ bool influxDbWrite() {
 
 void influxDbLoop() {
     static uint_fast64_t timeStamp = 0;
-    if (millis() - timeStamp > PUBLISH_INTERVAL * 1000) {
+    if (millis() - timeStamp > PUBLISH_INTERVAL * 30000) {
         timeStamp = millis();
         if (sensors.isDataReady() && wifiOn && cfg.wifiEnable && cfg.isIfxEnable() && influxDbIsConfigured()) {
             int ifx_retry = 0;
@@ -82,15 +82,11 @@ void influxDbLoop() {
                 wifiRestart();
             } else {
                 Serial.println("done. [" + String(influx.getResponse()) + "]");
-                // st.statusOn(st.bit_cloud);
-                // dataSendToggle = true;
-                // showDataIcon(true);
-                // showUptime(ifxdbwcount);
+                gui.displayDataOnIcon();
                 delay(200);  // --> because the ESP go to then to light sleep, not remove it!
             }
         }
-    }   // else
-        // showDataIcon(false);
+    }  
 }
 
 /******************************************************************************
@@ -118,7 +114,7 @@ void apiInit() {
 
 void apiLoop() {
     static uint_fast64_t timeStamp = 0;
-    if (millis() - timeStamp > PUBLISH_INTERVAL * 1000) {
+    if (millis() - timeStamp > PUBLISH_INTERVAL * 45000) {
         timeStamp = millis();
         if (sensors.isDataReady() && wifiOn && cfg.wifiEnable && cfg.isApiEnable() && apiIsConfigured()) {
             Serial.print("-->[API] writing to ");
@@ -137,12 +133,9 @@ void apiLoop() {
             int code = api.getResponse();
             if (status) {
                 Serial.println("done. [" + String(code) + "]");
-                // st.statusOn(st.bit_cloud);
-                // st.dataSendToggle = true;
+                gui.displayDataOnIcon();
             } else {
                 Serial.println("fail! [" + String(code) + "]");
-                // st.statusOff(st.bit_cloud);
-                // st.setErrorCode(st.ecode_api_write_fail);
                 if (code == -1) {
                     Serial.println("-->[E][API] publish error (-1)");
                     delay(100);

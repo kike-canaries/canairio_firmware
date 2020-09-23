@@ -172,7 +172,8 @@ bool ConfigApp::save(const char *json){
     preferences.begin(_app_name, false);
     preferences.putInt("stime", tstime);
     preferences.end();
-    Serial.println("-->[CONFIG] sensor sample time saved!");
+    Serial.print("-->[CONFIG] sensor sample time set to: ");
+    Serial.println(tstime);
   }
   else if (cmd==((uint16_t)(chipid >> 32)) && act.length()>0){
     // reboot command

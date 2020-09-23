@@ -54,6 +54,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
             if (cfg.save(value.c_str())) {
                 cfg.reload();
                 gui.displayPreferenceSaveIcon();
+                if(sensors.sample_time != cfg.stime) sensors.setSampleTime(cfg.stime);
                 if (cfg.isNewWifi) {
                     wifiRestart();
                     apiInit();

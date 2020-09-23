@@ -106,6 +106,9 @@ void bleLoop() {
     // notify changed value
     if (deviceConnected && sensors.isDataReady() && (millis() - bleTimeStamp > 5000)) {  // each 5 secs
         log_i("[BLE] sending notification..");
+        log_d("[BLE] %s",getNotificationData().c_str());
+        log_d("[BLE] sending config data..");
+        log_d("[BLE] %s",getSensorData().c_str());
         bleTimeStamp = millis();
         pCharactData->setValue(getNotificationData().c_str());  // small payload for notification
         pCharactData->notify();

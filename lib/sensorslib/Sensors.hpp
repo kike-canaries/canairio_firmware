@@ -5,8 +5,6 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 #include <sps30.h>
-#include <GUIUtils.hpp>
-
 using namespace std;
 #include <vector>
 
@@ -15,8 +13,6 @@ using namespace std;
 * ---------------------
 * please select board on platformio.ini file
 ******************************************************************************/
-
-// HPMA115S0 sensor config
 #ifdef WEMOSOLED
 #define HPMA_RX 13  // config for Wemos board & TTGO18650
 #define HPMA_TX 15  // some old TTGO18650 have HPMA_RX 18 & HPMA_TX 17
@@ -31,12 +27,7 @@ using namespace std;
 #define HPMA_TX 16
 #endif
 
-#define I2C_SDA_PIN 21
-#define I2C_SCL_PIN 22
-
-#define SENSOR_INTERVAL 1000 * 60 * 3  // 3 minutes => more is better for the battery
-#define SENSOR_SAMPLE 1000 * 35        // 30 seconds => less is better for the battery
-#define SENSOR_RETRY 1000              // Sensor read retry
+#define SENSOR_RETRY 1000              // Sensor read retry. (unit chars)
 
 // Sensirion SPS30 sensor
 #define SP30_COMMS SERIALPORT2 // UART OR I2C
@@ -49,10 +40,12 @@ class Sensors
     public: 
 
     bool debug;
+    int sample_time = 5;
 
     void init(bool debug=false);
     void loop();
     bool isDataReady();
+    void setSampleTime (int seconds);
     void setOnDataCallBack(voidCbFn cb);
     void setOnErrorCallBack(errorCbFn cb);
 
@@ -75,7 +68,6 @@ class Sensors
     String getStringPM1();
     String getStringPM25();
     String getStringPM10();
-
 
     private:
 

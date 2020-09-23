@@ -187,8 +187,8 @@ void Sensors::printValues() {
  * All sensor read methods here, please call it on main loop.
  */
 void Sensors::loop() {
-    static uint_fast64_t pmLoopTimeStamp = 0;  // timestamp for loop check
-    if ((millis() - pmLoopTimeStamp > 1000)) {
+    static uint_fast64_t pmLoopTimeStamp = 0;                 // timestamp for sensor loop check data
+    if ((millis() - pmLoopTimeStamp > sample_time * 1000)) {  // sample time for each capture
         dataReady = false;
         pmLoopTimeStamp = millis();
         am2320Read();
@@ -207,17 +207,27 @@ void Sensors::loop() {
  * know what sensors is enable
  */
 void Sensors::init(bool debug) {
+    debug = debug;
+    if (!debug) Serial.println("-->[SENSORS] debugging is disable.");
+
+    Serial.print("-->[SENSORS] sample time set to: ");
+    Serial.println(sample_time);
+
     Serial.println("-->[SENSORS] starting PM sensor..");
 #if defined HONEYWELL || defined PANASONIC
     pmSensorInit();
 #else  //SENSIRION
     pmSensirionInit();
 #endif
+
     // TODO: enable/disable via flag
-    Serial.println("-->[SENSORS] starting AM2320 sensor..");
+    Serial.println("-->[AM2320] starting AM2320 sensor..");
     am2320Init();
-    debug = debug;
-    if (!debug) Serial.println("-->[SENSORS] debugging is disable.");
+}
+
+/// set loop time interval for each sensor sample
+void Sensors::setSampleTime(int seconds){
+    sample_time = seconds;
 }
 
 void Sensors::restart(){

@@ -11,7 +11,9 @@ CanAirIoApi api(false);
 ******************************************************************************/
 
 bool influxDbIsConfigured() {
-    log_d("ifxdb %d ifxip %d dname %d",cfg.ifxdb.length(),cfg.ifxip.length(),cfg.dname.length());
+    if(cfg.ifxdb.length() > 0 && cfg.ifxip.length() > 0 && cfg.dname.length()==0) {
+        Serial.println("-->[W][INFLUXDB] ifxdb is configured but device name is missing!");
+    }
     return cfg.ifxdb.length() > 0 && cfg.ifxip.length() > 0 && cfg.dname.length() > 0;
 }
 
@@ -146,23 +148,26 @@ void apiLoop() {
 *   W I F I   M E T H O D S
 ******************************************************************************/
 
-class MyOTAHandlerCallbacks: public OTAHandlerCallbacks{
-  void onStart(){
-    gui.showWelcome();
-    gui.welcomeAddMessage("Upgrading..");
-  };
-  void onProgress(unsigned int progress, unsigned int total){
-    gui.showProgress(progress,total);
-  };
-  void onEnd(){
-    gui.welcomeAddMessage("");
-    gui.welcomeAddMessage("success!");    delay(1000);
-    gui.welcomeAddMessage("rebooting.."); delay(500);
-  }
-  void onError(){
-    gui.welcomeAddMessage("");
-    gui.welcomeAddMessage("error, try again!"); delay(2000);
-  }
+class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
+    void onStart() {
+        gui.showWelcome();
+        gui.welcomeAddMessage("Upgrading..");
+    };
+    void onProgress(unsigned int progress, unsigned int total) {
+        gui.showProgress(progress, total);
+    };
+    void onEnd() {
+        gui.welcomeAddMessage("");
+        gui.welcomeAddMessage("success!");
+        delay(1000);
+        gui.welcomeAddMessage("rebooting..");
+        delay(500);
+    }
+    void onError() {
+        gui.welcomeAddMessage("");
+        gui.welcomeAddMessage("error, try again!");
+        delay(2000);
+    }
 };
 
 void otaLoop() {
@@ -208,7 +213,7 @@ void wifiStop() {
     if (WiFi.isConnected()) {
         Serial.println("-->[WIFI] Disconnecting..");
         WiFi.disconnect(true);
-        delay(1000);
+        delay(100);
     }
 }
 
@@ -217,24 +222,17 @@ void wifiRestart() {
     wifiInit();
 }
 
-void wifiRSSI(){
-  if (WiFi.isConnected())
-    rssi = WiFi.RSSI();
-  else
-    rssi = 0;
-}
-
 void wifiLoop() {
     static uint_least64_t wifiTimeStamp = 0;
     if (millis() - wifiTimeStamp > 5000  && cfg.wifiEnable && cfg.ssid.length() > 0 && !WiFi.isConnected()) {
         wifiTimeStamp = millis();
-        wifiRSSI();
         wifiInit();
         influxDbInit();
         apiInit();
     }
 }
 
-int getWifiRSSI(){
-    return rssi;
+int getWifiRSSI() {
+    if (WiFi.isConnected()) return WiFi.RSSI();
+    else return 0;
 }

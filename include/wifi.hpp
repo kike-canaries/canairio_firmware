@@ -5,6 +5,7 @@
 #include <ConfigApp.hpp>
 #include <InfluxArduino.hpp>
 #include <GUIUtils.hpp>
+#include <Watchdog.hpp>
 #include <Sensors.hpp>
 
 #define PUBLISH_INTERVAL 30       // publish to cloud each 30 seconds

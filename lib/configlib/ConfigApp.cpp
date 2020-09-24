@@ -75,10 +75,13 @@ bool ConfigApp::save(const char *json){
   if (error) {
     Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
     Serial.println(error.c_str());
-
-    // setErrorCode(ecode_json_parser_error);
     return false;
   }
+
+  // char* output[1000];
+  // serializeJsonPretty(doc, output, 1000);
+  // log_n("[CONFIG] JSON: %s",output);
+
   String tdname = doc["dname"] | "";
   String tifxdb = doc["ifxdb"] | "";
   String tifxip = doc["ifxip"] | "";
@@ -194,7 +197,7 @@ bool ConfigApp::save(const char *json){
       preferences.putBool("wifiEnable", wenb);
       preferences.end();
       wifiEnable = wenb;
-      Serial.println("-->[CONFIG] Updating WiFi state: "+wenb);
+      Serial.println("-->[CONFIG] Updating WiFi state: "+String(wenb));
     }
     // enable/disable influxDb state
     if (act.equals("ist")) {
@@ -202,7 +205,7 @@ bool ConfigApp::save(const char *json){
       preferences.putBool("ifxEnable", ienb);
       preferences.end();
       ifxEnable = ienb;
-      Serial.println("-->[CONFIG] Updating InfluxDB state: "+ienb);
+      Serial.println("-->[CONFIG] Updating InfluxDB state: "+String(ienb));
     }
     // enable/disable CanAirIO API state
     if (act.equals("ast")) {
@@ -210,7 +213,7 @@ bool ConfigApp::save(const char *json){
       preferences.putBool("apiEnable", aenb);
       preferences.end();
       apiEnable = aenb;
-      Serial.println("-->[CONFIG] Updating API state: "+aenb);
+      Serial.println("-->[CONFIG] Updating API state: "+String(aenb));
     }
   }
   else {

@@ -14,17 +14,17 @@ using namespace std;
 * please select board on platformio.ini file
 ******************************************************************************/
 #ifdef WEMOSOLED
-#define HPMA_RX 13  // config for Wemos board & TTGO18650
-#define HPMA_TX 15  // some old TTGO18650 have HPMA_RX 18 & HPMA_TX 17
+#define PMS_RX 13  // config for Wemos board & TTGO18650
+#define PMS_TX 15  // some old TTGO18650 have PMS_RX 18 & PMS_TX 17
 #elif HELTEC
-#define HPMA_RX 13  // config for Heltec board, ESP32Sboard & ESPDUINO-32
-#define HPMA_TX 12  // some old ESP32Sboard have HPMA_RX 27 & HPMA_TX 25
+#define PMS_RX 13  // config for Heltec board, ESP32Sboard & ESPDUINO-32
+#define PMS_TX 12  // some old ESP32Sboard have PMS_RX 27 & PMS_TX 25
 #elif TTGO_TQ
-#define HPMA_RX 13  // config for TTGO_TQ board
-#define HPMA_TX 18
+#define PMS_RX 13  // config for TTGO_TQ board
+#define PMS_TX 18
 #else
-#define HPMA_RX 17  // config for D1MIN1 board
-#define HPMA_TX 16
+#define PMS_RX 17  // config for D1MIN1 board
+#define PMS_TX 16
 #endif
 
 #define SENSOR_RETRY 1000              // Sensor read retry. (unit chars)

@@ -166,12 +166,11 @@ class MyOTAHandlerCallbacks: public OTAHandlerCallbacks{
 };
 
 void otaLoop() {
-    // TODO: we need this call in watchdog class!
-    // OTA for now, is not working yet.
-
-    // timerAlarmDisable(timer);  // disable interrupt
-    if (WiFi.isConnected()) ota.loop();
-    // timerAlarmEnable(timer);  // enable interrupt
+    if (WiFi.isConnected()) {
+        wd.pause();
+        ota.loop();
+        wd.resume();
+    }
 }
 
 void otaInit() {

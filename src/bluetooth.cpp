@@ -55,11 +55,6 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
                 cfg.reload();
                 gui.displayPreferenceSaveIcon();
                 if(sensors.sample_time != cfg.stime) sensors.setSampleTime(cfg.stime);
-                if (cfg.isNewWifi) {
-                    wifiRestart();
-                    apiInit();
-                    influxDbInit();
-                }
                 if (cfg.isNewIfxdbConfig) influxDbInit();
                 if (cfg.isNewAPIConfig) apiInit();
                 if (!cfg.wifiEnable) wifiStop();

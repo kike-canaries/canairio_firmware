@@ -35,7 +35,7 @@ bool Sensors::pmsensorRead(){
 
 #ifdef PANASONIC
     if (txtMsg[0] == 02) {
-        if(debug) Serial.print("-->[SNGC] read > done!");
+        if(devmode) Serial.print("-->[SNGC] read > done!");
         pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
         pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
         if (pm25 > 2000 && pm10 > 2000) {
@@ -50,7 +50,7 @@ bool Sensors::pmsensorRead(){
 #elif HONEYWELL  // HONEYWELL
     if (txtMsg[0] == 66) {
         if (txtMsg[1] == 77) {
-            if (debug) Serial.print("-->[HPMA] read > done!");
+            if (devmode) Serial.print("-->[HPMA] read > done!");
             pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
             pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
             if (pm25 > 1000 && pm10 > 1000) {
@@ -82,7 +82,7 @@ bool Sensors::pmsensorRead(){
         }
     } while (ret != ERR_OK);
 
-    if (debug) Serial.print("-->[SPS30] read > done!");
+    if (devmode) Serial.print("-->[SPS30] read > done!");
 
     pm25 = round(val.MassPM2);
     pm10 = round(val.MassPM10);
@@ -176,7 +176,7 @@ void Sensors::am2320Init() {
 
 /// Print some sensors values
 void Sensors::printValues() {
-    if (debug) {
+    if (devmode) {
         char output[100];
         sprintf(output, " PM1:%03d PM25:%03d PM10:%03d H:%02d%% T:%02d°C", pm1, pm25, pm10, (int)humi, (int)temp);
         Serial.println(output);
@@ -214,8 +214,12 @@ void Sensors::loop() {
  * @param debug enable PM sensor log output.
  */
 void Sensors::init(bool debug) {
-    debug = debug;
-    if (!debug) Serial.println("-->[SENSORS] debugging is disable.");
+
+    // override with debug INFO level (>=3)
+    if (CORE_DEBUG_LEVEL>=3) devmode = true;  
+    else devmode = debug;
+    
+    if (!devmode) Serial.println("-->[SENSORS] debugging is disable.");
 
     Serial.print("-->[SENSORS] sample time set to: ");
     Serial.println(sample_time);

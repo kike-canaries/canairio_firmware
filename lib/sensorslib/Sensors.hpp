@@ -39,7 +39,7 @@ class Sensors
 {
     public: 
 
-    bool debug;
+    bool devmode;
     int sample_time = 5;
 
     void init(bool debug=false);

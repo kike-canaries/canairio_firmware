@@ -1,9 +1,8 @@
 #include "Sensors.hpp"
 
-// Honeywell and Panasonic
+// Serial PM sensor (Honeywell and Panasonic)
 #ifndef SENSIRION
-HardwareSerial hpmaSerial(1);
-HPMA115S0 hpma115S0(hpmaSerial);
+HardwareSerial pmsSerial(1);
 #endif
 
 // Sensirium
@@ -23,8 +22,8 @@ bool Sensors::pmsensorRead(){
     int try_sensor_read = 0;
     String txtMsg = "";
     while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
-        while (hpmaSerial.available() > 0) {
-            char inChar = hpmaSerial.read();
+        while (pmsSerial.available() > 0) {
+            char inChar = pmsSerial.read();
             txtMsg += inChar;
         }
     }
@@ -126,11 +125,19 @@ void Sensors::pmSensirionErrorloop(char *mess, uint8_t r) {
     else Serial.println(mess);
 #endif
 }
-
+/**
+ * Particule meter sensor init.
+ * 
+ * Hardware serial init for multiple sensors, like
+ * Honeywell, Plantower, Panasonic.
+ * 
+ * @param PMS_RX defined for RX wire.
+ * @param PMS_TX defined for TX wire.
+ **/
 void Sensors::pmSensorInit() {
 #if defined HONEYWELL || defined PANASONIC
     Serial.println(F("-->[PMSENSOR] starting HPMA/PANASONIC sensor.."));
-    hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
+    pmsSerial.begin(9600, SERIAL_8N1, PMS_RX, PMS_TX);
     delay(100);
 #endif
 }
@@ -164,8 +171,6 @@ void Sensors::pmSensirionInit() {
 }
 
 void Sensors::am2320Init() {
-    // pinMode(21, INPUT_PULLUP);  
-    // pinMode(22, INPUT_PULLUP);  
     am2320.begin();  // temp/humidity sensor
 }
 
@@ -204,7 +209,9 @@ void Sensors::loop() {
  * 
  * Particle meter and AM2320 sensors init.
  * Please see the platformio.ini file for 
- * know what sensors is enable
+ * know what sensors is enable.
+ * 
+ * @param debug enable PM sensor log output.
  */
 void Sensors::init(bool debug) {
     debug = debug;
@@ -232,10 +239,10 @@ void Sensors::setSampleTime(int seconds){
 
 void Sensors::restart(){
 #if defined HONEYWELL || defined PANASONIC
-    hpmaSerial.end();
+    pmsSerial.end();
 #endif
     init();
-    delay(500);
+    delay(100);
 }
 
 void Sensors::setOnDataCallBack(voidCbFn cb){

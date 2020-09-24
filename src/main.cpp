@@ -45,7 +45,7 @@ void onSensorDataOk() {
 void setup() {
     Serial.begin(115200);
     delay(200);
-    Serial.println("\n== INIT SETUP ==\n");
+    Serial.println("\n== CanAirIO Setup ==\n");
     pinMode(BUILTIN_LED, OUTPUT);
     // init graphic user interface
     gui.displayInit();
@@ -71,9 +71,8 @@ void setup() {
         gui.welcomeAddMessage("WiFi:" + cfg.ssid);
     else
         gui.welcomeAddMessage("WiFi: disabled.");
-    Serial.println("-->[INFO] WiFi connected: " + String(WiFi.isConnected()));
-    Serial.println("-->[INFO] influxDb enable: " + String(cfg.isIfxEnable()));
-    Serial.println("-->[INFO] CanAirIO API enable: " + String(cfg.isApiEnable()));
+    Serial.println("-->[INFO] InfluxDb API:\t" + String(cfg.isIfxEnable()));
+    Serial.println("-->[INFO] CanAirIO API:\t" + String(cfg.isApiEnable()));
     influxDbInit();
     apiInit();  // DEPRECATED
     if (WiFi.isConnected()) gui.welcomeAddMessage("API clouds ready.");

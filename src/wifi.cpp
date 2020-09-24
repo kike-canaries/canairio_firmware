@@ -24,7 +24,7 @@ void influxDbInit() {
         Serial.print("-->[INFLUXDB] Using HTTPS: ");
         Serial.println(influx.isSecure());  //will be true if you've added the InfluxCert.hpp file.
         cfg.isNewIfxdbConfig = false;       // flag for config via BLE
-        delay(1000);
+        delay(100);
     }
 }
 

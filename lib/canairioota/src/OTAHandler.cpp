@@ -11,10 +11,7 @@ OTAHandler::OTAHandler(){
 void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
     _ESP_ID = ESP_ID;
     _ESP_PASS = ESP_PASS;
-    _baud = 460800;
-    // everloop green
-    Serial.println("-->[OTA] Booting..");
-    //everloop blue
+    _baud = 1500000;
     ArduinoOTA.setHostname(_ESP_ID);  
     ArduinoOTA.setPassword(_ESP_PASS);
 
@@ -45,7 +42,7 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
         });
 
     ArduinoOTA.begin();
-    Serial.println("-->[OTA] Ready.");
+    Serial.println("-->[INFO] ready for OTA update.");
 }
 
 void OTAHandler::loop() {

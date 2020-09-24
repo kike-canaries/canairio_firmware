@@ -68,7 +68,7 @@ bool influxDbWrite() {
 
 void influxDbLoop() {
     static uint_fast64_t timeStamp = 0;
-    if (millis() - timeStamp > PUBLISH_INTERVAL * 1000) {
+    if (millis() - timeStamp > cfg.stime * 2 * 1000) {
         timeStamp = millis();
         if (sensors.isDataReady() && WiFi.isConnected() && cfg.wifiEnable && cfg.isIfxEnable() && influxDbIsConfigured()) {
             int ifx_retry = 0;
@@ -113,7 +113,7 @@ void apiInit() {
 
 void apiLoop() {
     static uint_fast64_t timeStamp = 0;
-    if (millis() - timeStamp > PUBLISH_INTERVAL * 1000) {
+    if (millis() - timeStamp > cfg.stime * 2 * 1000) {
         timeStamp = millis();
         if (sensors.isDataReady() && WiFi.isConnected() && cfg.wifiEnable && cfg.isApiEnable() && apiIsConfigured()) {
             log_d("-->[API] writing to ");
@@ -197,6 +197,7 @@ void wifiConnect(const char* ssid, const char* pass) {
         Serial.println("done.\n-->[WIFI] connected!");
         Serial.print("-->[WIFI] ");
         Serial.println(WiFi.localIP());
+        Serial.println("-->[WIFI] publish interval: "+String(cfg.stime * 2)+" sec.");
         otaInit();
     } else {
         Serial.println("fail!\n-->[E][WIFI] disconnected!");

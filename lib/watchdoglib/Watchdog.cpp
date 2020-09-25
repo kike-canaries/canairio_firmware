@@ -1,9 +1,5 @@
 #include <Watchdog.hpp>
 
-/******************************************************************************
-*   R E S E T
-******************************************************************************/
-
 void Watchdog::loop() {
     static uint_fast64_t timeStamp = 0;  // timestamp for loop check
     if ((millis() - timeStamp > 1000)) {

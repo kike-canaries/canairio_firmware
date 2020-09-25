@@ -1,7 +1,6 @@
 #ifndef Sensors_hpp
 #define Sensors_hpp
 
-#include <hpma115S0.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 #include <sps30.h>

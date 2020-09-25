@@ -33,6 +33,6 @@ void Status::updateStatusError()
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_STATUSHANDLER)
-extern Status st;
+Status st;
 #endif
 

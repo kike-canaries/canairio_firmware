@@ -3,7 +3,6 @@
 
 #include <ArduinoJson.h>
 #include <Preferences.h>
-#include <ArduinoJson.h>
 
 class ConfigApp
 {
@@ -57,5 +56,9 @@ class ConfigApp
   void reboot ();
 
 };
+
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_CFGHANDLER)
+extern ConfigApp cfg;
+#endif
 
 #endif

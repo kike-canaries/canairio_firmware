@@ -78,6 +78,7 @@ class Sensors
     struct sps_values val;
 
     bool dataReady;
+    char* device_selected;
 
     uint16_t pm1;      // PM1
     uint16_t pm25;     // PM2.5
@@ -93,7 +94,9 @@ class Sensors
     void am2320Init();
     void am2320Read();
     void pmSensorInit();
-    bool pmsensorRead();
+    bool pmSensorRead();
+    bool pmGenericRead();
+    bool pmSensirionRead();
     void onPmSensorError(const char *msg);
     void printValues();
     void pmSensirionInit();

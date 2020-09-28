@@ -4,11 +4,8 @@
 #ifndef SENSIRION
 HardwareSerial pmsSerial(1);
 #endif
-
 // Sensirium
-#ifdef SENSIRION
 SPS30 sps30;
-#endif
 // Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();
 
@@ -17,8 +14,7 @@ Adafruit_AM2320 am2320 = Adafruit_AM2320();
 *   S E N S O R   P R I V A T E   M E T H O D S
 ******************************************************************************/
 
-bool Sensors::pmsensorRead(){
-#ifndef SENSIRION
+bool Sensors::pmGenericRead() {
     int try_sensor_read = 0;
     String txtMsg = "";
     while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
@@ -31,23 +27,7 @@ bool Sensors::pmsensorRead(){
         onPmSensorError("pm sensor read fail!");
         return false;
     }
-#endif
-
-#ifdef PANASONIC
-    if (txtMsg[0] == 02) {
-        if(devmode) Serial.print("-->[SNGC] read > done!");
-        pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
-        pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
-        if (pm25 > 2000 && pm10 > 2000) {
-            onPmSensorError("Panasonic out of range pm25 > 2000");
-            return false;
-        }
-    } else {
-        onPmSensorError("invalid Panasonic sensor header!");
-        return false;
-    }
-
-#elif HONEYWELL  // HONEYWELL
+    // try first process data with Honeywell header
     if (txtMsg[0] == 66) {
         if (txtMsg[1] == 77) {
             if (devmode) Serial.print("-->[HPMA] read > done!");
@@ -58,15 +38,24 @@ bool Sensors::pmsensorRead(){
                 return false;
             }
         } else {
-            onPmSensorError("invalid Panasonic sensor header!");
+            onPmSensorError("invalid Honeywell sensor header!");
+        }
+    // try first process data with Panasonic header
+    } else if (txtMsg[0] == 02) {
+        if(devmode) Serial.print("-->[SNGC] read > done!");
+        pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
+        pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
+        if (pm25 > 2000 && pm10 > 2000) {
+            onPmSensorError("Panasonic out of range pm25 > 2000");
             return false;
         }
     } else {
-        onPmSensorError("invalid Panasonic sensor header!");
+        onPmSensorError("invalid detection PM sensor header!");
         return false;
     }
+}
 
-#elif SENSIRION
+bool Sensors::pmSensirionRead() {
     delay(35);  //Delay for sincronization
     do {
         ret = sps30.GetValues(&val);
@@ -91,7 +80,12 @@ bool Sensors::pmsensorRead(){
         onPmSensorError("Sensirion out of range pm25 > 1000");
         return false;
     }
-#endif
+
+    return true;
+}
+
+bool Sensors::pmSensorRead(){
+
     return true;
 }
 
@@ -197,7 +191,7 @@ void Sensors::loop() {
         dataReady = false;
         pmLoopTimeStamp = millis();
         am2320Read();
-        bool pmsuccess = pmsensorRead();
+        bool pmsuccess = pmSensorRead();
         printValues();
         if(_onDataCb && pmsuccess) _onDataCb();
         dataReady = true;

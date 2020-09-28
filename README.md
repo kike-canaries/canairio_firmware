@@ -85,7 +85,7 @@ Also you can change in `platformio.ini` the next parameters:
 -D CORE_DEBUG_LEVEL=0, set to 3 for get more verbose log.  
 -D EMOTICONS, comment or uncomment for enable emoticons.  
 -D PANASONIC, comment or choose your sensor for each section.  
-upload_port, in OTA section, set to CanAirIO device IP address. 
+upload_port, in OTA section, set to CanAirIO device IP address.
 
 
 ### Building Installer

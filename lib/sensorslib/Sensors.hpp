@@ -9,7 +9,7 @@ using namespace std;
 
 /******************************************************************************
 * S E T U P  B O A R D   A N D  F I E L D S
-* ---------------------
+* -------------------------------------------
 * please select board on platformio.ini file
 ******************************************************************************/
 #ifdef WEMOSOLED
@@ -34,9 +34,12 @@ using namespace std;
 typedef void (*errorCbFn)(const char *msg);
 typedef void (*voidCbFn)();
 
+
 class Sensors
 {
     public: 
+    
+    enum SENSOR_TYPE { Honeywell, Panasonic, Sensirion};
 
     bool devmode;
     int sample_time = 5;
@@ -74,11 +77,11 @@ class Sensors
     voidCbFn _onDataCb;
 
     // Sensirion SPS30 sensor
-    uint8_t ret, error_cnt = 0;
     struct sps_values val;
 
     bool dataReady;
-    char* device_selected;
+    String device_selected;
+    int device_type = -1;
 
     uint16_t pm1;      // PM1
     uint16_t pm25;     // PM2.5
@@ -93,15 +96,18 @@ class Sensors
     void restart();
     void am2320Init();
     void am2320Read();
-    void pmSensorInit();
+    bool pmSensorInit();
     bool pmSensorRead();
+    String hwSerialRead();
     bool pmGenericRead();
+    bool pmPanasonicRead();
     bool pmSensirionRead();
     void onPmSensorError(const char *msg);
     void printValues();
-    void pmSensirionInit();
+    bool pmSensirionInit();
     void pmSensirionErrtoMess(char *mess, uint8_t r);
     void pmSensirionErrorloop(char *mess, uint8_t r);
+    void getSensirionDeviceInfo();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SENSORSHANDLER)

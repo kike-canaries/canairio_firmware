@@ -1,9 +1,7 @@
 #include "Sensors.hpp"
 
 // Serial PM sensor (Honeywell and Panasonic)
-#ifndef SENSIRION
 HardwareSerial pmsSerial(1);
-#endif
 // Sensirium
 SPS30 sps30;
 // Humidity sensor
@@ -14,7 +12,7 @@ Adafruit_AM2320 am2320 = Adafruit_AM2320();
 *   S E N S O R   P R I V A T E   M E T H O D S
 ******************************************************************************/
 
-bool Sensors::pmGenericRead() {
+String Sensors::hwSerialRead() {
     int try_sensor_read = 0;
     String txtMsg = "";
     while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
@@ -24,10 +22,21 @@ bool Sensors::pmGenericRead() {
         }
     }
     if (try_sensor_read > SENSOR_RETRY) {
-        onPmSensorError("pm sensor read fail!");
-        return false;
+        onPmSensorError("Generic sensor read fail!");
     }
-    // try first process data with Honeywell header
+    return txtMsg;
+}
+
+/**
+ *  Particulate meter sensor generic read 
+ * 
+ *  Devices supported:
+ * 
+ *  - Honeywell HPMA115S0
+ *  - Plantower
+ */
+bool Sensors::pmGenericRead() {
+    String txtMsg = hwSerialRead();
     if (txtMsg[0] == 66) {
         if (txtMsg[1] == 77) {
             if (devmode) Serial.print("-->[HPMA] read > done!");
@@ -35,27 +44,41 @@ bool Sensors::pmGenericRead() {
             pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
             if (pm25 > 1000 && pm10 > 1000) {
                 onPmSensorError("Honeywell out of range pm25 > 1000");
-                return false;
             }
+            else
+                return true;
         } else {
             onPmSensorError("invalid Honeywell sensor header!");
         }
-    // try first process data with Panasonic header
-    } else if (txtMsg[0] == 02) {
+    }
+    return false;
+} 
+
+/**
+ *  Panasonic SNGC particulate meter sensor read.
+ */
+bool Sensors::pmPanasonicRead() {
+    String txtMsg = hwSerialRead();
+    if (txtMsg[0] == 02) {
         if(devmode) Serial.print("-->[SNGC] read > done!");
         pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
         pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
         if (pm25 > 2000 && pm10 > 2000) {
             onPmSensorError("Panasonic out of range pm25 > 2000");
-            return false;
         }
+        else
+            return true;
     } else {
         onPmSensorError("invalid detection PM sensor header!");
-        return false;
     }
+    return false;
 }
 
+/**
+ *  Sensirion SPS30 particulate meter sensor read.
+ */
 bool Sensors::pmSensirionRead() {
+    uint8_t ret, error_cnt = 0;
     delay(35);  //Delay for sincronization
     do {
         ret = sps30.GetValues(&val);
@@ -84,9 +107,24 @@ bool Sensors::pmSensirionRead() {
     return true;
 }
 
-bool Sensors::pmSensorRead(){
+bool Sensors::pmSensorRead() {
+    switch (device_type) {
+        case Honeywell:
+            return pmGenericRead();
+            break;
 
-    return true;
+        case Panasonic:
+            return pmPanasonicRead();
+            break;
+
+        case Sensirion:
+            return pmSensirionRead();
+            break;
+
+        default:
+            return false;
+            break;
+    }
 }
 
 void Sensors::am2320Read() {
@@ -103,41 +141,52 @@ void Sensors::onPmSensorError(const char *msg) {
 }
 
 void Sensors::pmSensirionErrtoMess(char *mess, uint8_t r) {
-#ifdef SENSIRION
     char buf[80];
     Serial.print("-->[W][SENSIRION] ");
     Serial.print(mess);
     sps30.GetErrDescription(r, buf, 80);
     Serial.println(buf);
     onPmSensorError(mess);
-#endif
 }
 
 void Sensors::pmSensirionErrorloop(char *mess, uint8_t r) {
-#ifdef SENSIRION
     if (r) pmSensirionErrtoMess(mess, r);
     else Serial.println(mess);
-#endif
 }
 /**
  * Particule meter sensor init.
  * 
  * Hardware serial init for multiple sensors, like
- * Honeywell, Plantower, Panasonic.
+ * Honeywell, Plantower, Panasonic, Sensirion, etc.
  * 
  * @param PMS_RX defined for RX wire.
  * @param PMS_TX defined for TX wire.
  **/
-void Sensors::pmSensorInit() {
-#if defined HONEYWELL || defined PANASONIC
-    Serial.println(F("-->[PMSENSOR] starting HPMA/PANASONIC sensor.."));
+bool Sensors::pmSensorInit() {
+    Serial.println(F("-->[PMSENSOR] detecting sensor.."));
+    // try first with generic PM sensors
     pmsSerial.begin(9600, SERIAL_8N1, PMS_RX, PMS_TX);
-    delay(100);
-#endif
+    delay(1000);
+
+    if (pmGenericRead()) {
+        device_selected = "HONEYWELL/PLANTOWER";
+        device_type = Honeywell;
+        return true;   
+    }
+    if (pmPanasonicRead()) {
+        device_selected = "PANASONIC";
+        device_type = Panasonic;
+        return true;
+    }
+    if (pmSensirionInit()) {
+        device_selected = "SENSIRION";
+        device_type = Sensirion;
+        return true;
+    }
+    return false;
 }
 
-void Sensors::pmSensirionInit() {
-#ifdef SENSIRION
+bool Sensors::pmSensirionInit() {
     // Begin communication channel
     Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
     if (sps30.begin(SP30_COMMS) == false) {
@@ -153,15 +202,67 @@ void Sensors::pmSensirionInit() {
         pmSensirionErrorloop((char *)"-->[E][SPS30] could not reset.", 0);
     }
     // start measurement
-    if (sps30.start() == true)
+    if (sps30.start() == true) {
         Serial.println(F("-->[SPS30] Measurement OK"));
+        getSensirionDeviceInfo();
+        return true;
+    }
     else
         pmSensirionErrorloop((char *)"-->[E][SPS30] Could NOT start measurement", 0);
     if (SP30_COMMS == I2C_COMMS) {
         if (sps30.I2C_expect() == 4)
             Serial.println(F("-->[E][SPS30] Due to I2C buffersize only PM values  \n"));
     }
-#endif
+    return false;
+}
+/**
+ * @brief : read and display Sensirion device info
+ */
+void Sensors::getSensirionDeviceInfo() { 
+  char buf[32];
+  uint8_t ret;
+  SPS30_version v;
+
+  //try to read serial number
+  ret = sps30.GetSerialNumber(buf, 32);
+  if (ret == ERR_OK) {
+    Serial.print(F("-->[SPS30] Serial number : "));
+    if(strlen(buf) > 0)  Serial.println(buf);
+    else Serial.println(F("not available"));
+  }
+  else
+    pmSensirionErrtoMess((char *) "could not get serial number", ret);
+
+  // try to get product name
+  ret = sps30.GetProductName(buf, 32);
+  if (ret == ERR_OK)  {
+    Serial.print(F("-->[SPS30] Product name  : "));
+
+    if(strlen(buf) > 0)  Serial.println(buf);
+    else Serial.println(F("not available"));
+  }
+  else
+    pmSensirionErrtoMess((char *) "could not get product name.", ret);
+
+  // try to get version info
+  ret = sps30.GetVersion(&v);
+  if (ret != ERR_OK) {
+    Serial.println(F("-->[SPS30] Can not read version info"));
+    return;
+  }
+
+  Serial.print(F("-->[SPS30] Firmware level: "));  Serial.print(v.major);
+  Serial.print("."); Serial.println(v.minor);
+
+  if (SP30_COMMS != I2C_COMMS) {
+    Serial.print(F("-->[SPS30] Hardware level: ")); Serial.println(v.HW_version);
+
+    Serial.print(F("-->[SPS30] SHDLC protocol: ")); Serial.print(v.SHDLC_major);
+    Serial.print("."); Serial.println(v.SHDLC_minor);
+  }
+
+  Serial.print(F("-->[SPS30] Library level : "));  Serial.print(v.DRV_major);
+  Serial.print(".");  Serial.println(v.DRV_minor);
 }
 
 void Sensors::am2320Init() {
@@ -218,12 +319,12 @@ void Sensors::init(bool debug) {
     Serial.print("-->[SENSORS] sample time set to: ");
     Serial.println(sample_time);
 
-    Serial.println("-->[SENSORS] starting PM sensor..");
-#if defined HONEYWELL || defined PANASONIC
-    pmSensorInit();
-#else  //SENSIRION
-    pmSensirionInit();
-#endif
+    if(pmSensorInit()){
+        Serial.print(F("-->[PMSENSOR] detected: "));
+        Serial.println(device_selected);
+    }else{
+        Serial.println(F("-->[E][PMSENSOR] detection failed!"));
+    }
 
     // TODO: enable/disable via flag
     Serial.println("-->[AM2320] starting AM2320 sensor..");
@@ -236,9 +337,7 @@ void Sensors::setSampleTime(int seconds){
 }
 
 void Sensors::restart(){
-#if defined HONEYWELL || defined PANASONIC
     pmsSerial.end();
-#endif
     init();
     delay(100);
 }

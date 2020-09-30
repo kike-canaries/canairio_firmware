@@ -50,6 +50,7 @@ class Sensors
     void init(bool debug=false);
     void loop();
     bool isDataReady();
+    bool isPmSensorConfigured();
     void setSampleTime (int seconds);
     void setOnDataCallBack(voidCbFn cb);
     void setOnErrorCallBack(errorCbFn cb);

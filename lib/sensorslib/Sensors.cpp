@@ -163,11 +163,7 @@ void Sensors::pmSensirionErrorloop(char *mess, uint8_t r) {
  * @param PMS_TX defined for TX wire.
  **/
 bool Sensors::pmSensorInit() {
-    Serial.println(F("-->[PMSENSOR] detecting sensor.."));
-    // try first with generic PM sensors
-    pmsSerial.begin(9600, SERIAL_8N1, PMS_RX, PMS_TX);
-    delay(1000);
-
+    delay(200); // sync serial
     if (pmGenericRead()) {
         device_selected = "HONEYWELL/PLANTOWER";
         device_type = Honeywell;
@@ -319,8 +315,16 @@ void Sensors::init(bool debug) {
     Serial.print("-->[SENSORS] sample time set to: ");
     Serial.println(sample_time);
 
-    if(pmSensorInit()){
-        Serial.print(F("-->[PMSENSOR] detected: "));
+    // starting serial connection for generic PM sensors..
+    pmsSerial.begin(9600, SERIAL_8N1, PMS_RX, PMS_TX);
+    delay(1000);
+    
+    Serial.println(F("-->[PMSENSOR] detecting sensor.."));
+    int try_sensor_init=0;
+    while (!pmSensorInit() && try_sensor_init++ <= 3);
+
+    if(device_type>=0) {
+        Serial.print(F("\n-->[PMSENSOR] detected: "));
         Serial.println(device_selected);
     }else{
         Serial.println(F("-->[E][PMSENSOR] detection failed!"));

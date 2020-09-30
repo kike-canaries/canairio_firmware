@@ -28,7 +28,7 @@ String Sensors::hwSerialRead() {
 }
 
 /**
- *  Particulate meter sensor generic read 
+ *  @brief Particulate meter sensor generic read 
  * 
  *  Devices supported:
  * 
@@ -55,7 +55,7 @@ bool Sensors::pmGenericRead() {
 } 
 
 /**
- *  Panasonic SNGC particulate meter sensor read.
+ *  @brief Panasonic SNGC particulate meter sensor read.
  */
 bool Sensors::pmPanasonicRead() {
     String txtMsg = hwSerialRead();
@@ -75,7 +75,7 @@ bool Sensors::pmPanasonicRead() {
 }
 
 /**
- *  Sensirion SPS30 particulate meter sensor read.
+ *  @brief Sensirion SPS30 particulate meter sensor read.
  */
 bool Sensors::pmSensirionRead() {
     uint8_t ret, error_cnt = 0;
@@ -314,7 +314,7 @@ void Sensors::init(bool debug) {
     if (CORE_DEBUG_LEVEL>=3) devmode = true;  
     else devmode = debug;
     
-    if (!devmode) Serial.println("-->[SENSORS] debugging is disable.");
+    if (!devmode) Serial.println("-->[SENSORS] debug is disable.");
 
     Serial.print("-->[SENSORS] sample time set to: ");
     Serial.println(sample_time);

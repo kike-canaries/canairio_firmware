@@ -43,6 +43,9 @@ class Sensors
 
     bool devmode;
     int sample_time = 5;
+    
+    /// @brief Only for Sensirion SPS30 sensor
+    struct sps_values val;
 
     void init(bool debug=false);
     void loop();
@@ -76,9 +79,6 @@ class Sensors
     errorCbFn _onErrorCb;
     voidCbFn _onDataCb;
 
-    // Sensirion SPS30 sensor
-    struct sps_values val;
-
     bool dataReady;
     String device_selected;
     int device_type = -1;
@@ -98,7 +98,6 @@ class Sensors
     void am2320Read();
     bool pmSensorInit();
     bool pmSensorRead();
-    String hwSerialRead();
     bool pmGenericRead();
     bool pmPanasonicRead();
     bool pmSensirionRead();
@@ -108,6 +107,7 @@ class Sensors
     void pmSensirionErrtoMess(char *mess, uint8_t r);
     void pmSensirionErrorloop(char *mess, uint8_t r);
     void getSensirionDeviceInfo();
+    String hwSerialRead();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SENSORSHANDLER)

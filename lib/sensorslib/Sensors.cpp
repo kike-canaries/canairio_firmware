@@ -288,10 +288,14 @@ void Sensors::loop() {
         dataReady = false;
         pmLoopTimeStamp = millis();
         am2320Read();
-        bool pmsuccess = pmSensorRead();
+        if(pmSensorRead()) {           
+            if(_onDataCb) _onDataCb();
+            dataReady = true;            // only if the main sensor is ready
+        }else{
+            dataReady = false;
+        }
         printValues();
-        if(_onDataCb && pmsuccess) _onDataCb();
-        dataReady = true;
+        
     }
 }
 
@@ -324,7 +328,8 @@ void Sensors::init(bool debug) {
     while (!pmSensorInit() && try_sensor_init++ <= 3);
 
     if(device_type>=0) {
-        Serial.print(F("\n-->[PMSENSOR] detected: "));
+        if(devmode) Serial.println("");
+        Serial.print(F("-->[PMSENSOR] detected: "));
         Serial.println(device_selected);
     }else{
         Serial.println(F("-->[E][PMSENSOR] detection failed!"));
@@ -406,6 +411,10 @@ float Sensors::getAltitude() {
 
 float Sensors::getPressure() {
     return pres;
+}
+
+bool Sensors::isPmSensorConfigured(){
+    return device_type>=0;
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SENSORSHANDLER)

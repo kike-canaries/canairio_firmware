@@ -54,6 +54,7 @@ class Sensors
     void setSampleTime (int seconds);
     void setOnDataCallBack(voidCbFn cb);
     void setOnErrorCallBack(errorCbFn cb);
+    String getPmDeviceSelected();
 
     uint16_t getPM1();
     uint16_t getPM25();
@@ -76,6 +77,8 @@ class Sensors
     String getStringPM10();
 
     private:
+
+    Stream *_serial;
 
     errorCbFn _onErrorCb;
     voidCbFn _onDataCb;

@@ -1,7 +1,5 @@
 #include "Sensors.hpp"
 
-// Serial PM sensor (Honeywell and Panasonic)
-HardwareSerial pmsSerial(1);
 // Sensirium
 SPS30 sps30;
 // Humidity sensor
@@ -16,8 +14,8 @@ String Sensors::hwSerialRead() {
     int try_sensor_read = 0;
     String txtMsg = "";
     while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
-        while (pmsSerial.available() > 0) {
-            char inChar = pmsSerial.read();
+        while (_serial->available() > 0) {
+            char inChar = _serial->read();
             txtMsg += inChar;
         }
     }
@@ -51,6 +49,7 @@ bool Sensors::pmGenericRead() {
             onPmSensorError("invalid Honeywell sensor header!");
         }
     }
+    onPmSensorError("Honeywell read error!");
     return false;
 } 
 
@@ -84,7 +83,7 @@ bool Sensors::pmSensirionRead() {
         ret = sps30.GetValues(&val);
         if (ret == ERR_DATALENGTH) {
             if (error_cnt++ > 3) {
-                pmSensirionErrtoMess((char *)"-->[W][SPS30] Error during reading values: ", ret);
+                log_w("[SPS30] Error during reading values: %d", ret);
                 return false;
             }
             delay(1000);
@@ -163,7 +162,12 @@ void Sensors::pmSensirionErrorloop(char *mess, uint8_t r) {
  * @param PMS_TX defined for TX wire.
  **/
 bool Sensors::pmSensorInit() {
-    delay(200); // sync serial
+    // starting serial connection for generic PM sensors..
+    // Serial2.begin(9600, SERIAL_8N1, PMS_RX, PMS_TX);
+    Serial2.updateBaudRate(9600);
+    Serial2.flush();
+    delay(100); // sync serial
+
     if (pmGenericRead()) {
         device_selected = "HONEYWELL/PLANTOWER";
         device_type = Honeywell;
@@ -174,37 +178,44 @@ bool Sensors::pmSensorInit() {
         device_type = Panasonic;
         return true;
     }
+    Serial2.updateBaudRate(115200);
+    Serial2.flush();
+    delay(100);
+
     if (pmSensirionInit()) {
         device_selected = "SENSIRION";
         device_type = Sensirion;
         return true;
     }
+    
     return false;
 }
 
 bool Sensors::pmSensirionInit() {
     // Begin communication channel
     Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
-    if (sps30.begin(SP30_COMMS) == false) {
+    if(!devmode) sps30.EnableDebugging(0);
+    // Begin communication channel;
+    if (!sps30.begin(SP30_COMMS))
         pmSensirionErrorloop((char *)"-->[E][SPS30] could not initialize communication channel.", 0);
-    }
     // check for SPS30 connection
-    if (sps30.probe() == false) {
+    if (!sps30.probe())
         pmSensirionErrorloop((char *)"-->[E][SPS30] could not probe / connect with SPS30.", 0);
-    } else
+    else {
         Serial.println(F("-->[SPS30] Detected SPS30."));
-    // reset SPS30 connection
-    if (sps30.reset() == false) {
-        pmSensirionErrorloop((char *)"-->[E][SPS30] could not reset.", 0);
-    }
-    // start measurement
-    if (sps30.start() == true) {
-        Serial.println(F("-->[SPS30] Measurement OK"));
         getSensirionDeviceInfo();
-        return true;
     }
-    else
+    // reset SPS30 connection
+    if (!sps30.reset())
+        pmSensirionErrorloop((char *)"-->[E][SPS30] could not reset.", 0);
+
+    // start measurement
+    if (sps30.start()==true) {
+        Serial.println(F("-->[SPS30] Measurement OK"));
+        return true;
+    } else
         pmSensirionErrorloop((char *)"-->[E][SPS30] Could NOT start measurement", 0);
+
     if (SP30_COMMS == I2C_COMMS) {
         if (sps30.I2C_expect() == 4)
             Serial.println(F("-->[E][SPS30] Due to I2C buffersize only PM values  \n"));
@@ -227,23 +238,22 @@ void Sensors::getSensirionDeviceInfo() {
     else Serial.println(F("not available"));
   }
   else
-    pmSensirionErrtoMess((char *) "could not get serial number", ret);
+    log_i("[SPS30] could not get serial number");
 
   // try to get product name
   ret = sps30.GetProductName(buf, 32);
   if (ret == ERR_OK)  {
     Serial.print(F("-->[SPS30] Product name  : "));
-
     if(strlen(buf) > 0)  Serial.println(buf);
     else Serial.println(F("not available"));
   }
   else
-    pmSensirionErrtoMess((char *) "could not get product name.", ret);
+    log_i("[SPS30] could not get product name.");
 
   // try to get version info
   ret = sps30.GetVersion(&v);
   if (ret != ERR_OK) {
-    Serial.println(F("-->[SPS30] Can not read version info"));
+    log_i("[SPS30] Can not read version info");
     return;
   }
 
@@ -252,7 +262,6 @@ void Sensors::getSensirionDeviceInfo() {
 
   if (SP30_COMMS != I2C_COMMS) {
     Serial.print(F("-->[SPS30] Hardware level: ")); Serial.println(v.HW_version);
-
     Serial.print(F("-->[SPS30] SHDLC protocol: ")); Serial.print(v.SHDLC_major);
     Serial.print("."); Serial.println(v.SHDLC_minor);
   }
@@ -319,10 +328,10 @@ void Sensors::init(bool debug) {
     Serial.print("-->[SENSORS] sample time set to: ");
     Serial.println(sample_time);
 
-    // starting serial connection for generic PM sensors..
-    pmsSerial.begin(9600, SERIAL_8N1, PMS_RX, PMS_TX);
-    delay(1000);
-    
+    // Serial2.begin(9600, SERIAL_8N1, PMS_RX, PMS_TX);
+    Serial2.begin(9600);
+    _serial = &Serial2;
+
     Serial.println(F("-->[PMSENSOR] detecting sensor.."));
     int try_sensor_init=0;
     while (!pmSensorInit() && try_sensor_init++ <= 3);
@@ -346,7 +355,7 @@ void Sensors::setSampleTime(int seconds){
 }
 
 void Sensors::restart(){
-    pmsSerial.end();
+    _serial->flush();
     init();
     delay(100);
 }
@@ -415,6 +424,10 @@ float Sensors::getPressure() {
 
 bool Sensors::isPmSensorConfigured(){
     return device_type>=0;
+}
+
+String Sensors::getPmDeviceSelected(){
+    return device_selected;
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SENSORSHANDLER)

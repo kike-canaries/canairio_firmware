@@ -14,6 +14,8 @@ class GUIUtils {
     void showProgress(unsigned int progress, unsigned int total);
 
     void welcomeAddMessage(String msg);
+    
+    void welcomeRepeatMessage(String msg);
 
     void displaySensorAverage(int average);
 

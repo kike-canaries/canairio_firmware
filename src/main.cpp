@@ -56,10 +56,15 @@ void setup() {
     Serial.println("-->[INFO] ESP32MAC: " + String(cfg.deviceId));
     Serial.println("-->[INFO] Firmware " + gui.getFirmwareVersionCode());
     // init all sensors
+    gui.welcomeAddMessage("Detecting sensors..");
     sensors.setOnDataCallBack(&onSensorDataOk);  // all data read callback
     sensors.setSampleTime(cfg.stime);            // config sensors sample time
     sensors.init();                              // start all sensors
-    gui.welcomeAddMessage("Sensors ready.");
+    if(sensors.isPmSensorConfigured())
+        gui.welcomeRepeatMessage(sensors.getPmDeviceSelected());
+    else 
+        gui.welcomeRepeatMessage("Detection !FAIL!");
+    delay(500);
     // init battery (only for some boards)
     batteryInit();
     // Bluetooth low energy init (GATT server for device config)
@@ -79,7 +84,7 @@ void setup() {
     // init watchdog timer for reboot in any loop blocker
     wd.init();
     gui.welcomeAddMessage("==SETUP READY==");
-    delay(3000);
+    delay(4000);
     displayGUI();
 }
 

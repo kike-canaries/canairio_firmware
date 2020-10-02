@@ -150,30 +150,34 @@ void Sensors::pmSensirionErrorloop(char *mess, uint8_t r) {
     else Serial.println(mess);
 }
 /**
- * Particule meter sensor init.
+ * Particule meter sensor (PMS) init.
  * 
- * Hardware serial init for multiple sensors, like
+ * Hardware serial init for multiple PM sensors, like
  * Honeywell, Plantower, Panasonic, Sensirion, etc.
  * 
- * @param PMS_RX defined for RX wire.
- * @param PMS_TX defined for TX wire.
+ * @param pms_type PMS type, please see DEVICE_TYPE enum.
+ * @param pms_rx PMS RX pin.
+ * @param pms_tx PMS TX pin.
  **/
-bool Sensors::pmSensorInit(int sensor_type) {
+bool Sensors::pmSensorInit(int pms_type, int pms_rx, int pms_tx) {
     // set UART for autodetection sensors (Honeywell, Plantower, Panasonic)
-    if (sensor_type <= 1) {
+    if (pms_type <= 1) {
         Serial.println(F("-->[PMSENSOR] detecting Generic sensor.."));
-        Serial2.begin(9600, SERIAL_8N1, PMS_RX, PMS_TX);
+        // Serial2.begin(9600, SERIAL_8N1, PMS_RX, PMS_TX);
+        Serial2.begin(9600, SERIAL_8N1, pms_rx, pms_tx);
     }
     // set UART for autodetection Sensirion sensor
-    else if (sensor_type == Sensirion) {
+    else if (pms_type == Sensirion) {
         Serial.println(F("-->[PMSENSOR] detecting Sensirion sensor.."));
         Serial2.begin(115200);
     }
 
+    // starting auto detection loop 
     _serial = &Serial2;
     int try_sensor_init = 0;
     while (!pmSensorAutoDetect() && try_sensor_init++ <= 3);
 
+    // get device selected..
     if (device_type >= 0) {
         if (devmode) Serial.println("");
         Serial.print(F("-->[PMSENSOR] detected: "));
@@ -333,13 +337,16 @@ void Sensors::loop() {
 /**
  * All sensors init.
  * 
- * Particle meter and AM2320 sensors init.
+ * Particle meter sensor (PMS) and AM2320 sensors init.
  * Please see the platformio.ini file for 
  * know what sensors is enable.
  * 
- * @param debug enable PM sensor log output.
+ * @param pms_type PMS type, please see DEVICE_TYPE enum.
+ * @param pms_rx PMS RX pin.
+ * @param pms_tx PMS TX pin.
+ * @param debug enable PMS log output.
  */
-void Sensors::init(int sensor_type, bool debug) {
+void Sensors::init(int pms_type, int pms_rx, int pms_tx, bool debug) {
 
     // override with debug INFO level (>=3)
     if (CORE_DEBUG_LEVEL>=3) devmode = true;  
@@ -350,7 +357,7 @@ void Sensors::init(int sensor_type, bool debug) {
     Serial.print("-->[SENSORS] sample time set to: ");
     Serial.println(sample_time);
 
-    pmSensorInit(sensor_type);
+    pmSensorInit(pms_type, pms_rx, pms_tx);
 
     // TODO: enable/disable via flag
     Serial.println("-->[AM2320] starting AM2320 sensor..");
@@ -436,6 +443,10 @@ bool Sensors::isPmSensorConfigured(){
 
 String Sensors::getPmDeviceSelected(){
     return device_selected;
+}
+
+int Sensors::getPmDeviceTypeSelected(){
+    return device_type;
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SENSORSHANDLER)

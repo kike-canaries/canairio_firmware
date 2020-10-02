@@ -47,14 +47,18 @@ void setup() {
     delay(200);
     Serial.println("\n== CanAirIO Setup ==\n");
     pinMode(BUILTIN_LED, OUTPUT);
+
     // init graphic user interface
     gui.displayInit();
     gui.showWelcome();
+
     // init app preferences and load settings
     cfg.init("canairio");
-    // device wifi macaddress and firmware version
+
+    // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC: " + String(cfg.deviceId));
     Serial.println("-->[INFO] Firmware " + gui.getFirmwareVersionCode());
+
     // init all sensors
     gui.welcomeAddMessage("Detecting sensors..");
     sensors.setOnDataCallBack(&onSensorDataOk);  // all data read callback
@@ -65,11 +69,14 @@ void setup() {
     else 
         gui.welcomeRepeatMessage("Detection !FAIL!");
     delay(500);
+
     // init battery (only for some boards)
     batteryInit();
+
     // Bluetooth low energy init (GATT server for device config)
     bleServerInit();
     gui.welcomeAddMessage("Bluetooth ready.");
+
     // WiFi and cloud communication
     wifiInit();
     if (WiFi.isConnected())
@@ -81,10 +88,13 @@ void setup() {
     influxDbInit();
     apiInit();  // DEPRECATED
     if (WiFi.isConnected()) gui.welcomeAddMessage("API clouds ready.");
+
     // init watchdog timer for reboot in any loop blocker
     wd.init();
     gui.welcomeAddMessage("==SETUP READY==");
     delay(4000);
+
+    // display main screen
     displayGUI();
 }
 

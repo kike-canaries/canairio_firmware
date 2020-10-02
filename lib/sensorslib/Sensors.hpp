@@ -46,13 +46,14 @@ class Sensors {
     /// @brief Only for Sensirion SPS30 sensor
     struct sps_values val;
 
-    void init(int sensor_type = -1, bool debug = false);
+    void init(int pms_type = -1, int pms_rx = PMS_RX, int pms_tx = PMS_TX, bool debug = false);
     void loop();
     bool isDataReady();
     bool isPmSensorConfigured();
     void setSampleTime(int seconds);
     void setOnDataCallBack(voidCbFn cb);
     void setOnErrorCallBack(errorCbFn cb);
+    int getPmDeviceTypeSelected();
     String getPmDeviceSelected();
 
     uint16_t getPM1();
@@ -102,7 +103,7 @@ class Sensors {
     void restart();
     void am2320Init();
     void am2320Read();
-    bool pmSensorInit(int sensor_type);
+    bool pmSensorInit(int pms_type, int rx, int tx);
     bool pmSensorAutoDetect();
     bool pmSensorRead();
     bool pmGenericRead();

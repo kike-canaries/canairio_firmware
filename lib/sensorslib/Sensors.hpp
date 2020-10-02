@@ -1,8 +1,8 @@
 #ifndef Sensors_hpp
 #define Sensors_hpp
 
-#include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
+#include <Adafruit_Sensor.h>
 #include <sps30.h>
 using namespace std;
 #include <vector>
@@ -26,32 +26,31 @@ using namespace std;
 #define PMS_TX 16
 #endif
 
-#define SENSOR_RETRY 1000              // Sensor read retry. (unit chars)
+#define SENSOR_RETRY 1000  // Sensor read retry. (unit chars)
 
 // Sensirion SPS30 sensor
-#define SP30_COMMS SERIALPORT2 // UART OR I2C
+#define SP30_COMMS SERIALPORT2  // UART OR I2C
 
 typedef void (*errorCbFn)(const char *msg);
 typedef void (*voidCbFn)();
 
+class Sensors {
 
-class Sensors
-{
-    public: 
-    
-    enum SENSOR_TYPE { Honeywell, Panasonic, Sensirion};
+   public:
+
+    enum SENSOR_TYPE { Honeywell, Panasonic, Sensirion };
 
     bool devmode;
     int sample_time = 5;
-    
+
     /// @brief Only for Sensirion SPS30 sensor
     struct sps_values val;
 
-    void init(bool debug=false);
+    void init(int sensor_type = -1, bool debug = false);
     void loop();
     bool isDataReady();
     bool isPmSensorConfigured();
-    void setSampleTime (int seconds);
+    void setSampleTime(int seconds);
     void setOnDataCallBack(voidCbFn cb);
     void setOnErrorCallBack(errorCbFn cb);
     String getPmDeviceSelected();
@@ -76,10 +75,13 @@ class Sensors
     String getStringPM25();
     String getStringPM10();
 
-    private:
+   private:
 
+    // Sensirium library
+    SPS30 sps30;
+    // Generic PM sensors
     Stream *_serial;
-
+    // Calbacks
     errorCbFn _onErrorCb;
     voidCbFn _onDataCb;
 
@@ -87,20 +89,21 @@ class Sensors
     String device_selected;
     int device_type = -1;
 
-    uint16_t pm1;      // PM1
-    uint16_t pm25;     // PM2.5
-    uint16_t pm10;     // PM10
+    uint16_t pm1;   // PM1
+    uint16_t pm25;  // PM2.5
+    uint16_t pm10;  // PM10
 
     float humi = 0.0;  // % Relative humidity
     float temp = 0.0;  // Temperature (°C)
     float pres = 0.0;  // Pressure
-    float alt  = 0.0;
-    float gas  = 0.0;
+    float alt = 0.0;
+    float gas = 0.0;
 
     void restart();
     void am2320Init();
     void am2320Read();
-    bool pmSensorInit();
+    bool pmSensorInit(int sensor_type);
+    bool pmSensorAutoDetect();
     bool pmSensorRead();
     bool pmGenericRead();
     bool pmPanasonicRead();
@@ -119,5 +122,3 @@ extern Sensors sensors;
 #endif
 
 #endif
-
-

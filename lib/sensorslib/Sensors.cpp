@@ -1,10 +1,7 @@
 #include "Sensors.hpp"
 
-// Sensirium
-SPS30 sps30;
 // Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();
-
 
 /******************************************************************************
 *   S E N S O R   P R I V A T E   M E T H O D S
@@ -161,33 +158,58 @@ void Sensors::pmSensirionErrorloop(char *mess, uint8_t r) {
  * @param PMS_RX defined for RX wire.
  * @param PMS_TX defined for TX wire.
  **/
-bool Sensors::pmSensorInit() {
-    // starting serial connection for generic PM sensors..
-    // Serial2.begin(9600, SERIAL_8N1, PMS_RX, PMS_TX);
-    Serial2.updateBaudRate(9600);
-    Serial2.flush();
-    delay(100); // sync serial
+bool Sensors::pmSensorInit(int sensor_type) {
+    // set UART for autodetection sensors (Honeywell, Plantower, Panasonic)
+    if (sensor_type <= 1) {
+        Serial.println(F("-->[PMSENSOR] detecting Generic sensor.."));
+        Serial2.begin(9600, SERIAL_8N1, PMS_RX, PMS_TX);
+    }
+    // set UART for autodetection Sensirion sensor
+    else if (sensor_type == Sensirion) {
+        Serial.println(F("-->[PMSENSOR] detecting Sensirion sensor.."));
+        Serial2.begin(115200);
+    }
 
+    _serial = &Serial2;
+    int try_sensor_init = 0;
+    while (!pmSensorAutoDetect() && try_sensor_init++ <= 3);
+
+    if (device_type >= 0) {
+        if (devmode) Serial.println("");
+        Serial.print(F("-->[PMSENSOR] detected: "));
+        Serial.println(device_selected);
+        return true;
+    } else {
+        Serial.println(F("-->[E][PMSENSOR] detection failed!"));
+        return false;
+    }
+}
+/**
+ * @brief Generic PM sensor auto detection. 
+ * 
+ * In order UART config, this method looking up for
+ * special header on Serial stream
+ **/
+bool Sensors::pmSensorAutoDetect() {
+    // starting serial connection for generic PM sensors..
+    delay(1000); // sync serial
     if (pmGenericRead()) {
-        device_selected = "HONEYWELL/PLANTOWER";
+        device_selected = "HONEYWELL";
         device_type = Honeywell;
         return true;   
     }
+    delay(1000); // sync serial
     if (pmPanasonicRead()) {
         device_selected = "PANASONIC";
         device_type = Panasonic;
         return true;
     }
-    Serial2.updateBaudRate(115200);
-    Serial2.flush();
-    delay(100);
-
+    delay(1000); // sync serial
     if (pmSensirionInit()) {
         device_selected = "SENSIRION";
         device_type = Sensirion;
         return true;
     }
-    
     return false;
 }
 
@@ -317,7 +339,7 @@ void Sensors::loop() {
  * 
  * @param debug enable PM sensor log output.
  */
-void Sensors::init(bool debug) {
+void Sensors::init(int sensor_type, bool debug) {
 
     // override with debug INFO level (>=3)
     if (CORE_DEBUG_LEVEL>=3) devmode = true;  
@@ -328,21 +350,7 @@ void Sensors::init(bool debug) {
     Serial.print("-->[SENSORS] sample time set to: ");
     Serial.println(sample_time);
 
-    // Serial2.begin(9600, SERIAL_8N1, PMS_RX, PMS_TX);
-    Serial2.begin(9600);
-    _serial = &Serial2;
-
-    Serial.println(F("-->[PMSENSOR] detecting sensor.."));
-    int try_sensor_init=0;
-    while (!pmSensorInit() && try_sensor_init++ <= 3);
-
-    if(device_type>=0) {
-        if(devmode) Serial.println("");
-        Serial.print(F("-->[PMSENSOR] detected: "));
-        Serial.println(device_selected);
-    }else{
-        Serial.println(F("-->[E][PMSENSOR] detection failed!"));
-    }
+    pmSensorInit(sensor_type);
 
     // TODO: enable/disable via flag
     Serial.println("-->[AM2320] starting AM2320 sensor..");

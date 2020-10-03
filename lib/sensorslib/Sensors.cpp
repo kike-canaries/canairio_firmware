@@ -3,32 +3,149 @@
 // Humidity sensor
 Adafruit_AM2320 am2320 = Adafruit_AM2320();
 
+/***********************************************************************************
+ *  P U B L I C   M E T H O D S
+ * *********************************************************************************/
+
+/**
+ * Main sensors loop.
+ * All sensors are read here, please call it on main loop.
+ */
+void Sensors::loop() {
+    static uint_fast64_t pmLoopTimeStamp = 0;                 // timestamp for sensor loop check data
+    if ((millis() - pmLoopTimeStamp > sample_time * 1000)) {  // sample time for each capture
+        dataReady = false;
+        pmLoopTimeStamp = millis();
+        am2320Read();
+        if(pmSensorRead()) {           
+            if(_onDataCb) _onDataCb();
+            dataReady = true;            // only if the main sensor is ready
+        }else{
+            dataReady = false;
+        }
+        printValues();
+    }
+}
+
+/**
+ * All sensors init.
+ * Particle meter sensor (PMS) and AM2320 sensor init.
+ * 
+ * @param pms_type PMS type, please see DEVICE_TYPE enum.
+ * @param pms_rx PMS RX pin.
+ * @param pms_tx PMS TX pin.
+ * @param debug enable PMS log output.
+ */
+void Sensors::init(int pms_type, int pms_rx, int pms_tx, bool debug) {
+
+    // override with debug INFO level (>=3)
+    if (CORE_DEBUG_LEVEL>=3) devmode = true;  
+    else devmode = debug;
+    
+    if (!devmode) Serial.println("-->[SENSORS] debug is disable.");
+
+    Serial.print("-->[SENSORS] sample time set to: ");
+    Serial.println(sample_time);
+
+    pmSensorInit(pms_type, pms_rx, pms_tx);
+
+    // TODO: enable/disable via flag
+    Serial.println("-->[AM2320] starting AM2320 sensor..");
+    am2320Init();
+}
+
+/// set loop time interval for each sensor sample
+void Sensors::setSampleTime(int seconds){
+    sample_time = seconds;
+}
+
+void Sensors::restart(){
+    _serial->flush();
+    init();
+    delay(100);
+}
+
+void Sensors::setOnDataCallBack(voidCbFn cb){
+    _onDataCb = cb;
+}
+
+void Sensors::setOnErrorCallBack(errorCbFn cb){
+    _onErrorCb = cb;
+}
+
+bool Sensors::isDataReady() {
+    return dataReady;
+}
+
+uint16_t Sensors::getPM1() {
+    return pm1;
+}
+
+String Sensors::getStringPM1() {
+    char output[5];
+    sprintf(output, "%03d", getPM1());
+    return String(output);
+}
+
+uint16_t Sensors::getPM25() {
+    return pm25;
+}
+
+String Sensors::getStringPM25() {
+    char output[5];
+    sprintf(output, "%03d", getPM25());
+    return String(output);
+}
+
+uint16_t Sensors::getPM10() {
+    return pm10;
+}
+
+String Sensors::getStringPM10() {
+    char output[5];
+    sprintf(output, "%03d", getPM10());
+    return String(output);
+}
+
+float Sensors::getHumidity() {
+    return humi;
+}
+
+float Sensors::getTemperature() {
+    return temp;
+}
+
+float Sensors::getGas() {
+    return gas;
+}
+
+float Sensors::getAltitude() {
+    return alt;
+}
+
+float Sensors::getPressure() {
+    return pres;
+}
+
+bool Sensors::isPmSensorConfigured(){
+    return device_type>=0;
+}
+
+String Sensors::getPmDeviceSelected(){
+    return device_selected;
+}
+
+int Sensors::getPmDeviceTypeSelected(){
+    return device_type;
+}
+
 /******************************************************************************
 *   S E N S O R   P R I V A T E   M E T H O D S
 ******************************************************************************/
 
-String Sensors::hwSerialRead() {
-    int try_sensor_read = 0;
-    String txtMsg = "";
-    while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
-        while (_serial->available() > 0) {
-            char inChar = _serial->read();
-            txtMsg += inChar;
-        }
-    }
-    if (try_sensor_read > SENSOR_RETRY) {
-        onPmSensorError("Generic sensor read fail!");
-    }
-    return txtMsg;
-}
-
 /**
- *  @brief Particulate meter sensor generic read 
- * 
- *  Devices supported:
- * 
- *  - Honeywell HPMA115S0
- *  - Plantower
+ *  @brief PMS sensor generic read. Supported: Honeywell & Plantower sensors
+ *  @return true if header and sensor data is right
  */
 bool Sensors::pmGenericRead() {
     String txtMsg = hwSerialRead();
@@ -52,6 +169,7 @@ bool Sensors::pmGenericRead() {
 
 /**
  *  @brief Panasonic SNGC particulate meter sensor read.
+ *  @return true if header and sensor data is right
  */
 bool Sensors::pmPanasonicRead() {
     String txtMsg = hwSerialRead();
@@ -71,7 +189,29 @@ bool Sensors::pmPanasonicRead() {
 }
 
 /**
+ * @brief PMSensor Serial read to basic string
+ * 
+ * @param SENSOR_RETRY attempts before failure
+ * @return String buffer
+ **/
+String Sensors::hwSerialRead() {
+    int try_sensor_read = 0;
+    String txtMsg = "";
+    while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY) {
+        while (_serial->available() > 0) {
+            char inChar = _serial->read();
+            txtMsg += inChar;
+        }
+    }
+    if (try_sensor_read > SENSOR_RETRY) {
+        onPmSensorError("Generic sensor read fail!");
+    }
+    return txtMsg;
+}
+
+/**
  *  @brief Sensirion SPS30 particulate meter sensor read.
+ *  @return true if reads succes
  */
 bool Sensors::pmSensirionRead() {
     uint8_t ret, error_cnt = 0;
@@ -103,6 +243,10 @@ bool Sensors::pmSensirionRead() {
     return true;
 }
 
+/**
+ * @brief read sensor data. Sensor selected.
+ * @return true if data is loaded from sensor
+ */
 bool Sensors::pmSensorRead() {
     switch (device_type) {
         case Honeywell:
@@ -149,6 +293,7 @@ void Sensors::pmSensirionErrorloop(char *mess, uint8_t r) {
     if (r) pmSensirionErrtoMess(mess, r);
     else Serial.println(mess);
 }
+
 /**
  * Particule meter sensor (PMS) init.
  * 
@@ -163,7 +308,6 @@ bool Sensors::pmSensorInit(int pms_type, int pms_rx, int pms_tx) {
     // set UART for autodetection sensors (Honeywell, Plantower, Panasonic)
     if (pms_type <= 1) {
         Serial.println(F("-->[PMSENSOR] detecting Generic sensor.."));
-        // Serial2.begin(9600, SERIAL_8N1, PMS_RX, PMS_TX);
         Serial2.begin(9600, SERIAL_8N1, pms_rx, pms_tx);
     }
     // set UART for autodetection Sensirion sensor
@@ -307,146 +451,6 @@ void Sensors::printValues() {
         sprintf(output, " PM1:%03d PM25:%03d PM10:%03d H:%02d%% T:%02d°C", pm1, pm25, pm10, (int)humi, (int)temp);
         Serial.println(output);
     }
-}
-
-/***********************************************************************************
- *  P U B L I C   M E T H O D S
- * *********************************************************************************/
-
-/**
- * Main sensor loop.
- * All sensor read methods here, please call it on main loop.
- */
-void Sensors::loop() {
-    static uint_fast64_t pmLoopTimeStamp = 0;                 // timestamp for sensor loop check data
-    if ((millis() - pmLoopTimeStamp > sample_time * 1000)) {  // sample time for each capture
-        dataReady = false;
-        pmLoopTimeStamp = millis();
-        am2320Read();
-        if(pmSensorRead()) {           
-            if(_onDataCb) _onDataCb();
-            dataReady = true;            // only if the main sensor is ready
-        }else{
-            dataReady = false;
-        }
-        printValues();
-        
-    }
-}
-
-/**
- * All sensors init.
- * 
- * Particle meter sensor (PMS) and AM2320 sensors init.
- * Please see the platformio.ini file for 
- * know what sensors is enable.
- * 
- * @param pms_type PMS type, please see DEVICE_TYPE enum.
- * @param pms_rx PMS RX pin.
- * @param pms_tx PMS TX pin.
- * @param debug enable PMS log output.
- */
-void Sensors::init(int pms_type, int pms_rx, int pms_tx, bool debug) {
-
-    // override with debug INFO level (>=3)
-    if (CORE_DEBUG_LEVEL>=3) devmode = true;  
-    else devmode = debug;
-    
-    if (!devmode) Serial.println("-->[SENSORS] debug is disable.");
-
-    Serial.print("-->[SENSORS] sample time set to: ");
-    Serial.println(sample_time);
-
-    pmSensorInit(pms_type, pms_rx, pms_tx);
-
-    // TODO: enable/disable via flag
-    Serial.println("-->[AM2320] starting AM2320 sensor..");
-    am2320Init();
-}
-
-/// set loop time interval for each sensor sample
-void Sensors::setSampleTime(int seconds){
-    sample_time = seconds;
-}
-
-void Sensors::restart(){
-    _serial->flush();
-    init();
-    delay(100);
-}
-
-void Sensors::setOnDataCallBack(voidCbFn cb){
-    _onDataCb = cb;
-}
-
-void Sensors::setOnErrorCallBack(errorCbFn cb){
-    _onErrorCb = cb;
-}
-
-bool Sensors::isDataReady() {
-    return dataReady;
-}
-
-uint16_t Sensors::getPM1() {
-    return pm1;
-}
-
-String Sensors::getStringPM1() {
-    char output[5];
-    sprintf(output, "%03d", getPM1());
-    return String(output);
-}
-
-uint16_t Sensors::getPM25() {
-    return pm25;
-}
-
-String Sensors::getStringPM25() {
-    char output[5];
-    sprintf(output, "%03d", getPM25());
-    return String(output);
-}
-
-uint16_t Sensors::getPM10() {
-    return pm10;
-}
-
-String Sensors::getStringPM10() {
-    char output[5];
-    sprintf(output, "%03d", getPM10());
-    return String(output);
-}
-
-float Sensors::getHumidity() {
-    return humi;
-}
-
-float Sensors::getTemperature() {
-    return temp;
-}
-
-float Sensors::getGas() {
-    return gas;
-}
-
-float Sensors::getAltitude() {
-    return alt;
-}
-
-float Sensors::getPressure() {
-    return pres;
-}
-
-bool Sensors::isPmSensorConfigured(){
-    return device_type>=0;
-}
-
-String Sensors::getPmDeviceSelected(){
-    return device_selected;
-}
-
-int Sensors::getPmDeviceTypeSelected(){
-    return device_type;
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_SENSORSHANDLER)

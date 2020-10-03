@@ -38,13 +38,17 @@ class Sensors {
 
    public:
 
+    /// Supported devices. Honeywell and Plantower sensors are similars
     enum SENSOR_TYPE { Honeywell, Panasonic, Sensirion };
-
-    bool devmode;
-    int sample_time = 5;
-
-    /// @brief Only for Sensirion SPS30 sensor
+    
+    /// SPS30 values. Only for Sensirion SPS30 sensor.
     struct sps_values val;
+
+    /// Debug mode for increase verbose.
+    bool devmode;
+
+    /// Initial sample time for all sensors
+    int sample_time = 5;
 
     void init(int pms_type = -1, int pms_rx = PMS_RX, int pms_tx = PMS_TX, bool debug = false);
     void loop();
@@ -78,17 +82,18 @@ class Sensors {
 
    private:
 
-    // Sensirium library
+    /// Sensiriom library
     SPS30 sps30;
-    // Generic PM sensors
+    /// Generic PM sensors Serial.
     Stream *_serial;
-    // Calbacks
+    /// Callback on some sensors error.
     errorCbFn _onErrorCb;
+    /// Callback when sensor data is ready.
     voidCbFn _onDataCb;
 
-    bool dataReady;
     String device_selected;
     int device_type = -1;
+    bool dataReady;
 
     uint16_t pm1;   // PM1
     uint16_t pm25;  // PM2.5

@@ -63,7 +63,7 @@ void setup() {
     gui.welcomeAddMessage("Detecting sensors..");
     sensors.setOnDataCallBack(&onSensorDataOk);  // all data read callback
     sensors.setSampleTime(cfg.stime);            // config sensors sample time
-    sensors.init();                              // start all sensors
+    sensors.init(sensors.Sensirion);             // start all sensors
     if(sensors.isPmSensorConfigured())
         gui.welcomeRepeatMessage(sensors.getPmDeviceSelected());
     else 

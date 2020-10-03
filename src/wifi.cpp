@@ -116,8 +116,7 @@ void apiLoop() {
     if (millis() - timeStamp > cfg.stime * 2 * 1000) {
         timeStamp = millis();
         if (sensors.isDataReady() && WiFi.isConnected() && cfg.wifiEnable && cfg.isApiEnable() && apiIsConfigured()) {
-            log_d("-->[API] writing to ");
-            Serial.print("" + String(api.ip) + "..");
+            log_i("[API] writing to %s", api.ip);
             bool status = api.write(
                 sensors.getPM1(),
                 sensors.getPM25(),
@@ -131,14 +130,11 @@ void apiLoop() {
                 cfg.stime);
             int code = api.getResponse();
             if (status) {
-                Serial.println("done. [" + String(code) + "]");
+                log_i("done. [%d]",code);
                 gui.displayDataOnIcon();
             } else {
-                Serial.println("fail! [" + String(code) + "]");
-                if (code == -1) {
-                    Serial.println("-->[E][API] publish error (-1)");
-                    delay(100);
-                }
+                Serial.println("-->[E][API] write error!");
+                if (code == -1) Serial.println("-->[E][API] publish error (-1)");
             }
         }
     }

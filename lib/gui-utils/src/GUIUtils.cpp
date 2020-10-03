@@ -70,6 +70,13 @@ void GUIUtils::welcomeAddMessage(String msg) {
 #endif
 }
 
+void GUIUtils::welcomeRepeatMessage(String msg) {
+    lastDrawedLine = lastDrawedLine - 7;
+    welcomeAddMessage("               ");
+    lastDrawedLine = lastDrawedLine - 7;
+    welcomeAddMessage(msg);
+}
+
 void GUIUtils::displayCenterBig(String msg) {
 #ifndef EMOTICONS
 #ifdef TTGO_TQ

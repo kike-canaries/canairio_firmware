@@ -28,12 +28,12 @@ cd canairio_installer
 
 #### Boards
 
-**TTGO_T7** firmware for CanAirIO v2.1 ([TTGO_T7 board with Panasonic sensor](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647))  
-**TTGO_T7_LEGACY** firmware for CanAirIO v2.0 ([TTGO_T7 or D1Mini board with Honeywell sensor](https://github.com/kike-canaries/esp32-hpma115s0/wiki/Old-Guide-(EN)))  
+**TTGO_T7** firmware for CanAirIO v2.1 ([TTGO_T7 board](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647))  
 **TTGO_TQ** firmware for [TTGO_TQ board](https://de.aliexpress.com/item/10000291636371.html) and Honeywell.  
 **WEMOSOLED** firmware for [ESP32 OLED board](https://de.aliexpress.com/item/33047481007.html) and Honeywell
 
-Is possible that the current firmware supports more boards and sensors, for example the `Honeywell` variant supports **Plantower** sensors, and in theory we have support  for all `lolin32` variants and TTGO variants. Please see [compiling section](#optional-compiling-and-installing).
+Is possible that the current firmware supports more boards and sensors, for example the `Honeywell` variant supports **Plantower** sensors, and in theory we have support  for all `lolin32` variants and `TTGO` variants. Please see [compiling section](#optional-compiling-and-installing). Also the last firmware
+has autodetection for different kind of particulate sensors.
 
 
 **Tip**: if you want clear all preferences and flash variables, please execute before:
@@ -84,8 +84,7 @@ Also you can change in `platformio.ini` the next parameters:
 
 -D CORE_DEBUG_LEVEL=0, set to 3 for get more verbose log.  
 -D EMOTICONS, comment or uncomment for enable emoticons.  
--D PANASONIC, comment or choose your sensor for each section.  
-upload_port, in OTA section, set to CanAirIO device IP address. 
+upload_port, in OTA section is for set to CanAirIO device IP address.
 
 
 ### Building Installer

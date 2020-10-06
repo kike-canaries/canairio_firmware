@@ -16,6 +16,37 @@
 #include <bluetooth.hpp>
 #include <wifi.hpp>
 
+/// sensors data callback
+void onSensorDataOk() {
+    gui.displaySensorLiveIcon();  // all sensors read are ok
+}
+
+/// sensors error callback
+void onSensorDataError(const char * msg){
+    Serial.println(msg);
+}
+
+void startingSensors() {
+    gui.welcomeAddMessage("Detecting sensors..");
+    sensors.setOnDataCallBack(&onSensorDataOk);   // all data read callback
+    sensors.setSampleTime(cfg.stime);             // config sensors sample time
+    sensors.setDebugMode(false);                  // [optional] debug mode
+    sensors.init();                               // start all sensors and
+                                                  // try to detect PM sensor: 
+                                                  // Panasonic, Honeywell or Plantower.
+                                                  // for Sensirion please do init(sensors.Sensirion)
+
+    if(sensors.isPmSensorConfigured()){
+        Serial.print("-->[INFO] PM sensor detected: ");
+        Serial.println(sensors.getPmDeviceSelected());
+        gui.welcomeRepeatMessage(sensors.getPmDeviceSelected());
+    }
+    else {
+        Serial.println("-->[INFO] Detection sensors FAIL!");
+        gui.welcomeRepeatMessage("Detection !FAIL!");
+    }
+}
+
 void displayGUI() {
     static uint_fast64_t timeStampGUI = 0;   // timestamp for GUI refresh
     if ((millis() - timeStampGUI > 1000)) {  // it should be minor than sensor loop
@@ -34,17 +65,13 @@ void displayGUI() {
     }
 }
 
-void onSensorDataOk() {
-    gui.displaySensorLiveIcon();  // all sensors read are ok
-}
-
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
 
 void setup() {
     Serial.begin(115200);
-    delay(200);
+    delay(400);
     Serial.println("\n== CanAirIO Setup ==\n");
     pinMode(BUILTIN_LED, OUTPUT);
 
@@ -60,16 +87,10 @@ void setup() {
     Serial.println("-->[INFO] Firmware " + gui.getFirmwareVersionCode());
 
     // init all sensors
-    gui.welcomeAddMessage("Detecting sensors..");
-    sensors.setOnDataCallBack(&onSensorDataOk);  // all data read callback
-    sensors.setSampleTime(cfg.stime);            // config sensors sample time
-    sensors.init(sensors.Sensirion);             // start all sensors
-    if(sensors.isPmSensorConfigured())
-        gui.welcomeRepeatMessage(sensors.getPmDeviceSelected());
-    else 
-        gui.welcomeRepeatMessage("Detection !FAIL!");
+    Serial.println("-->[INFO] Detecting sensors..");
+    startingSensors();
     delay(500);
-
+    
     // init battery (only for some boards)
     batteryInit();
 

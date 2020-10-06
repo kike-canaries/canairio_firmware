@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/kike-canaries/esp32-hpma115s0.svg?branch=master)](https://travis-ci.com/kike-canaries/esp32-hpma115s0) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO) 
+[![Build Status](https://travis-ci.com/kike-canaries/canairio_firmware.svg?branch=master)](https://travis-ci.com/kike-canaries/canairio_firmware) [![PlatformIO](https://github.com/kike-canaries/canairio_firmware/workflows/PlatformIO/badge.svg)](https://github.com/kike-canaries/canairio_firmware/actions/) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO) 
  
 # CanAirIO firmware
 
@@ -12,20 +12,37 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 
 ### Linux and MacOSx
 
-You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. Download the last release from `assets` section in releases and please uncompress zip file, connect your device and execute the next command for your model board (D1Mini, WemosOLED, Heltec) like this:
+You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. Download the last release from `assets` section in releases and please uncompress zip file.
+
+#### USB alternative
+
+Connect your CanAirIO device to your USB and execute the next command for your model board*, like this:
 
 ``` bash
 unzip canairio_rev414_20190829.zip
 cd canairio_installer
-./install.sh canairio_d1mini_rev414_20190829.bin
+./install.sh canairio_TTGO_T7_rev605_20200925.bin
 ```
 
-**Note**: you need python2 or python3 with pyserial in your system.  
+**Note**: you need python2 or python3 with pyserial in your system.
+
+#### Boards
+
+**TTGO_T7** firmware for CanAirIO v2.1 ([TTGO_T7 board](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647))  
+**TTGO_TQ** firmware for [TTGO_TQ board](https://de.aliexpress.com/item/10000291636371.html) and Honeywell.  
+**WEMOSOLED** firmware for [ESP32 OLED board](https://de.aliexpress.com/item/33047481007.html) and Honeywell
+
+Is possible that the current firmware supports more boards and sensors, for example the `Honeywell` variant supports **Plantower** sensors, and in theory we have support  for all `lolin32` variants and `TTGO` variants. Please see [compiling section](#optional-compiling-and-installing). Also the last firmware
+has autodetection for different kind of particulate sensors.
+
+
 **Tip**: if you want clear all preferences and flash variables, please execute before:
 
 ``` bash
-esptool.py --port /dev/ttyUSB0 erase_flash
+./esptool.py --port /dev/ttyUSB0 erase_flash
 ```
+
+#### OTA alternative
 
 After that you will able to send OTA updates to any board supported, like this:
 
@@ -41,27 +58,34 @@ Please read procedure on `firmware` section on [HacksterIO Guide](https://www.ha
 
 Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
 
-For **default** board `D1Mini Kit like`, clone and upload firmware via USB cable:
+For **default** board `TTGO_T7`, clone and upload firmware via USB cable:
 
 ``` bash
 git clone https://github.com/kike-canaries/esp32-hpma115s0.git
 cd esp32-hpma115s0
-pio run -e d1mini --target upload
+pio run -e TTGO_T7 --target upload
 ```
 
-After that, it able for sending updates via OTA protocol using Wifi in your LAN, is more fastest than USB and you can disconnect your board, but `you need first send Wifi credentials` via Android CanAirIO app (see below)
+After that, it able for sending updates via OTA protocol using Wifi in your LAN, is more fastest than USB and you can disconnect your board, but `you need first save Wifi credentials` via Android CanAirIO app [see below](#settings).
 
 For **OTA updates** you only run
 
 ``` bash
-pio run --target upload
+pio run -e TTGO_T7_OTA --target upload
 ```
 
 **Optional** for other board, please select the right environment for example for `wemos` board:
 
 ``` bash
-pio run -e wemos --target upload
+pio run -e WEMOSOLED --target upload
 ```
+
+Also you can change in `platformio.ini` the next parameters:
+
+-D CORE_DEBUG_LEVEL=0, set to 3 for get more verbose log.  
+-D EMOTICONS, comment or uncomment for enable emoticons.  
+upload_port, in OTA section is for set to CanAirIO device IP address.
+
 
 ### Building Installer
 

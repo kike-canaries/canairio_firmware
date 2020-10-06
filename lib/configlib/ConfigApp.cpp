@@ -75,10 +75,13 @@ bool ConfigApp::save(const char *json){
   if (error) {
     Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
     Serial.println(error.c_str());
-
-    // setErrorCode(ecode_json_parser_error);
     return false;
   }
+
+  // char* output[1000];
+  // serializeJsonPretty(doc, output, 1000);
+  // log_n("[CONFIG] JSON: %s",output);
+
   String tdname = doc["dname"] | "";
   String tifxdb = doc["ifxdb"] | "";
   String tifxip = doc["ifxip"] | "";
@@ -109,7 +112,7 @@ bool ConfigApp::save(const char *json){
     preferences.begin(_app_name, false);
     preferences.putString("dname", tdname );
     preferences.end();
-    Serial.println("-->[CONFIG] set device name to"+tdname);
+    Serial.println("-->[CONFIG] set device name to: "+tdname);
   }
   else if (tifxdb.length()>0 && tifxip.length()>0) {
     preferences.begin(_app_name, false);
@@ -172,7 +175,8 @@ bool ConfigApp::save(const char *json){
     preferences.begin(_app_name, false);
     preferences.putInt("stime", tstime);
     preferences.end();
-    Serial.println("-->[CONFIG] sensor sample time saved!");
+    Serial.print("-->[CONFIG] sensor sample time set to: ");
+    Serial.println(tstime);
   }
   else if (cmd==((uint16_t)(chipid >> 32)) && act.length()>0){
     // reboot command
@@ -193,7 +197,7 @@ bool ConfigApp::save(const char *json){
       preferences.putBool("wifiEnable", wenb);
       preferences.end();
       wifiEnable = wenb;
-      Serial.println("-->[CONFIG] Updating WiFi state: "+wenb);
+      Serial.println("-->[CONFIG] Updating WiFi state: "+String(wenb));
     }
     // enable/disable influxDb state
     if (act.equals("ist")) {
@@ -201,7 +205,7 @@ bool ConfigApp::save(const char *json){
       preferences.putBool("ifxEnable", ienb);
       preferences.end();
       ifxEnable = ienb;
-      Serial.println("-->[CONFIG] Updating InfluxDB state: "+ienb);
+      Serial.println("-->[CONFIG] Updating InfluxDB state: "+String(ienb));
     }
     // enable/disable CanAirIO API state
     if (act.equals("ast")) {
@@ -209,7 +213,7 @@ bool ConfigApp::save(const char *json){
       preferences.putBool("apiEnable", aenb);
       preferences.end();
       apiEnable = aenb;
-      Serial.println("-->[CONFIG] Updating API state: "+aenb);
+      Serial.println("-->[CONFIG] Updating API state: "+String(aenb));
     }
   }
   else {
@@ -235,3 +239,8 @@ void ConfigApp::reboot(){
   delay(100);
   ESP.restart();
 }
+
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_CFGHANDLER)
+ConfigApp cfg;
+#endif
+

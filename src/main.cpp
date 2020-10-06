@@ -16,26 +16,14 @@
 #include <bluetooth.hpp>
 #include <wifi.hpp>
 
-void displayGUI() {
-    static uint_fast64_t timeStampGUI = 0;   // timestamp for GUI refresh
-    if ((millis() - timeStampGUI > 1000)) {  // it should be minor than sensor loop
-        timeStampGUI = millis();
-        gui.pageStart();
-        gui.displaySensorAverage(sensors.getPM25());
-        gui.displaySensorData(
-            sensors.getPM25(),
-            sensors.getPM10(),
-            getChargeLevel(),
-            sensors.getHumidity(),
-            sensors.getTemperature(),
-            getWifiRSSI());
-        gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
-        gui.pageEnd();
-    }
-}
-
+/// sensors data callback
 void onSensorDataOk() {
     gui.displaySensorLiveIcon();  // all sensors read are ok
+}
+
+/// sensors error callback
+void onSensorDataError(const char * msg){
+    Serial.println(msg);
 }
 
 void startingSensors() {
@@ -56,6 +44,24 @@ void startingSensors() {
     else {
         Serial.println("-->[INFO] Detection sensors FAIL!");
         gui.welcomeRepeatMessage("Detection !FAIL!");
+    }
+}
+
+void displayGUI() {
+    static uint_fast64_t timeStampGUI = 0;   // timestamp for GUI refresh
+    if ((millis() - timeStampGUI > 1000)) {  // it should be minor than sensor loop
+        timeStampGUI = millis();
+        gui.pageStart();
+        gui.displaySensorAverage(sensors.getPM25());
+        gui.displaySensorData(
+            sensors.getPM25(),
+            sensors.getPM10(),
+            getChargeLevel(),
+            sensors.getHumidity(),
+            sensors.getTemperature(),
+            getWifiRSSI());
+        gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
+        gui.pageEnd();
     }
 }
 

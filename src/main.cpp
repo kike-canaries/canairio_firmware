@@ -38,13 +38,34 @@ void onSensorDataOk() {
     gui.displaySensorLiveIcon();  // all sensors read are ok
 }
 
+void startingSensors() {
+    gui.welcomeAddMessage("Detecting sensors..");
+    sensors.setOnDataCallBack(&onSensorDataOk);   // all data read callback
+    sensors.setSampleTime(cfg.stime);             // config sensors sample time
+    sensors.setDebugMode(false);                  // [optional] debug mode
+    sensors.init();                               // start all sensors and
+                                                  // try to detect PM sensor: 
+                                                  // Panasonic, Honeywell or Plantower.
+                                                  // for Sensirion please do init(sensors.Sensirion)
+
+    if(sensors.isPmSensorConfigured()){
+        Serial.print("-->[INFO] PM sensor detected: ");
+        Serial.println(sensors.getPmDeviceSelected());
+        gui.welcomeRepeatMessage(sensors.getPmDeviceSelected());
+    }
+    else {
+        Serial.println("-->[INFO] Detection sensors FAIL!");
+        gui.welcomeRepeatMessage("Detection !FAIL!");
+    }
+}
+
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
 
 void setup() {
     Serial.begin(115200);
-    delay(200);
+    delay(400);
     Serial.println("\n== CanAirIO Setup ==\n");
     pinMode(BUILTIN_LED, OUTPUT);
 
@@ -60,16 +81,10 @@ void setup() {
     Serial.println("-->[INFO] Firmware " + gui.getFirmwareVersionCode());
 
     // init all sensors
-    gui.welcomeAddMessage("Detecting sensors..");
-    sensors.setOnDataCallBack(&onSensorDataOk);  // all data read callback
-    sensors.setSampleTime(cfg.stime);            // config sensors sample time
-    sensors.init(sensors.Sensirion);             // start all sensors
-    if(sensors.isPmSensorConfigured())
-        gui.welcomeRepeatMessage(sensors.getPmDeviceSelected());
-    else 
-        gui.welcomeRepeatMessage("Detection !FAIL!");
+    Serial.println("-->[INFO] Detecting sensors..");
+    startingSensors();
     delay(500);
-
+    
     // init battery (only for some boards)
     batteryInit();
 

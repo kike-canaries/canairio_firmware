@@ -1,840 +1,132 @@
 /**
  * @file main.cpp
  * @author Antonio Vanegas @hpsaturn
- * @date June 2018 - 2019
- * @brief HPMA115S0 sensor on ESP32 with bluetooth GATT notify server
+ * @date June 2018 - 2020
+ * @brief Particle meter sensor on ESP32 with bluetooth GATT notify server
  * @license GPL3
  */
 
 #include <Arduino.h>
-#include <OTAHandler.h>
-#include <Wire.h>
-#include <InfluxArduino.hpp>
-#include <CanAirIoApi.hpp>
+
+#include <Watchdog.hpp>
 #include <ConfigApp.hpp>
-#include <ArduinoJson.h>
-#include <numeric>
-#include <hpma115S0.h>
-#include <BLEDevice.h>
-#include <BLEServer.h>
-#include <BLEUtils.h>
-#include <BLE2902.h>
-#include <WiFi.h>
-#include <esp_wifi.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_AM2320.h>
 #include <GUIUtils.hpp>
-#include <vector>
-#include <sps30.h>
-#include "main.h"
-#include "status.h"
+#include <Sensors.hpp>
+#include <battery.hpp>
+#include <bluetooth.hpp>
+#include <wifi.hpp>
 
-/******************************************************************************
-* S E T U P  B O A R D   A N D  F I E L D S
-* ---------------------
-* please select board on platformio.ini file
-******************************************************************************/
-
-#ifdef WEMOSOLED // display via i2c for WeMOS OLED board & TTGO18650
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
-#elif HELTEC // display via i2c for Heltec board
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
-#elif TTGO_TQ // display via i2c for TTGO_TQ
-U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, 4, 5);
-#else       // display via i2c for D1MINI board
-U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0,U8X8_PIN_NONE,U8X8_PIN_NONE,U8X8_PIN_NONE);
-#endif
-
-// HPMA115S0 sensor config
-#ifdef WEMOSOLED
-#define HPMA_RX 13  // config for Wemos board & TTGO18650
-#define HPMA_TX 15  // some old TTGO18650 have HPMA_RX 18 & HPMA_TX 17
-#elif HELTEC
-#define HPMA_RX 13  // config for Heltec board, ESP32Sboard & ESPDUINO-32
-#define HPMA_TX 12  // some old ESP32Sboard have HPMA_RX 27 & HPMA_TX 25
-#elif TTGO_TQ
-#define HPMA_RX 13  // config for TTGO_TQ board
-#define HPMA_TX 18
-#else
-#define HPMA_RX 17  // config for D1MIN1 board
-#define HPMA_TX 16
-#endif
-
-SPS30 sps30;
-
-/******************************************************************************
-*   S E N S O R  M E T H O D S
-******************************************************************************/
-
-/**
- * [DEPRECATED] sensorConfig:
- * The next method is only if Honeywell sensor was config without autosend
- */
-#ifdef HONEYWELL
-void sensorConfig(){
-  Serial.println("-->[HPMA] configuration hpma115S0 sensor..");
-  hpmaSerial.begin(9600,SERIAL_8N1,HPMA_RX,HPMA_TX);
-  hpma115S0.Init();
-  delay(100);
-  hpma115S0.EnableAutoSend();
-  delay(100);
-  hpma115S0.StartParticleMeasurement();
-  delay(100);
-  Serial.println("-->[HPMA] sensor configured.");
-}
-#endif
-
-#ifdef SENSIRION
-void ErrtoMess(char *mess, uint8_t r){
-  char buf[80];
-  Serial.print(mess);
-  sps30.GetErrDescription(r, buf, 80);
-  Serial.println(buf);
+/// sensors data callback
+void onSensorDataOk() {
+    gui.displaySensorLiveIcon();  // all sensors read are ok
 }
 
-void Errorloop(char *mess, uint8_t r){
-  if (r) ErrtoMess(mess, r);
-  else Serial.println(mess);
-  setErrorCode(ecode_sensor_timeout);
-  delay(500); // waiting for sensor..
-}
-#endif
-
-void sensorInit(){
-#ifdef HONEYWELL
-  Serial.println("-->[HPMA] starting hpma115S0 sensor..");
-  delay(100);
-  #ifndef TTGO_TQ
-  hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
-  #else
-  if(WrongSerialData == false){
-    hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
-  }
-  delay(100);
-  #endif
-#elif PANASONIC
-  Serial.println("-->[SN] starting SN-GCJA5 sensor..");
-  delay(100);
-  #ifndef TTGO_TQ
-  hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
-  #else
-  if(WrongSerialData == false){
-    hpmaSerial.begin(9600, SERIAL_8N1, HPMA_RX, HPMA_TX);
-  }
-  delay(100);
-  #endif
-#else //SENSIRION
-// Begin communication channel
-  Serial.println(F("-->[SPS30] starting SPS30 sensor.."));
-  if (sps30.begin(SP30_COMMS) == false){
-    Errorloop((char *)"-->[E][SPS30] could not initialize communication channel.", 0);
-  }
-  // check for SPS30 connection
-  if (sps30.probe() == false){
-    Errorloop((char *)"-->[E][SPS30] could not probe / connect with SPS30.", 0);
-  }
-  else
-    Serial.println(F("-->[SPS30] Detected SPS30."));
-  // reset SPS30 connection
-  if (sps30.reset() == false){
-    Errorloop((char *)"-->[E][SPS30] could not reset.", 0);
-  }
-  // start measurement
-  if (sps30.start() == true)
-    Serial.println(F("-->[SPS30] Measurement OK"));
-  else
-    Errorloop((char *)"-->[E][SPS30] Could NOT start measurement", 0);
-  if (SP30_COMMS == I2C_COMMS){
-    if (sps30.I2C_expect() == 4)
-      Serial.println(F("-->[E][SPS30] Due to I2C buffersize only PM values  \n"));
-  }
-#endif
+/// sensors error callback
+void onSensorDataError(const char * msg){
+    Serial.println(msg);
 }
 
-void wrongDataState(){
-  setErrorCode(ecode_sensor_read_fail);
-  gui.displaySensorAverage(apm25);
-  gui.displaySensorData(0,0,chargeLevel,0.0,0.0,0);
-#ifdef HONEYWELL
-  Serial.print("-->[E][HPMA] !wrong data!");
-  #ifndef TTGO_TQ
-    hpmaSerial.end();
-  #endif
-#elif PANASONIC
-  Serial.print("-->[E][SNGC] !wrong data!");
-  #ifndef TTGO_TQ
-    hpmaSerial.end();
-  #endif
-#else
-  Serial.print("-->[E][SPS30] !wrong data!");
-#endif
-  statusOff(bit_sensor);
-  WrongSerialData = true;
-  sensorInit();
-  delay(500);
-}
+void startingSensors() {
+    gui.welcomeAddMessage("Detecting sensors..");
+    sensors.setOnDataCallBack(&onSensorDataOk);   // all data read callback
+    sensors.setSampleTime(cfg.stime);             // config sensors sample time
+    sensors.setDebugMode(false);                  // [optional] debug mode
+    sensors.init();                               // start all sensors and
+                                                  // try to detect PM sensor: 
+                                                  // Panasonic, Honeywell or Plantower.
+                                                  // for Sensirion please do init(sensors.Sensirion)
 
-/***
- * Average methods
- **/
-
-void saveDataForAverage(unsigned int pm25, unsigned int pm10){
-  v25.push_back(pm25);
-  v10.push_back(pm10);
-}
-
-unsigned int getPM25Average(){
-  unsigned int pm25_average = round(accumulate(v25.begin(), v25.end(), 0.0) / v25.size());
-  v25.clear();
-  return pm25_average;
-}
-
-unsigned int getPM10Average(){
-  unsigned int pm10_average = round(accumulate(v10.begin(), v10.end(), 0.0) / v10.size());
-  v10.clear();
-  return pm10_average;
-}
-
-void averageLoop(){
-  if (v25.size() >= cfg.stime){
-    apm25 = getPM25Average();  // global var for display
-    apm10 = getPM10Average();
-  }
-}
-
-char getLoaderChar(){
-  char loader[] = {'/','|','\\','-'};
-  return loader[random(0,4)];
-}
-
-void showValues(int pm25, int pm10){
-  gui.displaySensorAverage(apm25); // it was calculated on bleLoop()
-  gui.displaySensorData(pm25, pm10, chargeLevel, humi, temp, rssi);
-  gui.displayLiveIcon();
-  saveDataForAverage(pm25, pm10);
-  WrongSerialData = false;
-}
-
-/***
- * PM2.5 and PM10 read and visualization
- **/
-
-void sensorLoop(){
-#ifndef SENSIRION
-  int try_sensor_read = 0;
-  String txtMsg = "";
-  while (txtMsg.length() < 32 && try_sensor_read++ < SENSOR_RETRY){
-    while (hpmaSerial.available() > 0){
-      char inChar = hpmaSerial.read();
-      txtMsg += inChar;
-#ifdef HONEYWELL
-      Serial.print("-->[HPMA] read " + String(getLoaderChar()) + "\r");
-#else
-      Serial.print("-->[SNGC] read " + String(getLoaderChar()) + "\r");
-#endif 
-    }
-#ifdef HONEYWELL
-    Serial.print("-->[HPMA] read " + String(getLoaderChar()) + "\r");
-#else
-    Serial.print("-->[SNGC] read " + String(getLoaderChar()) + "\r");
-#endif
-  }
-  if (try_sensor_read > SENSOR_RETRY){
-    setErrorCode(ecode_sensor_timeout);
-#ifdef HONEYWELL
-    Serial.println("-->[HPMA] read > fail!");
-    Serial.println("-->[E][HPMA] disconnected ?");
-#else
-    Serial.println("-->[SNGC] read > fail!");
-    Serial.println("-->[E][SNGC] disconnected ?");
-#endif
-    delay(500); // waiting for sensor..
-  }
-#endif
-
-#ifdef PANASONIC
-  if (txtMsg[0] == 02){
-    Serial.print("-->[SNGC] read > done!");
-    statusOn(bit_sensor);
-    pm25 = txtMsg[6] * 256 + byte(txtMsg[5]);
-    pm10 = txtMsg[10] * 256 + byte(txtMsg[9]);
-    if (pm25 < 2000 && pm10 < 2000){
-      showValues(pm25, pm10);
-    }
-    else
-      wrongDataState();
-  }
-  else
-    wrongDataState();
-
-#elif HONEYWELL // HONEYWELL
-  if (txtMsg[0] == 66){
-    if (txtMsg[1] == 77){
-      Serial.print("-->[HPMA] read > done!");
-      statusOn(bit_sensor);
-      pm25 = txtMsg[6] * 256 + byte(txtMsg[7]);
-      pm10 = txtMsg[8] * 256 + byte(txtMsg[9]);
-      if (pm25 < 1000 && pm10 < 1000){
-        showValues(pm25, pm10);
-      }
-      else
-        wrongDataState();
-    }
-    else
-      wrongDataState();
-  }
-  else
-    wrongDataState();
-
-#else // SENSIRION
-  delay(35); //Delay for sincronization
-  do {
-    ret = sps30.GetValues(&val);
-    if (ret == ERR_DATALENGTH){
-      if (error_cnt++ > 3) {
-        ErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
-        return;
-      }
-      delay(1000);
-    }
-    else if (ret != ERR_OK){
-      ErrtoMess((char *)"-->[E][SPS30] Error during reading values: ", ret);
-      return;
-    }
-  } while (ret != ERR_OK);
-
-  Serial.print("-->[SPS30] read > done!");
-  statusOn(bit_sensor);
-
-  pm25 = round(val.MassPM2);
-  pm10 = round(val.MassPM10);
-
-  if (pm25 < 1000 && pm10 < 1000){
-    showValues(pm25, pm10);
-  }
-  else
-    wrongDataState();
-#endif
-}
-
-void statusLoop(){
-  if (v25.size() == 0) {
-    Serial.print("-->[STATUS] ");
-    Serial.println(status.to_string().c_str());
-    updateStatusError();
-    wifiCheck();
-  }
-  gui.updateError(getErrorCode());
-  gui.displayStatus(wifiOn,true,deviceConnected,dataSendToggle);
-  if(triggerSaveIcon++<3) gui.displayPrefSaveIcon(true);
-  else gui.displayPrefSaveIcon(false);
-  if(dataSendToggle) dataSendToggle=false;
-}
-
-String getNotificationData(){
-  StaticJsonDocument<40> doc;
-  doc["P25"] = apm25;  // notification capacity is reduced, only main value
-  String json;
-  serializeJson(doc,json);
-  return json;
-}
-
-String getSensorData(){
-  StaticJsonDocument<150> doc;
-  doc["P25"] = apm25;
-  doc["P10"] = apm10;
-  doc["lat"] = cfg.lat;
-  doc["lon"] = cfg.lon;
-  doc["alt"] = cfg.alt;
-  doc["spd"] = cfg.spd;
-  doc["sta"] = status.to_string().c_str();
-  String json;
-  serializeJson(doc,json);
-  return json;
-}
-
-void getHumidityRead() {
-  humi = am2320.readHumidity();
-  temp = am2320.readTemperature();
-  if (isnan(humi)){
-    humi = 0.0;
-    am2320.begin();
-  }
-  if (isnan(temp))
-    temp = 0.0;
-  Serial.println("-->[AM2320] Humidity: "+String(humi)+" % Temp: "+String(temp)+" °C");
-}
-
-void humidityLoop(){
-  if (v25.size() == 0){
-    getHumidityRead();
-  }
-}
-
-/******************************************************************************
-*   B A T T E R Y   C H A R G E   S T A T U S   M E T H O D S
-******************************************************************************/
-// IP5306_2 = pin 27 ESP32, pin 2 IP5306
-// IP5306_3 = pin 26 ESP32, pin 3 IP5306
-
-void batteryloop() {
-#ifdef TTGO_TQ
-  Rdelay = 0;
-  while (digitalRead(IP5306_2) == HIGH)
-  {
-    delayMicroseconds(100); // Sincronization in 1
-  }
-  delayMicroseconds(50); // Probably double shoot in 0
-  while (digitalRead(IP5306_2) == HIGH)
-  {
-    delayMicroseconds(100); // Sincronization in 1
-  }
-  while (digitalRead(IP5306_2) == LOW && Rdelay < 56)
-  {
-    delayMicroseconds(100); // Sincronization in 0
-    Rdelay = Rdelay + 1;
-  }
-  if (Rdelay > 52)
-  {
-    chargeLevel = 0; // 0%
-    return;
-  }
-  delayMicroseconds(1600);
-  if (digitalRead(IP5306_2) == HIGH)
-  {
-    delayMicroseconds(100);
-    if (digitalRead(IP5306_2) == HIGH)
-    {
-      chargeLevel = 100; // 100%
-      return;
-    }
-  }
-  if (digitalRead(IP5306_3) == LOW)
-  {
-    delayMicroseconds(100);
-    if (digitalRead(IP5306_3) == LOW)
-    {
-      chargeLevel = 25; // 25%
-      return;
-    }
-  }
-  delayMicroseconds(1100);
-  if (digitalRead(IP5306_3) == HIGH)
-  {
-    delayMicroseconds(100);
-    if (digitalRead(IP5306_3) == HIGH)
-    {
-      chargeLevel = 75; // 75%
-      return;
-    }
-  }
-  if (digitalRead(IP5306_3) == LOW)
-  {
-    chargeLevel = 50; // 50%
-    return;
-  }
-#endif
-}
-
-/******************************************************************************
-*   C A N A I R I O  P U B L I S H   M E T H O D S
-******************************************************************************/
-
-bool apiIsConfigured(){
-  return cfg.apiusr.length() > 0 && cfg.apipss.length() > 0 && cfg.dname.length() > 0;
-}
-
-void apiInit(){
-  if (wifiOn && apiIsConfigured()) {
-    Serial.println("-->[API] Connecting..");
-    // stationId and deviceId, optional endpoint, host and port
-    if(cfg.apiuri.equals("") && cfg.apisrv.equals(""))
-      api.configure(cfg.dname.c_str(), cfg.deviceId); 
-    else
-      api.configure(cfg.dname.c_str(), cfg.deviceId, cfg.apiuri.c_str(), cfg.apisrv.c_str(), cfg.apiprt); 
-    api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
-    // api.dev = true;
-    cfg.isNewAPIConfig=false; // flag for config via BLE
-    delay(1000);
-  }
-}
-
-void apiLoop() {
-  if (v25.size()==0 && wifiOn && cfg.isApiEnable() && apiIsConfigured() && resetvar != 0) {
-    Serial.print("-->[API] writing to ");
-    Serial.print(""+String(api.ip)+"..");
-    bool status = api.write(0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime);
-    int code = api.getResponse();
-    if(status) {
-      Serial.println("done. ["+String(code)+"]");
-      statusOn(bit_cloud);
-      dataSendToggle = true;
+    if(sensors.isPmSensorConfigured()){
+        Serial.print("-->[INFO] PM sensor detected: ");
+        Serial.println(sensors.getPmDeviceSelected());
+        gui.welcomeRepeatMessage(sensors.getPmDeviceSelected());
     }
     else {
-      Serial.println("fail! ["+String(code)+"]");
-      statusOff(bit_cloud);
-      setErrorCode(ecode_api_write_fail);
-      if (code == -1) {
-        Serial.println("-->[E][API] publish error (-1)");
-        delay(1000);
-      }
+        Serial.println("-->[INFO] Detection sensors FAIL!");
+        gui.welcomeRepeatMessage("Detection !FAIL!");
     }
-  }
 }
 
-/******************************************************************************
-*   I N F L U X D B   M E T H O D S
-******************************************************************************/
-
-bool influxDbIsConfigured(){
-  return cfg.ifxdb.length()>0 && cfg.ifxip.length()>0 && cfg.dname.length()>0;
-}
-
-void influxDbInit() {
-  if(wifiOn && influxDbIsConfigured()) {
-    Serial.println("-->[INFLUXDB] connecting..");
-    influx.configure(cfg.ifxdb.c_str(), cfg.ifxip.c_str()); //third argument (port number) defaults to 8086
-    Serial.print("-->[INFLUXDB] Using HTTPS: ");
-    Serial.println(influx.isSecure()); //will be true if you've added the InfluxCert.hpp file.
-    cfg.isNewIfxdbConfig=false; // flag for config via BLE
-    delay(1000);
-  }
-}
-
-/**
- * @influxDbParseFields:
- *
- * Supported:
- * "id","pm1","pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime","tstp"
- *
- */
-void influxDbParseFields(char* fields){
-  sprintf(
-    fields,
-    "pm1=%u,pm25=%u,pm10=%u,hum=%f,tmp=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
-    0,apm25,apm10,humi,temp,cfg.lat,cfg.lon,cfg.alt,cfg.spd,cfg.stime,0
-  );
-}
-
-void influxDbAddTags(char* tags) {
-  sprintf(tags,"mac=%04X%08X",(uint16_t)(cfg.chipid >> 32),(uint32_t)cfg.chipid);
-}
-
-bool influxDbWrite() {
-  char tags[64];
-  influxDbAddTags(tags);
-  char fields[256];
-  influxDbParseFields(fields);
-  return influx.write(cfg.dname.c_str(), tags, fields);
-}
-
-void influxDbLoop() {
-  if(v25.size()==0 && wifiOn && cfg.isIfxEnable() && influxDbIsConfigured() && resetvar != 0){
-    int ifx_retry = 0;
-    Serial.print("-->[INFLUXDB] writing to ");
-    Serial.print("" + cfg.ifxip + "..");
-    while(!influxDbWrite() && ( ifx_retry++ < IFX_RETRY_CONNECTION )){
-      Serial.print(".");
-      delay(200);
+void displayGUI() {
+    static uint_fast64_t timeStampGUI = 0;   // timestamp for GUI refresh
+    if ((millis() - timeStampGUI > 1000)) {  // it should be minor than sensor loop
+        timeStampGUI = millis();
+        gui.pageStart();
+        gui.displaySensorAverage(sensors.getPM25());
+        gui.displaySensorData(
+            sensors.getPM25(),
+            sensors.getPM10(),
+            getChargeLevel(),
+            sensors.getHumidity(),
+            sensors.getTemperature(),
+            getWifiRSSI());
+        gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
+        gui.pageEnd();
     }
-    if(ifx_retry > IFX_RETRY_CONNECTION ) {
-      Serial.println("failed!\n-->[E][INFLUXDB] write error, try wifi restart..");
-      statusOff(bit_cloud);
-      setErrorCode(ecode_ifdb_write_fail);
-      wifiRestart();
-    }
-    else {
-      Serial.println("done. ["+String(influx.getResponse())+"]");
-      statusOn(bit_cloud);
-      dataSendToggle = true;
-    }
-  }
-}
-
-/******************************************************************************
-*   W I F I   M E T H O D S
-******************************************************************************/
-
-class MyOTAHandlerCallbacks: public OTAHandlerCallbacks{
-  void onStart(){
-    gui.showWelcome();
-    gui.welcomeAddMessage("Upgrading..");
-  };
-  void onProgress(unsigned int progress, unsigned int total){
-    gui.showProgress(progress,total);
-  };
-  void onEnd(){
-    gui.welcomeAddMessage("");
-    gui.welcomeAddMessage("success!");    delay(1000);
-    gui.welcomeAddMessage("rebooting.."); delay(500);
-  }
-  void onError(){
-    gui.welcomeAddMessage("");
-    gui.welcomeAddMessage("error, try again!"); delay(2000);
-  }
-};
-
-void otaLoop(){
-  timerAlarmDisable(timer);                         // disable interrupt
-  if(wifiOn)ota.loop();
-  timerAlarmEnable(timer);                         // enable interrupt
-}
-
-void otaInit(){
-  ota.setup("CanAirIO","CanAirIO");
-  ota.setCallbacks(new MyOTAHandlerCallbacks());
-}
-
-bool wifiCheck(){
-  wifiOn = WiFi.isConnected();
-  if(wifiOn)statusOn(bit_wan);  // TODO: We need validate internet connection
-  else {
-    statusOff(bit_cloud);
-    statusOff(bit_wan);
-  }
-  return wifiOn;
-}
-
-void wifiConnect(const char* ssid, const char* pass) {
-  Serial.print("-->[WIFI] Connecting to "); Serial.print(ssid);
-  WiFi.begin(ssid, pass);
-  WiFi.setHostname("CanAirIO");
-  int wifi_retry = 0;
-  while (WiFi.status() != WL_CONNECTED && wifi_retry++ < WIFI_RETRY_CONNECTION) {
-    Serial.print(".");
-    delay(500);           // increment this delay on possible reconnect issues
-  }
-  if(wifiCheck()){
-    cfg.isNewWifi=false;  // flag for config via BLE
-    Serial.println("done\n-->[WIFI] connected!");
-    Serial.print("-->[WIFI][IP]"); Serial.println(WiFi.localIP());
-    otaInit();
-  }
-  else{
-    Serial.println("fail!\n-->[E][WIFI] disconnected!");
-    setErrorCode(ecode_wifi_fail);
-  }
-}
-
-void wifiInit(){
-  if(cfg.wifiEnable && cfg.ssid.length() > 0 && cfg.pass.length() > 0) {
-    wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
-  }
-}
-
-void wifiStop(){
-  if(wifiOn){
-    Serial.println("-->[WIFI] Disconnecting..");
-    WiFi.disconnect(true);
-    wifiOn = false;
-    delay(1000);
-  }
-}
-
-void wifiRestart(){
-  wifiStop();
-  wifiInit();
-}
-
-void wifiLoop(){
-  wifiRSSI();
-  if(v25.size()==0 && cfg.wifiEnable && cfg.ssid.length()>0 && !wifiCheck()) {
-    wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
-    influxDbInit();
-    apiInit();
-  }
-}
-
-void wifiRSSI(){
-  if (wifiOn)
-    rssi = WiFi.RSSI();
-  else
-    rssi = 0;
-}
-
-/******************************************************************************
-*   B L U E T O O T H  M E T H O D S
-******************************************************************************/
-class MyServerCallbacks: public BLEServerCallbacks {
-	void onConnect(BLEServer* pServer) {
-      Serial.println("-->[BLE] onConnect");
-      statusOn(bit_paired);
-      deviceConnected = true;
-    };
-
-    void onDisconnect(BLEServer* pServer) {
-      Serial.println("-->[BLE] onDisconnect");
-      statusOff(bit_paired);
-      deviceConnected = false;
-    };
-}; // BLEServerCallbacks
-
-class MyConfigCallbacks: public BLECharacteristicCallbacks {
-    void onWrite(BLECharacteristic *pCharacteristic) {
-      std::string value = pCharacteristic->getValue();
-      if (value.length() > 0) {
-        if(cfg.save(value.c_str())){
-          triggerSaveIcon=0;
-          cfg.reload();
-          if(cfg.isNewWifi){
-            wifiRestart();
-            apiInit();
-            influxDbInit();
-          }
-          if(cfg.isNewIfxdbConfig) influxDbInit();
-          if(cfg.isNewAPIConfig) apiInit();
-          if(!cfg.wifiEnable) wifiStop();
-        }
-        else{
-          setErrorCode(ecode_invalid_config);
-        }
-        pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
-        pCharactData->setValue(getSensorData().c_str());
-      }
-    }
-};
-
-void bleServerInit(){
-  // Create the BLE Device
-  BLEDevice::init("CanAirIO_ESP32");
-  // Create the BLE Server
-  pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new MyServerCallbacks());
-  // Create the BLE Service
-  BLEService *pService = pServer->createService(SERVICE_UUID);
-  // Create a BLE Characteristic for PM 2.5
-  pCharactData = pService->createCharacteristic(
-      CHARAC_DATA_UUID,
-      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY
-  );
-  // Create a BLE Characteristic for Sensor mode: STATIC/MOVIL
-  pCharactConfig = pService->createCharacteristic(
-      CHARAC_CONFIG_UUID,
-      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
-  );
-  // Create a Data Descriptor (for notifications)
-  pCharactData->addDescriptor(new BLE2902());
-  // Saved current sensor data
-  pCharactData->setValue(getSensorData().c_str());
-  // Setting Config callback
-  pCharactConfig->setCallbacks(new MyConfigCallbacks());
-  // Saved current config data
-  pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
-  // Start the service
-  pService->start();
-  // Start advertising
-  pServer->getAdvertising()->start();
-  Serial.println("-->[BLE] GATT server ready. (Waiting for client)");
-}
-
-void bleLoop(){
-  // notify changed value
-  if (deviceConnected && v25.size()==0) { // v25 test for get each ~5 sec aprox
-    Serial.println("-->[BLE] sending notification..");
-    pCharactData->setValue(getNotificationData().c_str());  // small payload for notification
-    pCharactData->notify();
-    pCharactData->setValue(getSensorData().c_str());        // load big payload for possible read
-  }
-  // disconnecting
-  if (!deviceConnected && oldDeviceConnected) {
-    delay(500); // give the bluetooth stack the chance to get things ready
-    pServer->startAdvertising(); // restart advertising
-    Serial.println("-->[BLE] start advertising");
-    oldDeviceConnected = deviceConnected;
-  }
-  // connecting
-  if (deviceConnected && !oldDeviceConnected) {
-    // do stuff here on connecting
-    oldDeviceConnected = deviceConnected;
-  }
-}
-
-/******************************************************************************
-*   R E S E T
-******************************************************************************/
-
-void resetLoop(){
-  if (wifiOn){    
-        if (resetvar == 1199) {      
-        resetvar = 0;
-        delay(45000);   // 45 seconds, reset at 30 seconds
-    }
-    resetvar = resetvar + 1;
-  }
 }
 
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
 
-void IRAM_ATTR resetModule(){
-  Serial.println("\n-->[INFO] Watchdog reached, rebooting..");
-  esp_wifi_disconnect();
-  delay(200);
-  esp_wifi_stop();
-  delay(200);
-  esp_wifi_deinit();
-  delay(200);
-  ESP.restart();
+void setup() {
+    Serial.begin(115200);
+    delay(400);
+    Serial.println("\n== CanAirIO Setup ==\n");
+    pinMode(BUILTIN_LED, OUTPUT);
+
+    // init graphic user interface
+    gui.displayInit();
+    gui.showWelcome();
+
+    // init app preferences and load settings
+    cfg.init("canairio");
+
+    // device wifi mac addres and firmware version
+    Serial.println("-->[INFO] ESP32MAC: " + String(cfg.deviceId));
+    Serial.println("-->[INFO] Firmware " + gui.getFirmwareVersionCode());
+
+    // init all sensors
+    Serial.println("-->[INFO] Detecting sensors..");
+    startingSensors();
+    delay(500);
+    
+    // init battery (only for some boards)
+    batteryInit();
+
+    // Bluetooth low energy init (GATT server for device config)
+    bleServerInit();
+    gui.welcomeAddMessage("Bluetooth ready.");
+
+    // WiFi and cloud communication
+    wifiInit();
+    if (WiFi.isConnected())
+        gui.welcomeAddMessage("WiFi:" + cfg.ssid);
+    else
+        gui.welcomeAddMessage("WiFi: disabled.");
+    Serial.println("-->[INFO] InfluxDb API:\t" + String(cfg.isIfxEnable()));
+    Serial.println("-->[INFO] CanAirIO API:\t" + String(cfg.isApiEnable()));
+    influxDbInit();
+    apiInit();  // DEPRECATED
+    if (WiFi.isConnected()) gui.welcomeAddMessage("API clouds ready.");
+
+    // init watchdog timer for reboot in any loop blocker
+    wd.init();
+    gui.welcomeAddMessage("==SETUP READY==");
+    delay(4000);
+
+    // display main screen
+    displayGUI();
 }
 
-void enableWatchdog(){
-  timer = timerBegin(0, 80, true);                 // timer 0, div 80
-  timerAttachInterrupt(timer, &resetModule, true); // setting callback
-  timerAlarmWrite(timer, 30000000, false);         // set time in us (30s)
-  timerAlarmEnable(timer);                         // enable interrupt
-}
-
-void setup(){
-#ifdef TTGO_TQ
-  pinMode(IP5306_2, INPUT);
-  pinMode(IP5306_3, INPUT);
-#endif
-  pinMode(21, INPUT_PULLUP);
-  pinMode(22, INPUT_PULLUP);
-  Serial.begin(115200);
-  gui.displayInit(u8g2);
-  gui.showWelcome();
-  cfg.init("canairio");
-  Serial.println("\n== INIT SETUP ==\n");
-  Serial.println("-->[INFO] ESP32MAC: "+String(cfg.deviceId));
-  enableWatchdog();  // enable timer for reboot in any loop blocker
-  gui.welcomeAddMessage("Sensors test..");
-  sensorInit();
-  am2320.begin();
-  bleServerInit();
-  gui.welcomeAddMessage("GATT server..");
-  if(cfg.ssid.length()>0) gui.welcomeAddMessage("WiFi:"+cfg.ssid);
-  else gui.welcomeAddMessage("WiFi radio test..");
-  wifiInit();
-  gui.welcomeAddMessage("CanAirIO API..");
-  influxDbInit();
-  apiInit();
-  pinMode(LED,OUTPUT);
-  gui.welcomeAddMessage("==SETUP READY==");
-  delay(500);
-}
-
-void loop(){
-  gui.pageStart();
-  sensorLoop();    // read sensor data and showed it
-  averageLoop();   // calculated of sensor data average
-  humidityLoop();  // read AM2320
-  batteryloop();   // battery charge status
-  bleLoop();       // notify data to connected devices
-  wifiLoop();      // check wifi and reconnect it
-  apiLoop();       // CanAir.io API publication
-  influxDbLoop();  // influxDB publication
-  statusLoop();    // update sensor status GUI
-  otaLoop();       // check for firmware updates
-  gui.pageEnd();   // gui changes push
-#ifdef HONEYWELL
-  delay(500);
-#elif PANASONIC
-  delay(500);
-#else
-  delay(900);
-#endif
-  timerWrite(timer, 0);  //reset timer (feed watchdog)
-  resetLoop();     // reset every 20 minutes with Wifion
+void loop() {
+    sensors.loop();  // read sensor data and showed it
+    batteryloop();   // battery charge status
+    bleLoop();       // notify data to connected devices
+    wifiLoop();      // check wifi and reconnect it
+    apiLoop();       // CanAir.io API !! D E P R E C A T E D !!
+    influxDbLoop();  // influxDB publication
+    otaLoop();       // check for firmware updates
+    wd.loop();       // watchdog for check loop blockers
+    displayGUI();    // run GUI page
 }

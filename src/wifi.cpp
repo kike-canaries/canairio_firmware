@@ -98,7 +98,7 @@ bool apiIsConfigured() {
 
 void apiInit() {
     if (WiFi.isConnected() && apiIsConfigured() && cfg.isApiEnable()) {
-        Serial.println("-->[API] Connecting..");
+        Serial.println("-->[API] connecting..");
         // stationId and deviceId, optional endpoint, host and port
         if (cfg.apiuri.equals("") && cfg.apisrv.equals(""))
             api.configure(cfg.dname.c_str(), cfg.deviceId);
@@ -107,7 +107,7 @@ void apiInit() {
         api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
         // api.dev = true;
         cfg.isNewAPIConfig = false;  // flag for config via BLE
-        delay(1000);
+        delay(100);
     }
 }
 

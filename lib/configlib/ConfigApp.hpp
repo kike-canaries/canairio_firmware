@@ -4,57 +4,55 @@
 #include <ArduinoJson.h>
 #include <Preferences.h>
 
-class ConfigApp
-{
-  private:
-  // Config Settings
-  Preferences preferences;
-  char* _app_name;
+class ConfigApp {
+   private:
+    // Config Settings
+    Preferences preferences;
+    char* _app_name;
 
-  public:
-  uint64_t chipid;
-  char* deviceId;
-  String dname;
-  bool wifiEnable;
-  bool ifxEnable;
-  bool apiEnable;
-  String ssid;   
-  String pass;   
-  String ifxdb;  
-  String ifxip;  
-  uint16_t ifxpt;
-  String ifusr;
-  String ifpss;
-  String apiusr;
-  String apipss;
-  String apisrv;
-  String apiuri;
-  int apiprt;
-  int stime;
-  double lat;
-  double lon;
-  float alt;
-  float spd;
-  bool isNewIfxdbConfig;
-  bool isNewAPIConfig;
-  bool isNewWifi;
+   public:
+    uint64_t chipid;
+    char* deviceId;
+    String dname;
+    bool wifiEnable;
+    bool ifxEnable;
+    bool apiEnable;
+    String ssid;
+    String pass;
+    String ifxdb;
+    String ifxip;
+    uint16_t ifxpt;
+    String ifusr;
+    String ifpss;
+    String apiusr;
+    String apipss;
+    String apisrv;
+    String apiuri;
+    int apiprt;
+    int stime;
+    double lat;
+    double lon;
+    float alt;
+    float spd;
+    bool isNewIfxdbConfig;
+    bool isNewAPIConfig;
+    bool isNewWifi;
 
-  void init(const char app_name[]);
+    void init(const char app_name[]);
 
-  void reload();
+    void reload();
 
-  bool save(const char *json);
-  
-  String getCurrentConfig();
+    bool save(const char* json);
 
-  bool isWifiEnable();
-  
-  bool isIfxEnable();
-  
-  bool isApiEnable();
+    String getCurrentConfig();
 
-  void reboot ();
+    bool isWifiEnable();
 
+    bool isIfxEnable();
+
+    bool isApiEnable();
+
+    void reboot();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_CFGHANDLER)

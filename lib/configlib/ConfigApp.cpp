@@ -40,6 +40,7 @@ void ConfigApp::reload(){
   alt = preferences.getFloat("alt",0);
   spd = preferences.getFloat("spd",0);
   stime = preferences.getInt("stime",5);
+  stype = preferences.getInt("stype",-1);
 
   preferences.end();
 }
@@ -61,6 +62,7 @@ String ConfigApp::getCurrentConfig(){
   doc["apisrv"] =  preferences.getString("apisrv","");      // API hostname
   doc["apiuri"] =  preferences.getString("apiuri","");      // API uri endpoint
   doc["apiprt"] =  preferences.getInt("apiprt",80);         // API port
+  doc["stype"]  =  preferences.getInt("stype",-1);          // sensor type { Honeywell, Panasonic, Sensirion };
   doc["wmac"]   =  (uint16_t)(chipid >> 32);
   preferences.end();
   String output;

@@ -30,6 +30,7 @@ class ConfigApp {
     String apiuri;
     int apiprt;
     int stime;
+    int stype;
     double lat;
     double lon;
     float alt;

@@ -37,8 +37,8 @@ class ConfigApp {
     String pass;
 
     struct ifxdbValues {
-        String db;
-        String ip;
+        String db = "canairio";
+        String ip = "influxdb.canair.io";
         uint16_t pt = 8086;
     } ifx;
 

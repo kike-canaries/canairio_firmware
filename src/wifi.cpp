@@ -73,7 +73,7 @@ void influxDbLoop() {
         if (sensors.isDataReady() && WiFi.isConnected() && cfg.isWifiEnable() && cfg.isIfxEnable() && influxDbIsConfigured()) {
             int ifx_retry = 0;
             log_i("[INFLUXDB][ %s ]", cfg.dname.c_str());
-            log_i("[INFLUXDB][ %010d ] writing to %s", ifxdbwcount++, cfg.ifxip.c_str());
+            log_i("[INFLUXDB][ %010d ] writing to %s", ifxdbwcount++, cfg.ifx.ip.c_str());
             while (!influxDbWrite() && (ifx_retry++ < IFX_RETRY_CONNECTION)) {
                 delay(200);
             }

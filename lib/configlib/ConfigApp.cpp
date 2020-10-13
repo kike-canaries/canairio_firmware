@@ -43,7 +43,7 @@ void ConfigApp::reload() {
 }
 
 String ConfigApp::getCurrentConfig() {
-    StaticJsonDocument<500> doc;
+    StaticJsonDocument<1000> doc;
     preferences.begin(_app_name, false);
     doc["dname"] = preferences.getString("dname", "");       // device or station name
     doc["wenb"] = preferences.getBool("wifiEnable", false);  // wifi on/off
@@ -60,10 +60,12 @@ String ConfigApp::getCurrentConfig() {
     doc["apiuri"] = preferences.getString("apiuri", "");     // API uri endpoint
     doc["apiprt"] = preferences.getInt("apiprt", 80);        // API port
     doc["stype"] = preferences.getInt("stype", -1);          // sensor type { Honeywell, Panasonic, Sensirion };
-    doc["wmac"] = (uint16_t)(chipid >> 32);
+    doc["lskey"] = lastKeySaved;                             // last key saved
+    doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
     preferences.end();
     String output;
     serializeJson(doc, output);
+    log_i("[CONFIG] JSON: %s", output);
     return output;
 }
 
@@ -125,7 +127,7 @@ bool ConfigApp::saveWifi(String ssid, String pass){
         preferences.putString("pass", pass);
         preferences.putBool("wifiEnable", true);
         preferences.end();
-        setLastKeySaved("wifi");
+        setLastKeySaved("ssid");
         wifi_enable = true;
         isNewWifi = true;  // for execute wifi reconnect
         Serial.println("-->[CONFIG] WiFi credentials saved!");
@@ -181,9 +183,9 @@ bool ConfigApp::saveGeo(double lat, double lon, float alt, float spd){
         preferences.putFloat("alt", alt);
         preferences.putFloat("spd", spd);
         preferences.end();
-        setLastKeySaved("geo");
+        setLastKeySaved("lat");
         Serial.println("-->[CONFIG] updated location!");
-        log_i("-->[CONFIG] geo:(%d,%d) alt:%d spd:%d",lat,lng,alt,spd);
+        log_i("-->[CONFIG] geo:(%d,%d) alt:%d spd:%d",lat,lon,alt,spd);
         return true;
     }
     return false;
@@ -212,31 +214,42 @@ bool ConfigApp::apiEnable(bool enable) {
 
 bool ConfigApp::save(const char *json) {
     StaticJsonDocument<1000> doc;
+    log_i("[CONFIG] deserialize from: %s", json);
     auto error = deserializeJson(doc, json);
     if (error) {
         Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
         Serial.println(error.c_str());
         return false;
     }
-    // char* output[1000];
-    // serializeJsonPretty(doc, output, 1000);
-    // log_n("[CONFIG] JSON: %s",output);
 
-    String key = doc["key"] | "";
+    if (CORE_DEBUG_LEVEL > 0) {
+        char* output[1000];
+        serializeJsonPretty(doc, output, 1000);
+        log_i("[CONFIG] JSON: %s", output);
+    }
+    
     uint16_t cmd = doc["cmd"].as<uint16_t>();
     String act = doc["act"] | "";
 
-    if (key.length()>0) {
-        if (key.equals("dname")) return saveDeviceName(doc["dname"] | "");
-        if (key.equals("stime")) return saveSampleTime(doc["stime"] | 0);
-        if (key.equals("stype")) return saveSensorType(doc["stype"] | -1);
-        if (key.equals("ifxdb")) return saveInfluxDb(doc["ifxdb"]|"",doc["ifxip"]|"",doc["ifxpt"]|0);
-        if (key.equals("wifi")) return saveWifi(doc["ssid"]|"",doc["pass"]|"");
-        if (key.equals("api")) return saveAPI(doc["apiusr"]|"",doc["apipss"]|"",doc["apisrv"]|"",doc["apiuri"]|"",doc["apiprt"]|0);
-        if (key.equals("geo")) return saveGeo(doc["lat"].as<double>(),doc["lon"].as<double>(),doc["alt"].as<float>(),doc["spd"].as<float>());
-        if (key.equals("wst")) return wifiEnable(doc["wenb"].as<bool>()); 
-        if (key.equals("ist")) return ifxdbEnable(doc["ienb"].as<bool>());
-        if (key.equals("ast")) return apiEnable(doc["aenb"].as<bool>());
+    if (doc.containsKey("dname")) return saveDeviceName(doc["dname"] | "");
+    if (doc.containsKey("stime")) return saveSampleTime(doc["stime"] | 0);
+    if (doc.containsKey("stype")) return saveSensorType(doc["stype"] | -1);
+    if (doc.containsKey("ifxdb")) return saveInfluxDb(doc["ifxdb"] | "", doc["ifxip"] | "", doc["ifxpt"] | 0);
+    if (doc.containsKey("ssid")) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
+    if (doc.containsKey("apiusr")) return saveAPI(doc["apiusr"] | "", doc["apipss"] | "", doc["apisrv"] | "", doc["apiuri"] | "", doc["apiprt"] | 0);
+    if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["alt"].as<float>(), doc["spd"].as<float>());
+
+    // some actions with chopid validation (for security reasons)
+    if (cmd == ((uint16_t)(chipid >> 32)) && act.length() > 0) {
+        if (act.equals("wst")) return wifiEnable(doc["wenb"].as<bool>());
+        if (act.equals("ist")) return ifxdbEnable(doc["ienb"].as<bool>());
+        if (act.equals("ast")) return apiEnable(doc["aenb"].as<bool>());
+        if (act.equals("rbt")) reboot();
+        if (act.equals("cls")) clear();
+        return true;
+    } else {
+        Serial.println("-->[E][CONFIG] invalid config file!");
+        return false;
     }
     // String tdname = doc["dname"] | "";
     // String tifxdb = doc["ifxdb"] | "";
@@ -257,26 +270,6 @@ bool ConfigApp::save(const char *json) {
     // bool wenb = doc["wenb"].as<bool>();
     // bool ienb = doc["ienb"].as<bool>();
     // bool aenb = doc["aenb"].as<bool>();
-
-    else if (cmd == ((uint16_t)(chipid >> 32)) && act.length() > 0) {
-        // reboot command
-        if (act.equals("rbt")) {
-            Serial.println("-->[CONFIG] reboot..");
-            reboot();
-        }
-        // clear preferences command
-        if (act.equals("cls")) {
-            preferences.begin(_app_name, false);
-            preferences.clear();
-            preferences.end();
-            reboot();
-        }
-        
-    } else {
-        Serial.println("-->[E][CONFIG] invalid config file!");
-        return false;
-    }
-    return true;
 }
 
 bool ConfigApp::isWifiEnable() {
@@ -291,7 +284,15 @@ bool ConfigApp::isIfxEnable() {
     return ifxdb_enable;
 }
 
+void ConfigApp::clear() {
+    preferences.begin(_app_name, false);
+    preferences.clear();
+    preferences.end();
+    reboot();
+}
+
 void ConfigApp::reboot() {
+    Serial.println("-->[CONFIG] reboot..");
     delay(100);
     ESP.restart();
 }

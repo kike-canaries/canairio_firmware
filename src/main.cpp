@@ -83,7 +83,7 @@ void setup() {
     cfg.init("canairio");
 
     // device wifi mac addres and firmware version
-    Serial.println("-->[INFO] ESP32MAC: " + String(cfg.deviceId));
+    Serial.println("-->[INFO] ESP32MAC: " + cfg.deviceId);
     Serial.println("-->[INFO] Firmware " + gui.getFirmwareVersionCode());
 
     // init all sensors

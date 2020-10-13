@@ -24,7 +24,7 @@ class ConfigApp {
 
    public:
     uint64_t chipid;
-    char* deviceId;
+    String deviceId;
     String dname;
     int stime;
     int stype;
@@ -86,9 +86,12 @@ class ConfigApp {
 
     bool isApiEnable();
 
+    String getDeviceId();
+
     void clear();
 
     void reboot();
+
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_CFGHANDLER)

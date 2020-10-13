@@ -101,9 +101,9 @@ void apiInit() {
         Serial.println("-->[API] connecting..");
         // stationId and deviceId, optional endpoint, host and port
         if (cfg.apiuri.equals("") && cfg.apisrv.equals(""))
-            api.configure(cfg.dname.c_str(), cfg.deviceId);
+            api.configure(cfg.dname.c_str(), cfg.deviceId.c_str());
         else
-            api.configure(cfg.dname.c_str(), cfg.deviceId, cfg.apiuri.c_str(), cfg.apisrv.c_str(), cfg.apiprt);
+            api.configure(cfg.dname.c_str(), cfg.deviceId.c_str(), cfg.apiuri.c_str(), cfg.apisrv.c_str(), cfg.apiprt);
         api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
         // api.dev = true;
         cfg.isNewAPIConfig = false;  // flag for config via BLE

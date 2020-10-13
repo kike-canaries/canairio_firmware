@@ -86,6 +86,8 @@ class ConfigApp {
 
     bool isApiEnable();
 
+    void clear();
+
     void reboot();
 };
 

@@ -16,19 +16,16 @@ void ConfigApp::reload() {
     // device name or station name
     dname = preferences.getString("dname", "");
     // wifi settings
-    wifiEnable = preferences.getBool("wifiEnable", false);
+    wifi_enable = preferences.getBool("wifiEnable", false);
     ssid = preferences.getString("ssid", "");
     pass = preferences.getString("pass", "");
     // influx db optional settings
-    ifxEnable = preferences.getBool("ifxEnable", false);
-    ifxdb = preferences.getString("ifxdb", "");
-    ifxip = preferences.getString("ifxip", "");
-    ifxpt = preferences.getUInt("ifxpt", 8086);
-    // ifxtg = preferences.getString("ifxtg","");
-    ifusr = preferences.getString("ifusr", "");
-    ifpss = preferences.getString("ifpss", "");
+    ifxdb_enable = preferences.getBool("ifxEnable", false);
+    ifx.db = preferences.getString("ifxdb", "");
+    ifx.ip = preferences.getString("ifxip", "");
+    ifx.pt = preferences.getUInt("ifxpt", 8086);
     // canairio api settings
-    apiEnable = preferences.getBool("apiEnable", false);
+    api_enable = preferences.getBool("apiEnable", false);
     apiusr = preferences.getString("apiusr", "");
     apipss = preferences.getString("apipss", "");
     apisrv = preferences.getString("apisrv", "");
@@ -70,11 +67,6 @@ String ConfigApp::getCurrentConfig() {
     return output;
 }
 
-void ConfigApp::printError(const char * error) {
-    Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
-    Serial.println(error);
-}
-
 void ConfigApp::setLastKeySaved(String key){
     lastKeySaved = key;
 }
@@ -89,6 +81,13 @@ void ConfigApp::saveString(String key, String value){
 void ConfigApp::saveInt(String key, int value){
     preferences.begin(_app_name, false);
     preferences.putInt(key.c_str(), value);
+    preferences.end();
+    setLastKeySaved(key);
+}
+
+void ConfigApp::saveBool(String key, bool value){
+    preferences.begin(_app_name, false);
+    preferences.putBool(key.c_str(), value);
     preferences.end();
     setLastKeySaved(key);
 }
@@ -112,11 +111,104 @@ bool ConfigApp::saveSampleTime(int time) {
     return false;
 }
 
+bool ConfigApp::saveWifi(String ssid, String pass){
+    if (ssid.length() > 0 && pass.length() > 0) {
+        preferences.begin(_app_name, false);
+        preferences.putString("ssid", ssid);
+        preferences.putString("pass", pass);
+        preferences.putBool("wifiEnable", true);
+        preferences.end();
+        setLastKeySaved("wifi");
+        wifi_enable = true;
+        isNewWifi = true;  // for execute wifi reconnect
+        Serial.println("-->[CONFIG] WiFi credentials saved!");
+        log_i("-->[CONFIG] ssid:%s pass:%s",ssid,pass);
+        return true;
+    }
+    return false;
+}
+
+bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
+    if (db.length() > 0 && ip.length() > 0) {
+        preferences.begin(_app_name, false);
+        preferences.putString("ifxdb", db);
+        preferences.putString("ifxip", ip);
+        if (pt > 0) preferences.putUInt("ifxpt", pt);
+        preferences.putBool("ifxEnable", true);
+        preferences.end();
+        setLastKeySaved("ifxdb");
+        isNewIfxdbConfig = true;
+        ifxdb_enable = true;
+        Serial.println("-->[CONFIG] influxdb saved: db:"+db+" ip:"+ip);
+        log_i("-->[CONFIG] %s",getCurrentConfig());
+        return true;
+    }
+    return false;
+}
+
+bool ConfigApp::saveAPI(String usr, String pass, String srv, String uri, int pt){
+    if (usr.length() > 0 && pass.length() > 0 && srv.length() > 0 && uri.length() > 0) {
+        preferences.begin(_app_name, false);
+        preferences.putString("apiusr", usr);
+        preferences.putString("apipss", pass);
+        preferences.putString("apisrv", srv);
+        preferences.putString("apiuri", uri);
+        if (pt > 0) preferences.putInt("apiprt", pt);
+        preferences.putBool("apiEnable", true);
+        preferences.end();
+        setLastKeySaved("api");
+        isNewAPIConfig = true;
+        api_enable = true;
+        Serial.println("-->[CONFIG] API credentials saved!");
+        log_i("-->[CONFIG] usr:%s srv:%s uri:%s",usr,srv,uri);
+        return true;
+    }
+    return false;
+}
+
+bool ConfigApp::saveGeo(double lat, double lon, float alt, float spd){
+    if (lat != 0 && lon != 0) {
+        preferences.begin(_app_name, false);
+        preferences.putDouble("lat", lat);
+        preferences.putDouble("lon", lon);
+        preferences.putFloat("alt", alt);
+        preferences.putFloat("spd", spd);
+        preferences.end();
+        setLastKeySaved("geo");
+        Serial.println("-->[CONFIG] updated location!");
+        log_i("-->[CONFIG] geo:(%d,%d) alt:%d spd:%d",lat,lng,alt,spd);
+        return true;
+    }
+    return false;
+}
+
+bool ConfigApp::wifiEnable(bool enable) {
+    saveBool("wifiEnable", enable);
+    wifi_enable = enable;
+    Serial.println("-->[CONFIG] Updating WiFi state: " + String(enable));
+    return true;
+}
+
+bool ConfigApp::ifxdbEnable(bool enable) {
+    saveBool("ifxEnable", enable);
+    ifxdb_enable = enable;
+    Serial.println("-->[CONFIG] Updating InfluxDB state: " + String(enable));
+    return true;
+}
+
+bool ConfigApp::apiEnable(bool enable) {
+    saveBool("apiEnable", enable);
+    api_enable = enable;
+    Serial.println("-->[CONFIG] Updating API state: " + String(enable));
+    return true;
+}
+
 bool ConfigApp::save(const char *json) {
     StaticJsonDocument<1000> doc;
     auto error = deserializeJson(doc, json);
     if (error) {
-        printError(error.c_str());
+        Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
+        Serial.println(error.c_str());
         return false;
     }
     // char* output[1000];
@@ -124,95 +216,41 @@ bool ConfigApp::save(const char *json) {
     // log_n("[CONFIG] JSON: %s",output);
 
     String key = doc["key"] | "";
+    uint16_t cmd = doc["cmd"].as<uint16_t>();
+    String act = doc["act"] | "";
 
     if (key.length()>0) {
         if (key.equals("dname")) return saveDeviceName(doc["dname"] | "");
         if (key.equals("stime")) return saveSampleTime(doc["stime"] | 0);
+        if (key.equals("ifxdb")) return saveInfluxDb(doc["ifxdb"]|"",doc["ifxip"]|"",doc["ifxpt"]|0);
+        if (key.equals("wifi")) return saveWifi(doc["ssid"]|"",doc["pass"]|"");
+        if (key.equals("api")) return saveAPI(doc["apiusr"]|"",doc["apipss"]|"",doc["apisrv"]|"",doc["apiuri"]|"",doc["apiprt"]|0);
+        if (key.equals("geo")) return saveGeo(doc["lat"].as<double>(),doc["lon"].as<double>(),doc["alt"].as<float>(),doc["spd"].as<float>());
+        if (key.equals("wst")) return wifiEnable(doc["wenb"].as<bool>()); 
+        if (key.equals("ist")) return ifxdbEnable(doc["ienb"].as<bool>());
+        if (key.equals("ast")) return apiEnable(doc["aenb"].as<bool>());
     }
     // String tdname = doc["dname"] | "";
-    String tifxdb = doc["ifxdb"] | "";
-    String tifxip = doc["ifxip"] | "";
-    String tifusr = doc["ifusr"] | "";
-    String tifpss = doc["ifpss"] | "";
-    String tifcer = doc["ifcer"] | "";
-    String tifxtg = doc["ifxtg"] | "";
-    String tssid = doc["ssid"] | "";
-    String tpass = doc["pass"] | "";
-    String tapiusr = doc["apiusr"] | "";
-    String tapipss = doc["apipss"] | "";
-    String tapisrv = doc["apisrv"] | "";
-    String tapiuri = doc["apiuri"] | "";
-    int tapiprt = doc["apiprt"] | 80;
+    // String tifxdb = doc["ifxdb"] | "";
+    // String tifxip = doc["ifxip"] | "";
+    // uint16_t tifxpt = doc["ifxpt"].as<uint16_t>();
+    // String tssid = doc["ssid"] | "";
+    // String tpass = doc["pass"] | "";
+    // String tapiusr = doc["apiusr"] | "";
+    // String tapipss = doc["apipss"] | "";
+    // String tapisrv = doc["apisrv"] | "";
+    // String tapiuri = doc["apiuri"] | "";
+    // int tapiprt = doc["apiprt"] | 80;
     // int tstime = doc["stime"] | 0;
-    double tlat = doc["lat"].as<double>();
-    double tlon = doc["lon"].as<double>();
-    float talt = doc["alt"].as<float>();
-    float tspd = doc["spd"].as<float>();
-    uint16_t cmd = doc["cmd"].as<uint16_t>();
-    uint16_t tifxpt = doc["ifxpt"].as<uint16_t>();
-    String act = doc["act"] | "";
-    bool wenb = doc["wenb"].as<bool>();
-    bool ienb = doc["ienb"].as<bool>();
-    bool aenb = doc["aenb"].as<bool>();
+    // double tlat = doc["lat"].as<double>();
+    // double tlon = doc["lon"].as<double>();
+    // float talt = doc["alt"].as<float>();
+    // float tspd = doc["spd"].as<float>();
+    // bool wenb = doc["wenb"].as<bool>();
+    // bool ienb = doc["ienb"].as<bool>();
+    // bool aenb = doc["aenb"].as<bool>();
 
-    if (tifxdb.length() > 0 && tifxip.length() > 0) {
-        preferences.begin(_app_name, false);
-        preferences.putString("ifxdb", tifxdb);
-        preferences.putString("ifxip", tifxip);
-        if (tifxpt > 0) {
-            preferences.putUInt("ifxpt", tifxpt);
-        }
-        if (tifusr.length() > 0 && tifpss.length() > 0) {
-            preferences.putString("ifusr", tifusr);
-            preferences.putString("ifpss", tifpss);
-        }
-        if (tifcer.length() > 0) {
-            preferences.putString("ifcer", tifcer);
-        }
-        preferences.putBool("ifxEnable", true);
-        preferences.end();
-        isNewIfxdbConfig = true;
-        ifxEnable = true;
-        Serial.println("-->[CONFIG] influxdb config saved!");
-        Serial.print("-->[CONFIG] ");
-        Serial.println(getCurrentConfig());
-    } else if (tssid.length() > 0 && tpass.length() > 0) {
-        preferences.begin(_app_name, false);
-        preferences.putString("ssid", tssid);
-        preferences.putString("pass", tpass);
-        preferences.putBool("wifiEnable", true);
-        preferences.end();
-        wifiEnable = true;
-        isNewWifi = true;  // for execute wifi reconnect
-        Serial.println("-->[CONFIG] WiFi credentials saved!");
-    } else if (tapiusr.length() > 0 && tapipss.length() > 0 && tapisrv.length() > 0 && tapiuri.length() > 0) {
-        preferences.begin(_app_name, false);
-        preferences.putString("apiusr", tapiusr);
-        preferences.putString("apipss", tapipss);
-        preferences.putString("apisrv", tapisrv);
-        preferences.putString("apiuri", tapiuri);
-        preferences.putInt("apiprt", tapiprt);
-        preferences.putBool("apiEnable", true);
-        preferences.end();
-        isNewAPIConfig = true;
-        apiEnable = true;
-        Serial.println("-->[CONFIG] API credentials saved!");
-    } else if (tlat != 0 && tlon != 0) {
-        preferences.begin(_app_name, false);
-        preferences.putDouble("lat", tlat);
-        preferences.putDouble("lon", tlon);
-        preferences.putFloat("alt", talt);
-        preferences.putFloat("spd", tspd);
-        preferences.end();
-        Serial.print("-->[CONFIG] updated location to: ");
-        Serial.print(tlat);
-        Serial.print(",");
-        Serial.println(tlon);
-        Serial.print("-->[CONFIG] altitude: ");
-        Serial.println(talt);
-        Serial.print("-->[CONFIG] speed: ");
-        Serial.println(tspd);
-    } else if (cmd == ((uint16_t)(chipid >> 32)) && act.length() > 0) {
+    else if (cmd == ((uint16_t)(chipid >> 32)) && act.length() > 0) {
         // reboot command
         if (act.equals("rbt")) {
             Serial.println("-->[CONFIG] reboot..");
@@ -225,30 +263,7 @@ bool ConfigApp::save(const char *json) {
             preferences.end();
             reboot();
         }
-        // enable/disable wifi
-        if (act.equals("wst")) {
-            preferences.begin(_app_name, false);
-            preferences.putBool("wifiEnable", wenb);
-            preferences.end();
-            wifiEnable = wenb;
-            Serial.println("-->[CONFIG] Updating WiFi state: " + String(wenb));
-        }
-        // enable/disable influxDb state
-        if (act.equals("ist")) {
-            preferences.begin(_app_name, false);
-            preferences.putBool("ifxEnable", ienb);
-            preferences.end();
-            ifxEnable = ienb;
-            Serial.println("-->[CONFIG] Updating InfluxDB state: " + String(ienb));
-        }
-        // enable/disable CanAirIO API state
-        if (act.equals("ast")) {
-            preferences.begin(_app_name, false);
-            preferences.putBool("apiEnable", aenb);
-            preferences.end();
-            apiEnable = aenb;
-            Serial.println("-->[CONFIG] Updating API state: " + String(aenb));
-        }
+        
     } else {
         Serial.println("-->[E][CONFIG] invalid config file!");
         return false;
@@ -257,15 +272,15 @@ bool ConfigApp::save(const char *json) {
 }
 
 bool ConfigApp::isWifiEnable() {
-    return wifiEnable;
+    return wifi_enable;
 }
 
 bool ConfigApp::isApiEnable() {
-    return apiEnable;
+    return api_enable;
 }
 
 bool ConfigApp::isIfxEnable() {
-    return ifxEnable;
+    return ifxdb_enable;
 }
 
 void ConfigApp::reboot() {

@@ -229,6 +229,7 @@ bool ConfigApp::save(const char *json) {
     if (key.length()>0) {
         if (key.equals("dname")) return saveDeviceName(doc["dname"] | "");
         if (key.equals("stime")) return saveSampleTime(doc["stime"] | 0);
+        if (key.equals("stype")) return saveSensorType(doc["stype"] | -1);
         if (key.equals("ifxdb")) return saveInfluxDb(doc["ifxdb"]|"",doc["ifxip"]|"",doc["ifxpt"]|0);
         if (key.equals("wifi")) return saveWifi(doc["ssid"]|"",doc["pass"]|"");
         if (key.equals("api")) return saveAPI(doc["apiusr"]|"",doc["apipss"]|"",doc["apisrv"]|"",doc["apiuri"]|"",doc["apiprt"]|0);

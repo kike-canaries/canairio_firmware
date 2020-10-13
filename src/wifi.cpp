@@ -11,16 +11,16 @@ CanAirIoApi api(false);
 ******************************************************************************/
 
 bool influxDbIsConfigured() {
-    if(cfg.ifxdb.length() > 0 && cfg.ifxip.length() > 0 && cfg.dname.length()==0) {
+    if(cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.dname.length()==0) {
         Serial.println("-->[W][INFLUXDB] ifxdb is configured but device name is missing!");
     }
-    return cfg.ifxdb.length() > 0 && cfg.ifxip.length() > 0 && cfg.dname.length() > 0;
+    return cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.dname.length() > 0;
 }
 
 void influxDbInit() {
     if (WiFi.isConnected() && influxDbIsConfigured()) {
         Serial.println("-->[INFLUXDB] connecting..");
-        influx.configure(cfg.ifxdb.c_str(), cfg.ifxip.c_str());  //third argument (port number) defaults to 8086
+        influx.configure(cfg.ifx.db.c_str(), cfg.ifx.ip.c_str());  //third argument (port number) defaults to 8086
         Serial.print("-->[INFLUXDB] Using HTTPS: ");
         Serial.println(influx.isSecure());  //will be true if you've added the InfluxCert.hpp file.
         cfg.isNewIfxdbConfig = false;       // flag for config via BLE
@@ -70,7 +70,7 @@ void influxDbLoop() {
     static uint_fast64_t timeStamp = 0;
     if (millis() - timeStamp > cfg.stime * 2 * 1000) {
         timeStamp = millis();
-        if (sensors.isDataReady() && WiFi.isConnected() && cfg.wifiEnable && cfg.isIfxEnable() && influxDbIsConfigured()) {
+        if (sensors.isDataReady() && WiFi.isConnected() && cfg.isWifiEnable() && cfg.isIfxEnable() && influxDbIsConfigured()) {
             int ifx_retry = 0;
             log_i("[INFLUXDB][ %s ]", cfg.dname.c_str());
             log_i("[INFLUXDB][ %010d ] writing to %s", ifxdbwcount++, cfg.ifxip.c_str());
@@ -115,7 +115,7 @@ void apiLoop() {
     static uint_fast64_t timeStamp = 0;
     if (millis() - timeStamp > cfg.stime * 2 * 1000) {
         timeStamp = millis();
-        if (sensors.isDataReady() && WiFi.isConnected() && cfg.wifiEnable && cfg.isApiEnable() && apiIsConfigured()) {
+        if (sensors.isDataReady() && WiFi.isConnected() && cfg.isWifiEnable() && cfg.isApiEnable() && apiIsConfigured()) {
             log_i("[API] writing to %s", api.ip);
             bool status = api.write(
                 sensors.getPM1(),
@@ -201,7 +201,7 @@ void wifiConnect(const char* ssid, const char* pass) {
 }
 
 void wifiInit() {
-    if (cfg.wifiEnable && cfg.ssid.length() > 0 && cfg.pass.length() > 0) {
+    if (cfg.isWifiEnable() && cfg.ssid.length() > 0 && cfg.pass.length() > 0) {
         wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
     }
 }
@@ -221,7 +221,7 @@ void wifiRestart() {
 
 void wifiLoop() {
     static uint_least64_t wifiTimeStamp = 0;
-    if (millis() - wifiTimeStamp > 5000  && cfg.wifiEnable && cfg.ssid.length() > 0 && !WiFi.isConnected()) {
+    if (millis() - wifiTimeStamp > 5000  && cfg.isWifiEnable() && cfg.ssid.length() > 0 && !WiFi.isConnected()) {
         wifiTimeStamp = millis();
         wifiInit();
         influxDbInit();

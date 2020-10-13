@@ -111,6 +111,13 @@ bool ConfigApp::saveSampleTime(int time) {
     return false;
 }
 
+bool ConfigApp::saveSensorType(int type) {
+    saveInt("stype", type);
+    Serial.print("-->[CONFIG] sensor device type: ");
+    Serial.println(type);
+    return true;
+}
+
 bool ConfigApp::saveWifi(String ssid, String pass){
     if (ssid.length() > 0 && pass.length() > 0) {
         preferences.begin(_app_name, false);

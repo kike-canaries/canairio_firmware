@@ -61,6 +61,8 @@ class ConfigApp {
     bool saveDeviceName(String name);
 
     bool saveSampleTime(int time);
+
+    bool saveSensorType(int type);
     
     bool saveWifi(String ssid, String pass);
 

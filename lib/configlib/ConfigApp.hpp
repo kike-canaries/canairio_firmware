@@ -7,8 +7,17 @@
 class ConfigApp {
    private:
     // Config Settings
-    Preferences preferences;
     char* _app_name;
+    Preferences preferences;
+    String lastKeySaved = "";
+
+    void printError(const char * error);
+
+    void saveString(String key, String value);
+    
+    void saveInt(String key, int value);
+
+    void setLastKeySaved(String key);
 
    public:
     uint64_t chipid;
@@ -44,6 +53,10 @@ class ConfigApp {
     void reload();
 
     bool save(const char* json);
+
+    bool saveDeviceName(String name);
+
+    bool saveSampleTime(int time);
 
     String getCurrentConfig();
 

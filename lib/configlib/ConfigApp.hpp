@@ -10,12 +10,15 @@ class ConfigApp {
     char* _app_name;
     Preferences preferences;
     String lastKeySaved = "";
-
-    void printError(const char * error);
+    bool wifi_enable;
+    bool ifxdb_enable;
+    bool api_enable;
 
     void saveString(String key, String value);
     
     void saveInt(String key, int value);
+
+    void saveBool(String key, bool value);
 
     void setLastKeySaved(String key);
 
@@ -23,27 +26,28 @@ class ConfigApp {
     uint64_t chipid;
     char* deviceId;
     String dname;
-    bool wifiEnable;
-    bool ifxEnable;
-    bool apiEnable;
-    String ssid;
-    String pass;
-    String ifxdb;
-    String ifxip;
-    uint16_t ifxpt;
-    String ifusr;
-    String ifpss;
-    String apiusr;
-    String apipss;
-    String apisrv;
-    String apiuri;
-    int apiprt;
     int stime;
     int stype;
     double lat;
     double lon;
     float alt;
     float spd;
+
+    String ssid;
+    String pass;
+
+    struct ifxdbValues {
+        String db;
+        String ip;
+        uint16_t pt = 8086;
+    } ifx;
+
+    String apiusr;
+    String apipss;
+    String apisrv;
+    String apiuri;
+    int apiprt;
+
     bool isNewIfxdbConfig;
     bool isNewAPIConfig;
     bool isNewWifi;
@@ -57,6 +61,20 @@ class ConfigApp {
     bool saveDeviceName(String name);
 
     bool saveSampleTime(int time);
+    
+    bool saveWifi(String ssid, String pass);
+
+    bool saveInfluxDb(String db, String ip, int pt);
+    
+    bool saveAPI(String usr, String pass, String srv, String uri, int pt);
+
+    bool saveGeo(double lat, double lon, float alt, float spd);
+
+    bool wifiEnable(bool enable);
+
+    bool ifxdbEnable(bool enable);
+
+    bool apiEnable(bool enable);
 
     String getCurrentConfig();
 

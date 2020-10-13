@@ -57,8 +57,11 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
                 if(sensors.sample_time != cfg.stime) sensors.setSampleTime(cfg.stime);
                 if (cfg.isNewIfxdbConfig) influxDbInit();
                 if (cfg.isNewAPIConfig) apiInit();
-                if (!cfg.wifiEnable) wifiStop();
-            } 
+                if (!cfg.isWifiEnable()) wifiStop();
+            }
+            else{
+                Serial.println("-->[E][BLE][CONFIG] saving error!");
+            }
             pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
             pCharactData->setValue(getSensorData().c_str());
         }

@@ -21,9 +21,9 @@ void ConfigApp::reload() {
     pass = preferences.getString("pass", "");
     // influx db optional settings
     ifxdb_enable = preferences.getBool("ifxEnable", false);
-    ifx.db = preferences.getString("ifxdb", "");
-    ifx.ip = preferences.getString("ifxip", "");
-    ifx.pt = preferences.getUInt("ifxpt", 8086);
+    ifx.db = preferences.getString("ifxdb", ifx.db);
+    ifx.ip = preferences.getString("ifxip", ifx.ip);
+    ifx.pt = preferences.getUInt("ifxpt", ifx.pt);
     // canairio api settings
     api_enable = preferences.getBool("apiEnable", false);
     apiusr = preferences.getString("apiusr", "");
@@ -46,26 +46,29 @@ String ConfigApp::getCurrentConfig() {
     StaticJsonDocument<1000> doc;
     preferences.begin(_app_name, false);
     doc["dname"] = preferences.getString("dname", "");       // device or station name
+    doc["stime"] = preferences.getInt("stime", 5);           // sensor measure time
+    doc["stype"] = preferences.getInt("stype", -1);          // sensor type { Honeywell, Panasonic, Sensirion };
     doc["wenb"] = preferences.getBool("wifiEnable", false);  // wifi on/off
     doc["ssid"] = preferences.getString("ssid", "");         // influxdb database name
     doc["ienb"] = preferences.getBool("ifxEnable", false);   // ifxdb on/off
-    doc["ifxdb"] = preferences.getString("ifxdb", "");       // influxdb database name
-    doc["ifxip"] = preferences.getString("ifxip", "");       // influxdb database ip
-    doc["ifusr"] = preferences.getString("ifusr", "");       // influxdb sensorid name
-    doc["ifxpt"] = preferences.getUInt("ifxpt", 8086);       // influxdb sensor tags
-    doc["stime"] = preferences.getInt("stime", 5);           // sensor measure time
+    doc["ifxdb"] = preferences.getString("ifxdb", ifx.db);   // influxdb database name
+    doc["ifxip"] = preferences.getString("ifxip", ifx.ip);   // influxdb database ip
+    doc["ifxpt"] = preferences.getUInt("ifxpt", ifx.pt);     // influxdb sensor tags
     doc["aenb"] = preferences.getBool("apiEnable", false);   // CanAirIO API on/off
     doc["apiusr"] = preferences.getString("apiusr", "");     // API username
     doc["apisrv"] = preferences.getString("apisrv", "");     // API hostname
     doc["apiuri"] = preferences.getString("apiuri", "");     // API uri endpoint
     doc["apiprt"] = preferences.getInt("apiprt", 80);        // API port
-    doc["stype"] = preferences.getInt("stype", -1);          // sensor type { Honeywell, Panasonic, Sensirion };
     doc["lskey"] = lastKeySaved;                             // last key saved
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
     preferences.end();
     String output;
     serializeJson(doc, output);
-    log_i("[CONFIG] JSON: %s", output);
+    if (CORE_DEBUG_LEVEL > 0) {
+        char* buf[1000];
+        serializeJsonPretty(doc, buf, 1000);
+        log_i("[CONFIG] JSON: %s", buf);
+    }
     return output;
 }
 
@@ -149,7 +152,7 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
         isNewIfxdbConfig = true;
         ifxdb_enable = true;
         Serial.println("-->[CONFIG] influxdb saved: db:"+db+" ip:"+ip);
-        log_i("-->[CONFIG] %s",getCurrentConfig());
+        // log_i("-->[CONFIG] %s",getCurrentConfig());
         return true;
     }
     return false;
@@ -214,7 +217,7 @@ bool ConfigApp::apiEnable(bool enable) {
 
 bool ConfigApp::save(const char *json) {
     StaticJsonDocument<1000> doc;
-    log_i("[CONFIG] deserialize from: %s", json);
+    log_n("[CONFIG] deserialize from: %s", json);
     auto error = deserializeJson(doc, json);
     if (error) {
         Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
@@ -251,25 +254,6 @@ bool ConfigApp::save(const char *json) {
         Serial.println("-->[E][CONFIG] invalid config file!");
         return false;
     }
-    // String tdname = doc["dname"] | "";
-    // String tifxdb = doc["ifxdb"] | "";
-    // String tifxip = doc["ifxip"] | "";
-    // uint16_t tifxpt = doc["ifxpt"].as<uint16_t>();
-    // String tssid = doc["ssid"] | "";
-    // String tpass = doc["pass"] | "";
-    // String tapiusr = doc["apiusr"] | "";
-    // String tapipss = doc["apipss"] | "";
-    // String tapisrv = doc["apisrv"] | "";
-    // String tapiuri = doc["apiuri"] | "";
-    // int tapiprt = doc["apiprt"] | 80;
-    // int tstime = doc["stime"] | 0;
-    // double tlat = doc["lat"].as<double>();
-    // double tlon = doc["lon"].as<double>();
-    // float talt = doc["alt"].as<float>();
-    // float tspd = doc["spd"].as<float>();
-    // bool wenb = doc["wenb"].as<bool>();
-    // bool ienb = doc["ienb"].as<bool>();
-    // bool aenb = doc["aenb"].as<bool>();
 }
 
 bool ConfigApp::isWifiEnable() {
@@ -288,6 +272,7 @@ void ConfigApp::clear() {
     preferences.begin(_app_name, false);
     preferences.clear();
     preferences.end();
+    Serial.println("-->[CONFIG] clear settings!");
     reboot();
 }
 

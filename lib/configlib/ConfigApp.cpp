@@ -4,10 +4,7 @@ void ConfigApp::init(const char app_name[]) {
     _app_name = new char[strlen(app_name) + 1];
     strcpy(_app_name, app_name);
     chipid = ESP.getEfuseMac();
-    char devId[13];
-    sprintf(devId, "%04X%08X", (uint16_t)(chipid >> 32), (uint32_t)chipid);
-    deviceId = new char[strlen(devId) + 1];
-    strcpy(deviceId, devId);
+    deviceId = getDeviceId();
     reload();
 }
 
@@ -217,7 +214,7 @@ bool ConfigApp::apiEnable(bool enable) {
 
 bool ConfigApp::save(const char *json) {
     StaticJsonDocument<1000> doc;
-    log_n("[CONFIG] deserialize from: %s", json);
+    // log_n("[CONFIG] deserialize from: %s", json);
     auto error = deserializeJson(doc, json);
     if (error) {
         Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
@@ -254,6 +251,15 @@ bool ConfigApp::save(const char *json) {
         Serial.println("-->[E][CONFIG] invalid config file!");
         return false;
     }
+}
+
+String ConfigApp::getDeviceId() {
+    uint8_t baseMac[6];
+    // Get MAC address for WiFi station
+    esp_read_mac(baseMac, ESP_MAC_WIFI_STA);
+    char baseMacChr[18] = {0};
+    sprintf(baseMacChr, "%02X:%02X:%02X:%02X:%02X:%02X", baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]+2);
+    return String(baseMacChr);
 }
 
 bool ConfigApp::isWifiEnable() {

@@ -5,6 +5,11 @@ void ConfigApp::init(const char app_name[]) {
     strcpy(_app_name, app_name);
     chipid = ESP.getEfuseMac();
     deviceId = getDeviceId();
+    // override with debug INFO level (>=3)
+    #ifdef CORE_DEBUG_LEVEL
+    if (CORE_DEBUG_LEVEL>=3) devmode = true;  
+    #endif
+    if (devmode) Serial.println("-->[CONFIG] debug is enable.");
     reload();
 }
 
@@ -61,10 +66,11 @@ String ConfigApp::getCurrentConfig() {
     preferences.end();
     String output;
     serializeJson(doc, output);
-    if (CORE_DEBUG_LEVEL > 0) {
-        char* buf[1000];
+    if (devmode) {
+        char buf[1000];
         serializeJsonPretty(doc, buf, 1000);
-        log_i("[CONFIG] JSON: %s", buf);
+        Serial.printf("-->[CONFIG] Currente config: %s", buf);
+        Serial.println("");
     }
     return output;
 }
@@ -100,6 +106,7 @@ bool ConfigApp::saveDeviceName(String name) {
         Serial.println("-->[CONFIG] set device name to: " + name);
         return true;
     }
+    DEBUG("-->[E][CONFIG] device name is empty!");
     return false;
 }
 
@@ -110,6 +117,7 @@ bool ConfigApp::saveSampleTime(int time) {
         Serial.println(time);
         return true;
     }
+    DEBUG("-->[W][CONFIG] warning: sample time is too low!");
     return false;
 }
 
@@ -134,6 +142,7 @@ bool ConfigApp::saveWifi(String ssid, String pass){
         log_i("-->[CONFIG] ssid:%s pass:%s",ssid,pass);
         return true;
     }
+    DEBUG("-->[W][CONFIG] empty Wifi SSID or PASSW");
     return false;
 }
 
@@ -152,6 +161,7 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
         // log_i("-->[CONFIG] %s",getCurrentConfig());
         return true;
     }
+    DEBUG("-->[W][CONFIG] wrong InfluxDb params!");
     return false;
 }
 
@@ -172,6 +182,7 @@ bool ConfigApp::saveAPI(String usr, String pass, String srv, String uri, int pt)
         log_i("-->[CONFIG] usr:%s srv:%s uri:%s",usr,srv,uri);
         return true;
     }
+    DEBUG("-->[W][CONFIG] wrong API params!");
     return false;
 }
 
@@ -188,6 +199,7 @@ bool ConfigApp::saveGeo(double lat, double lon, float alt, float spd){
         log_i("-->[CONFIG] geo:(%d,%d) alt:%d spd:%d",lat,lon,alt,spd);
         return true;
     }
+    DEBUG("-->[W][CONFIG] wrong GEO params!");
     return false;
 }
 
@@ -286,6 +298,21 @@ void ConfigApp::reboot() {
     Serial.println("-->[CONFIG] reboot..");
     delay(100);
     ESP.restart();
+}
+
+void ConfigApp::setDebugMode(bool enable){
+    devmode = enable;
+}
+
+void ConfigApp::DEBUG(const char *text, const char *textb) {
+    if (devmode) {
+        _debugPort.print(text);
+        if (textb) {
+            _debugPort.print(" ");
+            _debugPort.print(textb);
+        }
+        _debugPort.println();
+    }
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_CFGHANDLER)

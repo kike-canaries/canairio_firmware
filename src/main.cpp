@@ -80,6 +80,7 @@ void setup() {
     gui.showWelcome();
 
     // init app preferences and load settings
+    cfg.setDebugMode(true);
     cfg.init("canairio");
 
     // device wifi mac addres and firmware version

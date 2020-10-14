@@ -55,11 +55,11 @@ void influxDbParseFields(char* fields) {
 }
 
 void influxDbAddTags(char* tags) {
-    sprintf(tags, "mac=%04X%08X", (uint16_t)(cfg.chipid >> 32), (uint32_t)cfg.chipid);
+    sprintf(tags, "mac=%s,dtype=%s",cfg.deviceId.c_str(),sensors.getPmDeviceSelected().c_str());
 }
 
 bool influxDbWrite() {
-    char tags[64];
+    char tags[128];
     influxDbAddTags(tags);
     char fields[256];
     influxDbParseFields(fields);

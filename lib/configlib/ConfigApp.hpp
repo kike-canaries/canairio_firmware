@@ -5,23 +5,6 @@
 #include <Preferences.h>
 
 class ConfigApp {
-   private:
-    // Config Settings
-    char* _app_name;
-    Preferences preferences;
-    String lastKeySaved = "";
-    bool wifi_enable;
-    bool ifxdb_enable;
-    bool api_enable;
-
-    void saveString(String key, String value);
-    
-    void saveInt(String key, int value);
-
-    void saveBool(String key, bool value);
-
-    void setLastKeySaved(String key);
-
    public:
     uint64_t chipid;
     String deviceId;
@@ -63,11 +46,11 @@ class ConfigApp {
     bool saveSampleTime(int time);
 
     bool saveSensorType(int type);
-    
+
     bool saveWifi(String ssid, String pass);
 
     bool saveInfluxDb(String db, String ip, int pt);
-    
+
     bool saveAPI(String usr, String pass, String srv, String uri, int pt);
 
     bool saveGeo(double lat, double lon, float alt, float spd);
@@ -92,6 +75,36 @@ class ConfigApp {
 
     void reboot();
 
+    void setDebugMode(bool enable);
+
+   private:
+    ///preferences main key
+    char* _app_name;
+    ///ESP32 preferences abstraction
+    Preferences preferences;
+    ///last key saved (for callback)
+    String lastKeySaved = "";
+    ///device wifi on/off
+    bool wifi_enable;
+    ///InfluxDB cloud publication on/off
+    bool ifxdb_enable;
+    ///**deprecated** CanAirIO API on/off
+    bool api_enable;
+    ///enable debug mode
+    bool devmode;
+
+    void saveString(String key, String value);
+    void saveInt(String key, int value);
+    void saveBool(String key, bool value);
+    void setLastKeySaved(String key);
+    void DEBUG(const char* text, const char* textb = "");
+
+    // @todo use DEBUG_ESP_PORT ?
+#ifdef WM_DEBUG_PORT
+    Stream& _debugPort = WM_DEBUG_PORT;
+#else
+    Stream& _debugPort = Serial;  // debug output stream ref
+#endif
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_CFGHANDLER)

@@ -63,13 +63,14 @@ String ConfigApp::getCurrentConfig() {
     doc["apiprt"] = preferences.getInt("apiprt", 80);        // API port
     doc["lskey"] = lastKeySaved;                             // last key saved
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
+    doc["wsta"] = wifi_connected;                            // current wifi state 
     preferences.end();
     String output;
     serializeJson(doc, output);
     if (devmode) {
         char buf[1000];
         serializeJsonPretty(doc, buf, 1000);
-        Serial.printf("-->[CONFIG] Currente config: %s", buf);
+        Serial.printf("-->[CONFIG] response: %s", buf);
         Serial.println("");
     }
     return output;
@@ -157,8 +158,8 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
         setLastKeySaved("ifxdb");
         isNewIfxdbConfig = true;
         ifxdb_enable = true;
-        Serial.println("-->[CONFIG] influxdb saved: db:"+db+" ip:"+ip);
-        // log_i("-->[CONFIG] %s",getCurrentConfig());
+        log_i("[CONFIG] influxdb: %s@%s:%i",db.c_str(),ip.c_str(),pt);
+        Serial.println("-->[CONFIG] influxdb config saved.");
         return true;
     }
     DEBUG("-->[W][CONFIG] wrong InfluxDb params!");
@@ -178,8 +179,8 @@ bool ConfigApp::saveAPI(String usr, String pass, String srv, String uri, int pt)
         setLastKeySaved("api");
         isNewAPIConfig = true;
         api_enable = true;
-        Serial.println("-->[CONFIG] API credentials saved!");
-        log_i("-->[CONFIG] usr:%s srv:%s uri:%s",usr,srv,uri);
+        log_i("[CONFIG] API: %s@%s/%s",usr.c_str(),srv.c_str(),uri.c_str());
+        Serial.println("-->[CONFIG] API config saved.");
         return true;
     }
     DEBUG("-->[W][CONFIG] wrong API params!");
@@ -195,8 +196,8 @@ bool ConfigApp::saveGeo(double lat, double lon, float alt, float spd){
         preferences.putFloat("spd", spd);
         preferences.end();
         setLastKeySaved("lat");
-        Serial.println("-->[CONFIG] updated location!");
         log_i("-->[CONFIG] geo:(%d,%d) alt:%d spd:%d",lat,lon,alt,spd);
+        Serial.println("-->[CONFIG] updated location!");
         return true;
     }
     DEBUG("-->[W][CONFIG] wrong GEO params!");
@@ -206,27 +207,26 @@ bool ConfigApp::saveGeo(double lat, double lon, float alt, float spd){
 bool ConfigApp::wifiEnable(bool enable) {
     saveBool("wifiEnable", enable);
     wifi_enable = enable;
-    Serial.println("-->[CONFIG] Updating WiFi state: " + String(enable));
+    Serial.println("-->[CONFIG] updating WiFi state: " + String(enable));
     return true;
 }
 
 bool ConfigApp::ifxdbEnable(bool enable) {
     saveBool("ifxEnable", enable);
     ifxdb_enable = enable;
-    Serial.println("-->[CONFIG] Updating InfluxDB state: " + String(enable));
+    Serial.println("-->[CONFIG] updating InfluxDB state: " + String(enable));
     return true;
 }
 
 bool ConfigApp::apiEnable(bool enable) {
     saveBool("apiEnable", enable);
     api_enable = enable;
-    Serial.println("-->[CONFIG] Updating API state: " + String(enable));
+    Serial.println("-->[CONFIG] updating API state: " + String(enable));
     return true;
 }
 
 bool ConfigApp::save(const char *json) {
     StaticJsonDocument<1000> doc;
-    // log_n("[CONFIG] deserialize from: %s", json);
     auto error = deserializeJson(doc, json);
     if (error) {
         Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
@@ -234,10 +234,11 @@ bool ConfigApp::save(const char *json) {
         return false;
     }
 
-    if (CORE_DEBUG_LEVEL > 0) {
-        char* output[1000];
+    if (devmode) {
+        char output[1000];
         serializeJsonPretty(doc, output, 1000);
-        log_i("[CONFIG] JSON: %s", output);
+        Serial.printf("-->[CONFIG] request: %s", output);
+        Serial.println("");
     }
     
     uint16_t cmd = doc["cmd"].as<uint16_t>();
@@ -284,6 +285,14 @@ bool ConfigApp::isApiEnable() {
 
 bool ConfigApp::isIfxEnable() {
     return ifxdb_enable;
+}
+
+void ConfigApp::setWifiConnected(bool connected){
+    wifi_connected = connected;
+}
+
+bool ConfigApp::isWifiConnected() {
+    return wifi_connected;
 }
 
 void ConfigApp::clear() {

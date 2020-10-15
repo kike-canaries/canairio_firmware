@@ -18,12 +18,12 @@ bool influxDbIsConfigured() {
 }
 
 void influxDbInit() {
-    if (WiFi.isConnected() && influxDbIsConfigured()) {
-        Serial.println("-->[INFLUXDB] connecting..");
+    if (WiFi.isConnected() && cfg.isIfxEnable() && influxDbIsConfigured()) {
         influx.configure(cfg.ifx.db.c_str(), cfg.ifx.ip.c_str());  //third argument (port number) defaults to 8086
-        Serial.print("-->[INFLUXDB] Using HTTPS: ");
+        Serial.print("-->[INFLUXDB] using HTTPS: ");
         Serial.println(influx.isSecure());  //will be true if you've added the InfluxCert.hpp file.
         cfg.isNewIfxdbConfig = false;       // flag for config via BLE
+        Serial.println("-->[INFLUXDB] connected.");
         delay(100);
     }
 }
@@ -98,7 +98,6 @@ bool apiIsConfigured() {
 
 void apiInit() {
     if (WiFi.isConnected() && apiIsConfigured() && cfg.isApiEnable()) {
-        Serial.println("-->[API] connecting..");
         // stationId and deviceId, optional endpoint, host and port
         if (cfg.apiuri.equals("") && cfg.apisrv.equals(""))
             api.configure(cfg.dname.c_str(), cfg.deviceId.c_str());
@@ -107,6 +106,7 @@ void apiInit() {
         api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
         // api.dev = true;
         cfg.isNewAPIConfig = false;  // flag for config via BLE
+        Serial.println("-->[API] connected.");
         delay(100);
     }
 }
@@ -190,7 +190,8 @@ void wifiConnect(const char* ssid, const char* pass) {
     }
     if (WiFi.isConnected()) {
         cfg.isNewWifi = false;  // flag for config via BLE
-        Serial.println("done.\n-->[WIFI] connected!");
+        Serial.println("done.");
+        Serial.println("-->[WIFI] connected!");
         Serial.print("-->[WIFI] ");
         Serial.println(WiFi.localIP());
         Serial.println("-->[WIFI] publish interval: "+String(cfg.stime * 2)+" sec.");
@@ -221,11 +222,14 @@ void wifiRestart() {
 
 void wifiLoop() {
     static uint_least64_t wifiTimeStamp = 0;
-    if (millis() - wifiTimeStamp > 5000  && cfg.isWifiEnable() && cfg.ssid.length() > 0 && !WiFi.isConnected()) {
+    if (millis() - wifiTimeStamp > 5000) {
         wifiTimeStamp = millis();
-        wifiInit();
-        influxDbInit();
-        apiInit();
+        if (cfg.isWifiEnable() && cfg.ssid.length() > 0 && !WiFi.isConnected()) {
+            wifiInit();
+            influxDbInit();
+            apiInit();
+        }
+        cfg.setWifiConnected(WiFi.isConnected());
     }
 }
 

@@ -69,6 +69,10 @@ class ConfigApp {
 
     bool isApiEnable();
 
+    void setWifiConnected(bool connected);
+
+    bool isWifiConnected();
+
     String getDeviceId();
 
     void clear();
@@ -90,6 +94,8 @@ class ConfigApp {
     bool ifxdb_enable;
     ///**deprecated** CanAirIO API on/off
     bool api_enable;
+    ///WiFi state
+    bool wifi_connected;
     ///enable debug mode
     bool devmode;
 

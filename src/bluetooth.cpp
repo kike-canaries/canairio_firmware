@@ -62,6 +62,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
             else{
                 Serial.println("-->[E][BLE][CONFIG] saving error!");
             }
+            cfg.setWifiConnected(WiFi.isConnected());  // for notify on each write
             pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
             pCharactData->setValue(getSensorData().c_str());
         }

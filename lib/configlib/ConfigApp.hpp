@@ -75,6 +75,8 @@ class ConfigApp {
 
     String getDeviceId();
 
+    int getSensorType();
+
     void clear();
 
     void reboot();

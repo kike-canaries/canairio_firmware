@@ -28,10 +28,11 @@ void onSensorDataError(const char * msg){
 
 void startingSensors() {
     gui.welcomeAddMessage("Detecting sensors..");
+    Serial.println("-->[INFO] PM sensor configured: "+String(cfg.stype));
     sensors.setOnDataCallBack(&onSensorDataOk);   // all data read callback
     sensors.setSampleTime(cfg.stime);             // config sensors sample time
     sensors.setDebugMode(false);                  // [optional] debug mode
-    sensors.init(sensors.Sensirion);              // start all sensors and
+    sensors.init(cfg.getSensorType());            // start all sensors and
                                                   // try to detect PM sensor: 
                                                   // Panasonic, Honeywell or Plantower.
                                                   // for Sensirion please do init(sensors.Sensirion)

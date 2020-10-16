@@ -129,6 +129,10 @@ bool ConfigApp::saveSensorType(int type) {
     return true;
 }
 
+int ConfigApp::getSensorType(){
+    return stype;
+}
+
 bool ConfigApp::saveWifi(String ssid, String pass){
     if (ssid.length() > 0 && pass.length() > 0) {
         preferences.begin(_app_name, false);

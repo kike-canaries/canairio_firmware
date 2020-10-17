@@ -28,10 +28,11 @@ void onSensorDataError(const char * msg){
 
 void startingSensors() {
     gui.welcomeAddMessage("Detecting sensors..");
+    Serial.println("-->[INFO] PM sensor configured: "+String(cfg.stype));
     sensors.setOnDataCallBack(&onSensorDataOk);   // all data read callback
     sensors.setSampleTime(cfg.stime);             // config sensors sample time
     sensors.setDebugMode(false);                  // [optional] debug mode
-    sensors.init();                               // start all sensors and
+    sensors.init(cfg.getSensorType());            // start all sensors and
                                                   // try to detect PM sensor: 
                                                   // Panasonic, Honeywell or Plantower.
                                                   // for Sensirion please do init(sensors.Sensirion)
@@ -80,10 +81,11 @@ void setup() {
     gui.showWelcome();
 
     // init app preferences and load settings
+    // cfg.setDebugMode(true);
     cfg.init("canairio");
 
     // device wifi mac addres and firmware version
-    Serial.println("-->[INFO] ESP32MAC: " + String(cfg.deviceId));
+    Serial.println("-->[INFO] ESP32MAC: " + cfg.deviceId);
     Serial.println("-->[INFO] Firmware " + gui.getFirmwareVersionCode());
 
     // init all sensors

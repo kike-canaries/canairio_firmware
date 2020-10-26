@@ -3,7 +3,7 @@
 FIRMWARE=$1
 OTAHOSTIP="'CanAirIO.local'"
 USBPORT="/dev/ttyUSB0"
-USBSPEED=115200
+USBSPEED="115200"
 
 showHelp () {
   echo ""
@@ -35,16 +35,21 @@ showHelp () {
 }
 
 flashOTA () {
- ./espota.py --port=3232 --auth=CanAirIO --debug --progress -i $2 -f $1
+  ./system/espota.py --port=3232 --auth=CanAirIO --debug --progress -i $2 -f $1
 }
 
 flash () {
-  ./esptool.py --chip esp32 --port $2 --baud $3 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 system/bootloader_dio_40m.bin 0x8000 system/partitions.bin 0xe000 system/boot_app0.bin 0x10000 $1
+  ./system/esptool.py --chip esp32 --port $2 --baud $3 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 system/bootloader_dio_40m.bin 0x8000 system/partitions.bin 0xe000 system/boot_app0.bin 0x10000 $1
 }
 
 printParams() {
-  echo "update via $1: $2"
+  echo ""
+  echo "###############################################"
   echo "firmware: $3"
+  echo "update via $1: $2"
+  echo "speed: $4"
+  echo "###############################################"
+  echo ""
 }
 
 ##########################################
@@ -62,7 +67,7 @@ case "$1" in
     ;;
 
   ota)
-    if [ "$3" != "" ]; then
+    if ! [[ -z "$3" ]]; then
       OTAHOSTIP="$3"
     fi
     FIRMWARE="$2"
@@ -77,15 +82,15 @@ case "$1" in
     ;;
 
   usb)
-    if [ "$3" != ""]; then
+    if ! [[ -z "$3" ]]; then
       USBPORT="$3"
     fi
-    if [ "$4" != ""]; then
+    if ! [[ -z "$4" ]]; then
       USBSPEED="$4"
     fi
     FIRMWARE="$2"
     if [ ${FIRMWARE: -4} == ".bin" ]; then
-      printParams "USB" $USBPORT $FIRMWARE
+      printParams "USB" $USBPORT $FIRMWARE $USBSPEED
     else
       showHelp
     fi
@@ -96,7 +101,7 @@ case "$1" in
 
   *)
     if [ ${FIRMWARE: -4} == ".bin" ]; then
-      printParams "USB" $USBPORT $FIRMWARE
+      printParams "USB" $USBPORT $FIRMWARE $USBSPEED
       flash "$FIRMWARE" "$USBPORT" "$USBSPEED"
     else
       showHelp

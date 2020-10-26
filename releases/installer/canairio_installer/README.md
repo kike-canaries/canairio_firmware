@@ -2,17 +2,17 @@
 
 ## Usage
 
-For firmware install help updated please run here:
+For the firmware install script help updated please run here:
 
 ``` bash
 ./install.sh help
 ```
 
-## Binaries
+## Binaries and tools
 
-You can download old binaries files in [relases](https://github.com/kike-canaries/canairio_firmware/releases) section or [build](#Build) this directory
+You can download this installer in [releases](https://github.com/kike-canaries/canairio_firmware/releases) section or [build](#Build) it and get this directory, get binaries and some python tools dependencies.
 
-## Parameters
+## Installer parameters
 
 ```python
 usage: ./install.sh [binary]
@@ -87,7 +87,7 @@ Uploading: [============================================================] 100% D
 
 # Build
 
-For rebuild all binaries and this directory please first execute in the root of the project:
+For rebuild all binaries, tools and this directory please first execute in the root of the CanAirIO firmware project:
 
 ``` bash
 ./build all && ./build installer

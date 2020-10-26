@@ -10,7 +10,7 @@ For the firmware install script help updated please run here:
 
 ## Binaries and tools
 
-You can download this installer in [releases](https://github.com/kike-canaries/canairio_firmware/releases) section or [build](#Build) it and get this directory, get binaries and some python tools dependencies.
+You can **download** this installer in [releases](https://github.com/kike-canaries/canairio_firmware/releases) section or [build](#Build) it for get this directory, binaries and some python tools dependencies.
 
 ## Installer parameters
 

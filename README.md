@@ -24,23 +24,17 @@ cd canairio_installer
 ./install.sh canairio_TTGO_T7_rev605_20200925.bin
 ```
 
+For more options run `./canairio_installer help`.  
+
 **Note**: you need python2 or python3 with pyserial in your system.
 
-#### Boards
+#### Boards supported
 
-**TTGO_T7** firmware for CanAirIO v2.1 ([TTGO_T7 board](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647))  
-**TTGO_TQ** firmware for [TTGO_TQ board](https://de.aliexpress.com/item/10000291636371.html) and Honeywell.  
-**WEMOSOLED** firmware for [ESP32 OLED board](https://de.aliexpress.com/item/33047481007.html) and Honeywell
+**TTGO_T7** Please see the [CanAirIO v2.1](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647) guide.  
+**TTGO_TQ** firmware for [TTGO_TQ board](https://de.aliexpress.com/item/10000291636371.html)
+**WEMOSOLED** firmware for [ESP32 OLED board](https://de.aliexpress.com/item/33047481007.html)
 
-Is possible that the current firmware supports more boards and sensors, for example the `Honeywell` variant supports **Plantower** sensors, and in theory we have support  for all `lolin32` variants and `TTGO` variants. Please see [compiling section](#optional-compiling-and-installing). Also the last firmware
-has autodetection for different kind of particulate sensors.
-
-
-**Tip**: if you want clear all preferences and flash variables, please execute before:
-
-``` bash
-./esptool.py --port /dev/ttyUSB0 erase_flash
-```
+Is possible that the current firmware supports more boards and sensors. Also you can choose the sensor brand or type on the CanAirIO Android app.
 
 #### OTA alternative
 
@@ -50,9 +44,17 @@ After that you will able to send OTA updates to any board supported, like this:
 ./install.sh ota canairio_d1mini_rev414_20190829.bin
 ```
 
+Also you can specify the IP address:
+
+```bash
+./install.sh ota canairio_xxx.bin 192.168.1.10
+```
+
 ### Windows
 
 Please read procedure on `firmware` section on [HacksterIO Guide](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a#toc-firmware-y-software-3) for details for load firmware via oficial **Espressif Download Tool** in Windows
+
+---
 
 ## [Optional] Compiling and installing
 
@@ -74,6 +76,8 @@ For **OTA updates** you only run
 pio run -e TTGO_T7_OTA --target upload
 ```
 
+Also you can specify the IP address on `platformio.ini` config file
+
 **Optional** for other board, please select the right environment for example for `wemos` board:
 
 ``` bash
@@ -85,7 +89,6 @@ Also you can change in `platformio.ini` the next parameters:
 -D CORE_DEBUG_LEVEL=0, set to 3 for get more verbose log.  
 -D EMOTICONS, comment or uncomment for enable emoticons.  
 upload_port, in OTA section is for set to CanAirIO device IP address.
-
 
 ### Building Installer
 
@@ -109,6 +112,12 @@ pio run -t clean
 rm -rf .pio
 pio lib update
 pio run --target upload
+```
+
+If you want clear all ESP32 preferences and flash variables, please execute before:
+
+``` bash
+./esptool.py --port /dev/ttyUSB0 erase_flash
 ```
 
 # Android CanAirIO App
@@ -165,6 +174,9 @@ The data will be configured and showed in [CanAirIO Grafana Server](https://bit.
 - [X] Enable/Disable APIs from App (on testing)
 - [X] Locatitation settings via Bluetooth (on testing)
 - [X] OTA updates ready (LAN)
+- [X] Sensors manager is now a library (canairio_sensorlib)
+- [X] Auto detection of PM sensors (see sensorlib doc)
+- [ ] Anonymous authentication
 - [ ] OTA updates (WAN)
 - [ ] Migrate `loop` to multithread RTOS implementation
 - [ ] Dinamic Humidity and Temperature visualization on Display
@@ -177,5 +189,4 @@ You can build a device to measure air quality by using a PM2.5 or similar sensor
 
 [CanAirIO guide wiki](https://github.com/kike-canaries/esp32-hpma115s0/wiki)  
 
-
-<a href="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage_v2.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage_v2.jpg" height="324" ></a>
+<a href="https://raw.githubusercontent.com/wiki/kike-canaries/canairio_firmware/images/collage.jpg" target="_blank"><img src="https://raw.githubusercontent.com/wiki/kike-canaries/canairio_firmware/images/collage.jpg" height="600" ></a>

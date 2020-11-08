@@ -33,9 +33,11 @@ void startingSensors() {
     sensors.setSampleTime(cfg.stime);             // config sensors sample time
     sensors.setDebugMode(false);                  // [optional] debug mode
     sensors.init(cfg.getSensorType());            // start all sensors and
-                                                  // try to detect PM sensor: 
-                                                  // Panasonic, Honeywell or Plantower.
-                                                  // for Sensirion please do init(sensors.Sensirion)
+                                                  // try to detect configured PM sensor.
+                                                  // Sensors supported: Panasonic, Honeywell, Plantower and Sensirion
+                                                  // The configured sensor is choosed on Android app.
+                                                  // For more information about the supported sensors,
+                                                  // please see the canairio_sensorlib documentation.
 
     if(sensors.isPmSensorConfigured()){
         Serial.print("-->[INFO] PM sensor detected: ");

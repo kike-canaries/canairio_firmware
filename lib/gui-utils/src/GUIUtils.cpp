@@ -38,7 +38,7 @@ void GUIUtils::showWelcome() {
     u8g2.drawStr(46, 1, getFirmwareVersionCode().c_str());
     u8g2.drawLine(0, 9, 63, 9);
     u8g2.sendBuffer();
-    lastDrawedLine = 12;
+    lastDrawedLine = 10;
     // only for first screen
     u8g2.sendBuffer();
 }
@@ -52,6 +52,10 @@ void GUIUtils::showProgress(unsigned int progress, unsigned int total) {
 }
 
 void GUIUtils::welcomeAddMessage(String msg) {
+    if(lastDrawedLine >=45) {
+        delay(2000);
+        showWelcome();
+    }
     u8g2.setFont(u8g2_font_4x6_tf);
 #ifdef TTGO_TQ
     if (lastDrawedLine < 32) {
@@ -68,6 +72,7 @@ void GUIUtils::welcomeAddMessage(String msg) {
     lastDrawedLine = lastDrawedLine + 7;
     u8g2.sendBuffer();
 #endif
+    delay(500);
 }
 
 void GUIUtils::welcomeRepeatMessage(String msg) {

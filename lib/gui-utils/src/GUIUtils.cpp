@@ -72,7 +72,7 @@ void GUIUtils::welcomeAddMessage(String msg) {
     lastDrawedLine = lastDrawedLine + 7;
     u8g2.sendBuffer();
 #endif
-    delay(500);
+    delay(200);
 }
 
 void GUIUtils::welcomeRepeatMessage(String msg) {

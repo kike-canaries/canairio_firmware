@@ -15,6 +15,10 @@ void onSensorDataOk() {
     Serial.println(" PM10: " + sensors.getStringPM10());
 }
 
+void onSensorDataError(const char * msg){
+    Serial.println(msg);
+}
+
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
@@ -24,9 +28,20 @@ void setup() {
     delay(200);
     Serial.println("\n== Sensor test setup ==\n");
 
-    sensors.setOnDataCallBack(&onSensorDataOk);  // all data read callback
+    Serial.println("-->[SETUP] Detecting sensors..");
+
     sensors.setSampleTime(5);                       // config sensors sample time interval
-    sensors.init(sensors.Sensirion);                // start all sensors and force to PM sensor to Sensirion
+    sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
+    sensors.setOnErrorCallBack(&onSensorDataError); // [optional] error callback
+    sensors.setDebugMode(true);                    // [optional] debug mode
+
+    // sensors.init();                              // Auto detection of PM sensors (Honeywell, Plantower, Panasonic)
+    // sensors.init(sensors.Auto);                  // Auto detection of PM sensors (Honeywell, Plantower, Panasonic)
+    // sensors.init(sensors.Panasonic);             // Force detection to Panasonic sensor
+    // sensors.init(sensors.Sensirion);             // Force detection to Sensirion sensor
+    // sensors.init(sensors.Auto,mRX,mTX);          // Auto detection and custom RX, TX pines
+
+    sensors.init();
 
     if(sensors.isPmSensorConfigured())
         Serial.println("-->[SETUP] Sensor configured: " + sensors.getPmDeviceSelected());

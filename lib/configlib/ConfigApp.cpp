@@ -39,7 +39,7 @@ void ConfigApp::reload() {
     alt = preferences.getFloat("alt", 0);
     spd = preferences.getFloat("spd", 0);
     stime = preferences.getInt("stime", 5);
-    stype = preferences.getInt("stype", -1);
+    stype = preferences.getInt("stype", 0);
 
     preferences.end();
 }
@@ -49,7 +49,7 @@ String ConfigApp::getCurrentConfig() {
     preferences.begin(_app_name, false);
     doc["dname"] = preferences.getString("dname", "");       // device or station name
     doc["stime"] = preferences.getInt("stime", 5);           // sensor measure time
-    doc["stype"] = preferences.getInt("stype", -1);          // sensor type { Honeywell, Panasonic, Sensirion };
+    doc["stype"] = preferences.getInt("stype", 0);          // sensor type { Honeywell, Panasonic, Sensirion };
     doc["wenb"] = preferences.getBool("wifiEnable", false);  // wifi on/off
     doc["ssid"] = preferences.getString("ssid", "");         // influxdb database name
     doc["ienb"] = preferences.getBool("ifxEnable", false);   // ifxdb on/off
@@ -250,7 +250,7 @@ bool ConfigApp::save(const char *json) {
 
     if (doc.containsKey("dname")) return saveDeviceName(doc["dname"] | "");
     if (doc.containsKey("stime")) return saveSampleTime(doc["stime"] | 0);
-    if (doc.containsKey("stype")) return saveSensorType(doc["stype"] | -1);
+    if (doc.containsKey("stype")) return saveSensorType(doc["stype"] | 0);
     if (doc.containsKey("ifxdb")) return saveInfluxDb(doc["ifxdb"] | "", doc["ifxip"] | "", doc["ifxpt"] | 0);
     if (doc.containsKey("ssid")) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
     if (doc.containsKey("apiusr")) return saveAPI(doc["apiusr"] | "", doc["apipss"] | "", doc["apisrv"] | "", doc["apiuri"] | "", doc["apiprt"] | 0);

@@ -43,6 +43,10 @@ void setup(void) {
   gui.welcomeAddMessage("InfluxDB test4..");
   gui.welcomeAddMessage("InfluxDB test5..");
   gui.welcomeAddMessage("InfluxDB test6..");
+  gui.welcomeAddMessage("Line test welcome 1");
+  gui.welcomeAddMessage("Line test welcome 2");
+  gui.welcomeAddMessage("Line test welcome 3");
+  gui.welcomeAddMessage("Line test welcome 4");
   gui.welcomeAddMessage("==SETUP READY==");
 
   randomSeed(A0);

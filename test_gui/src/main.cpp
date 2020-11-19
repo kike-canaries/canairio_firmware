@@ -55,15 +55,15 @@ void setup(void) {
 
 void loop(void) {
 
-  long rnd = random(0, 3);
+  int rnd = random(0, 3);
 
   gui.pageStart();
-  gui.displaySensorAverage(150);
-  gui.displaySensorData(120, 230, 15, 3.5, 12.3, rnd*10);
+  gui.displaySensorAverage(random(0, 999));
+  gui.displaySensorData(120, 230, 15, 3.5, 12.3, random(0,99));
   gui.displayStatus(true,true,true);
   functionPtr[rnd]();       // Call a test function in random sequence
   gui.pageEnd();
 
-  delay(500);
+  delay(1000);
 }
 

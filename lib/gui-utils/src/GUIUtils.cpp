@@ -54,7 +54,7 @@ void GUIUtils::showProgress(unsigned int progress, unsigned int total) {
 }
 
 void GUIUtils::welcomeAddMessage(String msg) {
-    if(lastDrawedLine >=dh-3) {
+    if(lastDrawedLine >=dh-6) {
         delay(2000);
         showWelcome();
     }
@@ -98,12 +98,18 @@ void GUIUtils::displayCenterBig(String msg) {
     u8g2.print(msg.c_str());
 #else
 #ifdef TTGO_TQ
-    u8g2.setCursor(52, 00);
+    u8g2.setCursor(dw-28, 00);
     u8g2.setFont(u8g2_font_9x18B_tf);
     u8g2.print(msg.c_str());
 #else
-    u8g2.setCursor(36, 6);
-    u8g2.setFont(u8g2_font_9x18B_tf);
+    if (dw > 64) {
+        u8g2.setCursor(dw - 64, 6);
+        u8g2.setFont(u8g2_font_inb24_mn);
+    } 
+    else {
+        u8g2.setCursor(dw - 28, 6);
+        u8g2.setFont(u8g2_font_9x18B_tf);
+    }
     u8g2.print(msg.c_str());
 #endif
 #endif

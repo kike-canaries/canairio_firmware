@@ -26,6 +26,8 @@ void GUIUtils::displayInit() {
     u8g2.setFontDirection(0);
     u8g2.setFontMode(0);
     this->u8g2 = u8g2;
+    dw = u8g2.getDisplayWidth();
+    dh = u8g2.getDisplayHeight();
     Serial.println("-->[OLED] display config ready.");
 }
 
@@ -35,8 +37,8 @@ void GUIUtils::showWelcome() {
     u8g2.drawStr(0, 0, "CanAirIO");
     u8g2.sendBuffer();
     u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.drawStr(46, 1, getFirmwareVersionCode().c_str());
-    u8g2.drawLine(0, 9, 63, 9);
+    u8g2.drawStr(dw-18, 1, getFirmwareVersionCode().c_str());
+    u8g2.drawLine(0, 9, dw-1, 9);
     u8g2.sendBuffer();
     lastDrawedLine = 10;
     // only for first screen
@@ -52,7 +54,7 @@ void GUIUtils::showProgress(unsigned int progress, unsigned int total) {
 }
 
 void GUIUtils::welcomeAddMessage(String msg) {
-    if(lastDrawedLine >=45) {
+    if(lastDrawedLine >=dh-3) {
         delay(2000);
         showWelcome();
     }
@@ -75,6 +77,8 @@ void GUIUtils::welcomeAddMessage(String msg) {
     delay(200);
 }
 
+
+// TODO: This metod failed on redraw or clear the space first
 void GUIUtils::welcomeRepeatMessage(String msg) {
     lastDrawedLine = lastDrawedLine - 7;
     welcomeAddMessage("               ");
@@ -300,33 +304,33 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
 void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
 #ifdef TTGO_TQ
     if (bleOn)
-        u8g2.drawBitmap(119, 24, 1, 8, ic_bluetooth_on);
+        u8g2.drawBitmap(119, dh-8, 1, 8, ic_bluetooth_on);
     if (blePair)
-        u8g2.drawBitmap(119, 24, 1, 8, ic_bluetooth_pair);
+        u8g2.drawBitmap(119, dh-8, 1, 8, ic_bluetooth_pair);
     if (wifiOn)
-        u8g2.drawBitmap(106, 24, 1, 8, ic_wifi_on);
+        u8g2.drawBitmap(106, dh-8, 1, 8, ic_wifi_on);
     if (dataOn)
-        u8g2.drawBitmap(93, 24, 1, 8, ic_data_on);
+        u8g2.drawBitmap(93, dh-8, 1, 8, ic_data_on);
     if (preferenceSave)
-        u8g2.drawBitmap(71, 24, 1, 8, ic_pref_save);
+        u8g2.drawBitmap(71, dh-8, 1, 8, ic_pref_save);
     if (sensorLive)
-        u8g2.drawBitmap(80, 25, 1, 8, ic_sensor_live);
+        u8g2.drawBitmap(80, dh-8, 1, 8, ic_sensor_live);
     
 #else
     if (bleOn)
-        u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_on);
+        u8g2.drawBitmap(54, dh-8, 1, 8, ic_bluetooth_on);
     if (blePair)
-        u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_pair);
+        u8g2.drawBitmap(54, dh-8, 1, 8, ic_bluetooth_pair);
     if (wifiOn)
-        u8g2.drawBitmap(44, 40, 1, 8, ic_wifi_on);
+        u8g2.drawBitmap(44, dh-8, 1, 8, ic_wifi_on);
     if (dataOn)
-        u8g2.drawBitmap(34, 40, 1, 8, ic_data_on);
+        u8g2.drawBitmap(34, dh-8, 1, 8, ic_data_on);
     if (preferenceSave)
-        u8g2.drawBitmap(10, 40, 1, 8, ic_pref_save);
+        u8g2.drawBitmap(10, dh-8, 1, 8, ic_pref_save);
     if (sensorLive)
-        u8g2.drawBitmap(0, 40, 1, 8, ic_sensor_live);
+        u8g2.drawBitmap(0, dh-8, 1, 8, ic_sensor_live);
 
-    u8g2.drawLine(0, 38, 63, 38);
+    u8g2.drawLine(0, dh-10, 63, dh-10);
 #endif
     if(dataOn) dataOn = false;                      // reset trigger for publish data ok.
     if(preferenceSave) preferenceSave = false;      // reset trigger for save preference ok.

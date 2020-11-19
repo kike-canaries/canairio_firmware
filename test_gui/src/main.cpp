@@ -37,7 +37,12 @@ void setup(void) {
   gui.welcomeAddMessage("Sensor ready..");
   gui.welcomeAddMessage("GATT server..");
   gui.welcomeAddMessage("WiFi test..");
-  gui.welcomeAddMessage("InfluxDB test..");
+  gui.welcomeAddMessage("InfluxDB test1..");  // test for multipage
+  gui.welcomeAddMessage("InfluxDB test2..");
+  gui.welcomeAddMessage("InfluxDB test3..");
+  gui.welcomeAddMessage("InfluxDB test4..");
+  gui.welcomeAddMessage("InfluxDB test5..");
+  gui.welcomeAddMessage("InfluxDB test6..");
   gui.welcomeAddMessage("==SETUP READY==");
 
   randomSeed(A0);

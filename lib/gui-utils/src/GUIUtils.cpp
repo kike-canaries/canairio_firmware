@@ -304,27 +304,27 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
 void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
 #ifdef TTGO_TQ
     if (bleOn)
-        u8g2.drawBitmap(119, dh-8, 1, 8, ic_bluetooth_on);
+        u8g2.drawBitmap(dw-9, dh-8, 1, 8, ic_bluetooth_on);
     if (blePair)
-        u8g2.drawBitmap(119, dh-8, 1, 8, ic_bluetooth_pair);
+        u8g2.drawBitmap(dw-9, dh-8, 1, 8, ic_bluetooth_pair);
     if (wifiOn)
-        u8g2.drawBitmap(106, dh-8, 1, 8, ic_wifi_on);
+        u8g2.drawBitmap(dw-18, dh-8, 1, 8, ic_wifi_on);
     if (dataOn)
-        u8g2.drawBitmap(93, dh-8, 1, 8, ic_data_on);
+        u8g2.drawBitmap(dw-35, dh-8, 1, 8, ic_data_on);
     if (preferenceSave)
-        u8g2.drawBitmap(71, dh-8, 1, 8, ic_pref_save);
+        u8g2.drawBitmap(dw-57, dh-8, 1, 8, ic_pref_save);
     if (sensorLive)
-        u8g2.drawBitmap(80, dh-8, 1, 8, ic_sensor_live);
+        u8g2.drawBitmap(dw-48, dh-8, 1, 8, ic_sensor_live);
     
 #else
     if (bleOn)
-        u8g2.drawBitmap(54, dh-8, 1, 8, ic_bluetooth_on);
+        u8g2.drawBitmap(dw-10, dh-8, 1, 8, ic_bluetooth_on);
     if (blePair)
-        u8g2.drawBitmap(54, dh-8, 1, 8, ic_bluetooth_pair);
+        u8g2.drawBitmap(dw-10, dh-8, 1, 8, ic_bluetooth_pair);
     if (wifiOn)
-        u8g2.drawBitmap(44, dh-8, 1, 8, ic_wifi_on);
+        u8g2.drawBitmap(dw-20, dh-8, 1, 8, ic_wifi_on);
     if (dataOn)
-        u8g2.drawBitmap(34, dh-8, 1, 8, ic_data_on);
+        u8g2.drawBitmap(dw-30, dh-8, 1, 8, ic_data_on);
     if (preferenceSave)
         u8g2.drawBitmap(10, dh-8, 1, 8, ic_pref_save);
     if (sensorLive)

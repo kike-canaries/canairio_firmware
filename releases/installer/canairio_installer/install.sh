@@ -43,8 +43,8 @@ flash () {
 }
 
 erase_flash () {
-    if ! [[ -z "$1" ]]; then
-      USBPORT="$1"
+    if ! [[ -z "$2" ]]; then
+      USBPORT="$2"
     fi
     ./system/esptool.py --port $USBPORT erase_flash
 }
@@ -107,7 +107,7 @@ case "$1" in
     ;;
 
 erase)
-    erase_flash
+    erase_flash "$1"
     ;;
 
   *)

@@ -42,7 +42,6 @@ void setup(void) {
   gui.welcomeAddMessage("InfluxDB test3..");
   gui.welcomeAddMessage("InfluxDB test4..");
   gui.welcomeAddMessage("InfluxDB test5..");
-  gui.welcomeAddMessage("InfluxDB test6..");
   gui.welcomeAddMessage("Line test welcome 1");
   gui.welcomeAddMessage("Line test welcome 2");
   gui.welcomeAddMessage("Line test welcome 3");
@@ -51,7 +50,7 @@ void setup(void) {
 
   randomSeed(A0);
 
-  delay(4000);
+  delay(2000);
 }
 
 void loop(void) {

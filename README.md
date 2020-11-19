@@ -103,6 +103,7 @@ Also the binaries flavors directory: `releases/binaries/`
 
 ### Troubleshooting
 
+
 If you have some issues with Bluetooth library internals, or libraries issues, please upgrade all frameworks and tools on PlatformIO:
 
 ``` bash
@@ -116,9 +117,16 @@ pio run --target upload
 
 If you want clear all ESP32 preferences and flash variables, please execute before:
 
-``` bash
+```bash
+./install.sh erase /dev/ttyUSB0
+```
+
+Also you can do it with esptool:
+
+```bash
 ./esptool.py --port /dev/ttyUSB0 erase_flash
 ```
+
 
 # Android CanAirIO App
 

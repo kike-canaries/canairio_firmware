@@ -42,6 +42,13 @@ flash () {
   ./system/esptool.py --chip esp32 --port $2 --baud $3 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 system/bootloader_dio_40m.bin 0x8000 system/partitions.bin 0xe000 system/boot_app0.bin 0x10000 $1
 }
 
+erase_flash () {
+    if ! [[ -z "$1" ]]; then
+      USBPORT="$1"
+    fi
+    ./system/esptool.py --port $USBPORT erase_flash
+}
+
 printParams() {
   echo ""
   echo "###############################################"
@@ -97,6 +104,10 @@ case "$1" in
 
     flash "$2" "$USBPORT" "$USBSPEED"
 
+    ;;
+
+erase)
+    erase_flash
     ;;
 
   *)

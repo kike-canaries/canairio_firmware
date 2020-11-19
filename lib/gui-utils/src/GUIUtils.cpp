@@ -330,7 +330,7 @@ void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
     if (sensorLive)
         u8g2.drawBitmap(0, dh-8, 1, 8, ic_sensor_live);
 
-    u8g2.drawLine(0, dh-10, 63, dh-10);
+    u8g2.drawLine(0, dh-10, dw-1, dh-10);
 #endif
     if(dataOn) dataOn = false;                      // reset trigger for publish data ok.
     if(preferenceSave) preferenceSave = false;      // reset trigger for save preference ok.

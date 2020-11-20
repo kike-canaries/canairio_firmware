@@ -47,6 +47,10 @@ class GUIUtils {
 
     U8G2 u8g2;
 
+    int dw = 0;  // display width
+
+    int dh = 0;  // display height
+
     void displayCenterBig(String msg);
 
     void displayBottomLine(String msg);

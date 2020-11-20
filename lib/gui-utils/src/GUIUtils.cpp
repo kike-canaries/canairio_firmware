@@ -98,7 +98,7 @@ void GUIUtils::displayCenterBig(String msg) {
     u8g2.print(msg.c_str());
 #else
 #ifdef TTGO_TQ
-    u8g2.setCursor(dw-28, 00);
+    u8g2.setCursor(52, 00);
     u8g2.setFont(u8g2_font_9x18B_tf);
     u8g2.print(msg.c_str());
 #else

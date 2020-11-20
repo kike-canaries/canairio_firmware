@@ -37,25 +37,33 @@ void setup(void) {
   gui.welcomeAddMessage("Sensor ready..");
   gui.welcomeAddMessage("GATT server..");
   gui.welcomeAddMessage("WiFi test..");
-  gui.welcomeAddMessage("InfluxDB test..");
+  gui.welcomeAddMessage("InfluxDB test1..");  // test for multipage
+  gui.welcomeAddMessage("InfluxDB test2..");
+  gui.welcomeAddMessage("InfluxDB test3..");
+  gui.welcomeAddMessage("InfluxDB test4..");
+  gui.welcomeAddMessage("InfluxDB test5..");
+  gui.welcomeAddMessage("Line test welcome 1");
+  gui.welcomeAddMessage("Line test welcome 2");
+  gui.welcomeAddMessage("Line test welcome 3");
+  gui.welcomeAddMessage("Line test welcome 4");
   gui.welcomeAddMessage("==SETUP READY==");
 
   randomSeed(A0);
 
-  delay(4000);
+  delay(2000);
 }
 
 void loop(void) {
 
-  long rnd = random(0, 3);
+  int rnd = random(0, 3);
 
   gui.pageStart();
-  gui.displaySensorAverage(150);
-  gui.displaySensorData(120, 230, 15, 3.5, 12.3, rnd*10);
+  gui.displaySensorAverage(random(0, 999));
+  gui.displaySensorData(120, 230, 15, 3.5, 12.3, random(0,99));
   gui.displayStatus(true,true,true);
   functionPtr[rnd]();       // Call a test function in random sequence
   gui.pageEnd();
 
-  delay(500);
+  delay(1000);
 }
 

@@ -10,11 +10,23 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 
 ## Installation
 
-### Linux and MacOSx
+### Boards supported
+
+**TTGO_T7** Please see the [CanAirIO v2.1](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647) guide.  
+**ESP32DevKit** Please see this [HacksterIO](https://www.hackster.io/canairio/build-low-cost-air-quality-sensor-canairio-without-soldering-d87494) guide.  
+**TTGO_TQ** firmware for [TTGO_TQ board](https://de.aliexpress.com/item/10000291636371.html).  
+**WEMOSOLED** firmware for [ESP32 OLED board](https://de.aliexpress.com/item/33047481007.html).  
+**HELTEC** firmware for old ESP32 Heltec board.  
+
+
+Is possible that the **current firmware supports more boards** and sensors. Also you can choose the sensor brand or type on the CanAirIO Android app.
+
+
+## Linux and MacOSx
 
 You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. Download the last release from `assets` section in releases and please uncompress zip file.
 
-#### USB alternative
+### USB alternative
 
 Connect your CanAirIO device to your USB and execute the next command for your model board*, like this:
 
@@ -28,15 +40,7 @@ For more options run `./canairio_installer help`.
 
 **Note**: you need python2 or python3 with pyserial in your system.
 
-#### Boards supported
-
-**TTGO_T7** Please see the [CanAirIO v2.1](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647) guide.  
-**TTGO_TQ** firmware for [TTGO_TQ board](https://de.aliexpress.com/item/10000291636371.html)
-**WEMOSOLED** firmware for [ESP32 OLED board](https://de.aliexpress.com/item/33047481007.html)
-
-Is possible that the current firmware supports more boards and sensors. Also you can choose the sensor brand or type on the CanAirIO Android app.
-
-#### OTA alternative
+### OTA alternative
 
 After that you will able to send OTA updates to any board supported, like this:
 
@@ -50,7 +54,7 @@ Also you can specify the IP address:
 ./install.sh ota canairio_xxx.bin 192.168.1.10
 ```
 
-### Windows
+## Windows
 
 Please read procedure on `firmware` section on [HacksterIO Guide](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a#toc-firmware-y-software-3) for details for load firmware via oficial **Espressif Download Tool** in Windows
 

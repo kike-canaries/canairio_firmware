@@ -21,7 +21,7 @@ showHelp () {
   echo "example: ./build installer"
   echo ""
   echo "Supported boards: "
-  echo "TTGO_T7, TTGO_T7_OTA, WEMOSOLED, HELTEC, TTGO_TQ, ESP32DEVKIT"
+  echo "TTGO_T7, WEMOSOLED, HELTEC, TTGO_TQ, ESP32DEVKIT"
   echo ""
   echo "Build installer option will make a installer package for Linux"
   echo "with OTA support and USB support"
@@ -143,7 +143,6 @@ else
     all)
       clean
       build TTGO_T7
-      build TTGO_T7_OTA
       build WEMOSOLED
       build HELTEC
       build TTGO_TQ

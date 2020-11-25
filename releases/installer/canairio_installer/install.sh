@@ -5,6 +5,11 @@ OTAHOSTIP="'CanAirIO.local'"
 USBPORT="/dev/ttyUSB0"
 USBSPEED="115200"
 
+PYTHON="$(command -v python)"
+if [ -x "$(command -v python3)" ]; then
+  echo 'Selecting python3' >&2
+fi
+
 showHelp () {
   echo ""
   echo "usage: ./install.sh [binary]"

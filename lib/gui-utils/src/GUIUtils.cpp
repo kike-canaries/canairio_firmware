@@ -252,9 +252,9 @@ void GUIUtils::displaySensorAverage(int average) {
 }
 
 // TODO: separate this function, format/display
-void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi, float temp, int rssi) {
+void GUIUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi) {
     char output[22];
-    sprintf(output, "%03d E%02d H%02d%% T%02d°C", pm25, 0, (int) humi, (int) temp);
+    sprintf(output, "%03d E%02d H%02d%% T%02d°C", mainValue, 0, (int) humi, (int) temp);
     displayBottomLine(String(output));
 #ifdef TTGO_TQ
     u8g2.setFont(u8g2_font_4x6_tf);
@@ -286,7 +286,7 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
 #ifndef TTGO_TQ
     u8g2.setFont(u8g2_font_4x6_tf);
     u8g2.setCursor(51, 0);
-    sprintf(output, "%03d", pm25);
+    sprintf(output, "%03d", mainValue);
     u8g2.print(output);
 #endif
 #endif

@@ -64,6 +64,7 @@ void displayGUI() {
 
         float humi = sensors.getHumidity();
         if (humi == 0.0) humi = sensors.getCO2humi();
+
         float temp = sensors.getTemperature();
         if (temp == 0.0) temp = sensors.getCO2temp();
 

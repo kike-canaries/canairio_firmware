@@ -54,14 +54,26 @@ void displayGUI() {
     static uint_fast64_t timeStampGUI = 0;   // timestamp for GUI refresh
     if ((millis() - timeStampGUI > 1000)) {  // it should be minor than sensor loop
         timeStampGUI = millis();
+
+        int deviceType = sensors.getPmDeviceTypeSelected();
+        uint16_t mainValue = 0;
+        if (deviceType > 0 && deviceType <= 2)
+            mainValue = sensors.getPM25();
+        else
+            mainValue = sensors.getCO2();
+
+        float humi = sensors.getHumidity();
+        if (humi == 0.0) humi = sensors.getCO2humi();
+        float temp = sensors.getTemperature();
+        if (temp == 0.0) temp = sensors.getCO2temp();
+
         gui.pageStart();
-        gui.displaySensorAverage(sensors.getPM25());
+        gui.displaySensorAverage(mainValue);
         gui.displaySensorData(
-            sensors.getPM25(),
-            sensors.getPM10(),
+            mainValue,
             getChargeLevel(),
-            sensors.getHumidity(),
-            sensors.getTemperature(),
+            humi,
+            temp,
             getWifiRSSI());
         gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
         gui.pageEnd();

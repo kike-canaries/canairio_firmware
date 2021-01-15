@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#define BATTERY_LOOP_INTERVAL   10000
+#define BATTERY_LOOP_INTERVAL   1
 
 void batteryInit();
 

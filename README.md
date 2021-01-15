@@ -1,8 +1,8 @@
-[![Build Status](https://travis-ci.com/kike-canaries/canairio_firmware.svg?branch=master)](https://travis-ci.com/kike-canaries/canairio_firmware) [![PlatformIO](https://github.com/kike-canaries/canairio_firmware/workflows/PlatformIO/badge.svg)](https://github.com/kike-canaries/canairio_firmware/actions/) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO) 
- 
+[![Build Status](https://travis-ci.com/kike-canaries/canairio_firmware.svg?branch=master)](https://travis-ci.com/kike-canaries/canairio_firmware) [![PlatformIO](https://github.com/kike-canaries/canairio_firmware/workflows/PlatformIO/badge.svg)](https://github.com/kike-canaries/canairio_firmware/actions/) ![ViewCount](https://views.whatilearened.today/views/github/kike-canaries/canairio_firmware.svg) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO)  
+
 # CanAirIO firmware
 
-<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/collage.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage.jpg" align="right" width="340" ></a>
+<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage_vertical.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage_vertical.jpg" align="right" width="300" ></a>
 
 <a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/android-hpma115s0/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>
 
@@ -10,11 +10,23 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 
 ## Installation
 
-### Linux and MacOSx
+### Boards supported
+
+**TTGO_T7** Please see the [CanAirIO v2.1](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647) guide.  
+**ESP32DevKit** Please see this [HacksterIO](https://www.hackster.io/canairio/build-low-cost-air-quality-sensor-canairio-without-soldering-d87494) guide.  
+**TTGO_TQ** firmware for [TTGO_TQ board](https://de.aliexpress.com/item/10000291636371.html).  
+**WEMOSOLED** firmware for [ESP32 OLED board](https://de.aliexpress.com/item/33047481007.html).  
+**HELTEC** firmware for old ESP32 Heltec board.  
+
+
+Is possible that the **current firmware supports more boards** and sensors. Also you can choose the sensor brand or type on the CanAirIO Android app.
+
+
+## Linux and MacOSx
 
 You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. Download the last release from `assets` section in releases and please uncompress zip file.
 
-#### USB alternative
+### USB alternative
 
 Connect your CanAirIO device to your USB and execute the next command for your model board*, like this:
 
@@ -24,25 +36,11 @@ cd canairio_installer
 ./install.sh canairio_TTGO_T7_rev605_20200925.bin
 ```
 
+For more options run `./canairio_installer help`.  
+
 **Note**: you need python2 or python3 with pyserial in your system.
 
-#### Boards
-
-**TTGO_T7** firmware for CanAirIO v2.1 ([TTGO_T7 board](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647))  
-**TTGO_TQ** firmware for [TTGO_TQ board](https://de.aliexpress.com/item/10000291636371.html) and Honeywell.  
-**WEMOSOLED** firmware for [ESP32 OLED board](https://de.aliexpress.com/item/33047481007.html) and Honeywell
-
-Is possible that the current firmware supports more boards and sensors, for example the `Honeywell` variant supports **Plantower** sensors, and in theory we have support  for all `lolin32` variants and `TTGO` variants. Please see [compiling section](#optional-compiling-and-installing). Also the last firmware
-has autodetection for different kind of particulate sensors.
-
-
-**Tip**: if you want clear all preferences and flash variables, please execute before:
-
-``` bash
-./esptool.py --port /dev/ttyUSB0 erase_flash
-```
-
-#### OTA alternative
+### OTA alternative
 
 After that you will able to send OTA updates to any board supported, like this:
 
@@ -50,9 +48,17 @@ After that you will able to send OTA updates to any board supported, like this:
 ./install.sh ota canairio_d1mini_rev414_20190829.bin
 ```
 
-### Windows
+Also you can specify the IP address:
+
+```bash
+./install.sh ota canairio_xxx.bin 192.168.1.10
+```
+
+## Windows
 
 Please read procedure on `firmware` section on [HacksterIO Guide](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a#toc-firmware-y-software-3) for details for load firmware via oficial **Espressif Download Tool** in Windows
+
+---
 
 ## [Optional] Compiling and installing
 
@@ -74,6 +80,8 @@ For **OTA updates** you only run
 pio run -e TTGO_T7_OTA --target upload
 ```
 
+Also you can specify the IP address on `platformio.ini` config file
+
 **Optional** for other board, please select the right environment for example for `wemos` board:
 
 ``` bash
@@ -85,7 +93,6 @@ Also you can change in `platformio.ini` the next parameters:
 -D CORE_DEBUG_LEVEL=0, set to 3 for get more verbose log.  
 -D EMOTICONS, comment or uncomment for enable emoticons.  
 upload_port, in OTA section is for set to CanAirIO device IP address.
-
 
 ### Building Installer
 
@@ -100,6 +107,7 @@ Also the binaries flavors directory: `releases/binaries/`
 
 ### Troubleshooting
 
+
 If you have some issues with Bluetooth library internals, or libraries issues, please upgrade all frameworks and tools on PlatformIO:
 
 ``` bash
@@ -110,6 +118,19 @@ rm -rf .pio
 pio lib update
 pio run --target upload
 ```
+
+If you want clear all ESP32 preferences and flash variables, please execute before:
+
+```bash
+./install.sh erase /dev/ttyUSB0
+```
+
+Also you can do it with esptool:
+
+```bash
+./esptool.py --port /dev/ttyUSB0 erase_flash
+```
+
 
 # Android CanAirIO App
 
@@ -165,6 +186,9 @@ The data will be configured and showed in [CanAirIO Grafana Server](https://bit.
 - [X] Enable/Disable APIs from App (on testing)
 - [X] Locatitation settings via Bluetooth (on testing)
 - [X] OTA updates ready (LAN)
+- [X] Sensors manager is now a library (canairio_sensorlib)
+- [X] Auto detection of PM sensors (see sensorlib doc)
+- [ ] Anonymous authentication
 - [ ] OTA updates (WAN)
 - [ ] Migrate `loop` to multithread RTOS implementation
 - [ ] Dinamic Humidity and Temperature visualization on Display
@@ -177,5 +201,4 @@ You can build a device to measure air quality by using a PM2.5 or similar sensor
 
 [CanAirIO guide wiki](https://github.com/kike-canaries/esp32-hpma115s0/wiki)  
 
-
-<a href="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage_v2.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/collage_v2.jpg" height="324" ></a>
+<a href="https://raw.githubusercontent.com/wiki/kike-canaries/canairio_firmware/images/collage.jpg" target="_blank"><img src="https://raw.githubusercontent.com/wiki/kike-canaries/canairio_firmware/images/collage.jpg" height="600" ></a>

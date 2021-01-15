@@ -5,6 +5,11 @@ OTAHOSTIP="'CanAirIO.local'"
 USBPORT="/dev/ttyUSB0"
 USBSPEED="115200"
 
+PYTHON="$(command -v python)"
+if [ -x "$(command -v python3)" ]; then
+  echo 'Selecting python3' >&2
+fi
+
 showHelp () {
   echo ""
   echo "usage: ./install.sh [binary]"
@@ -35,11 +40,18 @@ showHelp () {
 }
 
 flashOTA () {
-  ./system/espota.py --port=3232 --auth=CanAirIO --debug --progress -i $2 -f $1
+  $PYTHON ./system/espota.py --port=3232 --auth=CanAirIO --debug --progress -i $2 -f $1
 }
 
 flash () {
-  ./system/esptool.py --chip esp32 --port $2 --baud $3 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 system/bootloader_dio_40m.bin 0x8000 system/partitions.bin 0xe000 system/boot_app0.bin 0x10000 $1
+  $PYTHON ./system/esptool.py --chip esp32 --port $2 --baud $3 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 system/bootloader_dio_40m.bin 0x8000 system/partitions.bin 0xe000 system/boot_app0.bin 0x10000 $1
+}
+
+erase_flash () {
+    if ! [[ -z "$2" ]]; then
+      USBPORT="$2"
+    fi
+    $PYTHON ./system/esptool.py --port $USBPORT erase_flash
 }
 
 printParams() {
@@ -97,6 +109,10 @@ case "$1" in
 
     flash "$2" "$USBPORT" "$USBSPEED"
 
+    ;;
+
+erase)
+    erase_flash "$1"
     ;;
 
   *)

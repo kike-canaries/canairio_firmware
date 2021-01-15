@@ -24,7 +24,7 @@ void batteryInit() {
 void batteryloop() {
 #ifdef TTGO_TQ
     static uint_fast64_t timeStamp = 0;  // timestamp for loop check
-    if ((millis() - timeStamp > BATTERY_LOOP_INTERVAL)) {
+    if ((millis() - timeStamp > BATTERY_LOOP_INTERVAL*1000)) {
         timeStamp = millis();
         Rdelay = 0;
         while (digitalRead(IP5306_2) == HIGH) {

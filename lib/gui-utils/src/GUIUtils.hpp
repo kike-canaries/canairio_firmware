@@ -19,7 +19,7 @@ class GUIUtils {
 
     void displaySensorAverage(int average);
 
-    void displaySensorData(int pm25, int pm10, int chargeLevel, float humi, float temp, int rssi);
+    void displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi);
 
     void displayStatus(bool wifiOn, bool bleOn, bool blePair);
 

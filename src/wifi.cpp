@@ -36,14 +36,23 @@ void influxDbInit() {
  *
  */
 void influxDbParseFields(char* fields) {
+    // select humi and temp for publish it
+    float humi = sensors.getHumidity();
+    if(humi == 0.0) humi = sensors.getCO2humi();
+    float temp = sensors.getTemperature();
+    if(temp == 0.0) temp = sensors.getCO2temp();
+
     sprintf(
         fields,
-        "pm1=%u,pm25=%u,pm10=%u,hum=%f,tmp=%f,prs=%f,gas=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
+        "pm1=%u,pm25=%u,pm10=%u,co2=%u,co2hum=%f,co2tmp=%f,hum=%f,tmp=%f,prs=%f,gas=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
         sensors.getPM1(),
         sensors.getPM25(),
         sensors.getPM10(),
-        sensors.getHumidity(),
-        sensors.getTemperature(),
+        sensors.getCO2(),
+        sensors.getCO2humi(),
+        sensors.getCO2temp(),
+        humi,
+        temp,
         sensors.getPressure(),
         sensors.getGas(),
         cfg.lat,

@@ -27,24 +27,26 @@ void onSensorDataError(const char * msg){
 }
 
 void startingSensors() {
-    gui.welcomeAddMessage("Detecting sensors..");
     Serial.println("-->[INFO] PM sensor configured: "+String(cfg.stype));
+    gui.welcomeAddMessage("Detected sensor:");
     sensors.setOnDataCallBack(&onSensorDataOk);   // all data read callback
     sensors.setSampleTime(cfg.stime);             // config sensors sample time
     sensors.setDebugMode(false);                  // [optional] debug mode
     sensors.init(cfg.getSensorType());            // start all sensors and
-                                                  // try to detect PM sensor: 
-                                                  // Panasonic, Honeywell or Plantower.
-                                                  // for Sensirion please do init(sensors.Sensirion)
+                                                  // try to detect configured PM sensor.
+                                                  // Sensors supported: Panasonic, Honeywell, Plantower and Sensirion
+                                                  // The configured sensor is choosed on Android app.
+                                                  // For more information about the supported sensors,
+                                                  // please see the canairio_sensorlib documentation.
 
     if(sensors.isPmSensorConfigured()){
         Serial.print("-->[INFO] PM sensor detected: ");
         Serial.println(sensors.getPmDeviceSelected());
-        gui.welcomeRepeatMessage(sensors.getPmDeviceSelected());
+        gui.welcomeAddMessage(sensors.getPmDeviceSelected());
     }
     else {
         Serial.println("-->[INFO] Detection sensors FAIL!");
-        gui.welcomeRepeatMessage("Detection !FAIL!");
+        gui.welcomeAddMessage("Detection !FAILED!");
     }
 }
 
@@ -91,8 +93,7 @@ void setup() {
     // init all sensors
     Serial.println("-->[INFO] Detecting sensors..");
     startingSensors();
-    delay(500);
-    
+
     // init battery (only for some boards)
     batteryInit();
 
@@ -102,20 +103,31 @@ void setup() {
 
     // WiFi and cloud communication
     wifiInit();
+    Serial.println("-->[INFO] InfluxDb API:\t" + String(cfg.isIfxEnable()));
+    Serial.println("-->[INFO] CanAirIO API:\t" + String(cfg.isApiEnable()));
+    gui.welcomeAddMessage("CanAirIO API:"+String(cfg.isApiEnable()));
+    gui.welcomeAddMessage("InfluxDb :"+String(cfg.isIfxEnable()));
+    influxDbInit();
+    apiInit();  // DEPRECATED
+
+    // init watchdog timer for reboot in any loop blocker
+    wd.init();
+    gui.welcomeAddMessage("Watchdog ready");
+
+    // mac address
+    gui.welcomeAddMessage(cfg.getDeviceId());
+
+    // wifi status 
     if (WiFi.isConnected())
         gui.welcomeAddMessage("WiFi:" + cfg.ssid);
     else
         gui.welcomeAddMessage("WiFi: disabled.");
-    Serial.println("-->[INFO] InfluxDb API:\t" + String(cfg.isIfxEnable()));
-    Serial.println("-->[INFO] CanAirIO API:\t" + String(cfg.isApiEnable()));
-    influxDbInit();
-    apiInit();  // DEPRECATED
-    if (WiFi.isConnected()) gui.welcomeAddMessage("API clouds ready.");
 
-    // init watchdog timer for reboot in any loop blocker
-    wd.init();
+    // sensor sample time and publish time (2x)
+    gui.welcomeAddMessage("stime: "+String(cfg.stime)+ " sec.");
+
     gui.welcomeAddMessage("==SETUP READY==");
-    delay(4000);
+    delay(1000);
 
     // display main screen
     displayGUI();

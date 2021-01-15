@@ -21,7 +21,7 @@ showHelp () {
   echo "example: ./build installer"
   echo ""
   echo "Supported boards: "
-  echo "TTGO_T7, TTGO_T7_OTA, WEMOSOLED, HELTEC, TTGO_TQ"
+  echo "TTGO_T7, WEMOSOLED, HELTEC, TTGO_TQ, ESP32DEVKIT"
   echo ""
   echo "Build installer option will make a installer package for Linux"
   echo "with OTA support and USB support"
@@ -53,7 +53,7 @@ clean () {
 }
 
 build () {
-  pio run -e $1 -t clean
+  pio run -s -e $1 -t clean
 
   echo ""
   echo "***********************************************"
@@ -61,7 +61,7 @@ build () {
   echo "***********************************************"
   echo ""
 
-  pio run -e $1
+  pio run -s -e $1
 
   echo ""
   echo "***********************************************"
@@ -87,6 +87,12 @@ buildInstaller () {
   echo ""
   du -hs canairio_rev${SRC_REV}_${DATE}.zip
   echo ""
+}
+
+publish_release () {
+  cd $INSDIR/..
+  COMMIT_LOG=`git log -1 --format='%ci %H %s'`
+  github-release upload --owner kike-canaries --repo canairio_firmware --tag "rev${SRC_REV}" --release-name "rev${SRC_REV}" --body "${COMMIT_LOG}" canairio_rev${SRC_REV}_${DATE}.zip
 }
 
 printOutput () {
@@ -137,11 +143,15 @@ else
     all)
       clean
       build TTGO_T7
-      build TTGO_T7_OTA
       build WEMOSOLED
       build HELTEC
       build TTGO_TQ
+      build ESP32DEVKIT
       printOutput
+      ;;
+
+    publish)
+      publish_release
       ;;
 
     *)

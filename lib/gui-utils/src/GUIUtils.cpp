@@ -13,6 +13,8 @@ void GUIUtils::displayInit() {
     U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #elif TTGO_TQ  // display via i2c for TTGO_TQ
     U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, 4, 5);
+#elif ESP32DEVKIT
+    U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
 #else          // display via i2c for D1MINI board
     U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
 #endif
@@ -26,6 +28,8 @@ void GUIUtils::displayInit() {
     u8g2.setFontDirection(0);
     u8g2.setFontMode(0);
     this->u8g2 = u8g2;
+    dw = u8g2.getDisplayWidth();
+    dh = u8g2.getDisplayHeight();
     Serial.println("-->[OLED] display config ready.");
 }
 
@@ -35,10 +39,10 @@ void GUIUtils::showWelcome() {
     u8g2.drawStr(0, 0, "CanAirIO");
     u8g2.sendBuffer();
     u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.drawStr(46, 1, getFirmwareVersionCode().c_str());
-    u8g2.drawLine(0, 9, 63, 9);
+    u8g2.drawStr(dw-18, 1, getFirmwareVersionCode().c_str());
+    u8g2.drawLine(0, 9, dw-1, 9);
     u8g2.sendBuffer();
-    lastDrawedLine = 12;
+    lastDrawedLine = 10;
     // only for first screen
     u8g2.sendBuffer();
 }
@@ -52,6 +56,10 @@ void GUIUtils::showProgress(unsigned int progress, unsigned int total) {
 }
 
 void GUIUtils::welcomeAddMessage(String msg) {
+    if(lastDrawedLine >=dh-6) {
+        delay(2000);
+        showWelcome();
+    }
     u8g2.setFont(u8g2_font_4x6_tf);
 #ifdef TTGO_TQ
     if (lastDrawedLine < 32) {
@@ -68,8 +76,11 @@ void GUIUtils::welcomeAddMessage(String msg) {
     lastDrawedLine = lastDrawedLine + 7;
     u8g2.sendBuffer();
 #endif
+    delay(100);
 }
 
+
+// TODO: This metod failed on redraw or clear the space first
 void GUIUtils::welcomeRepeatMessage(String msg) {
     lastDrawedLine = lastDrawedLine - 7;
     welcomeAddMessage("               ");
@@ -93,8 +104,14 @@ void GUIUtils::displayCenterBig(String msg) {
     u8g2.setFont(u8g2_font_9x18B_tf);
     u8g2.print(msg.c_str());
 #else
-    u8g2.setCursor(36, 6);
-    u8g2.setFont(u8g2_font_9x18B_tf);
+    if (dw > 64) {
+        u8g2.setCursor(dw - 64, 6);
+        u8g2.setFont(u8g2_font_inb24_mn);
+    } 
+    else {
+        u8g2.setCursor(dw - 28, 6);
+        u8g2.setFont(u8g2_font_9x18B_tf);
+    }
     u8g2.print(msg.c_str());
 #endif
 #endif
@@ -295,33 +312,33 @@ void GUIUtils::displaySensorData(int pm25, int pm10, int chargeLevel, float humi
 void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
 #ifdef TTGO_TQ
     if (bleOn)
-        u8g2.drawBitmap(119, 24, 1, 8, ic_bluetooth_on);
+        u8g2.drawBitmap(dw-9, dh-8, 1, 8, ic_bluetooth_on);
     if (blePair)
-        u8g2.drawBitmap(119, 24, 1, 8, ic_bluetooth_pair);
+        u8g2.drawBitmap(dw-9, dh-8, 1, 8, ic_bluetooth_pair);
     if (wifiOn)
-        u8g2.drawBitmap(106, 24, 1, 8, ic_wifi_on);
+        u8g2.drawBitmap(dw-18, dh-8, 1, 8, ic_wifi_on);
     if (dataOn)
-        u8g2.drawBitmap(93, 24, 1, 8, ic_data_on);
+        u8g2.drawBitmap(dw-35, dh-8, 1, 8, ic_data_on);
     if (preferenceSave)
-        u8g2.drawBitmap(71, 24, 1, 8, ic_pref_save);
+        u8g2.drawBitmap(dw-57, dh-8, 1, 8, ic_pref_save);
     if (sensorLive)
-        u8g2.drawBitmap(80, 25, 1, 8, ic_sensor_live);
+        u8g2.drawBitmap(dw-48, dh-8, 1, 8, ic_sensor_live);
     
 #else
     if (bleOn)
-        u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_on);
+        u8g2.drawBitmap(dw-10, dh-8, 1, 8, ic_bluetooth_on);
     if (blePair)
-        u8g2.drawBitmap(54, 40, 1, 8, ic_bluetooth_pair);
+        u8g2.drawBitmap(dw-10, dh-8, 1, 8, ic_bluetooth_pair);
     if (wifiOn)
-        u8g2.drawBitmap(44, 40, 1, 8, ic_wifi_on);
+        u8g2.drawBitmap(dw-20, dh-8, 1, 8, ic_wifi_on);
     if (dataOn)
-        u8g2.drawBitmap(34, 40, 1, 8, ic_data_on);
+        u8g2.drawBitmap(dw-30, dh-8, 1, 8, ic_data_on);
     if (preferenceSave)
-        u8g2.drawBitmap(10, 40, 1, 8, ic_pref_save);
+        u8g2.drawBitmap(10, dh-8, 1, 8, ic_pref_save);
     if (sensorLive)
-        u8g2.drawBitmap(0, 40, 1, 8, ic_sensor_live);
+        u8g2.drawBitmap(0, dh-8, 1, 8, ic_sensor_live);
 
-    u8g2.drawLine(0, 38, 63, 38);
+    u8g2.drawLine(0, dh-10, dw-1, dh-10);
 #endif
     if(dataOn) dataOn = false;                      // reset trigger for publish data ok.
     if(preferenceSave) preferenceSave = false;      // reset trigger for save preference ok.

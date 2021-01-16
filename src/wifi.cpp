@@ -68,9 +68,9 @@ void influxDbAddTags(char* tags) {
 }
 
 bool influxDbWrite() {
-    char tags[128];
+    char tags[1024];
     influxDbAddTags(tags);
-    char fields[256];
+    char fields[1024];
     influxDbParseFields(fields);
     return influx.write(cfg.dname.c_str(), tags, fields);
 }

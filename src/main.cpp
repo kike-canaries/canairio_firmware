@@ -30,6 +30,7 @@ void startingSensors() {
     Serial.println("-->[INFO] PM sensor configured: "+String(cfg.stype));
     gui.welcomeAddMessage("Detected sensor:");
     sensors.setOnDataCallBack(&onSensorDataOk);   // all data read callback
+    sensors.setOnErrorCallBack(&onSensorDataError);
     sensors.setSampleTime(cfg.stime);             // config sensors sample time
     sensors.setDebugMode(false);                  // [optional] debug mode
     sensors.init(cfg.getSensorType());            // start all sensors and

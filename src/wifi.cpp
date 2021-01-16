@@ -70,8 +70,10 @@ void influxDbAddTags(char* tags) {
 bool influxDbWrite() {
     char tags[1024];
     influxDbAddTags(tags);
+    log_i("[INFLUXDB] Adding tags: %s", tags);
     char fields[1024];
     influxDbParseFields(fields);
+    log_i("[INFLUXDB] Adding fields: %s", fields);
     return influx.write(cfg.dname.c_str(), tags, fields);
 }
 

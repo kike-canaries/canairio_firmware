@@ -58,7 +58,7 @@ void displayGUI() {
 
         int deviceType = sensors.getPmDeviceTypeSelected();
         uint16_t mainValue = 0;
-        if (deviceType > 0 && deviceType <= 2)
+        if ((deviceType > 0 && deviceType <= 2) || deviceType == sensors.SDS011)
             mainValue = sensors.getPM25();
         else
             mainValue = sensors.getCO2();

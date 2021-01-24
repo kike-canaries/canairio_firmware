@@ -33,7 +33,7 @@ void startingSensors() {
     sensors.setOnErrorCallBack(&onSensorDataError);
     sensors.setSampleTime(cfg.stime);             // config sensors sample time
     sensors.setDebugMode(false);                  // [optional] debug mode
-    sensors.init(cfg.getSensorType());            // start all sensors and
+    sensors.init(sensors.Mhz19);            // start all sensors and
                                                   // try to detect configured PM sensor.
                                                   // Sensors supported: Panasonic, Honeywell, Plantower and Sensirion
                                                   // The configured sensor is choosed on Android app.
@@ -58,10 +58,16 @@ void displayGUI() {
 
         int deviceType = sensors.getPmDeviceTypeSelected();
         uint16_t mainValue = 0;
-        if ((deviceType > 0 && deviceType <= 2) || deviceType == sensors.SDS011)
+        if (deviceType <= 3){
             mainValue = sensors.getPM25();
-        else
+        //   Serial.print("PM2.5: ");
+        //    Serial.println(mainValue);
+        }
+        else{
             mainValue = sensors.getCO2();
+        //    Serial.print("CO2: ");
+        //    Serial.println(mainValue);
+        }
 
         float humi = sensors.getHumidity();
         if (humi == 0.0) humi = sensors.getCO2humi();

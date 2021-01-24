@@ -106,11 +106,11 @@ void GUIUtils::displayCenterBig(String msg) {
 #else
     if (dw > 64) {
         u8g2.setCursor(dw - 64, 6);
-        u8g2.setFont(u8g2_font_inb24_mn);
+        u8g2.setFont(u8g2_font_inb19_mn);
     } 
     else {
-        u8g2.setCursor(dw - 28, 6);
-        u8g2.setFont(u8g2_font_9x18B_tf);
+        u8g2.setCursor(dw - 28, 8);
+        u8g2.setFont(u8g2_font_7x13B_tf);
     }
     u8g2.print(msg.c_str());
 #endif
@@ -247,14 +247,14 @@ void GUIUtils::displaySensorAverage(int average) {
     }
 #endif
     char output[4];
-    sprintf(output, "%03d", average);
+    sprintf(output, "%04d", average);
     displayCenterBig(output);
 }
 
 // TODO: separate this function, format/display
 void GUIUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi) {
     char output[22];
-    sprintf(output, "%03d E%02d H%02d%% T%02d°C", mainValue, 0, (int) humi, (int) temp);
+    sprintf(output, "%04d E%02d H%02d%% T%02d°C", mainValue, 0, (int) humi, (int) temp);
     displayBottomLine(String(output));
 #ifdef TTGO_TQ
     u8g2.setFont(u8g2_font_4x6_tf);
@@ -285,9 +285,14 @@ void GUIUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
 #ifdef EMOTICONS
 #ifndef TTGO_TQ
     u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.setCursor(51, 0);
-    sprintf(output, "%03d", mainValue);
+    u8g2.setCursor(48, 0);
+    sprintf(output, "%04d", mainValue);
     u8g2.print(output);
+  //u8g2.print(" ppm");
+  //u8g2.setCursor(69, 50);
+  //u8g2.print("'C Tc:");
+  //u8g2.print(pm10);
+  //u8g2.print("'C");
 #endif
 #endif
     u8g2.setFont(u8g2_font_6x12_tf);

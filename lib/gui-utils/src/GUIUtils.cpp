@@ -88,7 +88,7 @@ void GUIUtils::welcomeRepeatMessage(String msg) {
     welcomeAddMessage(msg);
 }
 
-void GUIUtils::displayCenterBig(String msg) {
+void GUIUtils::displayCenterBig(String msg, int deviceType) {
 #ifndef EMOTICONS
 #ifdef TTGO_TQ
     u8g2.setCursor(0, 1);
@@ -105,14 +105,30 @@ void GUIUtils::displayCenterBig(String msg) {
     u8g2.print(msg.c_str());
 #else
     if (dw > 64) {
-        u8g2.setCursor(dw - 64, 6);
-        u8g2.setFont(u8g2_font_inb19_mn);
-    } 
+      if (deviceType <= 3) {            // PM
+          u8g2.setCursor(dw - 64, 6);
+          u8g2.setFont(u8g2_font_inb24_mn);
+      }
+      else {                            // CO2
+          u8g2.setCursor(dw - 62, 10);
+          u8g2.setFont(u8g2_font_inb19_mn);
+      }
+    }
     else {
-        u8g2.setCursor(dw - 28, 8);
-        u8g2.setFont(u8g2_font_7x13B_tf);
+        if (deviceType <= 3) {          // PM
+          u8g2.setCursor(dw - 28, 7);
+          u8g2.setFont(u8g2_font_9x18B_tf);
+      }
+      else {                            // CO2
+          u8g2.setCursor(dw - 27, 8);
+          u8g2.setFont(u8g2_font_7x13B_tf);
+      }
     }
     u8g2.print(msg.c_str());
+        u8g2.setCursor(94, 34);
+        u8g2.setFont(u8g2_font_6x13_tf);
+        if (deviceType <= 3) u8g2.print("ug/m3");
+        else u8g2.print("ppm");
 #endif
 #endif
 }
@@ -166,7 +182,7 @@ void GUIUtils::displayBigLabel(int cursor, String msg) {
 #endif
 }
 
-void GUIUtils::displaySensorAverage(int average) {
+void GUIUtils::displaySensorAverage(int average, int deviceType) {
 #ifndef EMOTICONS
 #ifdef TTGO_TQ
     if (average < 13) {
@@ -184,7 +200,8 @@ void GUIUtils::displaySensorAverage(int average) {
     }
 #endif
 #else
-    if (average < 13) {
+  if (deviceType <= 3){             //PM sensors
+      if (average < 13) {
 #ifdef TTGO_TQ
         u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
         displayBigEmoticon("GOOD");
@@ -245,16 +262,74 @@ void GUIUtils::displaySensorAverage(int average) {
         displayBigLabel(0, " brown");
 #endif
     }
+    char output[4];
+    sprintf(output, "%03d", average);
+    displayCenterBig(output, deviceType);
+  }
+    else{                           //PM sensors
+              if (average < 600) {
+#ifdef TTGO_TQ
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
+        displayBigEmoticon("GOOD");
+        displayBigLabel(66, "/green");
+#else
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceGood);
+        displayBigEmoticon("  GOOD");
+        displayBigLabel(0, " green");
 #endif
+    } else if (average < 800) {
+#ifdef TTGO_TQ
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceModerate);
+        displayBigEmoticon("MODERATE");
+        displayBigLabel(90, "/yel");
+#else
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceModerate);
+        displayBigEmoticon("MODERATE");
+        displayBigLabel(0, "yellow");
+#endif
+    } else if (average < 1000) {
+#ifdef TTGO_TQ
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthy);
+        displayBigEmoticon("UNHEALT");
+        displayBigLabel(84, "/red");  //OK
+#else
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthy);
+        displayBigEmoticon("UNHEALT");
+        displayBigLabel(0, "  red");
+#endif
+    } else if (average < 1400) {
+#ifdef TTGO_TQ
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceVeryUnhealthy);
+        displayBigEmoticon("V UNHEA");
+        displayBigLabel(84, "/viol");  //OK
+#else
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceVeryUnhealthy);
+        displayBigEmoticon("V UNHEA");
+        displayBigLabel(0, "violet");
+#endif
+    } else {
+#ifdef TTGO_TQ
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceHazardous);
+        displayBigEmoticon("HAZARD");
+        displayBigLabel(78, "/brown");
+#else
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceHazardous);
+        displayBigEmoticon("HAZARD");
+        displayBigLabel(0, " brown");
+#endif
+    }
     char output[4];
     sprintf(output, "%04d", average);
-    displayCenterBig(output);
+    displayCenterBig(output, deviceType);
+  }
+#endif
 }
 
 // TODO: separate this function, format/display
-void GUIUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi) {
+void GUIUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
     char output[22];
-    sprintf(output, "%04d E%02d H%02d%% T%02d°C", mainValue, 0, (int) humi, (int) temp);
+    if (deviceType <= 4) sprintf(output, "%04d E%02d H%02d%% T%02d°C", mainValue, 0, (int) humi, (int) temp);
+      else sprintf(output, "%03d E%02d H%02d%% T%02d°C", mainValue, 0, (int) humi, (int) temp);
     displayBottomLine(String(output));
 #ifdef TTGO_TQ
     u8g2.setFont(u8g2_font_4x6_tf);
@@ -281,18 +356,12 @@ void GUIUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
         u8g2.setCursor(76, 12);
     }
 #endif
-
 #ifdef EMOTICONS
 #ifndef TTGO_TQ
     u8g2.setFont(u8g2_font_4x6_tf);
     u8g2.setCursor(48, 0);
     sprintf(output, "%04d", mainValue);
     u8g2.print(output);
-  //u8g2.print(" ppm");
-  //u8g2.setCursor(69, 50);
-  //u8g2.print("'C Tc:");
-  //u8g2.print(pm10);
-  //u8g2.print("'C");
 #endif
 #endif
     u8g2.setFont(u8g2_font_6x12_tf);

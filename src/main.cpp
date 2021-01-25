@@ -33,15 +33,16 @@ void startingSensors() {
     sensors.setOnErrorCallBack(&onSensorDataError);
     sensors.setSampleTime(cfg.stime);             // config sensors sample time
     sensors.setDebugMode(false);                  // [optional] debug mode
-    sensors.init(sensors.Mhz19);            // start all sensors and
+    sensors.init(cfg.getSensorType());            // start all sensors and
                                                   // try to detect configured PM sensor.
-                                                  // Sensors supported: Panasonic, Honeywell, Plantower and Sensirion
+                                                  // Sensors PM2.5 supported: Panasonic, Honeywell, Plantower and Sensirion
+                                                  // Sensors CO2 supported: Sensirion, Winsen, Cubic
                                                   // The configured sensor is choosed on Android app.
                                                   // For more information about the supported sensors,
                                                   // please see the canairio_sensorlib documentation.
 
     if(sensors.isPmSensorConfigured()){
-        Serial.print("-->[INFO] PM sensor detected: ");
+        Serial.print("-->[INFO] PM/CO2 sensor detected: ");
         Serial.println(sensors.getPmDeviceSelected());
         gui.welcomeAddMessage(sensors.getPmDeviceSelected());
     }
@@ -60,13 +61,9 @@ void displayGUI() {
         uint16_t mainValue = 0;
         if (deviceType <= 3){
             mainValue = sensors.getPM25();
-        //   Serial.print("PM2.5: ");
-        //    Serial.println(mainValue);
         }
         else{
             mainValue = sensors.getCO2();
-        //    Serial.print("CO2: ");
-        //    Serial.println(mainValue);
         }
 
         float humi = sensors.getHumidity();
@@ -76,13 +73,14 @@ void displayGUI() {
         if (temp == 0.0) temp = sensors.getCO2temp();
 
         gui.pageStart();
-        gui.displaySensorAverage(mainValue);
+        gui.displaySensorAverage(mainValue, deviceType);
         gui.displaySensorData(
             mainValue,
             getChargeLevel(),
             humi,
             temp,
-            getWifiRSSI());
+            getWifiRSSI(),
+            deviceType);
         gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
         gui.pageEnd();
     }

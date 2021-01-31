@@ -5,7 +5,7 @@ ENV APP_VERSION="5.1.0" \
 
 LABEL app.name="${APP}" \
       app.version="${APP_VERSION}" \
-      maintainer="Sebastian Glahn <hi@sgla.hn>"
+      maintainer="Hpsaturn <@hpsaturn>"
 
 RUN pip install -U platformio==${APP_VERSION} && \
     mkdir -p /workspace && \

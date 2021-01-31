@@ -15,7 +15,7 @@ void GUIUtils::displayInit() {
     U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, 4, 5);
 #elif ESP32DEVKIT
     U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
-#else          // display via i2c for D1MINI board
+#else  // display via i2c for D1MINI board
     U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
 #endif
 
@@ -39,8 +39,8 @@ void GUIUtils::showWelcome() {
     u8g2.drawStr(0, 0, "CanAirIO");
     u8g2.sendBuffer();
     u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.drawStr(dw-18, 1, getFirmwareVersionCode().c_str());
-    u8g2.drawLine(0, 9, dw-1, 9);
+    u8g2.drawStr(dw - 18, 1, getFirmwareVersionCode().c_str());
+    u8g2.drawLine(0, 9, dw - 1, 9);
     u8g2.sendBuffer();
     lastDrawedLine = 10;
     // only for first screen
@@ -56,7 +56,7 @@ void GUIUtils::showProgress(unsigned int progress, unsigned int total) {
 }
 
 void GUIUtils::welcomeAddMessage(String msg) {
-    if(lastDrawedLine >=dh-6) {
+    if (lastDrawedLine >= dh - 6) {
         delay(2000);
         showWelcome();
     }
@@ -78,7 +78,6 @@ void GUIUtils::welcomeAddMessage(String msg) {
 #endif
     delay(100);
 }
-
 
 // TODO: This metod failed on redraw or clear the space first
 void GUIUtils::welcomeRepeatMessage(String msg) {
@@ -105,30 +104,29 @@ void GUIUtils::displayCenterBig(String msg, int deviceType) {
     u8g2.print(msg.c_str());
 #else
     if (dw > 64) {
-      if (deviceType <= 3) {            // PM
-          u8g2.setCursor(dw - 64, 6);
-          u8g2.setFont(u8g2_font_inb24_mn);
-      }
-      else {                            // CO2
-          u8g2.setCursor(dw - 62, 10);
-          u8g2.setFont(u8g2_font_inb19_mn);
-      }
-    }
-    else {
-        if (deviceType <= 3) {          // PM
-          u8g2.setCursor(dw - 28, 7);
-          u8g2.setFont(u8g2_font_9x18B_tf);
-      }
-      else {                            // CO2
-          u8g2.setCursor(dw - 27, 8);
-          u8g2.setFont(u8g2_font_7x13B_tf);
-      }
+        if (deviceType <= 3) {  // PM
+            u8g2.setCursor(dw - 64, 6);
+            u8g2.setFont(u8g2_font_inb24_mn);
+        } else {  // CO2
+            u8g2.setCursor(dw - 62, 10);
+            u8g2.setFont(u8g2_font_inb19_mn);
+        }
+    } else {
+        if (deviceType <= 3) {  // PM
+            u8g2.setCursor(dw - 28, 7);
+            u8g2.setFont(u8g2_font_9x18B_tf);
+        } else {  // CO2
+            u8g2.setCursor(dw - 27, 8);
+            u8g2.setFont(u8g2_font_7x13B_tf);
+        }
     }
     u8g2.print(msg.c_str());
-        u8g2.setCursor(94, 34);
-        u8g2.setFont(u8g2_font_6x13_tf);
-        if (deviceType <= 3) u8g2.print("ug/m3");
-        else u8g2.print("ppm");
+    u8g2.setCursor(94, 34);
+    u8g2.setFont(u8g2_font_6x13_tf);
+    if (deviceType <= 3)
+        u8g2.print("ug/m3");
+    else
+        u8g2.print("ppm");
 #endif
 #endif
 }
@@ -200,136 +198,137 @@ void GUIUtils::displaySensorAverage(int average, int deviceType) {
     }
 #endif
 #else
-  if (deviceType <= 3){             //PM sensors
-      if (average < 13) {
+    if (deviceType <= 3) {  //PM sensors
+        if (average < 13) {
 #ifdef TTGO_TQ
-        u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
-        displayBigEmoticon("GOOD");
-        displayBigLabel(66, "/green");
+            u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
+            displayBigEmoticon("GOOD");
+            displayBigLabel(66, "/green");
 #else
-        u8g2.drawXBM(0, 1, 32, 32, SmileFaceGood);
-        displayBigEmoticon("  GOOD");
-        displayBigLabel(0, " green");
+            u8g2.drawXBM(0, 1, 32, 32, SmileFaceGood);
+            displayBigEmoticon("  GOOD");
+            displayBigLabel(0, " green");
 #endif
-    } else if (average < 36) {
+        } else if (average < 36) {
 #ifdef TTGO_TQ
-        u8g2.drawXBM(1, 0, 32, 32, SmileFaceModerate);
-        displayBigEmoticon("MODERATE");
-        displayBigLabel(90, "/yel");
+            u8g2.drawXBM(1, 0, 32, 32, SmileFaceModerate);
+            displayBigEmoticon("MODERATE");
+            displayBigLabel(90, "/yel");
 #else
-        u8g2.drawXBM(0, 1, 32, 32, SmileFaceModerate);
-        displayBigEmoticon("MODERATE");
-        displayBigLabel(0, "yellow");
+            u8g2.drawXBM(0, 1, 32, 32, SmileFaceModerate);
+            displayBigEmoticon("MODERATE");
+            displayBigLabel(0, "yellow");
 #endif
-    } else if (average < 56) {
+        } else if (average < 56) {
 #ifdef TTGO_TQ
-        u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthySGroups);
-        displayBigEmoticon("UNH SEN");
-        displayBigLabel(84, "/oran");
+            u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthySGroups);
+            displayBigEmoticon("UNH SEN");
+            displayBigLabel(84, "/oran");
 #else
-        u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthySGroups);
-        displayBigEmoticon("UNH SEN");
-        displayBigLabel(0, "orange");
+            u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthySGroups);
+            displayBigEmoticon("UNH SEN");
+            displayBigLabel(0, "orange");
 #endif
-    } else if (average < 151) {
+        } else if (average < 151) {
 #ifdef TTGO_TQ
-        u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthy);
-        displayBigEmoticon("UNHEALT");
-        displayBigLabel(84, "/red");  //OK
+            u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthy);
+            displayBigEmoticon("UNHEALT");
+            displayBigLabel(84, "/red");  //OK
 #else
-        u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthy);
-        displayBigEmoticon("UNHEALT");
-        displayBigLabel(0, "  red");
+            u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthy);
+            displayBigEmoticon("UNHEALT");
+            displayBigLabel(0, "  red");
 #endif
-    } else if (average < 251) {
+        } else if (average < 251) {
 #ifdef TTGO_TQ
-        u8g2.drawXBM(1, 0, 32, 32, SmileFaceVeryUnhealthy);
-        displayBigEmoticon("V UNHEA");
-        displayBigLabel(84, "/viol");  //OK
+            u8g2.drawXBM(1, 0, 32, 32, SmileFaceVeryUnhealthy);
+            displayBigEmoticon("V UNHEA");
+            displayBigLabel(84, "/viol");  //OK
 #else
-        u8g2.drawXBM(0, 1, 32, 32, SmileFaceVeryUnhealthy);
-        displayBigEmoticon("V UNHEA");
-        displayBigLabel(0, "violet");
+            u8g2.drawXBM(0, 1, 32, 32, SmileFaceVeryUnhealthy);
+            displayBigEmoticon("V UNHEA");
+            displayBigLabel(0, "violet");
 #endif
-    } else {
+        } else {
 #ifdef TTGO_TQ
-        u8g2.drawXBM(1, 0, 32, 32, SmileFaceHazardous);
-        displayBigEmoticon("HAZARD");
-        displayBigLabel(78, "/brown");
+            u8g2.drawXBM(1, 0, 32, 32, SmileFaceHazardous);
+            displayBigEmoticon("HAZARD");
+            displayBigLabel(78, "/brown");
 #else
-        u8g2.drawXBM(0, 1, 32, 32, SmileFaceHazardous);
-        displayBigEmoticon("HAZARD");
-        displayBigLabel(0, " brown");
+            u8g2.drawXBM(0, 1, 32, 32, SmileFaceHazardous);
+            displayBigEmoticon("HAZARD");
+            displayBigLabel(0, " brown");
 #endif
+        }
+        char output[4];
+        sprintf(output, "%03d", average);
+        displayCenterBig(output, deviceType);
+    } else {  //PM sensors
+        if (average < 600) {
+#ifdef TTGO_TQ
+            u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
+            displayBigEmoticon("GOOD");
+            displayBigLabel(66, "/green");
+#else
+            u8g2.drawXBM(0, 1, 32, 32, SmileFaceGood);
+            displayBigEmoticon("  GOOD");
+            displayBigLabel(0, " green");
+#endif
+        } else if (average < 800) {
+#ifdef TTGO_TQ
+            u8g2.drawXBM(1, 0, 32, 32, SmileFaceModerate);
+            displayBigEmoticon("MODERATE");
+            displayBigLabel(90, "/yel");
+#else
+            u8g2.drawXBM(0, 1, 32, 32, SmileFaceModerate);
+            displayBigEmoticon("MODERATE");
+            displayBigLabel(0, "yellow");
+#endif
+        } else if (average < 1000) {
+#ifdef TTGO_TQ
+            u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthy);
+            displayBigEmoticon("UNHEALT");
+            displayBigLabel(84, "/red");  //OK
+#else
+            u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthy);
+            displayBigEmoticon("UNHEALT");
+            displayBigLabel(0, "  red");
+#endif
+        } else if (average < 1400) {
+#ifdef TTGO_TQ
+            u8g2.drawXBM(1, 0, 32, 32, SmileFaceVeryUnhealthy);
+            displayBigEmoticon("V UNHEA");
+            displayBigLabel(84, "/viol");  //OK
+#else
+            u8g2.drawXBM(0, 1, 32, 32, SmileFaceVeryUnhealthy);
+            displayBigEmoticon("V UNHEA");
+            displayBigLabel(0, "violet");
+#endif
+        } else {
+#ifdef TTGO_TQ
+            u8g2.drawXBM(1, 0, 32, 32, SmileFaceHazardous);
+            displayBigEmoticon("HAZARD");
+            displayBigLabel(78, "/brown");
+#else
+            u8g2.drawXBM(0, 1, 32, 32, SmileFaceHazardous);
+            displayBigEmoticon("HAZARD");
+            displayBigLabel(0, " brown");
+#endif
+        }
+        char output[4];
+        sprintf(output, "%04d", average);
+        displayCenterBig(output, deviceType);
     }
-    char output[4];
-    sprintf(output, "%03d", average);
-    displayCenterBig(output, deviceType);
-  }
-    else{                           //PM sensors
-              if (average < 600) {
-#ifdef TTGO_TQ
-        u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
-        displayBigEmoticon("GOOD");
-        displayBigLabel(66, "/green");
-#else
-        u8g2.drawXBM(0, 1, 32, 32, SmileFaceGood);
-        displayBigEmoticon("  GOOD");
-        displayBigLabel(0, " green");
-#endif
-    } else if (average < 800) {
-#ifdef TTGO_TQ
-        u8g2.drawXBM(1, 0, 32, 32, SmileFaceModerate);
-        displayBigEmoticon("MODERATE");
-        displayBigLabel(90, "/yel");
-#else
-        u8g2.drawXBM(0, 1, 32, 32, SmileFaceModerate);
-        displayBigEmoticon("MODERATE");
-        displayBigLabel(0, "yellow");
-#endif
-    } else if (average < 1000) {
-#ifdef TTGO_TQ
-        u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthy);
-        displayBigEmoticon("UNHEALT");
-        displayBigLabel(84, "/red");  //OK
-#else
-        u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthy);
-        displayBigEmoticon("UNHEALT");
-        displayBigLabel(0, "  red");
-#endif
-    } else if (average < 1400) {
-#ifdef TTGO_TQ
-        u8g2.drawXBM(1, 0, 32, 32, SmileFaceVeryUnhealthy);
-        displayBigEmoticon("V UNHEA");
-        displayBigLabel(84, "/viol");  //OK
-#else
-        u8g2.drawXBM(0, 1, 32, 32, SmileFaceVeryUnhealthy);
-        displayBigEmoticon("V UNHEA");
-        displayBigLabel(0, "violet");
-#endif
-    } else {
-#ifdef TTGO_TQ
-        u8g2.drawXBM(1, 0, 32, 32, SmileFaceHazardous);
-        displayBigEmoticon("HAZARD");
-        displayBigLabel(78, "/brown");
-#else
-        u8g2.drawXBM(0, 1, 32, 32, SmileFaceHazardous);
-        displayBigEmoticon("HAZARD");
-        displayBigLabel(0, " brown");
-#endif
-    }
-    char output[4];
-    sprintf(output, "%04d", average);
-    displayCenterBig(output, deviceType);
-  }
 #endif
 }
 
 // TODO: separate this function, format/display
 void GUIUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
     char output[22];
-    if (deviceType <= 4) sprintf(output, "%04d E%02d H%02d%% T%02d°C", mainValue, 0, (int) humi, (int) temp);
-      else sprintf(output, "%03d E%02d H%02d%% T%02d°C", mainValue, 0, (int) humi, (int) temp);
+    if (deviceType <= 4)
+        sprintf(output, "%04d E%02d H%02d%% T%02d°C", mainValue, 0, (int)humi, (int)temp);
+    else
+        sprintf(output, "%03d E%02d H%02d%% T%02d°C", mainValue, 0, (int)humi, (int)temp);
     displayBottomLine(String(output));
 #ifdef TTGO_TQ
     u8g2.setFont(u8g2_font_4x6_tf);
@@ -386,41 +385,41 @@ void GUIUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
 void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
 #ifdef TTGO_TQ
     if (bleOn)
-        u8g2.drawBitmap(dw-9, dh-8, 1, 8, ic_bluetooth_on);
+        u8g2.drawBitmap(dw - 9, dh - 8, 1, 8, ic_bluetooth_on);
     if (blePair)
-        u8g2.drawBitmap(dw-9, dh-8, 1, 8, ic_bluetooth_pair);
+        u8g2.drawBitmap(dw - 9, dh - 8, 1, 8, ic_bluetooth_pair);
     if (wifiOn)
-        u8g2.drawBitmap(dw-18, dh-8, 1, 8, ic_wifi_on);
+        u8g2.drawBitmap(dw - 18, dh - 8, 1, 8, ic_wifi_on);
     if (dataOn)
-        u8g2.drawBitmap(dw-35, dh-8, 1, 8, ic_data_on);
+        u8g2.drawBitmap(dw - 35, dh - 8, 1, 8, ic_data_on);
     if (preferenceSave)
-        u8g2.drawBitmap(dw-57, dh-8, 1, 8, ic_pref_save);
+        u8g2.drawBitmap(dw - 57, dh - 8, 1, 8, ic_pref_save);
     if (sensorLive)
-        u8g2.drawBitmap(dw-48, dh-8, 1, 8, ic_sensor_live);
-    
+        u8g2.drawBitmap(dw - 48, dh - 8, 1, 8, ic_sensor_live);
+
 #else
     if (bleOn)
-        u8g2.drawBitmap(dw-10, dh-8, 1, 8, ic_bluetooth_on);
+        u8g2.drawBitmap(dw - 10, dh - 8, 1, 8, ic_bluetooth_on);
     if (blePair)
-        u8g2.drawBitmap(dw-10, dh-8, 1, 8, ic_bluetooth_pair);
+        u8g2.drawBitmap(dw - 10, dh - 8, 1, 8, ic_bluetooth_pair);
     if (wifiOn)
-        u8g2.drawBitmap(dw-20, dh-8, 1, 8, ic_wifi_on);
+        u8g2.drawBitmap(dw - 20, dh - 8, 1, 8, ic_wifi_on);
     if (dataOn)
-        u8g2.drawBitmap(dw-30, dh-8, 1, 8, ic_data_on);
+        u8g2.drawBitmap(dw - 30, dh - 8, 1, 8, ic_data_on);
     if (preferenceSave)
-        u8g2.drawBitmap(10, dh-8, 1, 8, ic_pref_save);
+        u8g2.drawBitmap(10, dh - 8, 1, 8, ic_pref_save);
     if (sensorLive)
-        u8g2.drawBitmap(0, dh-8, 1, 8, ic_sensor_live);
+        u8g2.drawBitmap(0, dh - 8, 1, 8, ic_sensor_live);
 
-    u8g2.drawLine(0, dh-10, dw-1, dh-10);
+    u8g2.drawLine(0, dh - 10, dw - 1, dh - 10);
 #endif
-    if(dataOn) dataOn = false;                      // reset trigger for publish data ok.
-    if(preferenceSave) preferenceSave = false;      // reset trigger for save preference ok.
-    if(sensorLive) sensorLive = false;
+    if (dataOn) dataOn = false;                  // reset trigger for publish data ok.
+    if (preferenceSave) preferenceSave = false;  // reset trigger for save preference ok.
+    if (sensorLive) sensorLive = false;
 }
 
 /// enable trigger for show data ok icon, one time.
-void GUIUtils::displayDataOnIcon(){
+void GUIUtils::displayDataOnIcon() {
     dataOn = true;
 }
 
@@ -443,7 +442,7 @@ void GUIUtils::pageEnd() {
 }
 
 /// Firmware version from platformio.ini
-String GUIUtils::getFirmwareVersionCode(){
+String GUIUtils::getFirmwareVersionCode() {
     String VERSION_CODE = "r";
 #ifdef SRC_REV
     int VCODE = SRC_REV;

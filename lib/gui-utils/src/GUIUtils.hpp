@@ -17,9 +17,9 @@ class GUIUtils {
     
     void welcomeRepeatMessage(String msg);
 
-    void displaySensorAverage(int average);
+    void displaySensorAverage(int average, int deviceType);
 
-    void displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi);
+    void displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType);
 
     void displayStatus(bool wifiOn, bool bleOn, bool blePair);
 
@@ -51,7 +51,7 @@ class GUIUtils {
 
     int dh = 0;  // display height
 
-    void displayCenterBig(String msg);
+    void displayCenterBig(String msg, int deviceType);
 
     void displayBottomLine(String msg);
 

@@ -14,7 +14,7 @@ showHelp () {
   echo "** Build release flavor or installer package **"
   echo "************************************************"
   echo ""
-  echo "Usage: ./build [board|all|installer|help|print]"
+  echo "Usage: ./build [board|all|installer|publish|help|print]"
   echo ""
   echo "example: ./build all"
   echo "example: ./build TTGO_T7"

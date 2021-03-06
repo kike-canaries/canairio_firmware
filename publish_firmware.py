@@ -22,12 +22,28 @@ config.read("platformio.ini")
 # get platformio source path
 srcdir = env.get("PROJECTSRC_DIR")
 
+# check if ota key file is present in source directory
+otakeyfile = os.path.join (srcdir, config.get("common", "otakeyfile"))
+if os.path.isfile(otakeyfile) and os.access(otakeyfile, os.R_OK):
+    print("Parsing OTA keys from " + otakeyfile)
+else:
+    sys.exit("Missing file " + otakeyfile + ", please create it! Aborting.")
+
+mykeys = {}
+# parse ota key file
+with open(otakeyfile) as myfile:
+    for line in myfile:
+        key, value = line.partition("=")[::2]
+        mykeys[key.strip()] = str(value).strip()
+
+# usage of bintray: see https://github.com/r0oland/bintray-secure-ota
+
 # get bintray user credentials from ota key file
-bintray_config = {k: v for k, v in config.items("bintray")}
-user = bintray_config.get("user")
-repository = bintray_config.get("repository")
-apitoken = bintray_config.get("api_token")
-package = bintray_config.get("package")
+user = mykeys["BINTRAY_USER"]
+repository = mykeys["BINTRAY_REPO"]
+apitoken = mykeys["BINTRAY_API_TOKEN"]
+# package = config.get("platformio","default_envs")
+package = 'ttgo_t7'
 
 # get bintray upload parameters from platformio environment
 version = config.get("common", "release_version")
@@ -36,6 +52,14 @@ version = config.get("common", "release_version")
 env.Replace(BINTRAY_USER=user)
 env.Replace(BINTRAY_REPO=repository)
 env.Replace(BINTRAY_API_TOKEN=apitoken)
+
+# get runtime credentials and put them to compiler directive
+env.Append(BUILD_FLAGS=[
+    u'-DBINTRAY_USER=\\"' + mykeys["BINTRAY_USER"] + '\\"', 
+    u'-DBINTRAY_REPO=\\"' + mykeys["BINTRAY_REPO"] + '\\"', 
+    u'-DBINTRAY_PACKAGE=\\"' + package + '\\"',
+    u'-I \"' + srcdir + '\"'
+    ])
 
 # function for pushing new firmware to bintray storage using API
 def publish_bintray(source, target, env):

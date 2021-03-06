@@ -42,8 +42,7 @@ with open(otakeyfile) as myfile:
 user = mykeys["BINTRAY_USER"]
 repository = mykeys["BINTRAY_REPO"]
 apitoken = mykeys["BINTRAY_API_TOKEN"]
-# package = config.get("platformio","default_envs")
-package = 'ttgo_t7'
+package = config.get("platformio","default_envs")
 
 # get bintray upload parameters from platformio environment
 version = config.get("common", "release_version")

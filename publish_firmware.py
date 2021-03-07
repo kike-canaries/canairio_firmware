@@ -50,13 +50,16 @@ version = config.get("common", "release_version")
 # put bintray user credentials to platformio environment
 env.Replace(BINTRAY_USER=user)
 env.Replace(BINTRAY_REPO=repository)
+env.Replace(BINTRAY_PACKAGE=package)
 env.Replace(BINTRAY_API_TOKEN=apitoken)
+env.Replace(VERSION=version)
 
 # get runtime credentials and put them to compiler directive
 env.Append(BUILD_FLAGS=[
     u'-DBINTRAY_USER=\\"' + mykeys["BINTRAY_USER"] + '\\"', 
     u'-DBINTRAY_REPO=\\"' + mykeys["BINTRAY_REPO"] + '\\"', 
     u'-DBINTRAY_PACKAGE=\\"' + package + '\\"',
+    u'-DVERSION=\\"' + version + '\\"',
     u'-I \"' + srcdir + '\"'
     ])
 

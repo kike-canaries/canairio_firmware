@@ -1,0 +1,3 @@
+#!/bin/sh
+IMAGE=canairio_pio:dev
+exec docker run --rm -i --user="$(id -u):$(id -g)" -v "$PWD":/workspace "$IMAGE" "$@"

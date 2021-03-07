@@ -1,7 +1,10 @@
 #include <wifi.hpp>
+#include <BintrayClient.h>
+#include "SecureOTA.h"
 
 uint32_t ifxdbwcount;
 int rssi = 0;
+uint32_t _lastOTACheck = 0;
 
 InfluxArduino influx;
 CanAirIoApi api(false);
@@ -177,10 +180,18 @@ class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
     }
 };
 
+void checkRemoteOTA() {
+    if ((millis() - OTA_CHECK_INTERVAL) > _lastOTACheck) {
+    _lastOTACheck = millis();
+    checkFirmwareUpdates(); // takes ~1s, make sure this is not a problem in your code
+  }
+}
+
 void otaLoop() {
     if (WiFi.isConnected()) {
         wd.pause();
         ota.loop();
+        checkRemoteOTA();
         wd.resume();
     }
 }

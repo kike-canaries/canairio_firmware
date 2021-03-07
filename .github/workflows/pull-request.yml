@@ -1,24 +1,19 @@
-name: Pull Request on Branch Push
+name: PlatformIO
+
 on:
   push:
-    branches-ignore:
-      - staging
-      - launchpad
-      - production
+    branches:
+      - devel
 
 jobs:
-  auto-pull-request:
-    name: PullRequestAction
+  build:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
       matrix:
         python-version: [3.7]
     steps:
-      - name: pull-request-action
-        uses: vsoch/pull-request-action@1.0.6
-        env: 
-          PULL_REQUEST_BRANCH: "devel"
+      - uses: actions/checkout@v1
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
@@ -30,9 +25,5 @@ jobs:
           platformio update
       - name: Build test
         run: |
-          ./build TTGO_T7
-          ./build installer
-      - uses: actions/upload-artifact@v2
-        with:
-          name: firmware
-          path: releases/installer/canairio_installer/
+          platformio run
+     

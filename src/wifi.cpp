@@ -1,6 +1,6 @@
 #include <wifi.hpp>
-#include <BintrayClient.h>
-#include "SecureOTA.h"
+#include "esp32fota.h"
+#include <WiFiClientSecure.h>
 
 uint32_t ifxdbwcount;
 int rssi = 0;
@@ -158,6 +158,8 @@ void apiLoop() {
 *   W I F I   M E T H O D S
 ******************************************************************************/
 
+esp32FOTA esp32FOTA("ttgo-t7", SRC_REV);
+
 class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
     void onStart() {
         gui.showWelcome();
@@ -182,30 +184,37 @@ class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
 
 void checkRemoteOTA() {
     if ((millis() - OTA_CHECK_INTERVAL) > _lastOTACheck) {
-    _lastOTACheck = millis();
-    checkFirmwareUpdates(); // takes ~1s, make sure this is not a problem in your code
-  }
+        _lastOTACheck = millis();
+        bool updatedNeeded = esp32FOTA.execHTTPcheck();
+        if (updatedNeeded) {
+            Serial.println("FOTA: starting..");
+            esp32FOTA.execOTA();
+        }
+        delay(2000);
+        Serial.println("FOTA: not need update");
+    }
 }
 
 void otaLoop() {
     if (WiFi.isConnected()) {
         wd.pause();
-        ota.loop();
+        // ota.loop();
         checkRemoteOTA();
         wd.resume();
     }
 }
 
 void otaInit() {
-    ota.setup("CanAirIO", "CanAirIO");
-    ota.setCallbacks(new MyOTAHandlerCallbacks());
+    // ota.setup("CanAirIO", "CanAirIO");
+    // ota.setCallbacks(new MyOTAHandlerCallbacks());
+    esp32FOTA.checkURL = "http://influxdb.canair.io:8080/releases/firmware.json";
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
     Serial.print("-->[WIFI] connecting to ");
     Serial.print(ssid);
-    WiFi.begin(ssid, pass);
     int wifi_retry = 0;
+    WiFi.begin(ssid, pass);
     while (!WiFi.isConnected() && wifi_retry++ < WIFI_RETRY_CONNECTION) {
         Serial.print(".");
         delay(100);  // increment this delay on possible reconnect issues

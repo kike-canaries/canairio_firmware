@@ -187,26 +187,26 @@ void checkRemoteOTA() {
         _lastOTACheck = millis();
         bool updatedNeeded = esp32FOTA.execHTTPcheck();
         if (updatedNeeded) {
-            Serial.println("FOTA: starting..");
+            Serial.println("-->[FOTA] starting..");
             esp32FOTA.execOTA();
         }
         delay(2000);
-        Serial.println("FOTA: not need update");
+        Serial.println("-->[FOTA] not need update");
     }
 }
 
 void otaLoop() {
     if (WiFi.isConnected()) {
         wd.pause();
-        // ota.loop();
+        ota.loop();
         checkRemoteOTA();
         wd.resume();
     }
 }
 
 void otaInit() {
-    // ota.setup("CanAirIO", "CanAirIO");
-    // ota.setCallbacks(new MyOTAHandlerCallbacks());
+    ota.setup("CanAirIO", "CanAirIO");
+    ota.setCallbacks(new MyOTAHandlerCallbacks());
     esp32FOTA.checkURL = "http://influxdb.canair.io:8080/releases/firmware.json";
 }
 

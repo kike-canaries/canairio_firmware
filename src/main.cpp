@@ -32,7 +32,7 @@ void startingSensors() {
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
     sensors.setSampleTime(cfg.stime);             // config sensors sample time
-    sensors.setDebugMode(false);                  // [optional] debug mode
+    sensors.setDebugMode(true);                  // [optional] debug mode
     sensors.init(cfg.getSensorType());            // start all sensors and
                                                   // try to detect configured PM sensor.
                                                   // Sensors supported: Panasonic, Honeywell, Plantower and Sensirion

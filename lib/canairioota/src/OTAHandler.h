@@ -24,7 +24,6 @@ class OTAHandler {
         const char* _ESP_ID;
         const char* _ESP_PASS;
         int _baud;
-        uint32_t _lastOTACheck = millis();
         void remoteOTAcheckloop();
 };
 

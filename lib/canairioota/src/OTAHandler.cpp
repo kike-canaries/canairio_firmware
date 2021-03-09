@@ -58,7 +58,8 @@ void OTAHandler::checkRemoteOTA() {
 }
 
 void OTAHandler::remoteOTAcheckloop() {
-    if ((millis() - FOTA_CHECK_INTERVAL*1000) > _lastOTACheck) {
+    static uint_fast64_t _lastOTACheck = 0;
+    if (millis() - _lastOTACheck > FOTA_CHECK_INTERVAL*1000) {
         _lastOTACheck = millis();
         checkRemoteOTA();
     }

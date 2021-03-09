@@ -1,10 +1,7 @@
 #include <wifi.hpp>
-#include "esp32fota.h"
-#include <WiFiClientSecure.h>
 
 uint32_t ifxdbwcount;
 int rssi = 0;
-uint32_t _lastOTACheck = 0;
 
 InfluxArduino influx;
 CanAirIoApi api(false);
@@ -158,7 +155,6 @@ void apiLoop() {
 *   W I F I   M E T H O D S
 ******************************************************************************/
 
-esp32FOTA esp32FOTA("ttgo-t7", SRC_REV);
 
 class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
     void onStart() {
@@ -182,32 +178,19 @@ class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
     }
 };
 
-void checkRemoteOTA() {
-    if ((millis() - OTA_CHECK_INTERVAL) > _lastOTACheck) {
-        _lastOTACheck = millis();
-        bool updatedNeeded = esp32FOTA.execHTTPcheck();
-        if (updatedNeeded) {
-            Serial.println("-->[FOTA] starting..");
-            esp32FOTA.execOTA();
-        }
-        delay(2000);
-        Serial.println("-->[FOTA] not need update");
-    }
-}
 
 void otaLoop() {
     if (WiFi.isConnected()) {
         wd.pause();
         ota.loop();
-        checkRemoteOTA();
         wd.resume();
     }
 }
 
+
 void otaInit() {
     ota.setup("CanAirIO", "CanAirIO");
     ota.setCallbacks(new MyOTAHandlerCallbacks());
-    esp32FOTA.checkURL = "http://influxdb.canair.io:8080/releases/firmware.json";
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
@@ -227,6 +210,7 @@ void wifiConnect(const char* ssid, const char* pass) {
         Serial.println(WiFi.localIP());
         Serial.println("-->[WIFI] publish interval: "+String(cfg.stime * 2)+" sec.");
         otaInit();
+        ota.checkRemoteOTA();
     } else {
         Serial.println("fail!\n-->[E][WIFI] disconnected!");
     }

@@ -1,8 +1,6 @@
 #include <OTAHandler.h>
-#include <ESPmDNS.h>
-#include <WiFiUdp.h>
-#include <ArduinoOTA.h>
-#include "esp_system.h"
+
+esp32FOTA esp32FOTA("ttgo-t7", SRC_REV);
 
 OTAHandler::OTAHandler(){
     m_pOTAHandlerCallbacks = nullptr;
@@ -42,11 +40,33 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
         });
 
     ArduinoOTA.begin();
+    
+    // Remote OTA config
+    // TODO: pass host and target via bluetooth
+    esp32FOTA.checkURL = "http://influxdb.canair.io:8080/releases/firmware.json";
+    
     Serial.println("-->[INFO] ready for OTA update.");
+}
+
+void OTAHandler::checkRemoteOTA() {
+    bool updatedNeeded = esp32FOTA.execHTTPcheck();
+    if (updatedNeeded) {
+        Serial.println("-->[FOTA] starting..");
+        esp32FOTA.execOTA();
+    } else
+        Serial.println("-->[FOTA] not need update");
+}
+
+void OTAHandler::remoteOTAcheckloop() {
+    if ((millis() - FOTA_CHECK_INTERVAL*1000) > _lastOTACheck) {
+        _lastOTACheck = millis();
+        checkRemoteOTA();
+    }
 }
 
 void OTAHandler::loop() {
     ArduinoOTA.handle();
+    remoteOTAcheckloop();
 }
 
 void OTAHandler::setBaud(int baud) {

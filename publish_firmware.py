@@ -42,7 +42,7 @@ data = {
     "version":revision, 
     "host":"influxdb.canair.io",
     "port":8080,
-    "bin":"/releases/flavor/canairio_" + flavor + "_rev" + revision + ".bin"
+    "bin":"/releases/canairio_" + flavor + "_rev" + revision + ".bin"
 }
 
 output_path =  "releases/manifest"

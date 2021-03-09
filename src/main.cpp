@@ -106,7 +106,9 @@ void setup() {
 
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC: " + cfg.deviceId);
-    Serial.println("-->[INFO] Firmware " + gui.getFirmwareVersionCode());
+    Serial.println("-->[INFO] Revision: " + gui.getFirmwareVersionCode());
+    Serial.println("-->[INFO] Firmware: " + String(VERSION));
+    Serial.println("-->[INFO] Flavor  : " + String(FLAVOR));
 
     // init all sensors
     Serial.println("-->[INFO] Detecting sensors..");

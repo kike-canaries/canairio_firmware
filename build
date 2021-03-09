@@ -2,6 +2,7 @@
 
 SRC_REV=`cat platformio.ini | grep revision | awk '{print $3}'`
 SRC_VER=`cat platformio.ini | grep version | awk '{print $3}'`
+TARGET=`cat platformio.ini | grep target | awk '{print $3}'`
 DATE=`date +%Y%m%d`
 OUTDIR=".pio/build"
 RELDIR="releases"
@@ -100,8 +101,8 @@ publish_release () {
 
 publish_release_ota () {
   cd $INSDIR
-  scp -P $canairio_port *.bin $canairio_host:$canairio_target
-  scp -P $canairio_port ../../manifest/*.json $canairio_host:$canairio_target
+  scp -P $canairio_port *.bin $canairio_host:$canairio_target/$TARGET
+  scp -P $canairio_port ../../$MANIFEST/$TARGET/*.json $canairio_host:$canairio_target/$TARGET
 }
 
 printOutput () {

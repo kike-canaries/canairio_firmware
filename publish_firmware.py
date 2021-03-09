@@ -25,6 +25,7 @@ srcdir = env.get("PROJECTSRC_DIR")
 flavor = env.get("PIOENV")
 revision = config.get("common","revision")
 version = config.get("common", "version")
+target = config.get("common", "target")
 
 # print ("environment:")
 # print (env.Dump())
@@ -34,6 +35,7 @@ env.Append(BUILD_FLAGS=[
     u'-DREVISION=' + revision + '',
     u'-DVERSION=\\"' + version + '\\"',
     u'-DFLAVOR=\\"' + flavor + '\\"',
+    u'-DTARGET=\\"' + target + '\\"',
     u'-I \"' + srcdir + '\"'
     ])
 
@@ -42,10 +44,10 @@ data = {
     "version":revision, 
     "host":"influxdb.canair.io",
     "port":8080,
-    "bin":"/releases/canairio_" + flavor + "_rev" + revision + ".bin"
+    "bin":"/releases/" + target + "/canairio_" + flavor + "_rev" + revision + ".bin"
 }
 
-output_path =  "releases/manifest"
+output_path =  "releases/manifest/" + target
 
 os.makedirs(output_path, 0o755, True)
 

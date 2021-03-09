@@ -109,6 +109,7 @@ void setup() {
     Serial.println("-->[INFO] Revision: " + gui.getFirmwareVersionCode());
     Serial.println("-->[INFO] Firmware: " + String(VERSION));
     Serial.println("-->[INFO] Flavor  : " + String(FLAVOR));
+    Serial.println("-->[INFO] Target  : " + String(TARGET));
 
     // init all sensors
     Serial.println("-->[INFO] Detecting sensors..");

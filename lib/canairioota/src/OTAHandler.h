@@ -16,7 +16,7 @@ class OTAHandler {
         void setup(const char* ESP_ID, const char* ESP_PASS);
         void setCallbacks(OTAHandlerCallbacks* pCallbacks);
         void loop();
-        void checkRemoteOTA();
+        void checkRemoteOTA(bool notify = true);
         void setBaud(int baud);
         OTAHandler* getInstance();
     private:

@@ -444,8 +444,8 @@ void GUIUtils::pageEnd() {
 /// Firmware version from platformio.ini
 String GUIUtils::getFirmwareVersionCode() {
     String VERSION_CODE = "r";
-#ifdef SRC_REV
-    int VCODE = SRC_REV;
+#ifdef REVISION
+    int VCODE = REVISION;
 #else
     int VCODE = 0;
 #endif

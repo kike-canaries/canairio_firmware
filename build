@@ -1,6 +1,7 @@
 #!/bin/bash
 
-export `cat platformio.ini | grep SRC_REV | awk '{print $2}'`
+SRC_REV=`cat platformio.ini | grep revision | awk '{print $3}'`
+SRC_VER=`cat platformio.ini | grep version | awk '{print $3}'`
 DATE=`date +%Y%m%d`
 OUTDIR=".pio/build"
 RELDIR="releases"

@@ -1,6 +1,6 @@
 #include <OTAHandler.h>
 
-esp32FOTA esp32FOTA("ttgo-t7", REVISION);
+esp32FOTA esp32FOTA(FLAVOR, REVISION);
 
 OTAHandler::OTAHandler(){
     m_pOTAHandlerCallbacks = nullptr;
@@ -44,7 +44,7 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
     // Remote OTA config
     // TODO: pass host and target via bluetooth
     
-    esp32FOTA.checkURL = "http://influxdb.canair.io:8080/releases/firmware.json";
+    esp32FOTA.checkURL = "http://influxdb.canair.io:8080/releases/firmware_" + String(FLAVOR) + ".json";
     
     Serial.println("-->[INFO] ready for OTA update.");
 }

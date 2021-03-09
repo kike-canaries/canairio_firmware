@@ -37,11 +37,20 @@ env.Append(BUILD_FLAGS=[
     u'-I \"' + srcdir + '\"'
     ])
 
-# function for pushing new firmware to bintray storage using API
-def publish_bintray(source, target, env):
-    print("The firmware has been successfuly published at Bintray.com!")
+data = {
+    "type":flavor, 
+    "version":revision, 
+    "host":"influxdb.canair.io",
+    "port":8080,
+    "bin":"/releases/flavor/canairio_" + flavor + "_rev" + revision + ".bin"
+}
 
-# put build file name and upload command to platformio environment
-env.Replace(
-    # PROGNAME="canairio_" + "%s" % flavor + "_v%s" % version + "_rev%s" % revision,
-    UPLOADCMD=publish_bintray)
+output_path =  "releases/manifest"
+
+os.makedirs(output_path, 0o755, True)
+
+output_manifiest = output_path + "/firmware_" + flavor + ".json"
+
+with open(output_manifiest, 'w') as outfile:
+    json.dump(data, outfile)
+

@@ -30,7 +30,7 @@ void startingSensors() {
     Serial.println("-->[INFO] PM sensor configured: "+String(cfg.stype));
     gui.welcomeAddMessage("Detected sensor:");
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
-    sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
+    // sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
     sensors.setSampleTime(cfg.stime);               // config sensors sample time
     sensors.setDebugMode(false);                    // [optional] debug mode
     sensors.init(cfg.getSensorType());              // start all sensors and
@@ -118,12 +118,13 @@ void setup() {
     // init battery (only for some boards)
     batteryInit();
 
+    // WiFi and cloud communication
+    wifiInit();
+
     // Bluetooth low energy init (GATT server for device config)
     bleServerInit();
     gui.welcomeAddMessage("Bluetooth ready.");
 
-    // WiFi and cloud communication
-    wifiInit();
     Serial.println("-->[INFO] InfluxDb API:\t" + String(cfg.isIfxEnable()));
     Serial.println("-->[INFO] CanAirIO API:\t" + String(cfg.isApiEnable()));
     gui.welcomeAddMessage("CanAirIO API:"+String(cfg.isApiEnable()));

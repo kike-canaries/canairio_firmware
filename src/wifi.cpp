@@ -187,10 +187,16 @@ void otaLoop() {
     }
 }
 
+void onUpdateMessage(const char *msg){
+    gui.welcomeAddMessage("Updating to:");
+    gui.welcomeAddMessage(msg);
+    gui.welcomeAddMessage("please wait..");
+}
 
 void otaInit() {
     ota.setup("CanAirIO", "CanAirIO");
     ota.setCallbacks(new MyOTAHandlerCallbacks());
+    ota.setOnUpdateMessageCb(&onUpdateMessage);
 }
 
 void wifiConnect(const char* ssid, const char* pass) {

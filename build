@@ -154,7 +154,7 @@ else
       clean
       build TTGO_T7
       #build WEMOSOLED
-      build HELTEC
+      # build HELTEC
       #build TTGO_TQ
       #build ESP32DEVKIT
       printOutput

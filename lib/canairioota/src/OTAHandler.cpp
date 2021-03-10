@@ -52,6 +52,10 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
 void OTAHandler::checkRemoteOTA(bool notify) {
     bool updatedNeeded = esp32FOTA.execHTTPcheck();
     if (updatedNeeded) {
+        if(_onUpdateMsgCb != nullptr) 
+            _onUpdateMsgCb(String(esp32FOTA.getPayloadVersion()).c_str());
+        delay(1000);
+        esp_task_wdt_init(120,0); 
         Serial.println("-->[FOTA] starting..");
         esp32FOTA.execOTA();
     } else if (notify)
@@ -77,6 +81,10 @@ void OTAHandler::setBaud(int baud) {
 
 void OTAHandler::setCallbacks(OTAHandlerCallbacks* pCallbacks) {
 	m_pOTAHandlerCallbacks = pCallbacks;
+}
+
+void OTAHandler::setOnUpdateMessageCb(voidMessageCbFn cb) {
+    _onUpdateMsgCb = cb;
 }
 
 OTAHandler* OTAHandler::getInstance() {

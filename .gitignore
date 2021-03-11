@@ -53,6 +53,7 @@ web
 espota.py
 esptool.py
 md5output.txt
+releases/manifest
 
 # IDE
 .travis.yml

@@ -31,17 +31,18 @@ void startingSensors() {
     gui.welcomeAddMessage("Detected sensor:");
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
-    sensors.setSampleTime(cfg.stime);             // config sensors sample time
-    sensors.setDebugMode(false);                  // [optional] debug mode
-    sensors.init(cfg.getSensorType());            // start all sensors and
-                                                  // try to detect configured PM sensor.
-                                                  // Sensors supported: Panasonic, Honeywell, Plantower and Sensirion
-                                                  // The configured sensor is choosed on Android app.
-                                                  // For more information about the supported sensors,
-                                                  // please see the canairio_sensorlib documentation.
+    sensors.setSampleTime(cfg.stime);               // config sensors sample time
+    sensors.setDebugMode(false);                     // [optional] debug mode
+    sensors.init(cfg.getSensorType());              // start all sensors and
+                                                    // try to detect configured PM sensor.
+                                                    // Sensors PM2.5 supported: Panasonic, Honeywell, Plantower and Sensirion
+                                                    // Sensors CO2 supported: Sensirion, Winsen, Cubic
+                                                    // The configured sensor is choosed on Android app.
+                                                    // For more information about the supported sensors,
+                                                    // please see the canairio_sensorlib documentation.
 
     if(sensors.isPmSensorConfigured()){
-        Serial.print("-->[INFO] PM sensor detected: ");
+        Serial.print("-->[INFO] PM/CO2 sensor detected: ");
         Serial.println(sensors.getPmDeviceSelected());
         gui.welcomeAddMessage(sensors.getPmDeviceSelected());
     }
@@ -55,15 +56,31 @@ void displayGUI() {
     static uint_fast64_t timeStampGUI = 0;   // timestamp for GUI refresh
     if ((millis() - timeStampGUI > 1000)) {  // it should be minor than sensor loop
         timeStampGUI = millis();
+
+        int deviceType = sensors.getPmDeviceTypeSelected();
+        uint16_t mainValue = 0;
+        if (deviceType <= 3){
+            mainValue = sensors.getPM25();
+        }
+        else{
+            mainValue = sensors.getCO2();
+        }
+
+        float humi = sensors.getHumidity();
+        if (humi == 0.0) humi = sensors.getCO2humi();
+
+        float temp = sensors.getTemperature();
+        if (temp == 0.0) temp = sensors.getCO2temp();
+
         gui.pageStart();
-        gui.displaySensorAverage(sensors.getPM25());
+        gui.displaySensorAverage(mainValue, deviceType);
         gui.displaySensorData(
-            sensors.getPM25(),
-            sensors.getPM10(),
+            mainValue,
             getChargeLevel(),
-            sensors.getHumidity(),
-            sensors.getTemperature(),
-            getWifiRSSI());
+            humi,
+            temp,
+            getWifiRSSI(),
+            deviceType);
         gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
         gui.pageEnd();
     }
@@ -89,7 +106,10 @@ void setup() {
 
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC: " + cfg.deviceId);
-    Serial.println("-->[INFO] Firmware " + gui.getFirmwareVersionCode());
+    Serial.println("-->[INFO] Revision: " + gui.getFirmwareVersionCode());
+    Serial.println("-->[INFO] Firmware: " + String(VERSION));
+    Serial.println("-->[INFO] Flavor  : " + String(FLAVOR));
+    Serial.println("-->[INFO] Target  : " + String(TARGET));
 
     // init all sensors
     Serial.println("-->[INFO] Detecting sensors..");
@@ -98,12 +118,13 @@ void setup() {
     // init battery (only for some boards)
     batteryInit();
 
+    // WiFi and cloud communication
+    wifiInit();
+
     // Bluetooth low energy init (GATT server for device config)
     bleServerInit();
     gui.welcomeAddMessage("Bluetooth ready.");
 
-    // WiFi and cloud communication
-    wifiInit();
     Serial.println("-->[INFO] InfluxDb API:\t" + String(cfg.isIfxEnable()));
     Serial.println("-->[INFO] CanAirIO API:\t" + String(cfg.isApiEnable()));
     gui.welcomeAddMessage("CanAirIO API:"+String(cfg.isApiEnable()));

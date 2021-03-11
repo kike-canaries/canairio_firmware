@@ -1,8 +1,6 @@
 #include <OTAHandler.h>
-#include <ESPmDNS.h>
-#include <WiFiUdp.h>
-#include <ArduinoOTA.h>
-#include "esp_system.h"
+
+esp32FOTA esp32FOTA(FLAVOR, REVISION);
 
 OTAHandler::OTAHandler(){
     m_pOTAHandlerCallbacks = nullptr;
@@ -42,11 +40,39 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
         });
 
     ArduinoOTA.begin();
+    
+    // Remote OTA config
+    // TODO: pass host and target via bluetooth
+    
+    esp32FOTA.checkURL = "http://influxdb.canair.io:8080/releases/" + String(TARGET) + "/firmware_" + String(FLAVOR) + ".json";
+    
     Serial.println("-->[INFO] ready for OTA update.");
+}
+
+void OTAHandler::checkRemoteOTA(bool notify) {
+    bool updatedNeeded = esp32FOTA.execHTTPcheck();
+    if (updatedNeeded) {
+        if(_onUpdateMsgCb != nullptr) 
+            _onUpdateMsgCb(String(esp32FOTA.getPayloadVersion()).c_str());
+        delay(1000);
+        esp_task_wdt_init(120,0); 
+        Serial.println("-->[FOTA] starting..");
+        esp32FOTA.execOTA();
+    } else if (notify)
+        Serial.println("-->[FOTA] not need update");
+}
+
+void OTAHandler::remoteOTAcheckloop() {
+    static uint_fast64_t _lastOTACheck = 0;
+    if (millis() - _lastOTACheck > FOTA_CHECK_INTERVAL*1000) {
+        _lastOTACheck = millis();
+        checkRemoteOTA(false);
+    }
 }
 
 void OTAHandler::loop() {
     ArduinoOTA.handle();
+    remoteOTAcheckloop();
 }
 
 void OTAHandler::setBaud(int baud) {
@@ -55,6 +81,10 @@ void OTAHandler::setBaud(int baud) {
 
 void OTAHandler::setCallbacks(OTAHandlerCallbacks* pCallbacks) {
 	m_pOTAHandlerCallbacks = pCallbacks;
+}
+
+void OTAHandler::setOnUpdateMessageCb(voidMessageCbFn cb) {
+    _onUpdateMsgCb = cb;
 }
 
 OTAHandler* OTAHandler::getInstance() {

@@ -1,10 +1,13 @@
 #!/bin/bash
 
-export `cat platformio.ini | grep SRC_REV | awk '{print $2}'`
+SRC_REV=`cat platformio.ini | grep revision | awk '{print $3}'`
+SRC_VER=`cat platformio.ini | grep version | awk '{print $3}'`
+TARGET=`cat platformio.ini | grep target | awk '{print $3}'`
 DATE=`date +%Y%m%d`
 OUTDIR=".pio/build"
 RELDIR="releases"
 BINDIR="binaries"
+MANIFEST="manifest"
 DEFAULT="TTGO_T7"
 INSDIR=$RELDIR/installer/canairio_installer
 
@@ -45,11 +48,12 @@ updateInstallerBinaries () {
 updateFlavorBinaries() {
   rm -f $INSDIR/*.bin
   rm -f $INSDIR/*.py   # old installer
-  cp $RELDIR/$BINDIR/*/*${DATE}.bin $INSDIR/
+  cp $RELDIR/$BINDIR/*/*${SRC_REV}.bin $INSDIR/
 }
 
 clean () {
   rm -r $RELDIR/$BINDIR
+  rm -r $RELDIR/$MANIFEST
 }
 
 build () {
@@ -69,8 +73,8 @@ build () {
   echo -n "** MD5:"
   FIRMDIR=$RELDIR/$BINDIR/$1
   mkdir -p $FIRMDIR 
-  cp $OUTDIR/$1/firmware.bin $FIRMDIR/canairio_${1}_rev${SRC_REV}_${DATE}.bin
-  md5sum $FIRMDIR/canairio_${1}_rev${SRC_REV}_${DATE}.bin
+  cp $OUTDIR/$1/firmware.bin $FIRMDIR/canairio_${1}_rev${SRC_REV}.bin
+  md5sum $FIRMDIR/canairio_${1}_rev${SRC_REV}.bin
   echo "***********************************************"
   echo ""
 }
@@ -95,6 +99,12 @@ publish_release () {
   github-release upload --owner kike-canaries --repo canairio_firmware --tag "rev${SRC_REV}" --release-name "rev${SRC_REV}" --body "${COMMIT_LOG}" canairio_rev${SRC_REV}_${DATE}.zip
 }
 
+publish_release_ota () {
+  cd $INSDIR
+  scp -P $canairio_port *.bin $canairio_host:$canairio_target/$TARGET
+  scp -P $canairio_port ../../$MANIFEST/$TARGET/*.json $canairio_host:$canairio_target/$TARGET
+}
+
 printOutput () {
   echo ""
   mkdir -p $INSDIR
@@ -103,7 +113,7 @@ printOutput () {
   touch $INSDIR/md5output.txt
   cd $FIRMDIR
   for flavor in *; do
-    MD5FLAVOR=`md5sum $flavor/canairio_${flavor}_rev${SRC_REV}_${DATE}.bin`
+    MD5FLAVOR=`md5sum $flavor/canairio_${flavor}_rev${SRC_REV}.bin`
     echo $MD5FLAVOR >> ../../$INSDIR/md5output.txt
   done
   cat ../../$INSDIR/md5output.txt
@@ -152,6 +162,10 @@ else
 
     publish)
       publish_release
+      ;;
+
+    otatrigger)
+      publish_release_ota
       ;;
 
     *)

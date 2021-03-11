@@ -155,6 +155,7 @@ void apiLoop() {
 *   W I F I   M E T H O D S
 ******************************************************************************/
 
+
 class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
     void onStart() {
         gui.showWelcome();
@@ -177,6 +178,7 @@ class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
     }
 };
 
+
 void otaLoop() {
     if (WiFi.isConnected()) {
         wd.pause();
@@ -185,16 +187,23 @@ void otaLoop() {
     }
 }
 
+void onUpdateMessage(const char *msg){
+    gui.welcomeAddMessage("Updating to:");
+    gui.welcomeAddMessage(msg);
+    gui.welcomeAddMessage("please wait..");
+}
+
 void otaInit() {
     ota.setup("CanAirIO", "CanAirIO");
     ota.setCallbacks(new MyOTAHandlerCallbacks());
+    ota.setOnUpdateMessageCb(&onUpdateMessage);
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
     Serial.print("-->[WIFI] connecting to ");
     Serial.print(ssid);
-    WiFi.begin(ssid, pass);
     int wifi_retry = 0;
+    WiFi.begin(ssid, pass);
     while (!WiFi.isConnected() && wifi_retry++ < WIFI_RETRY_CONNECTION) {
         Serial.print(".");
         delay(100);  // increment this delay on possible reconnect issues
@@ -207,6 +216,7 @@ void wifiConnect(const char* ssid, const char* pass) {
         Serial.println(WiFi.localIP());
         Serial.println("-->[WIFI] publish interval: "+String(cfg.stime * 2)+" sec.");
         otaInit();
+        ota.checkRemoteOTA();
     } else {
         Serial.println("fail!\n-->[E][WIFI] disconnected!");
     }

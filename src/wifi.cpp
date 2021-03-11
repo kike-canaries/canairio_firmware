@@ -36,14 +36,23 @@ void influxDbInit() {
  *
  */
 void influxDbParseFields(char* fields) {
+    // select humi and temp for publish it
+    float humi = sensors.getHumidity();
+    if(humi == 0.0) humi = sensors.getCO2humi();
+    float temp = sensors.getTemperature();
+    if(temp == 0.0) temp = sensors.getCO2temp();
+
     sprintf(
         fields,
-        "pm1=%u,pm25=%u,pm10=%u,hum=%f,tmp=%f,prs=%f,gas=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
+        "pm1=%u,pm25=%u,pm10=%u,co2=%u,co2hum=%f,co2tmp=%f,hum=%f,tmp=%f,prs=%f,gas=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
         sensors.getPM1(),
         sensors.getPM25(),
         sensors.getPM10(),
-        sensors.getHumidity(),
-        sensors.getTemperature(),
+        sensors.getCO2(),
+        sensors.getCO2humi(),
+        sensors.getCO2temp(),
+        humi,
+        temp,
         sensors.getPressure(),
         sensors.getGas(),
         cfg.lat,
@@ -59,10 +68,12 @@ void influxDbAddTags(char* tags) {
 }
 
 bool influxDbWrite() {
-    char tags[128];
+    char tags[1024];
     influxDbAddTags(tags);
-    char fields[256];
+    log_i("[INFLUXDB] Adding tags: %s", tags);
+    char fields[1024];
     influxDbParseFields(fields);
+    log_i("[INFLUXDB] Adding fields: %s", fields);
     return influx.write(cfg.dname.c_str(), tags, fields);
 }
 
@@ -144,6 +155,7 @@ void apiLoop() {
 *   W I F I   M E T H O D S
 ******************************************************************************/
 
+
 class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
     void onStart() {
         gui.showWelcome();
@@ -166,6 +178,7 @@ class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
     }
 };
 
+
 void otaLoop() {
     if (WiFi.isConnected()) {
         wd.pause();
@@ -174,16 +187,23 @@ void otaLoop() {
     }
 }
 
+void onUpdateMessage(const char *msg){
+    gui.welcomeAddMessage("Updating to:");
+    gui.welcomeAddMessage(msg);
+    gui.welcomeAddMessage("please wait..");
+}
+
 void otaInit() {
     ota.setup("CanAirIO", "CanAirIO");
     ota.setCallbacks(new MyOTAHandlerCallbacks());
+    ota.setOnUpdateMessageCb(&onUpdateMessage);
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
     Serial.print("-->[WIFI] connecting to ");
     Serial.print(ssid);
-    WiFi.begin(ssid, pass);
     int wifi_retry = 0;
+    WiFi.begin(ssid, pass);
     while (!WiFi.isConnected() && wifi_retry++ < WIFI_RETRY_CONNECTION) {
         Serial.print(".");
         delay(100);  // increment this delay on possible reconnect issues
@@ -196,6 +216,7 @@ void wifiConnect(const char* ssid, const char* pass) {
         Serial.println(WiFi.localIP());
         Serial.println("-->[WIFI] publish interval: "+String(cfg.stime * 2)+" sec.");
         otaInit();
+        ota.checkRemoteOTA();
     } else {
         Serial.println("fail!\n-->[E][WIFI] disconnected!");
     }

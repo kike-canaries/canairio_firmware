@@ -64,6 +64,10 @@ String ConfigApp::getCurrentConfig() {
     doc["lskey"] = lastKeySaved;                             // last key saved
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
     doc["wsta"] = wifi_connected;                            // current wifi state 
+    doc["vrev"] = REVISION;
+    doc["vflv"] = FLAVOR;
+    doc["vtag"] = TARGET;
+    doc["vmac"] = getDeviceId();
     preferences.end();
     String output;
     serializeJson(doc, output);

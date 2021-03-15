@@ -216,7 +216,9 @@ void wifiConnect(const char* ssid, const char* pass) {
         Serial.println(WiFi.localIP());
         Serial.println("-->[WIFI] publish interval: "+String(cfg.stime * 2)+" sec.");
         otaInit();
+        wd.pause();
         ota.checkRemoteOTA();
+        wd.resume();
     } else {
         Serial.println("fail!\n-->[E][WIFI] disconnected!");
     }

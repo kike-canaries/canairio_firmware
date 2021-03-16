@@ -12,7 +12,7 @@ CanAirIoApi api(false);
 
 bool influxDbIsConfigured() {
     if(cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.dname.length()==0) {
-        Serial.println("-->[W][INFLUXDB] ifxdb is configured but device name is missing!");
+        Serial.println("-->[W][IFDB] ifxdb is configured but device name is missing!");
     }
     return cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.dname.length() > 0;
 }
@@ -20,10 +20,10 @@ bool influxDbIsConfigured() {
 void influxDbInit() {
     if (WiFi.isConnected() && cfg.isIfxEnable() && influxDbIsConfigured()) {
         influx.configure(cfg.ifx.db.c_str(), cfg.ifx.ip.c_str());  //third argument (port number) defaults to 8086
-        Serial.print("-->[INFLUXDB] using HTTPS: ");
+        Serial.print("-->[IFDB] using HTTPS: ");
         Serial.println(influx.isSecure());  //will be true if you've added the InfluxCert.hpp file.
         cfg.isNewIfxdbConfig = false;       // flag for config via BLE
-        Serial.println("-->[INFLUXDB] connected.");
+        Serial.println("-->[IFDB] connected.");
         delay(100);
     }
 }
@@ -70,10 +70,10 @@ void influxDbAddTags(char* tags) {
 bool influxDbWrite() {
     char tags[1024];
     influxDbAddTags(tags);
-    log_i("[INFLUXDB] Adding tags: %s", tags);
+    log_i("[IFDB] Adding tags: %s", tags);
     char fields[1024];
     influxDbParseFields(fields);
-    log_i("[INFLUXDB] Adding fields: %s", fields);
+    log_i("[IFDB] Adding fields: %s", fields);
     return influx.write(cfg.dname.c_str(), tags, fields);
 }
 
@@ -83,16 +83,16 @@ void influxDbLoop() {
         timeStamp = millis();
         if (sensors.isDataReady() && WiFi.isConnected() && cfg.isWifiEnable() && cfg.isIfxEnable() && influxDbIsConfigured()) {
             int ifx_retry = 0;
-            log_i("[INFLUXDB][ %s ]", cfg.dname.c_str());
-            log_i("[INFLUXDB][ %010d ] writing to %s", ifxdbwcount++, cfg.ifx.ip.c_str());
+            log_i("[IFDB][ %s ]", cfg.dname.c_str());
+            log_i("[IFDB][ %010d ] writing to %s", ifxdbwcount++, cfg.ifx.ip.c_str());
             while (!influxDbWrite() && (ifx_retry++ < IFX_RETRY_CONNECTION)) {
                 delay(200);
             }
             if (ifx_retry > IFX_RETRY_CONNECTION) {
-                Serial.println("-->[E][INFLUXDB] write error, try wifi restart..");
+                Serial.println("-->[E][IFDB] write error, try wifi restart..");
                 wifiRestart();
             } else {
-                log_i("[INFLUXDB] write done. Response: %d", influx.getResponse());
+                log_i("[IFDB] write done. Response: %d", influx.getResponse());
                 gui.displayDataOnIcon();
             }
         }

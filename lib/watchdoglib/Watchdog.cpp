@@ -8,7 +8,7 @@ void Watchdog::loop() {
 #ifdef FORCE_WATCHDOG
         if (resetvar++ == FORCE_WATCHDOG_TIME * 60) {
             resetvar = 0;
-            Serial.print("-->[WATCHDOG] force reboot in ");
+            Serial.print("-->[WDOG] Watchdog running force reboot in ");
             Serial.print(WATCHDOG_TIME);
             Serial.println(" seconds.");
             delay(WATCHDOG_TIME * 2 * 1000);  // force to do watchdog
@@ -18,7 +18,7 @@ void Watchdog::loop() {
 }
 
 void IRAM_ATTR resetModule() {
-    Serial.println("-->[WATCHDOG] Watchdog reached, rebooting..");
+    Serial.println("-->[WDOG] Watchdog reached, rebooting..");
     esp_wifi_disconnect();
     delay(200);
     esp_wifi_stop();
@@ -34,11 +34,11 @@ void Watchdog::init() {
     timerAlarmWrite(timer, WATCHDOG_TIME * 1000000, false);  // set time in us (30s)
     timerAlarmEnable(timer);                                 // enable interrupt
 
-    Serial.print("-->[WATCHDOG] config to check each ");
+    Serial.print("-->[WDOG] watchdog config to check each ");
     Serial.print(WATCHDOG_TIME);
     Serial.println(" seconds.");
 #ifdef FORCE_WATCHDOG
-    Serial.print("-->[WATCHDOG] force reboot each ");
+    Serial.print("-->[WDOG] watchdog force reboot each ");
     Serial.print(FORCE_WATCHDOG_TIME);
     Serial.println(" minutes.");
 #endif

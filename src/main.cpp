@@ -118,6 +118,9 @@ void setup() {
     // init battery (only for some boards)
     batteryInit();
 
+    // init watchdog timer for reboot in any loop blocker
+    wd.init();
+
     // WiFi and cloud communication
     wifiInit();
 
@@ -129,15 +132,9 @@ void setup() {
     Serial.println("-->[INFO] CanAirIO API:\t" + String(cfg.isApiEnable()));
     gui.welcomeAddMessage("CanAirIO API:"+String(cfg.isApiEnable()));
     gui.welcomeAddMessage("InfluxDb :"+String(cfg.isIfxEnable()));
-    influxDbInit();
-    apiInit();  // DEPRECATED
 
-    // init watchdog timer for reboot in any loop blocker
-    wd.init();
-    gui.welcomeAddMessage("Watchdog ready");
-
-    // mac address
-    gui.welcomeAddMessage(cfg.getDeviceId());
+    influxDbInit();     // Instance DB handler
+    apiInit();          // DEPRECATED
 
     // wifi status 
     if (WiFi.isConnected())
@@ -147,12 +144,11 @@ void setup() {
 
     // sensor sample time and publish time (2x)
     gui.welcomeAddMessage("stime: "+String(cfg.stime)+ " sec.");
-
+    gui.welcomeAddMessage(cfg.getDeviceId());   // mac address
+    gui.welcomeAddMessage("Watchdog:"+String(WATCHDOG_TIME));
     gui.welcomeAddMessage("==SETUP READY==");
-    delay(1000);
-
-    // display main screen
-    displayGUI();
+    delay(2000);
+    displayGUI();  // display main screen
 }
 
 void loop() {

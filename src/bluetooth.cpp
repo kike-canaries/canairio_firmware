@@ -11,8 +11,13 @@ bool oldDeviceConnected = false;
 *************************************************************************/
 
 String getNotificationData() {
-    StaticJsonDocument<40> doc;
-    doc["P25"] = sensors.getPM25();  // notification capacity is reduced, only main value
+    StaticJsonDocument<40> doc;   // notification capacity is reduced, only main value
+    int deviceType = sensors.getPmDeviceTypeSelected();
+    if (deviceType <= 3) {
+        doc["P25"] = sensors.getPM25();  
+    } else {
+        doc["CO2"] = sensors.getCO2();
+    }
     String json;
     serializeJson(doc, json);
     return json;

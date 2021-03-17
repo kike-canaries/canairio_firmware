@@ -24,13 +24,14 @@ String getNotificationData() {
 }
 
 String getSensorData() {
-    StaticJsonDocument<150> doc;
+    StaticJsonDocument<512> doc;
     doc["P25"] = sensors.getPM25();
     doc["P10"] = sensors.getPM10();
-    doc["lat"] = cfg.lat;
-    doc["lon"] = cfg.lon;
-    doc["alt"] = cfg.alt;
-    doc["spd"] = cfg.spd;
+    doc["P1"]  = sensors.getPM1();
+    doc["CO2"] = sensors.getCO2();
+    doc["tmp"] = sensors.getTemperature();
+    doc["hum"] = sensors.getHumidity();
+    doc["dsl"] = sensors.getPmDeviceSelected();
     String json;
     serializeJson(doc, json);
     return json;
@@ -39,6 +40,12 @@ String getSensorData() {
 /*************************************************************************
 *   B L U E T O O T H   M E T H O D S
 *************************************************************************/
+
+void bleServerDataRefresh(){
+    cfg.setWifiConnected(WiFi.isConnected());  // for notify on each write
+    pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
+    pCharactData->setValue(getSensorData().c_str());
+}
 
 class MyServerCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
@@ -67,9 +74,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
             else{
                 Serial.println("-->[E][BTLE][CONFIG] saving error!");
             }
-            cfg.setWifiConnected(WiFi.isConnected());  // for notify on each write
-            pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
-            pCharactData->setValue(getSensorData().c_str());
+            bleServerDataRefresh();
         }
     }
 };
@@ -92,12 +97,10 @@ void bleServerInit() {
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
     // Create a Data Descriptor (for notifications)
     pCharactData->addDescriptor(new BLE2902());
-    // Saved current sensor data
-    pCharactData->setValue(getSensorData().c_str());
     // Setting Config callback
     pCharactConfig->setCallbacks(new MyConfigCallbacks());
-    // Saved current config data
-    pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
+    // Set callback data:
+    bleServerDataRefresh();
     // Start the service
     pService->start();
     // Start advertising
@@ -116,7 +119,7 @@ void bleLoop() {
         bleTimeStamp = millis();
         pCharactData->setValue(getNotificationData().c_str());  // small payload for notification
         pCharactData->notify();
-        pCharactData->setValue(getSensorData().c_str());  // load big payload for possible read
+        bleServerDataRefresh();
     }
     // disconnecting
     if (!deviceConnected && oldDeviceConnected) {

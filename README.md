@@ -157,7 +157,7 @@ For record tracks on your device (Sdcard) or publish it to the cloud (share), pl
 
 ---
 
-## Static Station Mode
+## Fixed Station Mode
 
 <img width="640" src="screenshots/influxdb_grafana.jpg">
 
@@ -186,15 +186,15 @@ The data will be configured and showed in [CanAirIO Grafana Server](https://bit.
 
 ## TODO
 
-- [X] Enable/Disable APIs from App (on testing)
-- [X] Locatitation settings via Bluetooth (on testing)
-- [X] OTA updates ready (LAN)
-- [X] Sensors manager is now a library (canairio_sensorlib)
+- [X] Enable/Disable APIs from App
+- [X] Locatitation settings via Bluetooth
+- [X] Sensors manager is now a library ([CanAirIO Sensorlib](https://github.com/kike-canaries/canairio_sensorlib#canairio-air-quality-sensors-library))
 - [X] Auto detection of PM sensors (see sensorlib doc)
+- [x] CO2 sensors in chart
+- [X] OTA updates (LAN and WAN) (dev/prod, see releases for details) 
+- [ ] Multiple variables in chart (C02,PM2.5,Hum,Temp,etc)
+- [ ] InfluxDB schema (by countries)
 - [ ] Anonymous authentication
-- [ ] OTA updates (WAN)
-- [ ] Migrate `loop` to multithread RTOS implementation
-- [ ] Dinamic Humidity and Temperature visualization on Display
 
 ---
 

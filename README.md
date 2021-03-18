@@ -21,6 +21,9 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 
 Is possible that the **current firmware supports more boards** and sensors. Also you can choose the sensor brand or type on the CanAirIO Android app.
 
+## Installation via CanAirIO loader (RECOMMENDED)
+
+You will able to install the last version of CanAirIO firmware with internet updates via a simple Arduino sketch that it will doing all for you, you only need to use the official [Arduino IDE](https://www.arduino.cc/en/software) or [Arduino Droid for Android](https://play.google.com/store/apps/details?id=name.antonsmirnov.android.arduinodroid2&hl=en&gl=US) for load this [simple sketch](https://github.com/hpsaturn/esp32-canairio-loader/blob/master/src/canairio_loader.ino). Please follow the instructions [here](https://github.com/hpsaturn/esp32-canairio-loader) or follow the next [YouTube video guide](https://youtu.be/FjfGdnTk-rc) for Android OTG installation alternative.
 
 ## Linux and MacOSx
 
@@ -154,7 +157,7 @@ For record tracks on your device (Sdcard) or publish it to the cloud (share), pl
 
 ---
 
-## Static Station Mode
+## Fixed Station Mode
 
 <img width="640" src="screenshots/influxdb_grafana.jpg">
 
@@ -183,15 +186,15 @@ The data will be configured and showed in [CanAirIO Grafana Server](https://bit.
 
 ## TODO
 
-- [X] Enable/Disable APIs from App (on testing)
-- [X] Locatitation settings via Bluetooth (on testing)
-- [X] OTA updates ready (LAN)
-- [X] Sensors manager is now a library (canairio_sensorlib)
+- [X] Enable/Disable APIs from App
+- [X] Locatitation settings via Bluetooth
+- [X] Sensors manager is now a library ([CanAirIO Sensorlib](https://github.com/kike-canaries/canairio_sensorlib#canairio-air-quality-sensors-library))
 - [X] Auto detection of PM sensors (see sensorlib doc)
+- [x] CO2 sensors in chart
+- [X] OTA updates (LAN and WAN) (dev/prod, see releases for details) 
+- [ ] Multiple variables in chart (C02,PM2.5,Hum,Temp,etc)
+- [ ] InfluxDB schema (by countries)
 - [ ] Anonymous authentication
-- [ ] OTA updates (WAN)
-- [ ] Migrate `loop` to multithread RTOS implementation
-- [ ] Dinamic Humidity and Temperature visualization on Display
 
 ---
 

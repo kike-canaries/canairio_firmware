@@ -86,17 +86,17 @@ buildInstaller () {
   updateFlavorBinaries
   printOutput
   cd $INSDIR/..
-  rm -f canairio_rev${SRC_REV}_${DATE}.zip
-  zip -r canairio_rev${SRC_REV}_${DATE}.zip canairio_installer
+  rm -f canairio_${TARGET}_rev${SRC_REV}_${DATE}.zip
+  zip -r canairio_${TARGET}_rev${SRC_REV}_${DATE}.zip canairio_installer
   echo ""
-  du -hs canairio_rev${SRC_REV}_${DATE}.zip
+  du -hs canairio_${TARGET}_rev${SRC_REV}_${DATE}.zip
   echo ""
 }
 
 publish_release () {
   cd $INSDIR/..
   COMMIT_LOG=`git log -1 --format='%ci %H %s'`
-  github-release upload --owner kike-canaries --repo canairio_firmware --tag "rev${SRC_REV}" --release-name "rev${SRC_REV}" --body "${COMMIT_LOG}" canairio_rev${SRC_REV}_${DATE}.zip
+  github-release upload --owner kike-canaries --repo canairio_firmware --tag "rev${SRC_REV}" --release-name "rev${SRC_REV}" --body "${COMMIT_LOG}" canairio_${TARGET}_rev${SRC_REV}_${DATE}.zip
 }
 
 publish_release_ota () {

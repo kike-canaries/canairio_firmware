@@ -11,21 +11,27 @@ bool oldDeviceConnected = false;
 *************************************************************************/
 
 String getNotificationData() {
-    StaticJsonDocument<40> doc;
-    doc["P25"] = sensors.getPM25();  // notification capacity is reduced, only main value
+    StaticJsonDocument<40> doc;   // notification capacity is reduced, only main value
+    int deviceType = sensors.getPmDeviceTypeSelected();
+    if (deviceType <= 3) {
+        doc["P25"] = sensors.getPM25();  
+    } else {
+        doc["CO2"] = sensors.getCO2();
+    }
     String json;
     serializeJson(doc, json);
     return json;
 }
 
 String getSensorData() {
-    StaticJsonDocument<150> doc;
+    StaticJsonDocument<512> doc;
     doc["P25"] = sensors.getPM25();
     doc["P10"] = sensors.getPM10();
-    doc["lat"] = cfg.lat;
-    doc["lon"] = cfg.lon;
-    doc["alt"] = cfg.alt;
-    doc["spd"] = cfg.spd;
+    doc["P1"]  = sensors.getPM1();
+    doc["CO2"] = sensors.getCO2();
+    doc["tmp"] = sensors.getTemperature();
+    doc["hum"] = sensors.getHumidity();
+    doc["dsl"] = sensors.getPmDeviceSelected();
     String json;
     serializeJson(doc, json);
     return json;
@@ -35,15 +41,21 @@ String getSensorData() {
 *   B L U E T O O T H   M E T H O D S
 *************************************************************************/
 
+void bleServerDataRefresh(){
+    cfg.setWifiConnected(WiFi.isConnected());  // for notify on each write
+    pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
+    pCharactData->setValue(getSensorData().c_str());
+}
+
 class MyServerCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
         deviceConnected = true;
-        Serial.println("-->[BLE] device client is connected.");
+        Serial.println("-->[BTLE] device client is connected.");
     };
 
     void onDisconnect(BLEServer* pServer) {
         deviceConnected = false;
-        Serial.println("-->[BLE] device client is disconnected.");
+        Serial.println("-->[BTLE] device client is disconnected.");
     };
 };  // BLEServerCallbacks
 
@@ -60,11 +72,9 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
                 if (!cfg.isWifiEnable()) wifiStop();
             }
             else{
-                Serial.println("-->[E][BLE][CONFIG] saving error!");
+                Serial.println("-->[E][BTLE][CONFIG] saving error!");
             }
-            cfg.setWifiConnected(WiFi.isConnected());  // for notify on each write
-            pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
-            pCharactData->setValue(getSensorData().c_str());
+            bleServerDataRefresh();
         }
     }
 };
@@ -87,37 +97,35 @@ void bleServerInit() {
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
     // Create a Data Descriptor (for notifications)
     pCharactData->addDescriptor(new BLE2902());
-    // Saved current sensor data
-    pCharactData->setValue(getSensorData().c_str());
     // Setting Config callback
     pCharactConfig->setCallbacks(new MyConfigCallbacks());
-    // Saved current config data
-    pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
+    // Set callback data:
+    bleServerDataRefresh();
     // Start the service
     pService->start();
     // Start advertising
     pServer->getAdvertising()->start();
-    Serial.println("-->[BLE] GATT server ready. (Waiting for client)");
+    Serial.println("-->[BTLE] GATT server ready. (Waiting for client)");
 }
 
 void bleLoop() {
     static uint_fast64_t bleTimeStamp = 0;
     // notify changed value
     if (deviceConnected && sensors.isDataReady() && (millis() - bleTimeStamp > 5000)) {  // each 5 secs
-        log_i("[BLE] sending notification..");
-        log_d("[BLE] %s",getNotificationData().c_str());
-        log_d("[BLE] sending config data..");
-        log_d("[BLE] %s",getSensorData().c_str());
+        log_i("[BTLE] sending notification..");
+        log_d("[BTLE] %s",getNotificationData().c_str());
+        log_d("[BTLE] sending config data..");
+        log_d("[BTLE] %s",getSensorData().c_str());
         bleTimeStamp = millis();
         pCharactData->setValue(getNotificationData().c_str());  // small payload for notification
         pCharactData->notify();
-        pCharactData->setValue(getSensorData().c_str());  // load big payload for possible read
+        bleServerDataRefresh();
     }
     // disconnecting
     if (!deviceConnected && oldDeviceConnected) {
         delay(250);                   // give the bluetooth stack the chance to get things ready
         pServer->startAdvertising();  // restart advertising
-        Serial.println("-->[BLE] start advertising..");
+        Serial.println("-->[BTLE] start advertising..");
         oldDeviceConnected = deviceConnected;
     }
     // connecting

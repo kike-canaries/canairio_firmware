@@ -25,12 +25,17 @@ String getNotificationData() {
 
 String getSensorData() {
     StaticJsonDocument<512> doc;
+    doc["P1"] = sensors.getPM1();
     doc["P25"] = sensors.getPM25();
+    doc["P4"] = sensors.getPM4();
     doc["P10"] = sensors.getPM10();
-    doc["P1"]  = sensors.getPM1();
     doc["CO2"] = sensors.getCO2();
+    doc["CO2T"] = sensors.getCO2temp();
+    doc["CO2H"] = sensors.getCO2humi();
     doc["tmp"] = sensors.getTemperature();
     doc["hum"] = sensors.getHumidity();
+    doc["alt"] = sensors.getAltitude();
+    doc["pre"] = sensors.getPressure();
     doc["dsl"] = sensors.getPmDeviceSelected();
     String json;
     serializeJson(doc, json);

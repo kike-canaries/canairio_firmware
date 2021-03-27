@@ -138,7 +138,7 @@ int ConfigApp::getSensorType(){
 }
 
 bool ConfigApp::saveWifi(String ssid, String pass){
-    if (ssid.length() > 0 && pass.length() > 0) {
+    if (ssid.length() > 0) {
         preferences.begin(_app_name, false);
         preferences.putString("ssid", ssid);
         preferences.putString("pass", pass);
@@ -151,7 +151,7 @@ bool ConfigApp::saveWifi(String ssid, String pass){
         log_i("-->[CONFIG] ssid:%s pass:%s",ssid,pass);
         return true;
     }
-    DEBUG("-->[W][CONFIG] empty Wifi SSID or PASSW");
+    DEBUG("-->[W][CONFIG] empty Wifi SSID");
     return false;
 }
 

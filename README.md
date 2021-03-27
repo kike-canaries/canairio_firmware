@@ -8,9 +8,7 @@
 
 Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5) using low-cost sensors and smartphones. Built with a `ESP32` module board and a dust sensor, interfaced with an [CanAirIO Android client app](https://github.com/kike-canaries/canairio_android). The current firmware supports multiple boards and sensors, please review the **DIY guides** in our [wiki](https://github.com/kike-canaries/canairio_firmware/wiki)
 
-## Installation
-
-### Boards supported
+## Boards supported
 
 **TTGO_T7** Please see the [CanAirIO v2.1](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647) guide.  
 **ESP32DevKit** Please see this [HacksterIO](https://www.hackster.io/canairio/build-low-cost-air-quality-sensor-canairio-without-soldering-d87494) guide.  
@@ -21,9 +19,14 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 
 Is possible that the **current firmware supports more boards** and sensors. Also you can choose the sensor brand or type on the CanAirIO Android app.
 
-## Installation via CanAirIO loader (RECOMMENDED)
 
-You will able to install the last version of CanAirIO firmware with internet updates via a simple Arduino sketch that it will doing all for you, you only need to use the official [Arduino IDE](https://www.arduino.cc/en/software) or [Arduino Droid for Android](https://play.google.com/store/apps/details?id=name.antonsmirnov.android.arduinodroid2&hl=en&gl=US) for load this [simple sketch](https://github.com/hpsaturn/esp32-canairio-loader/blob/master/src/canairio_loader.ino). Please follow the instructions [here](https://github.com/hpsaturn/esp32-canairio-loader) or follow the next [YouTube video guide](https://youtu.be/FjfGdnTk-rc) for Android OTG installation alternative.
+# Installation alternatives
+
+We have different alternatives for load the current firmware. In order of complexity they are:
+
+## Via CanAirIO loader (RECOMMENDED)
+
+You will able to install the last version of CanAirIO firmware with internet updates via a simple Arduino sketch that it will doing all for you, you only need to use the official [Arduino IDE](https://www.arduino.cc/en/software) or [Arduino Droid app for Android](https://play.google.com/store/apps/details?id=name.antonsmirnov.android.arduinodroid2&hl=en&gl=US) for load this [simple sketch](https://github.com/hpsaturn/esp32-canairio-loader/blob/master/src/canairio_loader.ino). Please follow the instructions [here](https://github.com/hpsaturn/esp32-canairio-loader) or follow the next [YouTube video guide](https://youtu.be/FjfGdnTk-rc) for Android OTG installation alternative.
 
 ## Linux and MacOSx
 
@@ -61,9 +64,8 @@ Also you can specify the IP address:
 
 Please read procedure on `firmware` section on [HacksterIO Guide](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a#toc-firmware-y-software-3) for details for load firmware via oficial **Espressif Download Tool** in Windows
 
----
 
-## [Optional] Compiling and installing
+## Compiling
 
 Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
 
@@ -77,7 +79,7 @@ pio run -e TTGO_T7 --target upload
 
 After that, it able for sending updates via OTA protocol using Wifi in your LAN, is more fastest than USB and you can disconnect your board, but `you need first save Wifi credentials` via Android CanAirIO app [see below](#settings).
 
-For **OTA updates** you only run
+For **local OTA updates** you only run
 
 ``` bash
 pio run -e TTGO_T7_OTA --target upload
@@ -192,7 +194,8 @@ The data will be configured and showed in [CanAirIO Grafana Server](https://bit.
 - [X] Auto detection of PM sensors (see sensorlib doc)
 - [x] CO2 sensors in chart
 - [X] OTA updates (LAN and WAN) (dev/prod, see releases for details) 
-- [ ] Multiple variables in chart (C02,PM2.5,Hum,Temp,etc)
+- [x] Multiple variables in chart (C02,PM2.5,Hum,Temp,etc)
+- [x] Map of each recorded track in details
 - [ ] InfluxDB schema (by countries)
 - [ ] Anonymous authentication
 

@@ -210,7 +210,7 @@ void wifiConnect(const char* ssid, const char* pass) {
     }
     if (WiFi.isConnected()) {
         cfg.isNewWifi = false;  // flag for config via BLE
-        Serial.println("done.");
+        Serial.println(" done.");
         Serial.println("-->[WIFI] connected!");
         Serial.print("-->[WIFI] ");
         Serial.println(WiFi.localIP());
@@ -225,7 +225,7 @@ void wifiConnect(const char* ssid, const char* pass) {
 }
 
 void wifiInit() {
-    if (cfg.isWifiEnable() && cfg.ssid.length() > 0 && cfg.pass.length() > 0) {
+    if (cfg.isWifiEnable() && cfg.ssid.length() > 0 ){
         wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
     }
 }

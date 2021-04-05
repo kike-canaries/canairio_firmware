@@ -94,7 +94,6 @@ void setup() {
     Serial.begin(115200);
     delay(400);
     Serial.println("\n== CanAirIO Setup ==\n");
-    pinMode(BUILTIN_LED, OUTPUT);
 
     // init graphic user interface
     gui.displayInit();

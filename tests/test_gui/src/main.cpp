@@ -4,8 +4,7 @@
  ***/
 
 #include <Arduino.h>
-#include <GUIUtils.hpp>
-#include <status.hpp>
+#include <GUILib.hpp>
 
 unsigned int tcount = 0;
 bool toggle;
@@ -58,7 +57,8 @@ void loop(void) {
   int rnd = random(0, 3);
 
   gui.pageStart();
-  gui.displaySensorAverage(random(0, 999));
+  gui.displaySensorAverage(random(0, 999),1);
+
   gui.displaySensorData(120, 230, 15, 3.5, 12.3, random(0,99));
   gui.displayStatus(true,true,true);
   functionPtr[rnd]();       // Call a test function in random sequence

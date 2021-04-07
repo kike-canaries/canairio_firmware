@@ -4,7 +4,7 @@
 #include <CanAirIoApi.hpp>
 #include <ConfigApp.hpp>
 #include <InfluxArduino.hpp>
-#include <GUIUtils.hpp>
+#include <GUILib.hpp>
 #include <Watchdog.hpp>
 #include <Sensors.hpp>
 

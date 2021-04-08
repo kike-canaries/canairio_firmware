@@ -175,11 +175,15 @@ void TFTUtils::displayPreferenceSaveIcon() {
 }
 
 void TFTUtils::pageStart() {
-    tft.fillScreen(TFT_BLACK);
+
 }
 
 void TFTUtils::pageEnd() {
     // u8g2.nextPage();
+}
+
+void TFTUtils::clearScreen() {
+    tft.fillScreen(TFT_BLACK);
 }
 
 /// Firmware version from platformio.ini

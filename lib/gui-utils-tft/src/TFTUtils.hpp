@@ -44,6 +44,8 @@ class TFTUtils {
 
     void pageEnd();
 
+    void clearScreen();
+
     String getFirmwareVersionCode ();
 
    private:

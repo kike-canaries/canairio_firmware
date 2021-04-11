@@ -19,7 +19,7 @@ bool influxDbIsConfigured() {
 
 void influxDbInit() {
     if (WiFi.isConnected() && cfg.isIfxEnable() && influxDbIsConfigured()) {
-        influx.configure(cfg.ifx.db.c_str(), cfg.ifx.ip.c_str());  //third argument (port number) defaults to 8086
+        influx.configure(cfg.ifx.db.c_str(), cfg.ifx.ip.c_str(),cfg.ifx.pt);  //third argument (port number) defaults to 8086
         Serial.print("-->[IFDB] using HTTPS: ");
         Serial.println(influx.isSecure());  //will be true if you've added the InfluxCert.hpp file.
         cfg.isNewIfxdbConfig = false;       // flag for config via BLE
@@ -89,7 +89,8 @@ void influxDbLoop() {
                 delay(200);
             }
             if (ifx_retry > IFX_RETRY_CONNECTION) {
-                Serial.println("-->[E][IFDB] write error, try wifi restart..");
+                Serial.printf("-->[E][IFDB] !! write error with config: %s@%s:%i !!\n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
+                Serial.println("-->[E][IFDB] !! try wifi restart.. !!");
                 wifiRestart();
             } else {
                 log_i("[IFDB] write done. Response: %d", influx.getResponse());

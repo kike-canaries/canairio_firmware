@@ -166,7 +166,7 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
         setLastKeySaved("ifxdb");
         isNewIfxdbConfig = true;
         ifxdb_enable = true;
-        log_i("[CONFIG] influxdb: %s@%s:%i",db.c_str(),ip.c_str(),pt);
+        Serial.printf("-->[CONFIG] influxdb: %s@%s:%i\n",db.c_str(),ip.c_str(),pt);
         Serial.println("-->[CONFIG] influxdb config saved.");
         return true;
     }
@@ -322,6 +322,10 @@ void ConfigApp::setDebugMode(bool enable){
 }
 
 void ConfigApp::DEBUG(const char *text, const char *textb) {
+    // override with debug INFO level (>=3)
+#ifdef CORE_DEBUG_LEVEL
+    if (CORE_DEBUG_LEVEL >= 3) devmode = true;
+#endif
     if (devmode) {
         _debugPort.print(text);
         if (textb) {

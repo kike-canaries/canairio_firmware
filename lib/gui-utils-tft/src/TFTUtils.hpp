@@ -4,6 +4,7 @@
 #include <SPI.h>
 #include <TFT_eSPI.h>  // Hardware-specific library
 // #include "ani.h"
+#include <hal.hpp>
 
 #define TFT_GREY 0x5AEB
 #define lightblue 0x01E9
@@ -21,6 +22,8 @@ class TFTUtils {
     void displayInit();
 
     void showWelcome();
+
+    void showMain();
 
     void showProgress(unsigned int progress, unsigned int total);
 
@@ -45,6 +48,12 @@ class TFTUtils {
     void pageEnd();
 
     void clearScreen();
+
+    void setContrast(uint32_t value);
+
+    void checkButtons();
+
+    void suspend();
 
     String getFirmwareVersionCode ();
 

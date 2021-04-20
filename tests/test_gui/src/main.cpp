@@ -53,7 +53,8 @@ void setup(void) {
 
     randomSeed(A0);
 
-    delay(1000);
+    delay(500);
+    gui.showMain();
 }
 
 bool getBoolean() {
@@ -63,17 +64,19 @@ bool getBoolean() {
 void loop(void) {
     int rnd = random(0, 3);
 
-    gui.pageStart();
+    // gui.pageStart();
 
-    gui.displaySensorAverage(random(0, 999), 1);
+    // gui.displaySensorAverage(random(0, 999), 1);
 
-    gui.displaySensorData(120, 230, 15, 3.5, 12.3, random(0, 99));
+    gui.displaySensorData(120, 230, 16, -28.5, 12.389, random(0, 99));
 
-    gui.displayStatus(getBoolean(), true, getBoolean());
+    gui.checkButtons();
 
-    functionPtr[rnd]();  // Call a test function in random sequence
+    // gui.displayStatus(getBoolean(), true, getBoolean());
 
-    gui.pageEnd();
+    // functionPtr[rnd]();  // Call a test function in random sequence
 
-    delay(1000);
+    // gui.pageEnd();
+
+    delay(80);
 }

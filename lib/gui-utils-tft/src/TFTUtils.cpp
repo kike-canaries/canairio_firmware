@@ -16,7 +16,7 @@ void TFTUtils::displayInit() {
 
     ledcSetup(pwmLedChannelTFT, pwmFreq, pwmResolution);
     ledcAttachPin(TFT_BL, pwmLedChannelTFT);
-    setContrast(30);
+    setContrast(10);
 
     Serial.println("-->[OLED] display config ready.");
 }
@@ -41,27 +41,27 @@ void TFTUtils::showMain() {
 
     tft.setCursor(2, 232, 1);
     tft.println("Status test line");
+
     tft.setCursor(80, 204, 1);
     tft.println("BRIGHT:");
 
     tft.setCursor(80, 152, 2);
-    tft.println("SEC:");
+    tft.println("HEALTH:");
+
     tft.setTextColor(TFT_WHITE, lightblue);
     tft.setCursor(4, 152, 2);
     tft.println("TEMP:");
 
     tft.setCursor(4, 192, 2);
     tft.println("HUM: ");
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-    tft.setFreeFont(&Orbitron_Medium_20);
-    tft.setCursor(6, 82);
-    tft.println("Berlin");
+    // tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    // tft.setFreeFont(&Orbitron_Medium_20);
+    // tft.setCursor(6, 82);
+    // tft.println("Berlin");
 
     tft.fillRect(68, 152, 1, 74, TFT_GREY);
 
-    int backlight[6] = {10, 30, 60, 120, 220, 250};
-    byte b = 0;
     for (int i = 0; i < b + 1; i++)
         tft.fillRect(78 + (i * 7), 216, 3, 10, blue);
 
@@ -75,13 +75,6 @@ void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
     tft.setTextSize(2);
     tft.printf(output, "%03d%%", (progress / (total / 100)));
 }
-
-String tt = "";
-uint32_t count = 0;
-bool inv = 1;
-int press1 = 0;
-int press2 = 0;  ////
-byte b = 0;
 
 void TFTUtils::suspend() {
     delay(100);
@@ -149,10 +142,13 @@ void TFTUtils::welcomeRepeatMessage(String msg) {
 
 void TFTUtils::displayCenterBig(String msg, int deviceType) {
     tft.setFreeFont(&Orbitron_Light_32);
+    tft.setTextDatum(TC_DATUM);
     tft.fillRect(3, 8, 120, 30, TFT_BLACK);
     tft.setCursor(5, 34);
-    tft.print(msg.c_str());
-    tft.setTextFont(0);
+    tft.println(msg.c_str());
+    tft.setTextFont(1);
+    tft.setTextSize(0);
+    tft.setCursor(100, 40);
     if (deviceType <= 3)
         tft.println("ug/m3");
     else
@@ -164,9 +160,16 @@ void TFTUtils::displayBottomLine(String msg) {
 }
 
 void TFTUtils::displayEmoticonLabel(int cursor, String msg) {
-    tft.setFreeFont(&Orbitron_Medium_20);
-    tft.setCursor(2, 187);
-    tft.print(msg.c_str());
+    
+}
+
+void TFTUtils::displayEmoticonColor(uint32_t color, String msg) {
+    tft.fillRect(78, 170, 56, 20, color);
+    // tft.setFreeFont(&Orbitron_Medium_20);
+    tft.setTextFont(1);
+    // tft.setTextSize(0);
+    tft.setCursor(81, 178);
+    tft.println(msg);
 }
 
 void TFTUtils::displayBigEmoticon(String msg) {
@@ -179,17 +182,17 @@ void TFTUtils::displayBigLabel(int cursor, String msg) {
 
 void TFTUtils::displaySensorAverage(int average, int deviceType) {
     if (average < 13) {
-        displayEmoticonLabel(0x0024, "GOOD");
+        displayEmoticonColor(TFT_GREEN, "GOOD");
     } else if (average < 36) {
-        displayEmoticonLabel(0x0062, "MODERATE");
+        displayEmoticonColor(TFT_YELLOW, "MODERATE");
     } else if (average < 56) {
-        displayEmoticonLabel(0x0032, "UNH SEN G");
+        displayEmoticonColor(TFT_ORANGE, "UNH SEN G");
     } else if (average < 151) {
-        displayEmoticonLabel(0x0051, "UNHEALTY");
+        displayEmoticonColor(TFT_RED, "UNHEALTY");
     } else if (average < 251) {
-        displayEmoticonLabel(0x0053, "VERY UNH");
+        displayEmoticonColor(TFT_PURPLE, "VERY UNH");
     } else {
-        displayEmoticonLabel(0x0057, "HAZARDOUS");
+        displayEmoticonColor(TFT_BROWN, "HAZARDOUS");
     }
     char output[4];
     sprintf(output, "%04d", average);

@@ -6,7 +6,6 @@
 #include <Arduino.h>
 #include <GUILib.hpp>
 
-unsigned int tcount = 0;
 bool toggle;
 
 void testSensorLiveIcon() {
@@ -61,14 +60,17 @@ bool getBoolean() {
     return random(0, 2) == 1 ? true : false;
 }
 
+uint64_t count = 20;
+
 void loop(void) {
-    int rnd = random(0, 3);
 
     // gui.pageStart();
 
-    // gui.displaySensorAverage(random(0, 999), 1);
+    if (count++ % 40 == 0 ) gui.displaySensorAverage(random(0, 250), 1);
 
-    gui.displaySensorData(120, 230, 16, -28.5, 12.389, random(0, 99));
+    // gui.displaySensorAverage(1200, 4);
+
+    if (count % 50 == 0) gui.displaySensorData(120, 230,random(0, 99), random(0, 800)/25.0, 65, 1);
 
     gui.checkButtons();
 

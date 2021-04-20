@@ -67,6 +67,16 @@ class TFTUtils {
 
     int backlight[5] = {10, 30, 60, 120, 220};
 
+    byte b = 0;
+
+    uint32_t count = 0;
+
+    bool inv = 1;
+
+    int press1 = 0;
+
+    int press2 = 0;
+
     int lastDrawedLine = 0;
 
     bool dataOn;
@@ -84,6 +94,8 @@ class TFTUtils {
     void displayBottomLine(String msg);
 
     void displayEmoticonLabel(int numsmile, String msg);
+
+    void displayEmoticonColor(uint32_t color, String msg);
 
     void displayBigEmoticon(String msg);
 

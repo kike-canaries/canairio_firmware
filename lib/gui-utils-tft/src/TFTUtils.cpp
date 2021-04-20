@@ -6,8 +6,8 @@
 
 
 void TFTUtils::displayInit() {
-    pinMode(0, INPUT_PULLUP);
-    pinMode(35, INPUT);
+    pinMode(BUTTON_L, INPUT_PULLUP);
+    pinMode(BUTTON_R, INPUT);
     tft.init();
     tft.setRotation(0);
     tft.fillScreen(TFT_BLACK);
@@ -15,9 +15,8 @@ void TFTUtils::displayInit() {
     tft.setTextSize(1);
 
     ledcSetup(pwmLedChannelTFT, pwmFreq, pwmResolution);
-    // ledcAttachPin(TFT_BL, pwmLedChannelTFT);
-    // byte b = 1;
-    // ledcWrite(pwmLedChannelTFT, backlight[b]);
+    ledcAttachPin(TFT_BL, pwmLedChannelTFT);
+    setContrast(30);
 
     Serial.println("-->[OLED] display config ready.");
 }
@@ -34,12 +33,101 @@ void TFTUtils::showWelcome() {
     Serial.println("-->[OLED] display welcome");
 }
 
+void TFTUtils::showMain() {
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setTextSize(1);
+    tft.fillScreen(TFT_BLACK);
+    tft.setSwapBytes(true);
+
+    tft.setCursor(2, 232, 1);
+    tft.println("Status test line");
+    tft.setCursor(80, 204, 1);
+    tft.println("BRIGHT:");
+
+    tft.setCursor(80, 152, 2);
+    tft.println("SEC:");
+    tft.setTextColor(TFT_WHITE, lightblue);
+    tft.setCursor(4, 152, 2);
+    tft.println("TEMP:");
+
+    tft.setCursor(4, 192, 2);
+    tft.println("HUM: ");
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+
+    tft.setFreeFont(&Orbitron_Medium_20);
+    tft.setCursor(6, 82);
+    tft.println("Berlin");
+
+    tft.fillRect(68, 152, 1, 74, TFT_GREY);
+
+    int backlight[6] = {10, 30, 60, 120, 220, 250};
+    byte b = 0;
+    for (int i = 0; i < b + 1; i++)
+        tft.fillRect(78 + (i * 7), 216, 3, 10, blue);
+
+    Serial.println("-->[OLED] display welcome");
+}
+
 void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
     Serial.println("-->[OLED] display progress");
     char output[12];
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextSize(2);
     tft.printf(output, "%03d%%", (progress / (total / 100)));
+}
+
+String tt = "";
+uint32_t count = 0;
+bool inv = 1;
+int press1 = 0;
+int press2 = 0;  ////
+byte b = 0;
+
+void TFTUtils::suspend() {
+    delay(100);
+    int r = digitalRead(TFT_BL);
+    digitalWrite(TFT_BL, !r);
+    delay(100);
+    tft.writecommand(TFT_DISPOFF);
+    tft.writecommand(TFT_SLPIN);
+
+    digitalWrite(ADC_EN, LOW);
+
+    //After using light sleep, you need to disable timer wake, because here use external IO port to wake up
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
+    // esp_sleep_enable_ext1_wakeup(GPIO_SEL_35, ESP_EXT1_WAKEUP_ALL_LOW);
+    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
+    // esp_sleep_enable_ext1_wakeup(GPIO_SEL_35, ESP_EXT1_WAKEUP_ANY_HIGH);
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
+    esp_deep_sleep_disable_rom_logging();
+    esp_deep_sleep_start();
+}
+
+void TFTUtils::checkButtons() {
+    if (digitalRead(BUTTON_R) == 0) {
+        if (press2 == 0) {
+            press2 = 1;
+            tft.fillRect(78, 216, 44, 12, TFT_BLACK);
+
+            b++;
+            if (b >= 5) suspend();
+            // if (b >= 5) b = 0;
+
+            for (int i = 0; i < b + 1; i++)
+                tft.fillRect(78 + (i * 7), 216, 3, 10, blue);
+            ledcWrite(pwmLedChannelTFT, backlight[b]);
+        }
+    } else
+        press2 = 0;
+
+    if (digitalRead(BUTTON_L) == 0) {
+        if (press1 == 0) {
+            press1 = 1;
+            inv = !inv;
+            tft.invertDisplay(inv);
+        }
+    } else
+        press1 = 0;
 }
 
 void TFTUtils::welcomeAddMessage(String msg) {
@@ -110,17 +198,30 @@ void TFTUtils::displaySensorAverage(int average, int deviceType) {
 
 // TODO: separate this function, format/display
 void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
-    char output[22];
+    tft.fillRect(1, 170, 64, 20, TFT_BLACK);
+    tft.fillRect(1, 210, 64, 20, TFT_BLACK);
+    char output[50];
     if (deviceType <= 4)
-        sprintf(output, "%04d E%02d H%02d%% T%02d°C", mainValue, 0, (int)humi, (int)temp);
+        sprintf(output, "%04d E%02d H%02f%% T%02f°C", mainValue, 0, humi, temp);
     else
-        sprintf(output, "%03d E%02d H%02d%% T%02d°C", mainValue, 0, (int)humi, (int)temp);
+        sprintf(output, "%03d E%02d H%02f%% T%02f°C", mainValue, 0, humi, temp);
+
     displayBottomLine(String(output));
-    
+    Serial.println(output);
+
     tft.setFreeFont(&Orbitron_Medium_20);
-    tft.setCursor(2, 227);
+    tft.setCursor(1, 187);
+    tft.printf("%02.1f",temp);
+
+    tft.setCursor(1, 227);
+    tft.printf("%02d%%",(int)humi);
+
+
+    
+    // tft.setFreeFont(&Orbitron_Medium_20);
+    // tft.setCursor(2, 227);
     // sprintf(output, "%04d", mainValue);
-    tft.println(output);
+    // tft.println(output);
 }
 
 void TFTUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
@@ -184,6 +285,10 @@ void TFTUtils::pageEnd() {
 
 void TFTUtils::clearScreen() {
     tft.fillScreen(TFT_BLACK);
+}
+
+void TFTUtils::setContrast(uint32_t value) {
+    ledcWrite(pwmLedChannelTFT, value);
 }
 
 /// Firmware version from platformio.ini

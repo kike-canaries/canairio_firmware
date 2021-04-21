@@ -54,7 +54,7 @@ void startingSensors() {
 
 void displayGUI() {
     static uint_fast64_t timeStampGUI = 0;   // timestamp for GUI refresh
-    if ((millis() - timeStampGUI > 1000)) {  // it should be minor than sensor loop
+    if ((millis() - timeStampGUI > 80)) {  // it should be minor than sensor loop
         timeStampGUI = millis();
 
         int deviceType = sensors.getPmDeviceTypeSelected();
@@ -82,6 +82,7 @@ void displayGUI() {
             getWifiRSSI(),
             deviceType);
         gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
+        gui.checkButtons();
         gui.pageEnd();
     }
 }
@@ -100,7 +101,7 @@ void setup() {
     gui.showWelcome();
 
     // init app preferences and load settings
-    // cfg.setDebugMode(true);
+    cfg.setDebugMode(false);
     cfg.init("canairio");
 
     // device wifi mac addres and firmware version
@@ -112,6 +113,8 @@ void setup() {
 
     // init all sensors
     Serial.println("-->[INFO] Detecting sensors..");
+    pinMode(PMS_EN, OUTPUT);
+    digitalWrite(PMS_EN, HIGH);
     startingSensors();
 
     // init battery (only for some boards)
@@ -147,6 +150,8 @@ void setup() {
     gui.welcomeAddMessage("Watchdog:"+String(WATCHDOG_TIME));
     gui.welcomeAddMessage("==SETUP READY==");
     delay(2000);
+    gui.clearScreen();
+    gui.showMain();
     displayGUI();  // display main screen
 }
 

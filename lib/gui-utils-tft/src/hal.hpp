@@ -13,3 +13,6 @@
 #define ADC_PIN 34
 #define BUTTON_R 35
 #define BUTTON_L 0
+
+// TODO: provisional hardware implementation
+#define PMS_EN 27   // Panasonic enable pin (2N2222A switch to booster module)

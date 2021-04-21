@@ -210,7 +210,6 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
         sprintf(output, "%03d E%02d H%02f%% T%02f°C", mainValue, 0, humi, temp);
 
     displayBottomLine(String(output));
-    Serial.println(output);
 
     tft.setFreeFont(&Orbitron_Medium_20);
     tft.setCursor(1, 187);

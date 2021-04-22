@@ -29,6 +29,8 @@ class GUIUtils {
 
     void displayPreferenceSaveIcon();
 
+    void displayBottomLine(String msg);
+    
     void pageStart();
 
     void pageEnd();
@@ -52,8 +54,6 @@ class GUIUtils {
     int dh = 0;  // display height
 
     void displayCenterBig(String msg, int deviceType);
-
-    void displayBottomLine(String msg);
 
     void displayEmoticonLabel(int numsmile, String msg);
 

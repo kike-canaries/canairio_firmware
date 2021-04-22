@@ -43,6 +43,8 @@ class TFTUtils {
 
     void displayPreferenceSaveIcon();
 
+    void displayBottomLine(String msg);
+
     void pageStart();
 
     void pageEnd();
@@ -90,8 +92,6 @@ class TFTUtils {
     int dh = 0;  // display height
 
     void displayCenterBig(String msg, int deviceType);
-
-    void displayBottomLine(String msg);
 
     void displayEmoticonLabel(int numsmile, String msg);
 

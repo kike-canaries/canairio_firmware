@@ -40,19 +40,27 @@ void testExtraWelcomeLines() {
 
 void setup(void) {
     Serial.begin(115200);
+    delay(500);
     Serial.println("\n== INIT SETUP ==\n");
     Serial.println("-->[SETUP] console ready");
     gui.displayInit();
     gui.showWelcome();
+    delay(2000);
+    gui.displayBottomLine("CanAirIOAF4");
+    delay(2000);
     gui.welcomeAddMessage("Sensor ready..");
+    delay(500);
     gui.welcomeAddMessage("GATT server..");
-    gui.welcomeAddMessage("WiFi test..");
+    delay(500);
+    gui.welcomeAddMessage("WiFi with long SSID12345678");
+    delay(500);
+    gui.welcomeAddMessage("GATT server.........ok");
     // testExtraWelcomeLines();
     gui.welcomeAddMessage("==SETUP READY==");
 
     randomSeed(A0);
 
-    delay(500);
+    delay(4000);
     gui.showMain();
 }
 
@@ -61,6 +69,7 @@ bool getBoolean() {
 }
 
 uint64_t count = 20;
+uint16_t total = 1000;
 
 void loop(void) {
 
@@ -73,6 +82,8 @@ void loop(void) {
     if (count % 50 == 0) gui.displaySensorData(120, 230,random(0, 99), random(0, 800)/25.0, 65, 1);
 
     gui.checkButtons();
+
+    // gui.showProgress(count++,1000);
 
     // gui.displayStatus(getBoolean(), true, getBoolean());
 

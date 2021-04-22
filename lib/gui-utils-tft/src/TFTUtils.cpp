@@ -39,9 +39,6 @@ void TFTUtils::showMain() {
     tft.fillScreen(TFT_BLACK);
     tft.setSwapBytes(true);
 
-    tft.setCursor(2, 232, 1);
-    tft.println("Status test line");
-
     tft.setCursor(80, 204, 1);
     tft.println("BRIGHT:");
 
@@ -124,7 +121,7 @@ void TFTUtils::checkButtons() {
 }
 
 void TFTUtils::welcomeAddMessage(String msg) {
-    Serial.println("-->[TFT] add message: "+msg);
+    // Serial.println("-->[TFT] add message: "+msg);
     tft.setTextFont(1);
     tft.setCursor(5, lastDrawedLine);
     tft.println(msg.c_str());
@@ -156,7 +153,9 @@ void TFTUtils::displayCenterBig(String msg, int deviceType) {
 }
 
 void TFTUtils::displayBottomLine(String msg) {
-    
+    tft.fillRect(1, 224, 133, 8, TFT_BLACK);
+    tft.setCursor(2, 232, 1);
+    tft.println(msg);
 }
 
 void TFTUtils::displayEmoticonLabel(int cursor, String msg) {
@@ -203,14 +202,7 @@ void TFTUtils::displaySensorAverage(int average, int deviceType) {
 void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
     tft.fillRect(1, 170, 64, 20, TFT_BLACK);
     tft.fillRect(1, 210, 64, 20, TFT_BLACK);
-    char output[50];
-    if (deviceType <= 4)
-        sprintf(output, "%04d E%02d H%02f%% T%02f°C", mainValue, 0, humi, temp);
-    else
-        sprintf(output, "%03d E%02d H%02f%% T%02f°C", mainValue, 0, humi, temp);
-
-    displayBottomLine(String(output));
-
+    
     tft.setFreeFont(&Orbitron_Medium_20);
     tft.setCursor(1, 187);
     tft.printf("%02.1f",temp);
@@ -218,7 +210,13 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
     tft.setCursor(1, 227);
     tft.printf("%02d%%",(int)humi);
 
+    // char output[50];
+    // if (deviceType <= 4)
+    //     sprintf(output, "%04d E%02d H%02f%% T%02f°C", mainValue, 0, humi, temp);
+    // else
+    //     sprintf(output, "%03d E%02d H%02f%% T%02f°C", mainValue, 0, humi, temp);
 
+    // displayBottomLine(String(output));
     
     // tft.setFreeFont(&Orbitron_Medium_20);
     // tft.setCursor(2, 227);

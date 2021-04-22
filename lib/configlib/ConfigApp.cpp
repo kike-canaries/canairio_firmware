@@ -283,6 +283,13 @@ String ConfigApp::getDeviceId() {
     return String(baseMacChr);
 }
 
+String ConfigApp::getDeviceIdShort() {
+    String devId = getDeviceId();
+    devId.replace(":","");
+    devId = devId.substring(0,3);
+    return devId;
+}
+
 bool ConfigApp::isWifiEnable() {
     return wifi_enable;
 }

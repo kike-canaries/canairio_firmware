@@ -75,6 +75,8 @@ class ConfigApp {
 
     String getDeviceId();
 
+    String getDeviceIdShort();
+
     int getSensorType();
 
     void clear();

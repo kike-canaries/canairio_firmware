@@ -2,6 +2,7 @@
 
 uint32_t ifxdbwcount;
 int rssi = 0;
+String hostId = "";
 
 InfluxArduino influx;
 CanAirIoApi api(false);
@@ -195,7 +196,9 @@ void onUpdateMessage(const char *msg){
 }
 
 void otaInit() {
-    ota.setup("CanAirIO", "CanAirIO");
+    hostId = "CanAirIO"+cfg.getDeviceIdShort();
+    ota.setup(hostId.c_str(), "CanAirIO");
+    gui.displayBottomLine(hostId);
     ota.setCallbacks(new MyOTAHandlerCallbacks());
     ota.setOnUpdateMessageCb(&onUpdateMessage);
 }

@@ -16,9 +16,9 @@ void TFTUtils::displayInit() {
 
     ledcSetup(pwmLedChannelTFT, pwmFreq, pwmResolution);
     ledcAttachPin(TFT_BL, pwmLedChannelTFT);
-    setContrast(10);
+    setContrast(30);
 
-    Serial.println("-->[OLED] display config ready.");
+    Serial.println("-->[TFT] display config ready.");
 }
 
 void TFTUtils::showWelcome() {
@@ -30,7 +30,7 @@ void TFTUtils::showWelcome() {
     lastDrawedLine = 20;
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextFont(1);
-    Serial.println("-->[OLED] display welcome");
+    Serial.println("-->[TFT] display welcome");
 }
 
 void TFTUtils::showMain() {
@@ -65,11 +65,11 @@ void TFTUtils::showMain() {
     for (int i = 0; i < b + 1; i++)
         tft.fillRect(78 + (i * 7), 216, 3, 10, blue);
 
-    Serial.println("-->[OLED] display welcome");
+    Serial.println("-->[TFT] display welcome");
 }
 
 void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
-    Serial.println("-->[OLED] display progress");
+    Serial.println("-->[TFT] display progress");
     char output[12];
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextSize(2);
@@ -124,7 +124,7 @@ void TFTUtils::checkButtons() {
 }
 
 void TFTUtils::welcomeAddMessage(String msg) {
-    Serial.println("-->[OLED] add message: "+msg);
+    Serial.println("-->[TFT] add message: "+msg);
     tft.setTextFont(1);
     tft.setCursor(5, lastDrawedLine);
     tft.println(msg.c_str());

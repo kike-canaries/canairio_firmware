@@ -101,7 +101,7 @@ void influxDbLoop() {
 }
 
 /******************************************************************************
-*   C A N A I R I O  A P I   M E T H O D S
+*   ( DEPRECATED ) C A N A I R I O  A P I   M E T H O D S 
 ******************************************************************************/
 
 bool apiIsConfigured() {

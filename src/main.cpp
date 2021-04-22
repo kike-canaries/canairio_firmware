@@ -150,7 +150,7 @@ void setup() {
     gui.welcomeAddMessage("Watchdog:"+String(WATCHDOG_TIME));
     gui.welcomeAddMessage("==SETUP READY==");
     delay(2000);
-    gui.clearScreen();
+    gui.setContrast(10);
     gui.showMain();
     displayGUI();  // display main screen
 }

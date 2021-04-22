@@ -22,15 +22,39 @@ void TFTUtils::displayInit() {
 }
 
 void TFTUtils::showWelcome() {
-    tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-    tft.setTextFont(2);
-    tft.setCursor(5, 5);
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
+    tft.setFreeFont(&Orbitron_Medium_20);
+    tft.setCursor(2,20);
+    Serial.println("-->[TFT] font H: "+String(tft.fontHeight()));
     tft.print("CanAirIO ");
+    tft.setTextFont(2);
+    Serial.println("-->[TFT] font H: "+String(tft.fontHeight()));
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setCursor(101,226);
     tft.println(getFirmwareVersionCode().c_str());
-    lastDrawedLine = 20;
+    tft.drawLine(0,24,135,24,TFT_GREEN);
+    lastDrawedLine = 32;
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextFont(1);
     Serial.println("-->[TFT] display welcome");
+}
+
+void TFTUtils::welcomeAddMessage(String msg) {
+    // Serial.println("-->[TFT] add message: "+msg);
+    tft.setTextFont(1);
+    tft.setCursor(5, lastDrawedLine);
+    tft.println(msg.substring(0,21).c_str());
+    lastDrawedLine = lastDrawedLine + 10;
+    delay(100);
+}
+
+//TODO: This metod failed on redraw or clear the space first
+void TFTUtils::welcomeRepeatMessage(String msg) {
+    lastDrawedLine = lastDrawedLine - 7;
+    welcomeAddMessage("               ");
+    lastDrawedLine = lastDrawedLine - 7;
+    welcomeAddMessage(msg);
 }
 
 void TFTUtils::showMain() {
@@ -66,11 +90,17 @@ void TFTUtils::showMain() {
 }
 
 void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
-    Serial.println("-->[TFT] display progress");
-    char output[12];
+    
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setTextSize(2);
-    tft.printf(output, "%03d%%", (progress / (total / 100)));
+    tft.setFreeFont(&Orbitron_Medium_20);
+    tft.setCursor(8, 103);
+    tft.println("Update:");
+
+    tft.setFreeFont(&Orbitron_Light_32);
+    tft.setTextDatum(TC_DATUM);
+    tft.fillRect(6, 105, 120, 30, TFT_BLACK);
+    tft.setCursor(8, 135);
+    tft.printf("%03d%%",(progress / (total / 100)));
 }
 
 void TFTUtils::suspend() {
@@ -120,22 +150,6 @@ void TFTUtils::checkButtons() {
         press1 = 0;
 }
 
-void TFTUtils::welcomeAddMessage(String msg) {
-    // Serial.println("-->[TFT] add message: "+msg);
-    tft.setTextFont(1);
-    tft.setCursor(5, lastDrawedLine);
-    tft.println(msg.c_str());
-    lastDrawedLine = lastDrawedLine + 10;
-    delay(100);
-}
-
-//TODO: This metod failed on redraw or clear the space first
-void TFTUtils::welcomeRepeatMessage(String msg) {
-    lastDrawedLine = lastDrawedLine - 7;
-    welcomeAddMessage("               ");
-    lastDrawedLine = lastDrawedLine - 7;
-    welcomeAddMessage(msg);
-}
 
 void TFTUtils::displayCenterBig(String msg, int deviceType) {
     tft.setFreeFont(&Orbitron_Light_32);
@@ -153,9 +167,10 @@ void TFTUtils::displayCenterBig(String msg, int deviceType) {
 }
 
 void TFTUtils::displayBottomLine(String msg) {
-    tft.fillRect(1, 224, 133, 8, TFT_BLACK);
+    tft.setTextFont(1);
+    tft.fillRect(1, 230, 99, 8, TFT_BLACK);
     tft.setCursor(2, 232, 1);
-    tft.println(msg);
+    tft.println(msg.substring(0,16).c_str());
 }
 
 void TFTUtils::displayEmoticonLabel(int cursor, String msg) {

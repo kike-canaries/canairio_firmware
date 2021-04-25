@@ -75,7 +75,7 @@ void loop(void) {
 
     // gui.pageStart();
 
-    if (count++ % 40 == 0 ) gui.displaySensorAverage(random(0, 250), 1);
+    if (count++ % 40 == 0 ) gui.displaySensorAverage(random(0, 250), 4);
 
     // gui.displaySensorAverage(1200, 4);
 

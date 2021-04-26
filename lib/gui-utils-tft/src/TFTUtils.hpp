@@ -5,6 +5,7 @@
 #include <TFT_eSPI.h>  // Hardware-specific library
 // #include "ani.h"
 #include <hal.hpp>
+#include <icons.h>
 
 #define TFT_GREY 0x5AEB
 #define lightblue 0x01E9
@@ -87,6 +88,12 @@ class TFTUtils {
 
     bool sensorLive;
 
+    int _live_ticks = 0;
+
+    int _rssi;
+
+    bool fanState;
+
     int dw = 0;  // display width
 
     int dh = 0;  // display height
@@ -100,6 +107,19 @@ class TFTUtils {
     void displayBigEmoticon(String msg);
 
     void displayBigLabel(int cursor, String msg);
+
+    void drawBluetoothIcon();
+
+    void drawWifiHighIcon();
+
+    void drawWifiMidIcon();
+
+    void drawWifiLowIcon();
+
+    void drawFanIcon();
+
+    void drawDataIcon();
+
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTHANDLER)

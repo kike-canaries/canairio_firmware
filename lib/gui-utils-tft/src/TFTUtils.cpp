@@ -58,9 +58,12 @@ void TFTUtils::welcomeRepeatMessage(String msg) {
 }
 
 void TFTUtils::showMain() {
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setTextSize(1);
     tft.fillScreen(TFT_BLACK);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setTextSize(0);
+    tft.setCursor(110,231);
+    tft.println(getFirmwareVersionCode().c_str());
+    tft.drawLine(0,19,135,19,TFT_GREEN);
     tft.setSwapBytes(true);
 
     tft.setCursor(80, 204, 1);
@@ -75,11 +78,6 @@ void TFTUtils::showMain() {
 
     tft.setCursor(4, 192, 2);
     tft.println("HUM: ");
-
-    // tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    // tft.setFreeFont(&Orbitron_Medium_20);
-    // tft.setCursor(6, 82);
-    // tft.println("Berlin");
 
     tft.fillRect(68, 152, 1, 74, TFT_GREY);
 
@@ -150,16 +148,15 @@ void TFTUtils::checkButtons() {
         press1 = 0;
 }
 
-
 void TFTUtils::displayCenterBig(String msg, int deviceType) {
     tft.setFreeFont(&Orbitron_Light_32);
     tft.setTextDatum(TC_DATUM);
-    tft.fillRect(3, 8, 120, 30, TFT_BLACK);
-    tft.setCursor(5, 34);
+    tft.fillRect(3, 25, 120, 30, TFT_BLACK);
+    tft.setCursor(5, 51);
     tft.println(msg.c_str());
     tft.setTextFont(1);
     tft.setTextSize(0);
-    tft.setCursor(100, 40);
+    tft.setCursor(100, 57);
     if (deviceType <= 3)
         tft.println("ug/m3");
     else
@@ -195,84 +192,83 @@ void TFTUtils::displayBigLabel(int cursor, String msg) {
 }
 
 void TFTUtils::displaySensorAverage(int average, int deviceType) {
-    if (average < 13) {
-        displayEmoticonColor(TFT_GREEN, "GOOD");
-    } else if (average < 36) {
-        displayEmoticonColor(TFT_YELLOW, "MODERATE");
-    } else if (average < 56) {
-        displayEmoticonColor(TFT_ORANGE, "UNH SEN G");
-    } else if (average < 151) {
-        displayEmoticonColor(TFT_RED, "UNHEALTY");
-    } else if (average < 251) {
-        displayEmoticonColor(TFT_PURPLE, "VERY UNH");
-    } else {
-        displayEmoticonColor(TFT_BROWN, "HAZARDOUS");
+    static uint_fast64_t sensor_avarage_ts = 0;   // timestamp for GUI refresh
+    if ((millis() - sensor_avarage_ts > 1000)) {  
+        sensor_avarage_ts = millis();
+        if (average < 13) {
+            displayEmoticonColor(TFT_GREEN, "GOOD");
+        } else if (average < 36) {
+            displayEmoticonColor(TFT_YELLOW, "MODERATE");
+        } else if (average < 56) {
+            displayEmoticonColor(TFT_ORANGE, "UNH SEN G");
+        } else if (average < 151) {
+            displayEmoticonColor(TFT_RED, "UNHEALTY");
+        } else if (average < 251) {
+            displayEmoticonColor(TFT_PURPLE, "VERY UNH");
+        } else {
+            displayEmoticonColor(TFT_BROWN, "HAZARDOUS");
+        }
+        char output[4];
+        sprintf(output, "%04d", average);
+        displayCenterBig(output, deviceType);
     }
-    char output[4];
-    sprintf(output, "%04d", average);
-    displayCenterBig(output, deviceType);
 }
 
 // TODO: separate this function, format/display
 void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
-    tft.fillRect(1, 170, 64, 20, TFT_BLACK);
-    tft.fillRect(1, 210, 64, 20, TFT_BLACK);
-    
-    tft.setFreeFont(&Orbitron_Medium_20);
-    tft.setCursor(1, 187);
-    tft.printf("%02.1f",temp);
+    static uint_fast64_t sensor_data_ts = 0;   // timestamp for GUI refresh
+    if ((millis() - sensor_data_ts > 1000)) {  // it should be minor than sensor loop
+        sensor_data_ts = millis();
+        tft.fillRect(1, 170, 64, 20, TFT_BLACK);
+        tft.fillRect(1, 210, 64, 20, TFT_BLACK);
 
-    tft.setCursor(1, 227);
-    tft.printf("%02d%%",(int)humi);
+        tft.setFreeFont(&Orbitron_Medium_20);
+        tft.setCursor(1, 187);
+        tft.printf("%02.1f", temp);
 
-    // char output[50];
-    // if (deviceType <= 4)
-    //     sprintf(output, "%04d E%02d H%02f%% T%02f°C", mainValue, 0, humi, temp);
-    // else
-    //     sprintf(output, "%03d E%02d H%02f%% T%02f°C", mainValue, 0, humi, temp);
+        tft.setCursor(1, 227);
+        tft.printf("%02d%%", (int)humi);
 
-    // displayBottomLine(String(output));
-    
-    // tft.setFreeFont(&Orbitron_Medium_20);
-    // tft.setCursor(2, 227);
-    // sprintf(output, "%04d", mainValue);
-    // tft.println(output);
+        _rssi = rssi;
+
+        // char output[50];
+        // if (deviceType <= 4)
+        //     sprintf(output, "%04d E%02d H%02f%% T%02f°C", mainValue, 0, humi, temp);
+        // else
+        //     sprintf(output, "%03d E%02d H%02f%% T%02f°C", mainValue, 0, humi, temp);
+
+        // displayBottomLine(String(output));
+
+        // tft.setFreeFont(&Orbitron_Medium_20);
+        // tft.setCursor(2, 227);
+        // sprintf(output, "%04d", mainValue);
+        // tft.println(output);
+    }
 }
 
 void TFTUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
-// #ifdef TTGO_TQ
-//     if (bleOn)
-//         u8g2.drawBitmap(dw - 9, dh - 8, 1, 8, ic_bluetooth_on);
-//     if (blePair)
-//         u8g2.drawBitmap(dw - 9, dh - 8, 1, 8, ic_bluetooth_pair);
-//     if (wifiOn)
-//         u8g2.drawBitmap(dw - 18, dh - 8, 1, 8, ic_wifi_on);
-//     if (dataOn)
-//         u8g2.drawBitmap(dw - 35, dh - 8, 1, 8, ic_data_on);
-//     if (preferenceSave)
-//         u8g2.drawBitmap(dw - 57, dh - 8, 1, 8, ic_pref_save);
-//     if (sensorLive)
-//         u8g2.drawBitmap(dw - 48, dh - 8, 1, 8, ic_sensor_live);
+    static uint_fast64_t sensor_status_ts = 0;   // timestamp for GUI refresh
+    if ((millis() - sensor_status_ts > 1000)) { 
+        sensor_status_ts = millis();
 
-// #else
-//     if (bleOn)
-//         u8g2.drawBitmap(dw - 10, dh - 8, 1, 8, ic_bluetooth_on);
-//     if (blePair)
-//         u8g2.drawBitmap(dw - 10, dh - 8, 1, 8, ic_bluetooth_pair);
-//     if (wifiOn)
-//         u8g2.drawBitmap(dw - 20, dh - 8, 1, 8, ic_wifi_on);
-//     if (dataOn)
-//         u8g2.drawBitmap(dw - 30, dh - 8, 1, 8, ic_data_on);
-//     if (preferenceSave)
-//         u8g2.drawBitmap(10, dh - 8, 1, 8, ic_pref_save);
-//     if (sensorLive)
-//         u8g2.drawBitmap(0, dh - 8, 1, 8, ic_sensor_live);
+        tft.fillRect(0, 0, 135, 18, TFT_BLACK);
 
-//     u8g2.drawLine(0, dh - 10, dw - 1, dh - 10);
-// #endif
-//     if (dataOn) dataOn = false;                  // reset trigger for publish data ok.
-//     if (preferenceSave) preferenceSave = false;  // reset trigger for save preference ok.
-//     if (sensorLive) sensorLive = false;
+        if (bleOn && blePair)
+            drawBluetoothIcon();
+        if (wifiOn){
+            if (_rssi < 60) drawWifiHighIcon();
+            else if (_rssi < 70) drawWifiMidIcon();
+            else drawWifiLowIcon();
+        }
+
+        if (sensorLive) drawFanIcon();
+        if (dataOn) drawDataIcon();
+        // if (preferenceSave);
+
+        if (dataOn) dataOn = false;                              // reset trigger for publish data ok.
+        if (preferenceSave) preferenceSave = false;              // reset trigger for save preference ok.
+        if (sensorLive && _live_ticks++>1) sensorLive = false;   // reset fan animation
+    }
 }
 
 /// enable trigger for show data ok icon, one time.
@@ -283,6 +279,7 @@ void TFTUtils::displayDataOnIcon() {
 /// enable trigger for sensor live icon, one time.
 void TFTUtils::displaySensorLiveIcon() {
     sensorLive = true;
+    _live_ticks = 0;
 }
 
 /// enable trigger for save preference ok, one time.
@@ -290,12 +287,39 @@ void TFTUtils::displayPreferenceSaveIcon() {
     preferenceSave = true;
 }
 
-void TFTUtils::pageStart() {
+void TFTUtils::drawBluetoothIcon () {
+    tft.drawBitmap(122, 1, iconBluetoothPaired, 12, 16, TFT_BLACK, TFT_BLUE);
+}
 
+void TFTUtils::drawWifiHighIcon () {
+    tft.drawBitmap(109, 1, iconWifiHigh, 12, 16, TFT_BLACK, TFT_BLUE);
+}
+
+void TFTUtils::drawWifiMidIcon () {
+    tft.drawBitmap(109, 1, iconWifiMid, 12, 16, TFT_BLACK, TFT_BLUE);
+}
+
+void TFTUtils::drawWifiLowIcon () {
+    tft.drawBitmap(109, 1, iconWifiLow, 12, 16, TFT_BLACK, TFT_BLUE);
+}
+
+void TFTUtils::drawFanIcon () {
+    tft.drawBitmap(0, 1, fanState ? iconFanState0 : iconFanState1, 12, 16, TFT_BLACK, TFT_GREEN);
+    fanState = !fanState;
+}
+
+void TFTUtils::drawDataIcon () {
+    tft.drawBitmap(96, 1, iconArrows, 12, 16, TFT_BLACK, TFT_LIGHTGREY);
+}
+
+void TFTUtils::pageStart() {
+    // fast interactions (80ms)
+    checkButtons();
+    if(sensorLive) drawFanIcon();
 }
 
 void TFTUtils::pageEnd() {
-    // u8g2.nextPage();
+
 }
 
 void TFTUtils::clearScreen() {

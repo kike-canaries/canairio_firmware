@@ -18,6 +18,7 @@
 
 /// sensors data callback
 void onSensorDataOk() {
+    log_i("[MAIN] onSensorDataOk");
     gui.displaySensorLiveIcon();  // all sensors read are ok
 }
 
@@ -52,9 +53,10 @@ void startingSensors() {
     }
 }
 
+
 void displayGUI() {
     static uint_fast64_t timeStampGUI = 0;   // timestamp for GUI refresh
-    if ((millis() - timeStampGUI > 80)) {  // it should be minor than sensor loop
+    if ((millis() - timeStampGUI > 1000)) {    // fast refresh for buttons
         timeStampGUI = millis();
 
         int deviceType = sensors.getPmDeviceTypeSelected();
@@ -72,7 +74,6 @@ void displayGUI() {
         float temp = sensors.getTemperature();
         if (temp == 0.0) temp = sensors.getCO2temp();
 
-        gui.pageStart();
         gui.displaySensorAverage(mainValue, deviceType);
         gui.displaySensorData(
             mainValue,
@@ -82,9 +83,8 @@ void displayGUI() {
             getWifiRSSI(),
             deviceType);
         gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
-        gui.checkButtons();
-        gui.pageEnd();
     }
+    gui.pageEnd();
 }
 
 /******************************************************************************
@@ -157,6 +157,7 @@ void setup() {
 
 void loop() {
     sensors.loop();  // read sensor data and showed it
+    gui.pageStart();
     batteryloop();   // battery charge status
     bleLoop();       // notify data to connected devices
     wifiLoop();      // check wifi and reconnect it
@@ -165,4 +166,5 @@ void loop() {
     otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers
     displayGUI();    // run GUI page
+    delay(80);
 }

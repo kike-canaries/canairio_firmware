@@ -102,7 +102,10 @@ void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
 }
 
 void TFTUtils::suspend() {
-    delay(100);
+    showWelcome();
+    welcomeAddMessage("Shutting down..");
+    while(digitalRead(BUTTON_R)!=0) delay(10);
+    delay(2000);
     int r = digitalRead(TFT_BL);
     digitalWrite(TFT_BL, !r);
     delay(100);
@@ -128,8 +131,8 @@ void TFTUtils::checkButtons() {
             tft.fillRect(78, 216, 44, 12, TFT_BLACK);
 
             b++;
-            if (b >= 5) suspend();
-            // if (b >= 5) b = 0;
+            // if (b >= 5) suspend();
+            if (b >= 5) b = 0;
 
             for (int i = 0; i < b + 1; i++)
                 tft.fillRect(78 + (i * 7), 216, 3, 10, blue);
@@ -140,6 +143,7 @@ void TFTUtils::checkButtons() {
 
     if (digitalRead(BUTTON_L) == 0) {
         if (press1 == 0) {
+            if (digitalRead(BUTTON_R)==0) suspend();
             press1 = 1;
             inv = !inv;
             tft.invertDisplay(inv);
@@ -288,19 +292,19 @@ void TFTUtils::displayPreferenceSaveIcon() {
 }
 
 void TFTUtils::drawBluetoothIcon () {
-    tft.drawBitmap(122, 1, iconBluetoothPaired, 12, 16, TFT_BLACK, TFT_BLUE);
+    tft.drawBitmap(122, 1, iconBluetoothPaired, 12, 16, TFT_BLACK, TFT_WHITE);
 }
 
 void TFTUtils::drawWifiHighIcon () {
-    tft.drawBitmap(109, 1, iconWifiHigh, 12, 16, TFT_BLACK, TFT_BLUE);
+    tft.drawBitmap(109, 1, iconWifiHigh, 12, 16, TFT_BLACK, TFT_WHITE);
 }
 
 void TFTUtils::drawWifiMidIcon () {
-    tft.drawBitmap(109, 1, iconWifiMid, 12, 16, TFT_BLACK, TFT_BLUE);
+    tft.drawBitmap(109, 1, iconWifiMid, 12, 16, TFT_BLACK, TFT_WHITE);
 }
 
 void TFTUtils::drawWifiLowIcon () {
-    tft.drawBitmap(109, 1, iconWifiLow, 12, 16, TFT_BLACK, TFT_BLUE);
+    tft.drawBitmap(109, 1, iconWifiLow, 12, 16, TFT_BLACK, TFT_WHITE);
 }
 
 void TFTUtils::drawFanIcon () {
@@ -309,7 +313,7 @@ void TFTUtils::drawFanIcon () {
 }
 
 void TFTUtils::drawDataIcon () {
-    tft.drawBitmap(96, 1, iconArrows, 12, 16, TFT_BLACK, TFT_LIGHTGREY);
+    tft.drawBitmap(96, 1, iconArrows, 12, 16, TFT_BLACK, TFT_WHITE);
 }
 
 void TFTUtils::pageStart() {

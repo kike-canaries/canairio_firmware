@@ -45,9 +45,9 @@ void setup(void) {
     Serial.println("-->[SETUP] console ready");
     gui.displayInit();
     gui.showWelcome();
-    delay(2000);
+    delay(500);
     gui.displayBottomLine("CanAirIOAF4");
-    delay(2000);
+    delay(500);
     gui.welcomeAddMessage("Sensor ready..");
     delay(500);
     gui.welcomeAddMessage("GATT server..");
@@ -60,7 +60,7 @@ void setup(void) {
 
     randomSeed(A0);
 
-    delay(4000);
+    delay(1000);
     gui.showMain();
 }
 
@@ -73,23 +73,28 @@ uint16_t total = 1000;
 
 void loop(void) {
 
-    // gui.pageStart();
+    gui.pageStart();
+
+    int rnd = random(0, 3);
 
     if (count++ % 40 == 0 ) gui.displaySensorAverage(random(0, 250), 4);
 
     // gui.displaySensorAverage(1200, 4);
 
-    if (count % 50 == 0) gui.displaySensorData(120, 230,random(0, 99), random(0, 800)/25.0, 65, 1);
+    if (count % 50 == 0) gui.displaySensorData(120, 230,random(0, 99), random(0, 800)/25.0, random(50, 90), 1);
 
     gui.checkButtons();
 
     // gui.showProgress(count++,1000);
 
     // gui.displayStatus(getBoolean(), true, getBoolean());
+    
+    gui.displayStatus(true, true, getBoolean());
 
-    // functionPtr[rnd]();  // Call a test function in random sequence
+    functionPtr[rnd]();  // Call a test function in random sequence
 
-    // gui.pageEnd();
+    gui.pageEnd();
 
     delay(80);
+
 }

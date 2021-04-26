@@ -229,7 +229,7 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
         tft.setCursor(1, 227);
         tft.printf("%02d%%", (int)humi);
 
-        _rssi = rssi;
+        _rssi = abs(rssi);
 
         // char output[50];
         // if (deviceType <= 4)

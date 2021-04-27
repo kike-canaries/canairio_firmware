@@ -7,8 +7,8 @@
 #include <hal.hpp>
 #include <icons.h>
 
-#define MAX_X 130
-#define MAX_Y 64
+#define MAX_X 135
+#define MAX_Y 80
 
 #define TFT_GREY 0x5AEB
 #define lightblue 0x01E9
@@ -115,7 +115,9 @@ class TFTUtils {
 
     double getMultiplicator();
 
-    void drawBarGraph();
+    uint32_t getAQIColor(uint32_t value,int deviceType);
+    
+    void drawBarGraph(int deviceType);
 
     void drawBluetoothIcon();
 

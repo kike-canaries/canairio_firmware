@@ -77,11 +77,11 @@ void loop(void) {
 
     int rnd = random(0, 3);
 
-    if (count++ % 40 == 0 ) gui.displaySensorAverage(random(0, 250), 4);
+    if (count++ % 40 == 0 ) gui.displaySensorAverage(random(0, 250), 1);
 
     // gui.displaySensorAverage(1200, 4);
 
-    if (count % 50 == 0) gui.displaySensorData(random(0,1000), 230,random(0, 99), random(0, 800)/25.0, random(50, 90), 1);
+    if (count % 50 == 0) gui.displaySensorData(random(0,300), 230,random(0, 99), random(0, 800)/25.0, random(50, 90), 1);
 
     gui.checkButtons();
 

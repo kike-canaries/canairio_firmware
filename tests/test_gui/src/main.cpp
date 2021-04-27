@@ -81,7 +81,7 @@ void loop(void) {
 
     // gui.displaySensorAverage(1200, 4);
 
-    if (count % 50 == 0) gui.displaySensorData(120, 230,random(0, 99), random(0, 800)/25.0, random(50, 90), 1);
+    if (count % 50 == 0) gui.displaySensorData(random(0,1000), 230,random(0, 99), random(0, 800)/25.0, random(50, 90), 1);
 
     gui.checkButtons();
 

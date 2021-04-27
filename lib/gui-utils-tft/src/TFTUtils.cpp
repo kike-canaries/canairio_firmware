@@ -235,6 +235,10 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
 
         _rssi = abs(rssi);
 
+        pkts[MAX_X - 1] = mainValue;
+
+        drawBarGraph();
+
         // char output[50];
         // if (deviceType <= 4)
         //     sprintf(output, "%04d E%02d H%02f%% T%02f°C", mainValue, 0, humi, temp);
@@ -273,6 +277,28 @@ void TFTUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
         if (preferenceSave) preferenceSave = false;              // reset trigger for save preference ok.
         if (sensorLive && _live_ticks++>1) sensorLive = false;   // reset fan animation
     }
+}
+
+void TFTUtils::drawBarGraph() {
+    double multiplicator = getMultiplicator();
+    Serial.println("mul:"+String(multiplicator));
+    int len;
+    tft.fillRect(0, 86, MAX_X, MAX_Y, TFT_BLACK);
+    tft.drawLine(0, 151 - MAX_Y, MAX_X - 1, 151 - MAX_Y,TFT_GREY);
+    for (int i = 0; i < MAX_X; i++) {
+        len = pkts[i] * multiplicator;
+        tft.drawLine(i, 151, i, 151 - (len > MAX_Y ? MAX_Y : len),TFT_RED);
+        if (i < MAX_X - 1) pkts[i] = pkts[i + 1];
+    }
+}
+
+double TFTUtils::getMultiplicator() {
+  uint32_t maxVal = 1;
+  for (int i = 0; i < MAX_X; i++) {
+    if (pkts[i] > maxVal) maxVal = pkts[i];
+  }
+  if (maxVal > MAX_Y) return (double)MAX_Y / (double)maxVal;
+  else return 1;
 }
 
 /// enable trigger for show data ok icon, one time.

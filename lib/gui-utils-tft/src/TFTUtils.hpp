@@ -7,6 +7,9 @@
 #include <hal.hpp>
 #include <icons.h>
 
+#define MAX_X 130
+#define MAX_Y 64
+
 #define TFT_GREY 0x5AEB
 #define lightblue 0x01E9
 #define darkred 0xA041
@@ -98,6 +101,8 @@ class TFTUtils {
 
     int dh = 0;  // display height
 
+    uint32_t pkts[MAX_X];  // here the packets per second will be saved
+
     void displayCenterBig(String msg, int deviceType);
 
     void displayEmoticonLabel(int numsmile, String msg);
@@ -107,6 +112,10 @@ class TFTUtils {
     void displayBigEmoticon(String msg);
 
     void displayBigLabel(int cursor, String msg);
+
+    double getMultiplicator();
+
+    void drawBarGraph();
 
     void drawBluetoothIcon();
 

@@ -16,15 +16,41 @@
 #include <bluetooth.hpp>
 #include <wifi.hpp>
 
+void displayGUI() {
+    gui.displaySensorLiveIcon();  // all sensors read are ok
+    int deviceType = sensors.getPmDeviceTypeSelected();
+    uint16_t mainValue = 0;
+    if (deviceType <= 3) {
+        mainValue = sensors.getPM25();
+    } else {
+        mainValue = sensors.getCO2();
+    }
+
+    float humi = sensors.getHumidity();
+    if (humi == 0.0) humi = sensors.getCO2humi();
+
+    float temp = sensors.getTemperature();
+    if (temp == 0.0) temp = sensors.getCO2temp();
+
+    gui.displaySensorAverage(mainValue, deviceType);
+    gui.displaySensorData(
+        mainValue,
+        getChargeLevel(),
+        humi,
+        temp,
+        getWifiRSSI(),
+        deviceType);
+}
+
 /// sensors data callback
 void onSensorDataOk() {
     log_i("[MAIN] onSensorDataOk");
-    gui.displaySensorLiveIcon();  // all sensors read are ok
+    displayGUI();
 }
 
 /// sensors error callback
 void onSensorDataError(const char * msg){
-    Serial.println(msg);
+    log_w("[MAIN] onSensorDataError", msg);
 }
 
 void startingSensors() {
@@ -51,40 +77,6 @@ void startingSensors() {
         Serial.println("-->[INFO] Detection sensors FAIL!");
         gui.welcomeAddMessage("Detection !FAILED!");
     }
-}
-
-
-void displayGUI() {
-    static uint_fast64_t timeStampGUI = 0;   // timestamp for GUI refresh
-    if ((millis() - timeStampGUI > 1000)) {    // fast refresh for buttons
-        timeStampGUI = millis();
-
-        int deviceType = sensors.getPmDeviceTypeSelected();
-        uint16_t mainValue = 0;
-        if (deviceType <= 3){
-            mainValue = sensors.getPM25();
-        }
-        else{
-            mainValue = sensors.getCO2();
-        }
-
-        float humi = sensors.getHumidity();
-        if (humi == 0.0) humi = sensors.getCO2humi();
-
-        float temp = sensors.getTemperature();
-        if (temp == 0.0) temp = sensors.getCO2temp();
-
-        gui.displaySensorAverage(mainValue, deviceType);
-        gui.displaySensorData(
-            mainValue,
-            getChargeLevel(),
-            humi,
-            temp,
-            getWifiRSSI(),
-            deviceType);
-        gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
-    }
-    gui.pageEnd();
 }
 
 /******************************************************************************
@@ -158,6 +150,7 @@ void setup() {
 void loop() {
     sensors.loop();  // read sensor data and showed it
     gui.pageStart();
+
     batteryloop();   // battery charge status
     bleLoop();       // notify data to connected devices
     wifiLoop();      // check wifi and reconnect it
@@ -165,6 +158,8 @@ void loop() {
     influxDbLoop();  // influxDB publication
     otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers
-    displayGUI();    // run GUI page
+    
+    gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
+    gui.pageEnd();
     delay(80);
 }

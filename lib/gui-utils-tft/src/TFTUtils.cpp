@@ -154,17 +154,19 @@ void TFTUtils::checkButtons() {
 
 void TFTUtils::displayCenterBig(String msg, int deviceType) {
     tft.setFreeFont(&Orbitron_Light_32);
-    tft.setTextDatum(TC_DATUM);
-    tft.fillRect(3, 25, 120, 30, TFT_BLACK);
-    tft.setCursor(5, 51);
-    tft.println(msg.c_str());
+    tft.setTextDatum(MC_DATUM);
+    tft.setTextColor(TFT_WHITE,TFT_BLACK);
+    tft.fillRect(2, 25, 130, 32, TFT_BLACK);
+    tft.drawString(msg.c_str(), tft.width() / 2, 36);
+    // tft.setCursor(5, 51);
+    // tft.println(msg.c_str());
     tft.setTextFont(1);
     tft.setTextSize(0);
-    tft.setCursor(100, 57);
+    tft.setCursor(104, 57);
     if (deviceType <= 3)
-        tft.println("ug/m3");
+        tft.println("PM2.5");
     else
-        tft.println("ppm");
+        tft.println("PPM");
 }
 
 void TFTUtils::displayBottomLine(String msg) {
@@ -234,10 +236,9 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
         tft.printf("%02d%%", (int)humi);
 
         _rssi = abs(rssi);
-
         pkts[MAX_X - 1] = mainValue;
 
-        drawBarGraph();
+        drawBarGraph(deviceType);
 
         // char output[50];
         // if (deviceType <= 4)
@@ -279,15 +280,37 @@ void TFTUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
     }
 }
 
-void TFTUtils::drawBarGraph() {
+uint32_t TFTUtils::getAQIColor(uint32_t value, int deviceType) {
+    if (deviceType <= 3) {
+
+        if (value <= 13)       return TFT_GREEN;
+        else if (value <= 35)  return TFT_YELLOW;
+        else if (value <= 55)  return TFT_ORANGE;
+        else if (value <= 150) return TFT_RED;
+        else if (value <= 250) return TFT_PURPLE;
+        else                   return TFT_BROWN;
+
+    } else {
+
+        if (value <= 600)       return TFT_GREEN;
+        else if (value <= 800)  return TFT_YELLOW;
+        else if (value <= 1000) return TFT_ORANGE;
+        else if (value <= 1500) return TFT_RED;
+        else if (value <= 2000) return TFT_PURPLE;
+        else                    return TFT_BROWN;
+    }
+}
+
+void TFTUtils::drawBarGraph(int deviceType) {
     double multiplicator = getMultiplicator();
     Serial.println("mul:"+String(multiplicator));
     int len;
-    tft.fillRect(0, 86, MAX_X, MAX_Y, TFT_BLACK);
-    tft.drawLine(0, 151 - MAX_Y, MAX_X - 1, 151 - MAX_Y,TFT_GREY);
+    tft.fillRect(0, 149 - MAX_Y, MAX_X, MAX_Y, TFT_BLACK);
+    tft.drawLine(0, 150 - MAX_Y, MAX_X - 1, 150 - MAX_Y,TFT_GREY);
     for (int i = 0; i < MAX_X; i++) {
         len = pkts[i] * multiplicator;
-        tft.drawLine(i, 151, i, 151 - (len > MAX_Y ? MAX_Y : len),TFT_RED);
+        int color = getAQIColor(pkts[i],deviceType);
+        tft.drawLine(i, 150, i, 150 - (len > MAX_Y ? MAX_Y : len),color);
         if (i < MAX_X - 1) pkts[i] = pkts[i + 1];
     }
 }

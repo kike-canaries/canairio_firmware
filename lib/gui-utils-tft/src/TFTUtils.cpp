@@ -18,6 +18,8 @@ void TFTUtils::displayInit() {
     ledcAttachPin(TFT_BL, pwmLedChannelTFT);
     setContrast(30);
 
+    setupBattery();           // init battery ADC.
+
     Serial.println("-->[TFT] display config ready.");
 }
 
@@ -67,6 +69,7 @@ void TFTUtils::showMain() {
 
     tft.setCursor(80, 204, 1);
     tft.println("BATT:");
+    updateBatteryValue();
 
     tft.setCursor(80, 152, 2);
     tft.println("HEALTH:");
@@ -79,9 +82,6 @@ void TFTUtils::showMain() {
     tft.println("HUM: ");
 
     tft.fillRect(68, 152, 1, 74, TFT_GREY);
-
-    for (int i = 0; i < b + 1; i++)
-        tft.fillRect(78 + (i * 7), 216, 3, 10, blue);
 
     Serial.println("-->[TFT] displayed main screen");
 }
@@ -143,6 +143,22 @@ void TFTUtils::updateInvertValue(){
     else tft.println("inverted");
 }
 
+void TFTUtils::updateBatteryValue(){
+    float volts = battGetVoltage();
+    int state = (int)battCalcPercentage(volts)/20;
+
+    String voltage = "" + String(volts) + "v";
+    displayBottomLine(voltage);
+    Serial.printf("-->[UI] voltage: %s\n", voltage.c_str());
+    Serial.printf("-->[UI] batt %03d\n", state);
+
+    tft.fillRect(78,216,44,10,TFT_BLACK);
+
+    for (int i = 0; i < state + 1; i++) {
+        tft.fillRect(78 + (i * 7), 216, 3, 10, blue);
+    }
+}
+
 void TFTUtils::checkButtons() {
     if (digitalRead(BUTTON_R) == 0) {
         if (press2 == 0) {
@@ -190,12 +206,11 @@ void TFTUtils::suspend() {
     delay(2000);
     int r = digitalRead(TFT_BL);
     digitalWrite(TFT_BL, !r);
-    delay(100);
+    delay(10);
     tft.writecommand(TFT_DISPOFF);
     tft.writecommand(TFT_SLPIN);
-
     digitalWrite(ADC_EN, LOW);
-
+    delay(10);
     //Disable timer wake, because here use external IO port to wake up
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
@@ -352,7 +367,6 @@ uint32_t TFTUtils::getAQIColor(uint32_t value, int deviceType) {
 
 void TFTUtils::drawBarGraph(int deviceType) {
     double multiplicator = getMultiplicator();
-    Serial.println("mul:"+String(multiplicator));
     int len;
     tft.fillRect(0, 149 - MAX_Y, MAX_X, MAX_Y, TFT_BLACK);
     tft.drawLine(0, 150 - MAX_Y, MAX_X - 1, 150 - MAX_Y,TFT_GREY);
@@ -418,6 +432,12 @@ void TFTUtils::pageStart() {
     // fast interactions (80ms)
     checkButtons();
     if(state == 0 && sensorLive) drawFanIcon();
+    // slow interactions
+    static uint_fast64_t loopts = 0;   // timestamp for GUI refresh
+    if (state == 0 && (millis() - loopts > 2000)) {  
+        loopts = millis();
+        updateBatteryValue();
+    }
 }
 
 void TFTUtils::pageEnd() {

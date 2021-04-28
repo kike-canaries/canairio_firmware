@@ -103,6 +103,12 @@ class TFTUtils {
 
     uint32_t pkts[MAX_X];  // here the packets per second will be saved
 
+    int state = 0;
+
+    void showSetup();
+
+    void refreshSetup();
+
     void displayCenterBig(String msg, int deviceType);
 
     void displayEmoticonLabel(int numsmile, String msg);
@@ -130,6 +136,10 @@ class TFTUtils {
     void drawFanIcon();
 
     void drawDataIcon();
+
+    void invertScreen();
+
+    void updateBrightness();
 
 };
 

@@ -106,6 +106,13 @@ void TFTUtils::showSetup() {
     
     tft.setCursor(MARGINL, SSTART+PRESETH, 2);
     tft.println("COLORS:");
+
+    tft.setCursor(MARGINL, SSTART+PRESETH*2, 2);
+    tft.println("WiFi:");
+
+    tft.setCursor(MARGINL, SSTART+PRESETH*3, 2);
+    tft.println("STIME:");
+
     updateInvertValue();
 
     tft.fillRect(68, SSTART, 1, 190, TFT_GREY);
@@ -151,9 +158,6 @@ void TFTUtils::updateBatteryValue(){
 
     String voltage = "" + String(volts) + "v";
     displayBottomLine(voltage);
-    Serial.printf("-->[UI] voltage: %s\n", voltage.c_str());
-    Serial.printf("-->[UI] batt %03d\n", state);
-
     tft.fillRect(78,216,44,10,TFT_BLACK);
 
     for (int i = 0; i < state + 1; i++) {
@@ -177,10 +181,13 @@ void TFTUtils::checkButtons() {
             press1 = 1;
             if(state++==0)showSetup();
             if(state>=1)refreshSetup();
-            if(state==3){
+            if(state==5){
                 showMain();
-                delay(100);
+                delay(10);
                 state=0;
+                drawBarGraph(_deviceType);
+                displaySensorAverage(_average,_deviceType);
+                displaySensorData(_average,0,_humi,_temp,_rssi,_deviceType);
             }
         }
     } else
@@ -264,9 +271,7 @@ void TFTUtils::displayBigLabel(int cursor, String msg) {
 }
 
 void TFTUtils::displaySensorAverage(int average, int deviceType) {
-    static uint_fast64_t sensor_avarage_ts = 0;   // timestamp for GUI refresh
-    if (state == 0 && (millis() - sensor_avarage_ts > 1000)) {  
-        sensor_avarage_ts = millis();
+    if (state == 0) {
         if (average < 13) {
             displayEmoticonColor(TFT_GREEN, "GOOD");
         } else if (average < 36) {
@@ -283,14 +288,13 @@ void TFTUtils::displaySensorAverage(int average, int deviceType) {
         char output[4];
         sprintf(output, "%04d", average);
         displayCenterBig(output, deviceType);
+        _average = average;
     }
 }
 
 // TODO: separate this function, format/display
 void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
-    static uint_fast64_t sensor_data_ts = 0;   // timestamp for GUI refresh
-    if (state == 0 && (millis() - sensor_data_ts > 1000)) {  // it should be minor than sensor loop
-        sensor_data_ts = millis();
+    if (state==0) {
         tft.fillRect(1, 170, 64, 20, TFT_BLACK);
         tft.fillRect(1, 210, 64, 20, TFT_BLACK);
 
@@ -304,20 +308,10 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
         _rssi = abs(rssi);
         pkts[MAX_X - 1] = mainValue;
 
+        _humi = humi;
+        _temp = temp;
+
         drawBarGraph(deviceType);
-
-        // char output[50];
-        // if (deviceType <= 4)
-        //     sprintf(output, "%04d E%02d H%02f%% T%02f°C", mainValue, 0, humi, temp);
-        // else
-        //     sprintf(output, "%03d E%02d H%02f%% T%02f°C", mainValue, 0, humi, temp);
-
-        // displayBottomLine(String(output));
-
-        // tft.setFreeFont(&Orbitron_Medium_20);
-        // tft.setCursor(2, 227);
-        // sprintf(output, "%04d", mainValue);
-        // tft.println(output);
     }
 }
 

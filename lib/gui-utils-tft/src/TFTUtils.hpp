@@ -87,10 +87,6 @@ class TFTUtils {
 
     bool inv = 1;
 
-    int press1 = 0;
-
-    int press2 = 0;
-
     int lastDrawedLine = 0;
 
     bool dataOn;
@@ -98,10 +94,6 @@ class TFTUtils {
     bool preferenceSave;
 
     bool sensorLive;
-
-    int _live_ticks = 0;
-
-    int _rssi;
 
     bool fanState;
 
@@ -112,6 +104,22 @@ class TFTUtils {
     uint32_t pkts[MAX_X];  // here the packets per second will be saved
 
     int state = 0;
+
+    int press1 = 0;
+
+    int press2 = 0;
+
+    int _live_ticks = 0;
+
+    int _rssi = 0;
+
+    int _deviceType = 0;
+
+    float _humi = 0.0;
+
+    float _temp = 0.0;
+
+    int _average = 0;
 
     void showSetup();
 

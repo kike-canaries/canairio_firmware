@@ -58,6 +58,7 @@ void TFTUtils::welcomeRepeatMessage(String msg) {
 }
 
 void TFTUtils::showMain() {
+    tft.setTextFont(1);
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextSize(0);
@@ -87,6 +88,46 @@ void TFTUtils::showMain() {
     Serial.println("-->[TFT] display welcome");
 }
 
+void TFTUtils::showSetup() {
+    tft.setTextFont(1);
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setTextSize(0);
+    tft.setCursor(110,231);
+    tft.println(getFirmwareVersionCode().c_str());
+    tft.drawLine(0,19,135,19,TFT_GREEN);
+    tft.setSwapBytes(true);
+
+    tft.setTextColor(TFT_WHITE, lightblue);
+    tft.setCursor(4, 30, 2);
+    tft.println("BRIGHTNESS:");
+
+    tft.fillRect(68, 152, 1, 74, TFT_GREY);
+
+    for (int i = 0; i < b + 1; i++)
+        tft.fillRect(4 + (i * 7), 40, 3, 10, blue);
+
+    Serial.println("-->[TFT] displayed Setup screen");
+}
+
+void TFTUtils::refreshSetup() {
+
+}
+
+void TFTUtils::updateBrightness() {
+    tft.fillRect(4, 40, 44, 12, TFT_BLACK);
+    b++;
+    if (b >= 5) b = 0;
+    for (int i = 0; i < b + 1; i++)
+        tft.fillRect(4 + (i * 7), 40, 3, 10, blue);
+    ledcWrite(pwmLedChannelTFT, backlight[b]);
+}
+
+void TFTUtils::invertScreen(){
+    inv = !inv;
+    tft.invertDisplay(inv);
+}
+
 void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
     
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -114,11 +155,8 @@ void TFTUtils::suspend() {
 
     digitalWrite(ADC_EN, LOW);
 
-    //After using light sleep, you need to disable timer wake, because here use external IO port to wake up
+    //Disable timer wake, because here use external IO port to wake up
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
-    // esp_sleep_enable_ext1_wakeup(GPIO_SEL_35, ESP_EXT1_WAKEUP_ALL_LOW);
-    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
-    // esp_sleep_enable_ext1_wakeup(GPIO_SEL_35, ESP_EXT1_WAKEUP_ANY_HIGH);
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
     esp_deep_sleep_disable_rom_logging();
     esp_deep_sleep_start();
@@ -128,15 +166,6 @@ void TFTUtils::checkButtons() {
     if (digitalRead(BUTTON_R) == 0) {
         if (press2 == 0) {
             press2 = 1;
-            tft.fillRect(78, 216, 44, 12, TFT_BLACK);
-
-            b++;
-            // if (b >= 5) suspend();
-            if (b >= 5) b = 0;
-
-            for (int i = 0; i < b + 1; i++)
-                tft.fillRect(78 + (i * 7), 216, 3, 10, blue);
-            ledcWrite(pwmLedChannelTFT, backlight[b]);
         }
     } else
         press2 = 0;
@@ -145,8 +174,13 @@ void TFTUtils::checkButtons() {
         if (press1 == 0) {
             if (digitalRead(BUTTON_R)==0) suspend();
             press1 = 1;
-            inv = !inv;
-            tft.invertDisplay(inv);
+            if(state++==0)showSetup();
+            if(state==1)refreshSetup();
+            if(state==2){
+                showMain();
+                delay(100);
+                state=0;
+            }
         }
     } else
         press1 = 0;
@@ -158,8 +192,6 @@ void TFTUtils::displayCenterBig(String msg, int deviceType) {
     tft.setTextColor(TFT_WHITE,TFT_BLACK);
     tft.fillRect(2, 25, 130, 32, TFT_BLACK);
     tft.drawString(msg.c_str(), tft.width() / 2, 36);
-    // tft.setCursor(5, 51);
-    // tft.println(msg.c_str());
     tft.setTextFont(1);
     tft.setTextSize(0);
     tft.setCursor(104, 57);
@@ -199,7 +231,7 @@ void TFTUtils::displayBigLabel(int cursor, String msg) {
 
 void TFTUtils::displaySensorAverage(int average, int deviceType) {
     static uint_fast64_t sensor_avarage_ts = 0;   // timestamp for GUI refresh
-    if ((millis() - sensor_avarage_ts > 1000)) {  
+    if (state == 0 && (millis() - sensor_avarage_ts > 1000)) {  
         sensor_avarage_ts = millis();
         if (average < 13) {
             displayEmoticonColor(TFT_GREEN, "GOOD");
@@ -223,7 +255,7 @@ void TFTUtils::displaySensorAverage(int average, int deviceType) {
 // TODO: separate this function, format/display
 void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
     static uint_fast64_t sensor_data_ts = 0;   // timestamp for GUI refresh
-    if ((millis() - sensor_data_ts > 1000)) {  // it should be minor than sensor loop
+    if (state == 0 && (millis() - sensor_data_ts > 1000)) {  // it should be minor than sensor loop
         sensor_data_ts = millis();
         tft.fillRect(1, 170, 64, 20, TFT_BLACK);
         tft.fillRect(1, 210, 64, 20, TFT_BLACK);
@@ -257,7 +289,7 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
 
 void TFTUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
     static uint_fast64_t sensor_status_ts = 0;   // timestamp for GUI refresh
-    if ((millis() - sensor_status_ts > 1000)) { 
+    if (state == 0 && (millis() - sensor_status_ts > 1000)) { 
         sensor_status_ts = millis();
 
         tft.fillRect(0, 0, 135, 18, TFT_BLACK);
@@ -368,7 +400,7 @@ void TFTUtils::drawDataIcon () {
 void TFTUtils::pageStart() {
     // fast interactions (80ms)
     checkButtons();
-    if(sensorLive) drawFanIcon();
+    if(state == 0 && sensorLive) drawFanIcon();
 }
 
 void TFTUtils::pageEnd() {

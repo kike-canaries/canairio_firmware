@@ -7,8 +7,11 @@
 #include <hal.hpp>
 #include <icons.h>
 
+// Graph bars definition
 #define MAX_X 135
 #define MAX_Y 80
+// Setup screen
+#define SSTART 35
 
 #define TFT_GREY 0x5AEB
 #define lightblue 0x01E9
@@ -138,6 +141,8 @@ class TFTUtils {
     void drawDataIcon();
 
     void invertScreen();
+
+    void updateInvertValue();
 
     void updateBrightness();
 

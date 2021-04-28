@@ -101,31 +101,33 @@ void TFTUtils::showSetup() {
     tft.setSwapBytes(true);
 
     tft.setTextColor(TFT_WHITE, lightblue);
-    tft.setCursor(5, SSTART, 2);
-    tft.println("BRIGHTNESS:");
+    tft.setCursor(MARGINL, SSTART, 2);
+    tft.println("BRIGHT:");
     
-    tft.setCursor(5, SSTART+40, 2);
+    tft.setCursor(MARGINL, SSTART+PRESETH, 2);
     tft.println("COLORS:");
     updateInvertValue();
+
+    tft.fillRect(68, SSTART, 1, 190, TFT_GREY);
     
     for (int i = 0; i < b + 1; i++)
-        tft.fillRect(5 + (i * 7), SSTART+20, 3, 10, blue);
+        tft.fillRect(MARVALL + (i * 7), SSTART+2, 3, 10, blue);
 
     Serial.println("-->[TFT] displayed setup screen");
 }
 
 void TFTUtils::refreshSetup() {
-    int start = SSTART-4;
-    if(state>1)tft.drawRect(0, start+((state-2)*40), 133, 40, TFT_BLACK);
-    tft.drawRect(0, start+((state-1)*40), 133, 40, TFT_GREY);
+    int start = SSTART-3;
+    if(state>1)tft.drawRect(0, start+((state-2)*PRESETH), 134, PRESETH, TFT_BLACK);
+    tft.drawRect(0, start+((state-1)*PRESETH), 134, PRESETH, TFT_GREY);
 }
 
 void TFTUtils::updateBrightness() {
-    tft.fillRect(5, SSTART+20, 44, 10, TFT_BLACK);
+    tft.fillRect(MARVALL, SSTART+1, 44, 11, TFT_BLACK);
     b++;
     if (b >= 5) b = 0;
     for (int i = 0; i < b + 1; i++)
-        tft.fillRect(5 + (i * 7), SSTART+20, 3, 10, blue);
+        tft.fillRect(MARVALL + (i * 7), SSTART+2, 3, 10, blue);
     ledcWrite(pwmLedChannelTFT, backlight[b]);
 }
 
@@ -136,9 +138,9 @@ void TFTUtils::invertScreen(){
 }
 
 void TFTUtils::updateInvertValue(){
-    tft.fillRect(5, SSTART+58, 100, 13, TFT_BLACK);
+    tft.fillRect(MARVALL, SSTART+PRESETH, 50, 13, TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setCursor(5, SSTART+58, 2);
+    tft.setCursor(MARVALL, SSTART+PRESETH, 2);
     if(inv) tft.println("normal");
     else tft.println("inverted");
 }

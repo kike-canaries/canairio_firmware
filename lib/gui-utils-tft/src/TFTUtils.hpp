@@ -14,6 +14,9 @@
 #define MAX_Y 80
 // Setup screen
 #define SSTART 35
+#define MARGINL 5
+#define MARVALL 74
+#define PRESETH 20
 
 #define TFT_GREY 0x5AEB
 #define lightblue 0x01E9

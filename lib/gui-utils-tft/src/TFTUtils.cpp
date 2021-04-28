@@ -26,10 +26,8 @@ void TFTUtils::showWelcome() {
     tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
     tft.setFreeFont(&Orbitron_Medium_20);
     tft.setCursor(2,20);
-    Serial.println("-->[TFT] font H: "+String(tft.fontHeight()));
     tft.print("CanAirIO ");
     tft.setTextFont(2);
-    Serial.println("-->[TFT] font H: "+String(tft.fontHeight()));
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setCursor(101,226);
     tft.println(getFirmwareVersionCode().c_str());
@@ -37,7 +35,7 @@ void TFTUtils::showWelcome() {
     lastDrawedLine = 32;
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextFont(1);
-    Serial.println("-->[TFT] display welcome");
+    Serial.println("-->[TFT] displayed welcome screen");
 }
 
 void TFTUtils::welcomeAddMessage(String msg) {
@@ -68,7 +66,7 @@ void TFTUtils::showMain() {
     tft.setSwapBytes(true);
 
     tft.setCursor(80, 204, 1);
-    tft.println("BRIGHT:");
+    tft.println("BATT:");
 
     tft.setCursor(80, 152, 2);
     tft.println("HEALTH:");
@@ -85,47 +83,90 @@ void TFTUtils::showMain() {
     for (int i = 0; i < b + 1; i++)
         tft.fillRect(78 + (i * 7), 216, 3, 10, blue);
 
-    Serial.println("-->[TFT] display welcome");
+    Serial.println("-->[TFT] displayed main screen");
 }
 
 void TFTUtils::showSetup() {
-    tft.setTextFont(1);
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
+    tft.setFreeFont(&Orbitron_Medium_20);
+    tft.setCursor(2,20);
+    tft.print("Setup");
+    tft.setTextFont(1);
     tft.setTextSize(0);
     tft.setCursor(110,231);
     tft.println(getFirmwareVersionCode().c_str());
-    tft.drawLine(0,19,135,19,TFT_GREEN);
+    tft.drawLine(0,22,135,22,TFT_GREEN);
     tft.setSwapBytes(true);
 
     tft.setTextColor(TFT_WHITE, lightblue);
-    tft.setCursor(4, 30, 2);
+    tft.setCursor(5, SSTART, 2);
     tft.println("BRIGHTNESS:");
-
-    tft.fillRect(68, 152, 1, 74, TFT_GREY);
-
+    
+    tft.setCursor(5, SSTART+40, 2);
+    tft.println("COLORS:");
+    updateInvertValue();
+    
     for (int i = 0; i < b + 1; i++)
-        tft.fillRect(4 + (i * 7), 40, 3, 10, blue);
+        tft.fillRect(5 + (i * 7), SSTART+20, 3, 10, blue);
 
-    Serial.println("-->[TFT] displayed Setup screen");
+    Serial.println("-->[TFT] displayed setup screen");
 }
 
 void TFTUtils::refreshSetup() {
-
+    int start = SSTART-4;
+    if(state>1)tft.drawRect(0, start+((state-2)*40), 133, 40, TFT_BLACK);
+    tft.drawRect(0, start+((state-1)*40), 133, 40, TFT_GREY);
 }
 
 void TFTUtils::updateBrightness() {
-    tft.fillRect(4, 40, 44, 12, TFT_BLACK);
+    tft.fillRect(5, SSTART+20, 44, 10, TFT_BLACK);
     b++;
     if (b >= 5) b = 0;
     for (int i = 0; i < b + 1; i++)
-        tft.fillRect(4 + (i * 7), 40, 3, 10, blue);
+        tft.fillRect(5 + (i * 7), SSTART+20, 3, 10, blue);
     ledcWrite(pwmLedChannelTFT, backlight[b]);
 }
 
 void TFTUtils::invertScreen(){
     inv = !inv;
     tft.invertDisplay(inv);
+    updateInvertValue();
+}
+
+void TFTUtils::updateInvertValue(){
+    tft.fillRect(5, SSTART+58, 100, 13, TFT_BLACK);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setCursor(5, SSTART+58, 2);
+    if(inv) tft.println("normal");
+    else tft.println("inverted");
+}
+
+void TFTUtils::checkButtons() {
+    if (digitalRead(BUTTON_R) == 0) {
+        if (press2 == 0) {
+            press2 = 1;
+            if(state==1)updateBrightness();
+            if(state==2)invertScreen();
+        }
+    } else
+        press2 = 0;
+
+    if (digitalRead(BUTTON_L) == 0) {
+        if (press1 == 0) {
+            if (digitalRead(BUTTON_R)==0) suspend();
+            press1 = 1;
+            if(state++==0)showSetup();
+            if(state>=1)refreshSetup();
+            if(state==3){
+                showMain();
+                delay(100);
+                state=0;
+            }
+        }
+    } else
+        press1 = 0;
 }
 
 void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
@@ -160,30 +201,6 @@ void TFTUtils::suspend() {
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
     esp_deep_sleep_disable_rom_logging();
     esp_deep_sleep_start();
-}
-
-void TFTUtils::checkButtons() {
-    if (digitalRead(BUTTON_R) == 0) {
-        if (press2 == 0) {
-            press2 = 1;
-        }
-    } else
-        press2 = 0;
-
-    if (digitalRead(BUTTON_L) == 0) {
-        if (press1 == 0) {
-            if (digitalRead(BUTTON_R)==0) suspend();
-            press1 = 1;
-            if(state++==0)showSetup();
-            if(state==1)refreshSetup();
-            if(state==2){
-                showMain();
-                delay(100);
-                state=0;
-            }
-        }
-    } else
-        press1 = 0;
 }
 
 void TFTUtils::displayCenterBig(String msg, int deviceType) {

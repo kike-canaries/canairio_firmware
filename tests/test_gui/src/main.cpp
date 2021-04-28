@@ -60,7 +60,7 @@ void setup(void) {
 
     randomSeed(A0);
 
-    delay(1000);
+    delay(500);
     gui.showMain();
 }
 

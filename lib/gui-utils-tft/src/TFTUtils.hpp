@@ -4,8 +4,10 @@
 #include <SPI.h>
 #include <TFT_eSPI.h>  // Hardware-specific library
 // #include "ani.h"
-#include <hal.hpp>
-#include <icons.h>
+#include "hal.hpp"
+#include "battery.hpp"
+#include "Orbitron_Medium_20.h"
+#include "icons.h"
 
 // Graph bars definition
 #define MAX_X 135
@@ -18,7 +20,7 @@
 #define darkred 0xA041
 #define blue 0x5D9B
 
-#include "Orbitron_Medium_20.h"
+
 
 class TFTUtils {
    public:
@@ -145,6 +147,8 @@ class TFTUtils {
     void updateInvertValue();
 
     void updateBrightness();
+    
+    void updateBatteryValue();
 
 };
 

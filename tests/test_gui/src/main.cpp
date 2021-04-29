@@ -8,6 +8,21 @@
 
 bool toggle;
 
+class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
+    void onWifiMode(int mode){
+        Serial.println("-->[SETUP] onWifi changed: "+String(mode));
+    };
+    void onBrightness(int value){
+        Serial.println("-->[SETUP] onBrightness changed: "+String(value));
+    };
+    void onColorsInverted(bool enable){
+        Serial.println("-->[SETUP] onColorsInverted changed: "+String(enable));
+    };
+    void onSampleTime(int time){
+        Serial.println("-->[SETUP] onSampleTime changed: "+String(time));
+    };
+};
+
 void testSensorLiveIcon() {
     gui.displaySensorLiveIcon();
 }
@@ -44,6 +59,7 @@ void setup(void) {
     Serial.println("\n== INIT SETUP ==\n");
     Serial.println("-->[SETUP] console ready");
     gui.displayInit();
+    gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();
     // delay(500);
     gui.displayBottomLine("CanAirIOAF4");

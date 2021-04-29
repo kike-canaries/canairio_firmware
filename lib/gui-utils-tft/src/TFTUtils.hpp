@@ -24,7 +24,7 @@
 #define blue 0x5D9B
 
 
-
+class GUIUserPreferencesCallbacks; 
 class TFTUtils {
    public:
     TFTUtils(void){};
@@ -32,6 +32,8 @@ class TFTUtils {
     TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 
     void displayInit();
+
+    void setCallbacks(GUIUserPreferencesCallbacks* pCallbacks);
 
     void showWelcome();
 
@@ -161,6 +163,19 @@ class TFTUtils {
     
     void updateBatteryValue();
 
+    GUIUserPreferencesCallbacks* mGUICallBacks = nullptr;
+
+    TFTUtils* getInstance();
+
+};
+
+class GUIUserPreferencesCallbacks {
+public:
+    virtual ~GUIUserPreferencesCallbacks () {};
+    virtual void onWifiMode(int mode);
+	virtual void onBrightness(int value);
+    virtual void onColorsInverted(bool enable);
+    virtual void onSampleTime(int time);
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTHANDLER)

@@ -42,6 +42,25 @@ void displayGUI() {
         deviceType);
 }
 
+class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
+    void onWifiMode(int mode){
+        Serial.println("-->[GUI] onWifi changed: "+String(mode));
+        cfg.wifiEnable(mode==0 ? false : true);
+    };
+    void onBrightness(int value){
+        Serial.println("-->[GUI] onBrightness changed: "+String(value));
+        cfg.saveBrightness(value);
+    };
+    void onColorsInverted(bool enable){
+        Serial.println("-->[GUI] onColorsInverted changed: "+String(enable));
+        cfg.colorsInvertedEnable(enable);
+    };
+    void onSampleTime(int time){
+        Serial.println("-->[GUI] onSampleTime changed: "+String(time));
+        cfg.saveSampleTime(time);
+    };
+};
+
 /// sensors data callback
 void onSensorDataOk() {
     log_i("[MAIN] onSensorDataOk");
@@ -90,6 +109,7 @@ void setup() {
 
     // init graphic user interface
     gui.displayInit();
+    gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();
 
     // init app preferences and load settings

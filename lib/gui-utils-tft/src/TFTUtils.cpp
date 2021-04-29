@@ -135,6 +135,7 @@ void TFTUtils::updateBrightness() {
     if (b >= 5) b = 0;
     for (int i = 0; i < b + 1; i++)
         tft.fillRect(MARVALL + (i * 7), SSTART+2, 3, 10, blue);
+    if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onBrightness(backlight[b]);
     ledcWrite(pwmLedChannelTFT, backlight[b]);
 }
 
@@ -446,6 +447,14 @@ void TFTUtils::clearScreen() {
 
 void TFTUtils::setContrast(uint32_t value) {
     ledcWrite(pwmLedChannelTFT, value);
+}
+
+void TFTUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
+    mGUICallBacks = pCallBacks;
+}
+
+TFTUtils* TFTUtils::getInstance() {
+	return this;
 }
 
 /// Firmware version from platformio.ini

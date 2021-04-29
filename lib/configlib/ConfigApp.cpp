@@ -328,6 +328,14 @@ void ConfigApp::setDebugMode(bool enable){
     devmode = enable;
 }
 
+void ConfigApp::saveBrightness(int value){
+    saveInt("bright",value);
+}
+
+void ConfigApp::colorsInvertedEnable(bool enable){
+    saveBool("cinverted",enable);
+}
+
 void ConfigApp::DEBUG(const char *text, const char *textb) {
     // override with debug INFO level (>=3)
 #ifdef CORE_DEBUG_LEVEL

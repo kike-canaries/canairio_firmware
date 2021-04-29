@@ -114,6 +114,7 @@ void TFTUtils::showSetup() {
     tft.println("STIME:");
 
     updateInvertValue();
+    updateWifiMode();
 
     tft.fillRect(68, SSTART, 1, 190, TFT_GREY);
     
@@ -135,18 +136,19 @@ void TFTUtils::updateBrightness() {
     if (b >= 5) b = 0;
     for (int i = 0; i < b + 1; i++)
         tft.fillRect(MARVALL + (i * 7), SSTART+2, 3, 10, blue);
-    if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onBrightness(backlight[b]);
     ledcWrite(pwmLedChannelTFT, backlight[b]);
+    if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onBrightness(backlight[b]);
 }
 
 void TFTUtils::invertScreen(){
     inv = !inv;
     tft.invertDisplay(inv);
     updateInvertValue();
+    if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onColorsInverted(inv);
 }
 
 void TFTUtils::updateInvertValue(){
-    tft.fillRect(MARVALL, SSTART+PRESETH, 50, 13, TFT_BLACK);
+    tft.fillRect(MARVALL, SSTART+PRESETH, 54, 13, TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setCursor(MARVALL, SSTART+PRESETH, 2);
     if(inv) tft.println("normal");
@@ -166,12 +168,40 @@ void TFTUtils::updateBatteryValue(){
     }
 }
 
+void TFTUtils::setWifiMode(int mode){
+    _wifi_mode = mode;
+    if( _wifi_mode == 3 ) _wifi_mode = 0;
+    updateWifiMode();
+    if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onWifiMode(_wifi_mode);
+}
+
+void TFTUtils::updateWifiMode(){
+    tft.fillRect(MARVALL, SSTART+PRESETH*2, 54, 13, TFT_BLACK);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setCursor(MARVALL, SSTART+PRESETH*2, 2);
+
+    switch (_wifi_mode) {
+        case 0:
+            tft.println("Off");
+            break;
+        case 1:
+            tft.println("Paxcount");
+            break;
+        case 2:
+            tft.println("Client");
+            break;
+        default:
+            break;
+    }
+}
+
 void TFTUtils::checkButtons() {
     if (digitalRead(BUTTON_R) == 0) {
         if (press2 == 0) {
             press2 = 1;
             if(state==1)updateBrightness();
             if(state==2)invertScreen();
+            if(state==3)setWifiMode(++_wifi_mode);
         }
     } else
         press2 = 0;

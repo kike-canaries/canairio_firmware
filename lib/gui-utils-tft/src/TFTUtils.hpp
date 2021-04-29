@@ -31,6 +31,8 @@ class TFTUtils {
 
     TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 
+    enum WIFI_MODE { OFF, PROMISCOUS, ON };
+
     void displayInit();
 
     void setCallbacks(GUIUserPreferencesCallbacks* pCallbacks);
@@ -123,6 +125,8 @@ class TFTUtils {
 
     int _average = 0;
 
+    int _wifi_mode = 0;
+
     void showSetup();
 
     void refreshSetup();
@@ -162,6 +166,10 @@ class TFTUtils {
     void updateBrightness();
     
     void updateBatteryValue();
+
+    void setWifiMode(int mode);
+
+    void updateWifiMode();
 
     GUIUserPreferencesCallbacks* mGUICallBacks = nullptr;
 

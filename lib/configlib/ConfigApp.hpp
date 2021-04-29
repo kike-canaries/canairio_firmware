@@ -85,6 +85,10 @@ class ConfigApp {
 
     void setDebugMode(bool enable);
 
+    void saveBrightness(int value);
+
+    void colorsInvertedEnable(bool enable);
+
    private:
     ///preferences main key
     char* _app_name;

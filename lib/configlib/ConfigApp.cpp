@@ -9,7 +9,7 @@ void ConfigApp::init(const char app_name[]) {
     #ifdef CORE_DEBUG_LEVEL
     if (CORE_DEBUG_LEVEL>=3) devmode = true;  
     #endif
-    if (devmode) Serial.println("-->[CONFIG] debug is enable.");
+    if (devmode) Serial.println("-->[CONF] debug is enable.");
     reload();
 }
 
@@ -74,7 +74,7 @@ String ConfigApp::getCurrentConfig() {
     if (devmode) {
         char buf[1000];
         serializeJsonPretty(doc, buf, 1000);
-        Serial.printf("-->[CONFIG] response: %s", buf);
+        Serial.printf("-->[CONF] response: %s", buf);
         Serial.println("");
     }
     return output;
@@ -98,6 +98,13 @@ void ConfigApp::saveInt(String key, int value){
     setLastKeySaved(key);
 }
 
+int32_t ConfigApp::getInt(String key, int defaultValue){
+    preferences.begin(_app_name, false);
+    int32_t out = preferences.getInt(key.c_str(), defaultValue);
+    preferences.end();
+    return out;
+}
+
 void ConfigApp::saveBool(String key, bool value){
     preferences.begin(_app_name, false);
     preferences.putBool(key.c_str(), value);
@@ -108,27 +115,27 @@ void ConfigApp::saveBool(String key, bool value){
 bool ConfigApp::saveDeviceName(String name) {
     if (name.length() > 0) {
         saveString("dname",name);
-        Serial.println("-->[CONFIG] set device name to: " + name);
+        Serial.println("-->[CONF] set device name to: " + name);
         return true;
     }
-    DEBUG("-->[E][CONFIG] device name is empty!");
+    DEBUG("-->[E][CONF] device name is empty!");
     return false;
 }
 
 bool ConfigApp::saveSampleTime(int time) {
     if (time >= 5) {
         saveInt("stime", time);
-        Serial.print("-->[CONFIG] sensor sample time set to: ");
+        Serial.print("-->[CONF] sensor sample time set to: ");
         Serial.println(time);
         return true;
     }
-    DEBUG("-->[W][CONFIG] warning: sample time is too low!");
+    DEBUG("-->[W][CONF] warning: sample time is too low!");
     return false;
 }
 
 bool ConfigApp::saveSensorType(int type) {
     saveInt("stype", type);
-    Serial.print("-->[CONFIG] sensor device type: ");
+    Serial.print("-->[CONF] sensor device type: ");
     Serial.println(type);
     return true;
 }
@@ -147,11 +154,11 @@ bool ConfigApp::saveWifi(String ssid, String pass){
         setLastKeySaved("ssid");
         wifi_enable = true;
         isNewWifi = true;  // for execute wifi reconnect
-        Serial.println("-->[CONFIG] WiFi credentials saved!");
-        log_i("-->[CONFIG] ssid:%s pass:%s",ssid,pass);
+        Serial.println("-->[CONF] WiFi credentials saved!");
+        log_i("[CONF] ssid:%s pass:%s",ssid,pass);
         return true;
     }
-    DEBUG("-->[W][CONFIG] empty Wifi SSID");
+    DEBUG("-->[W][CONF] empty Wifi SSID");
     return false;
 }
 
@@ -166,11 +173,11 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
         setLastKeySaved("ifxdb");
         isNewIfxdbConfig = true;
         ifxdb_enable = true;
-        Serial.printf("-->[CONFIG] influxdb: %s@%s:%i\n",db.c_str(),ip.c_str(),pt);
-        Serial.println("-->[CONFIG] influxdb config saved.");
+        Serial.printf("-->[CONF] influxdb: %s@%s:%i\n",db.c_str(),ip.c_str(),pt);
+        Serial.println("-->[CONF] influxdb config saved.");
         return true;
     }
-    DEBUG("-->[W][CONFIG] wrong InfluxDb params!");
+    DEBUG("-->[W][CONF] wrong InfluxDb params!");
     return false;
 }
 
@@ -187,11 +194,11 @@ bool ConfigApp::saveAPI(String usr, String pass, String srv, String uri, int pt)
         setLastKeySaved("api");
         isNewAPIConfig = true;
         api_enable = true;
-        log_i("[CONFIG] API: %s@%s/%s",usr.c_str(),srv.c_str(),uri.c_str());
-        Serial.println("-->[CONFIG] API config saved.");
+        log_i("[CONF] API: %s@%s/%s",usr.c_str(),srv.c_str(),uri.c_str());
+        Serial.println("-->[CONF] API config saved.");
         return true;
     }
-    DEBUG("-->[W][CONFIG] wrong API params!");
+    DEBUG("-->[W][CONF] wrong API params!");
     return false;
 }
 
@@ -204,32 +211,32 @@ bool ConfigApp::saveGeo(double lat, double lon, float alt, float spd){
         preferences.putFloat("spd", spd);
         preferences.end();
         setLastKeySaved("lat");
-        log_i("-->[CONFIG] geo:(%d,%d) alt:%d spd:%d",lat,lon,alt,spd);
-        Serial.println("-->[CONFIG] updated location!");
+        log_i("[CONF] geo:(%d,%d) alt:%d spd:%d",lat,lon,alt,spd);
+        Serial.println("-->[CONF] updated location!");
         return true;
     }
-    DEBUG("-->[W][CONFIG] wrong GEO params!");
+    DEBUG("-->[W][CONF] wrong GEO params!");
     return false;
 }
 
 bool ConfigApp::wifiEnable(bool enable) {
     saveBool("wifiEnable", enable);
     wifi_enable = enable;
-    Serial.println("-->[CONFIG] updating WiFi state: " + String(enable));
+    Serial.println("-->[CONF] updating WiFi state: " + String(enable));
     return true;
 }
 
 bool ConfigApp::ifxdbEnable(bool enable) {
     saveBool("ifxEnable", enable);
     ifxdb_enable = enable;
-    Serial.println("-->[CONFIG] updating InfluxDB state: " + String(enable));
+    Serial.println("-->[CONF] updating InfluxDB state: " + String(enable));
     return true;
 }
 
 bool ConfigApp::apiEnable(bool enable) {
     saveBool("apiEnable", enable);
     api_enable = enable;
-    Serial.println("-->[CONFIG] updating API state: " + String(enable));
+    Serial.println("-->[CONF] updating API state: " + String(enable));
     return true;
 }
 
@@ -237,7 +244,7 @@ bool ConfigApp::save(const char *json) {
     StaticJsonDocument<1000> doc;
     auto error = deserializeJson(doc, json);
     if (error) {
-        Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
+        Serial.print(F("-->[E][CONF] deserialize Json failed with code "));
         Serial.println(error.c_str());
         return false;
     }
@@ -245,7 +252,7 @@ bool ConfigApp::save(const char *json) {
     if (devmode) {
         char output[1000];
         serializeJsonPretty(doc, output, 1000);
-        Serial.printf("-->[CONFIG] request: %s", output);
+        Serial.printf("-->[CONF] request: %s", output);
         Serial.println("");
     }
     
@@ -269,7 +276,7 @@ bool ConfigApp::save(const char *json) {
         if (act.equals("cls")) clear();
         return true;
     } else {
-        Serial.println("-->[E][CONFIG] invalid config file!");
+        Serial.println("-->[E][CONF] invalid config file!");
         return false;
     }
 }
@@ -314,12 +321,12 @@ void ConfigApp::clear() {
     preferences.begin(_app_name, false);
     preferences.clear();
     preferences.end();
-    Serial.println("-->[CONFIG] clear settings!");
+    Serial.println("-->[CONF] clear settings!");
     reboot();
 }
 
 void ConfigApp::reboot() {
-    Serial.println("-->[CONFIG] reboot..");
+    Serial.println("-->[CONF] reboot..");
     delay(100);
     ESP.restart();
 }
@@ -330,6 +337,10 @@ void ConfigApp::setDebugMode(bool enable){
 
 void ConfigApp::saveBrightness(int value){
     saveInt("bright",value);
+}
+
+int32_t ConfigApp::getBrightness(){
+    return getInt("bright",30);
 }
 
 void ConfigApp::colorsInvertedEnable(bool enable){

@@ -9,8 +9,8 @@
 bool toggle;
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
-    void onWifiMode(int mode){
-        Serial.println("-->[SETUP] onWifi changed: "+String(mode));
+    void onWifiMode(bool enable){
+        Serial.println("-->[SETUP] onWifi changed: "+String(enable));
     };
     void onBrightness(int value){
         Serial.println("-->[SETUP] onBrightness changed: "+String(value));

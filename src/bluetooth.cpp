@@ -3,6 +3,7 @@
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharactData = NULL;
 BLECharacteristic* pCharactConfig = NULL;
+BLECharacteristic* pCharactStatus = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 
@@ -64,6 +65,8 @@ class MyServerCallbacks : public BLEServerCallbacks {
     };
 };  // BLEServerCallbacks
 
+
+// Config BLE callbacks
 class MyConfigCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
         std::string value = pCharacteristic->getValue();
@@ -87,6 +90,19 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
     }
 };
 
+// Status BLE callbacks
+class MyStatusCallbacks : public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic* pCharacteristic) {
+        std::string value = pCharacteristic->getValue();
+        if (value.length() > 0) {
+            Serial.printf("-->[BTLE][STATUS] write: %s\n",value.c_str());
+        }
+        else {
+            Serial.println("-->[E][BTLE][STATUS] write error!");
+        }
+    }
+};
+
 void bleServerInit() {
     // Create the BLE Device
     BLEDevice::init("CanAirIO_ESP32");
@@ -103,10 +119,16 @@ void bleServerInit() {
     pCharactConfig = pService->createCharacteristic(
         CHARAC_CONFIG_UUID,
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+    // Create a BLE Characteristic for Sensor mode: STATIC/MOVIL
+    pCharactStatus = pService->createCharacteristic(
+        CHARAC_STATUS_UUID,
+        BLECharacteristic::PROPERTY_WRITE);
     // Create a Data Descriptor (for notifications)
     pCharactData->addDescriptor(new BLE2902());
-    // Setting Config callback
+    // Config callback
     pCharactConfig->setCallbacks(new MyConfigCallbacks());
+    // Status callback
+    pCharactStatus->setCallbacks(new MyStatusCallbacks());
     // Set callback data:
     bleServerDataRefresh();
     // Start the service
@@ -119,7 +141,7 @@ void bleServerInit() {
 void bleLoop() {
     static uint_fast64_t bleTimeStamp = 0;
     // notify changed value
-    if (deviceConnected && sensors.isDataReady() && (millis() - bleTimeStamp > 5000)) {  // each 5 secs
+    if (deviceConnected && (millis() - bleTimeStamp > cfg.stime * 1000)) {  // each 5 secs
         log_i("[BTLE] sending notification..");
         log_d("[BTLE] %s",getNotificationData().c_str());
         log_d("[BTLE] sending config data..");

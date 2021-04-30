@@ -433,6 +433,9 @@ double TFTUtils::getMultiplicator() {
     if (pkts[i] > maxVal) maxVal = pkts[i];
   }
   if (maxVal > MAX_Y) return (double)MAX_Y / (double)maxVal;
+  else if (maxVal < MAX_Y / 5) return 4;
+  else if (maxVal < MAX_Y / 4) return 3;
+  else if (maxVal < MAX_Y / 3) return 2;
   else return 1;
 }
 

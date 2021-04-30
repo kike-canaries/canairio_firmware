@@ -16,11 +16,11 @@ void TFTUtils::displayInit() {
 
     ledcSetup(pwmLedChannelTFT, pwmFreq, pwmResolution);
     ledcAttachPin(TFT_BL, pwmLedChannelTFT);
-    setContrast(30);
+    _setBrightness();
 
     setupBattery();           // init battery ADC.
 
-    Serial.println("-->[TFT] display config ready.");
+    Serial.println("-->[TGUI] display config ready.");
 }
 
 void TFTUtils::showWelcome() {
@@ -37,11 +37,11 @@ void TFTUtils::showWelcome() {
     lastDrawedLine = 32;
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextFont(1);
-    Serial.println("-->[TFT] displayed welcome screen");
+    Serial.println("-->[TGUI] displayed welcome screen");
 }
 
 void TFTUtils::welcomeAddMessage(String msg) {
-    // Serial.println("-->[TFT] add message: "+msg);
+    // Serial.println("-->[TGUI] add message: "+msg);
     tft.setTextFont(1);
     tft.setCursor(5, lastDrawedLine);
     tft.println(msg.substring(0,21).c_str());
@@ -83,21 +83,22 @@ void TFTUtils::showMain() {
 
     tft.fillRect(68, 152, 1, 74, TFT_GREY);
 
-    Serial.println("-->[TFT] displayed main screen");
+    Serial.println("-->[TGUI] displayed main screen");
 }
 
 void TFTUtils::showSetup() {
     tft.fillScreen(TFT_BLACK);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
     tft.setFreeFont(&Orbitron_Medium_20);
-    tft.setCursor(2,20);
-    tft.print("Setup");
+    tft.setTextDatum(MC_DATUM);
+    tft.drawString("SETUP", tft.width() / 2, 30);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextFont(1);
     tft.setTextSize(0);
     tft.setCursor(110,231);
     tft.println(getFirmwareVersionCode().c_str());
-    tft.drawLine(0,22,135,22,TFT_GREEN);
+    tft.drawLine(0,19,135,19,TFT_GREEN);
+    tft.drawLine(18,44,117,44,TFT_GREY);
     tft.setSwapBytes(true);
 
     tft.setTextColor(TFT_WHITE, lightblue);
@@ -115,13 +116,12 @@ void TFTUtils::showSetup() {
 
     updateInvertValue();
     updateWifiMode();
+    updateSampleTime();
+    loadBrightness();
 
-    tft.fillRect(68, SSTART, 1, 190, TFT_GREY);
-    
-    for (int i = 0; i < b + 1; i++)
-        tft.fillRect(MARVALL + (i * 7), SSTART+2, 3, 10, blue);
+    tft.fillRect(68, SSTART, 1, 150, TFT_GREY);
 
-    Serial.println("-->[TFT] displayed setup screen");
+    Serial.println("-->[TGUI] displayed setup screen");
 }
 
 void TFTUtils::refreshSetup() {
@@ -130,14 +130,24 @@ void TFTUtils::refreshSetup() {
     tft.drawRect(0, start+((state-1)*PRESETH), 134, PRESETH, TFT_GREY);
 }
 
+void TFTUtils::loadBrightness() {
+    for (int i = 0; i < 5; i++) {
+        if (backlight[i] == brightness) b = i;
+    }
+    for (int i = 0; i < b + 1; i++) {
+        tft.fillRect(MARVALL + (i * 7), SSTART + 2, 3, 10, blue);
+    }
+}
+
 void TFTUtils::updateBrightness() {
     tft.fillRect(MARVALL, SSTART+1, 44, 11, TFT_BLACK);
     b++;
     if (b >= 5) b = 0;
     for (int i = 0; i < b + 1; i++)
         tft.fillRect(MARVALL + (i * 7), SSTART+2, 3, 10, blue);
-    ledcWrite(pwmLedChannelTFT, backlight[b]);
-    if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onBrightness(backlight[b]);
+    brightness = backlight[b];
+    _setBrightness();
+    if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onBrightness(brightness);
 }
 
 void TFTUtils::invertScreen(){
@@ -168,31 +178,42 @@ void TFTUtils::updateBatteryValue(){
     }
 }
 
-void TFTUtils::setWifiMode(int mode){
-    _wifi_mode = mode;
-    if( _wifi_mode == 3 ) _wifi_mode = 0;
+void TFTUtils::setWifiMode(bool enable){
+    _wifi_enable = enable;
     updateWifiMode();
-    if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onWifiMode(_wifi_mode);
+}
+
+void TFTUtils::_setWifiMode(){
+    _wifi_enable = !_wifi_enable;
+    updateWifiMode();
+    if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onWifiMode(_wifi_enable);
 }
 
 void TFTUtils::updateWifiMode(){
     tft.fillRect(MARVALL, SSTART+PRESETH*2, 54, 13, TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setCursor(MARVALL, SSTART+PRESETH*2, 2);
+    if(_wifi_enable) tft.println("On");
+    else tft.println("Off");
+}
 
-    switch (_wifi_mode) {
-        case 0:
-            tft.println("Off");
-            break;
-        case 1:
-            tft.println("Paxcount");
-            break;
-        case 2:
-            tft.println("Client");
-            break;
-        default:
-            break;
-    }
+void TFTUtils::_setSampleTime(){
+    if(++st>=5) st = 0;
+    _sample_time = sampleTime[st];
+    updateSampleTime();
+    if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onSampleTime(_sample_time);
+}
+
+void TFTUtils::setSampleTime(int time){
+    _sample_time = time;
+    updateSampleTime();
+}
+
+void TFTUtils::updateSampleTime(){
+    tft.fillRect(MARVALL, SSTART+PRESETH*3, 54, 13, TFT_BLACK);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setCursor(MARVALL, SSTART+PRESETH*3, 2);
+    tft.println(""+String(_sample_time)+"s");
 }
 
 void TFTUtils::checkButtons() {
@@ -201,7 +222,8 @@ void TFTUtils::checkButtons() {
             press2 = 1;
             if(state==1)updateBrightness();
             if(state==2)invertScreen();
-            if(state==3)setWifiMode(++_wifi_mode);
+            if(state==3)_setWifiMode();
+            if(state==4)_setSampleTime();
         }
     } else
         press2 = 0;
@@ -348,7 +370,7 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
 
 void TFTUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
     static uint_fast64_t sensor_status_ts = 0;   // timestamp for GUI refresh
-    if (state == 0 && (millis() - sensor_status_ts > 1000)) { 
+    if ((millis() - sensor_status_ts > 1000)) { 
         sensor_status_ts = millis();
 
         tft.fillRect(0, 0, 135, 18, TFT_BLACK);
@@ -458,7 +480,7 @@ void TFTUtils::drawDataIcon () {
 void TFTUtils::pageStart() {
     // fast interactions (80ms)
     checkButtons();
-    if(state == 0 && sensorLive) drawFanIcon();
+    if(sensorLive) drawFanIcon();
     // slow interactions
     static uint_fast64_t loopts = 0;   // timestamp for GUI refresh
     if (state == 0 && (millis() - loopts > 2000)) {  
@@ -475,8 +497,12 @@ void TFTUtils::clearScreen() {
     tft.fillScreen(TFT_BLACK);
 }
 
-void TFTUtils::setContrast(uint32_t value) {
-    ledcWrite(pwmLedChannelTFT, value);
+void TFTUtils::setBrightness(uint32_t value) {
+    brightness = value;
+}
+
+void TFTUtils::_setBrightness() {
+    ledcWrite(pwmLedChannelTFT, brightness);
 }
 
 void TFTUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){

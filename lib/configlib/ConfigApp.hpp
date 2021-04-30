@@ -87,6 +87,8 @@ class ConfigApp {
 
     void saveBrightness(int value);
 
+    int32_t getBrightness();
+
     void colorsInvertedEnable(bool enable);
 
    private:
@@ -108,9 +110,15 @@ class ConfigApp {
     bool devmode;
 
     void saveString(String key, String value);
+
     void saveInt(String key, int value);
+
+    int32_t getInt(String key, int defaultValue);
+
     void saveBool(String key, bool value);
+
     void setLastKeySaved(String key);
+
     void DEBUG(const char* text, const char* textb = "");
 
     // @todo use DEBUG_ESP_PORT ?

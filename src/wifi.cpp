@@ -208,7 +208,7 @@ void wifiConnect(const char* ssid, const char* pass) {
     Serial.print(ssid);
     int wifi_retry = 0;
     WiFi.begin(ssid, pass);
-    while (!WiFi.isConnected() && wifi_retry++ < WIFI_RETRY_CONNECTION) {
+    while (!WiFi.isConnected() && wifi_retry++ <= WIFI_RETRY_CONNECTION) {
         Serial.print(".");
         delay(100);  // increment this delay on possible reconnect issues
     }

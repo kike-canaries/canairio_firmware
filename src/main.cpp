@@ -43,21 +43,25 @@ void displayGUI() {
 }
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
-    void onWifiMode(int mode){
-        Serial.println("-->[GUI] onWifi changed: "+String(mode));
-        cfg.wifiEnable(mode==0 ? false : true);
+    void onWifiMode(bool enable){
+        Serial.println("-->[MAIN] onWifi changed: "+String(enable));
+        cfg.wifiEnable(enable);
+        cfg.reload();
+        if (!enable) wifiStop();
     };
     void onBrightness(int value){
-        Serial.println("-->[GUI] onBrightness changed: "+String(value));
+        Serial.println("-->[MAIN] onBrightness changed: "+String(value));
         cfg.saveBrightness(value);
     };
     void onColorsInverted(bool enable){
-        Serial.println("-->[GUI] onColorsInverted changed: "+String(enable));
+        Serial.println("-->[MAIN] onColorsInverted changed: "+String(enable));
         cfg.colorsInvertedEnable(enable);
     };
     void onSampleTime(int time){
-        Serial.println("-->[GUI] onSampleTime changed: "+String(time));
+        Serial.println("-->[MAIN] onSampleTime changed: "+String(time));
         cfg.saveSampleTime(time);
+        cfg.reload();
+        if(sensors.sample_time != cfg.stime) sensors.setSampleTime(cfg.stime);
     };
 };
 
@@ -107,14 +111,18 @@ void setup() {
     delay(400);
     Serial.println("\n== CanAirIO Setup ==\n");
 
+    // init app preferences and load settings
+    cfg.setDebugMode(false);
+    cfg.init("canairio");
+
     // init graphic user interface
+    gui.setBrightness(cfg.getBrightness());
+    gui.setWifiMode(cfg.isWifiEnable());
+    gui.setSampleTime(cfg.stime);
     gui.displayInit();
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();
 
-    // init app preferences and load settings
-    cfg.setDebugMode(false);
-    cfg.init("canairio");
 
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC: " + cfg.deviceId);
@@ -163,7 +171,6 @@ void setup() {
     gui.welcomeAddMessage("==SETUP READY==");
     delay(1000);
     gui.showMain();
-    gui.setContrast(10);
     displayGUI();  // display main screen
     delay(1500);
     sensors.loop();

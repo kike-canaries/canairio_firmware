@@ -13,7 +13,7 @@
 #define MAX_X 135
 #define MAX_Y 80
 // Setup screen
-#define SSTART 35
+#define SSTART 75
 #define MARGINL 5
 #define MARVALL 74
 #define PRESETH 20
@@ -31,7 +31,7 @@ class TFTUtils {
 
     TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 
-    enum WIFI_MODE { OFF, PROMISCOUS, ON };
+    enum WIFI_MODE { WIFI_OFF, WIFI_ON };
 
     void displayInit();
 
@@ -67,7 +67,11 @@ class TFTUtils {
 
     void clearScreen();
 
-    void setContrast(uint32_t value);
+    void setBrightness(uint32_t value);
+
+    void setWifiMode(bool enable);
+
+    void setSampleTime(int time);
 
     void checkButtons();
 
@@ -85,7 +89,13 @@ class TFTUtils {
 
     int backlight[5] = {10, 30, 60, 120, 220};
 
-    byte b = 0;
+    byte b = 1;  // backlight selector
+
+    int brightness = 30;
+
+    int sampleTime[5] = {5, 15, 30, 60, 120};
+
+    byte st = 0;  // sample time selector init
 
     uint32_t count = 0;
 
@@ -125,7 +135,9 @@ class TFTUtils {
 
     int _average = 0;
 
-    int _wifi_mode = 0;
+    bool _wifi_enable;
+
+    int _sample_time = 5;
 
     void showSetup();
 
@@ -164,12 +176,20 @@ class TFTUtils {
     void updateInvertValue();
 
     void updateBrightness();
+
+    void loadBrightness();
     
     void updateBatteryValue();
 
-    void setWifiMode(int mode);
+    void _setWifiMode();
 
     void updateWifiMode();
+
+    void _setSampleTime();
+
+    void updateSampleTime();
+
+    void _setBrightness();
 
     GUIUserPreferencesCallbacks* mGUICallBacks = nullptr;
 
@@ -180,7 +200,7 @@ class TFTUtils {
 class GUIUserPreferencesCallbacks {
 public:
     virtual ~GUIUserPreferencesCallbacks () {};
-    virtual void onWifiMode(int mode);
+    virtual void onWifiMode(bool enable);
 	virtual void onBrightness(int value);
     virtual void onColorsInverted(bool enable);
     virtual void onSampleTime(int time);

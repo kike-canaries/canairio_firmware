@@ -32,7 +32,6 @@ void displayGUI() {
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();
 
-    gui.displaySensorAverage(mainValue, deviceType);
     gui.displaySensorData(
         mainValue,
         getChargeLevel(),

@@ -86,31 +86,28 @@ bool getBoolean() {
 
 uint64_t count = 20;
 uint16_t total = 1000;
+int max_value = random(0,150);
 
 void loop(void) {
 
     gui.pageStart();
 
-    int rnd = random(0, 3);
+    if (count % 300 == 0 ) max_value = random (3,120);
 
-    if (count++ % 100 == 0 ) gui.displaySensorAverage(random(0, 250), 1);
+    if (count % 30 == 0) gui.displaySensorData(random(0,max_value), 230,random(0, 99), random(0, 800)/25.0, random(50, 90), 1);
 
-    // gui.displaySensorAverage(1200, 4);
-
-    if (count % 50 == 0) gui.displaySensorData(random(0,300), 230,random(0, 99), random(0, 800)/25.0, random(50, 90), 1);
-
-    gui.checkButtons();
+    if (count % 15 == 0) functionPtr[random(0, 3)]();  // Call a test function in random sequence
 
     // gui.showProgress(count++,1000);
 
     // gui.displayStatus(getBoolean(), true, getBoolean());
     
-    gui.displayStatus(true, true, getBoolean());
-
-    functionPtr[rnd]();  // Call a test function in random sequence
-
+    gui.displayStatus(true, true, true);
+    gui.checkButtons();
     gui.pageEnd();
 
     delay(80);
+
+    count++;
 
 }

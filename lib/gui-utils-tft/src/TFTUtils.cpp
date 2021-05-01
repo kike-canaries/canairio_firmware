@@ -16,7 +16,7 @@ void TFTUtils::displayInit() {
 
     ledcSetup(pwmLedChannelTFT, pwmFreq, pwmResolution);
     ledcAttachPin(TFT_BL, pwmLedChannelTFT);
-    _setBrightness();
+    notifyBrightness();
 
     setupBattery();           // init battery ADC.
 
@@ -57,16 +57,19 @@ void TFTUtils::welcomeRepeatMessage(String msg) {
     welcomeAddMessage(msg);
 }
 
-void TFTUtils::showMain() {
-    tft.setTextFont(1);
+void TFTUtils::showStatus() {
     tft.fillScreen(TFT_BLACK);
+    tft.setTextFont(1);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextSize(0);
     tft.setCursor(110,231);
     tft.println(getFirmwareVersionCode().c_str());
     tft.drawLine(0,19,135,19,TFT_GREEN);
     tft.setSwapBytes(true);
+}
 
+void TFTUtils::showMain() {
+    showStatus();
     tft.setCursor(80, 204, 1);
     tft.println("BATT:");
     updateBatteryValue();
@@ -86,20 +89,36 @@ void TFTUtils::showMain() {
     Serial.println("-->[TGUI] displayed main screen");
 }
 
+void TFTUtils::showWindowBike(){
+    showStatus();
+    tft.setCursor(80, 204, 1);
+    tft.println("BATT:");
+    updateBatteryValue();
+
+    tft.setCursor(80, 152, 2);
+    tft.println("HEALTH:");
+
+    tft.setTextColor(TFT_WHITE, lightblue);
+    tft.setCursor(4, 152, 2);
+    tft.println("KM:");
+
+    tft.setCursor(4, 192, 2);
+    tft.println("TIME: ");
+
+    tft.fillRect(68, 152, 1, 74, TFT_GREY);
+
+}
+
 void TFTUtils::showSetup() {
-    tft.fillScreen(TFT_BLACK);
+    showStatus();
     tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
     tft.setFreeFont(&Orbitron_Medium_20);
     tft.setTextDatum(MC_DATUM);
     tft.drawString("SETUP", tft.width() / 2, 30);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+
     tft.setTextFont(1);
-    tft.setTextSize(0);
-    tft.setCursor(110,231);
-    tft.println(getFirmwareVersionCode().c_str());
-    tft.drawLine(0,19,135,19,TFT_GREEN);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.drawLine(18,44,117,44,TFT_GREY);
-    tft.setSwapBytes(true);
 
     tft.setTextColor(TFT_WHITE, lightblue);
     tft.setCursor(MARGINL, SSTART, 2);
@@ -146,7 +165,7 @@ void TFTUtils::updateBrightness() {
     for (int i = 0; i < b + 1; i++)
         tft.fillRect(MARVALL + (i * 7), SSTART+2, 3, 10, blue);
     brightness = backlight[b];
-    _setBrightness();
+    notifyBrightness();
     if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onBrightness(brightness);
 }
 
@@ -169,8 +188,8 @@ void TFTUtils::updateBatteryValue(){
     float volts = battGetVoltage();
     int state = (int)battCalcPercentage(volts)/20;
 
-    String voltage = "" + String(volts) + "v";
-    displayBottomLine(voltage);
+    // String voltage = "" + String(volts) + "v";
+    // displayBottomLine(voltage);
     tft.fillRect(78,216,44,10,TFT_BLACK);
 
     for (int i = 0; i < state + 1; i++) {
@@ -183,7 +202,7 @@ void TFTUtils::setWifiMode(bool enable){
     updateWifiMode();
 }
 
-void TFTUtils::_setWifiMode(){
+void TFTUtils::notifyWifiMode(){
     _wifi_enable = !_wifi_enable;
     updateWifiMode();
     if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onWifiMode(_wifi_enable);
@@ -197,7 +216,7 @@ void TFTUtils::updateWifiMode(){
     else tft.println("Off");
 }
 
-void TFTUtils::_setSampleTime(){
+void TFTUtils::notifySampleTime(){
     if(++st>=5) st = 0;
     _sample_time = sampleTime[st];
     updateSampleTime();
@@ -216,14 +235,32 @@ void TFTUtils::updateSampleTime(){
     tft.println(""+String(_sample_time)+"s");
 }
 
+void TFTUtils::toggleWindow(){
+    if(wstate++==0)showWindowBike();
+    if(wstate==1){
+        wstate=0;
+        restoreMain();
+    }
+}
+
+void TFTUtils::restoreMain(){
+    showMain();
+    delay(10);
+    state = 0;
+    drawBarGraph(_deviceType);
+    displaySensorAverage(_average);
+    displaySensorData(_average, 0, _humi, _temp, _rssi, _deviceType);
+}
+
 void TFTUtils::checkButtons() {
     if (digitalRead(BUTTON_R) == 0) {
         if (press2 == 0) {
             press2 = 1;
+            if(state==0)toggleWindow();
             if(state==1)updateBrightness();
             if(state==2)invertScreen();
-            if(state==3)_setWifiMode();
-            if(state==4)_setSampleTime();
+            if(state==3)notifyWifiMode();
+            if(state==4)notifySampleTime();
         }
     } else
         press2 = 0;
@@ -234,14 +271,7 @@ void TFTUtils::checkButtons() {
             press1 = 1;
             if(state++==0)showSetup();
             if(state>=1)refreshSetup();
-            if(state==5){
-                showMain();
-                delay(10);
-                state=0;
-                drawBarGraph(_deviceType);
-                displaySensorAverage(_average,_deviceType);
-                displaySensorData(_average,0,_humi,_temp,_rssi,_deviceType);
-            }
+            if(state==5)restoreMain();
         }
     } else
         press1 = 0;
@@ -280,19 +310,19 @@ void TFTUtils::suspend() {
     esp_deep_sleep_start();
 }
 
-void TFTUtils::displayCenterBig(String msg, int deviceType) {
+void TFTUtils::displayCenterBig(String msg) {
     tft.setFreeFont(&Orbitron_Light_32);
     tft.setTextDatum(MC_DATUM);
     tft.setTextColor(TFT_WHITE,TFT_BLACK);
     tft.fillRect(2, 25, 130, 32, TFT_BLACK);
     tft.drawString(msg.c_str(), tft.width() / 2, 36);
+}
+
+void TFTUtils::displayMainUnit(String unit) {
+    tft.setTextDatum(TR_DATUM);
     tft.setTextFont(1);
     tft.setTextSize(0);
-    tft.setCursor(104, 57);
-    if (deviceType <= 3)
-        tft.println("PM2.5");
-    else
-        tft.println("PPM");
+    tft.drawString(unit.c_str(),123,57);
 }
 
 void TFTUtils::displayBottomLine(String msg) {
@@ -323,7 +353,7 @@ void TFTUtils::displayBigLabel(int cursor, String msg) {
 
 }
 
-void TFTUtils::displaySensorAverage(int average, int deviceType) {
+void TFTUtils::displaySensorAverage(int average) {
     if (state == 0) {
         if (average < 13) {
             displayEmoticonColor(TFT_GREEN, "GOOD");
@@ -338,10 +368,6 @@ void TFTUtils::displaySensorAverage(int average, int deviceType) {
         } else {
             displayEmoticonColor(TFT_BROWN, "HAZARDOUS");
         }
-        char output[4];
-        sprintf(output, "%04d", average);
-        displayCenterBig(output, deviceType);
-        _average = average;
     }
 }
 
@@ -364,7 +390,17 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
         _humi = humi;
         _temp = temp;
 
+        char output[4];
+        sprintf(output, "%04d", mainValue);
+        displayCenterBig(output);
+
+        if (deviceType <= 3)
+            displayMainUnit("PM2.5");
+        else
+            displayMainUnit("PPM");
+
         drawBarGraph(deviceType);
+        displaySensorAverage(_average);
     }
 }
 
@@ -419,12 +455,16 @@ void TFTUtils::drawBarGraph(int deviceType) {
     int len;
     tft.fillRect(0, 149 - MAX_Y, MAX_X, MAX_Y, TFT_BLACK);
     tft.drawLine(0, 150 - MAX_Y, MAX_X - 1, 150 - MAX_Y,TFT_GREY);
+    _average = 0; 
     for (int i = 0; i < MAX_X; i++) {
         len = pkts[i] * multiplicator;
+        _average = pkts[i] + _average;
         int color = getAQIColor(pkts[i],deviceType);
         tft.drawLine(i, 150, i, 150 - (len > MAX_Y ? MAX_Y : len),color);
         if (i < MAX_X - 1) pkts[i] = pkts[i + 1];
     }
+
+    _average = _average / MAX_X;
 }
 
 double TFTUtils::getMultiplicator() {
@@ -486,7 +526,7 @@ void TFTUtils::pageStart() {
     if(sensorLive) drawFanIcon();
     // slow interactions
     static uint_fast64_t loopts = 0;   // timestamp for GUI refresh
-    if (state == 0 && (millis() - loopts > 2000)) {  
+    if (state == 0 && (millis() - loopts > 5000)) {  
         loopts = millis();
         updateBatteryValue();
     }
@@ -504,7 +544,7 @@ void TFTUtils::setBrightness(uint32_t value) {
     brightness = value;
 }
 
-void TFTUtils::_setBrightness() {
+void TFTUtils::notifyBrightness() {
     ledcWrite(pwmLedChannelTFT, brightness);
 }
 

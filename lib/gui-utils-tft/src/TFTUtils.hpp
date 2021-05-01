@@ -47,8 +47,6 @@ class TFTUtils {
     
     void welcomeRepeatMessage(String msg);
 
-    void displaySensorAverage(int average, int deviceType);
-
     void displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType);
 
     void displayStatus(bool wifiOn, bool bleOn, bool blePair);
@@ -111,6 +109,10 @@ class TFTUtils {
 
     bool fanState;
 
+    float speed;
+
+    float km;
+
     int dw = 0;  // display width
 
     int dh = 0;  // display height
@@ -122,6 +124,8 @@ class TFTUtils {
     int press1 = 0;
 
     int press2 = 0;
+
+    int wstate = 0;
 
     int _live_ticks = 0;
 
@@ -139,11 +143,17 @@ class TFTUtils {
 
     int _sample_time = 5;
 
+    void showStatus();
+
     void showSetup();
 
     void refreshSetup();
 
-    void displayCenterBig(String msg, int deviceType);
+    void displaySensorAverage(int average);
+
+    void displayMainUnit(String unit);
+
+    void displayCenterBig(String msg);
 
     void displayEmoticonLabel(int numsmile, String msg);
 
@@ -181,15 +191,21 @@ class TFTUtils {
     
     void updateBatteryValue();
 
-    void _setWifiMode();
+    void notifyWifiMode();
 
     void updateWifiMode();
 
-    void _setSampleTime();
+    void notifySampleTime();
 
     void updateSampleTime();
 
-    void _setBrightness();
+    void notifyBrightness();
+
+    void toggleWindow();
+
+    void restoreMain();
+
+    void showWindowBike();
 
     GUIUserPreferencesCallbacks* mGUICallBacks = nullptr;
 

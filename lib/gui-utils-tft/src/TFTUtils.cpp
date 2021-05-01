@@ -72,7 +72,7 @@ void TFTUtils::showMain() {
     showStatus();
     tft.setCursor(80, 204, 1);
     tft.println("BATT:");
-    // updateBatteryValue();
+    updateBatteryValue();
 
     tft.setCursor(80, 152, 2);
     tft.println("HEALTH:");
@@ -86,6 +86,10 @@ void TFTUtils::showMain() {
 
     tft.fillRect(68, 152, 1, 74, TFT_GREY);
 
+    state = 0;
+    wstate = 0;
+    loadLastData();
+
     Serial.println("-->[TGUI] displayed main screen");
 }
 
@@ -93,7 +97,7 @@ void TFTUtils::showWindowBike(){
     showStatus();
     tft.setCursor(80, 204, 1);
     tft.println("BATT:");
-    // updateBatteryValue();
+    updateBatteryValue();
 
     tft.setCursor(80, 152, 2);
     tft.println("HEALTH:");
@@ -149,7 +153,7 @@ void TFTUtils::showSetup() {
 void TFTUtils::refreshSetup() {
     int start = SSTART-3;
     if(state>1)tft.drawRect(0, start+((state-2)*PRESETH), 134, PRESETH, TFT_BLACK);
-    tft.drawRect(0, start+((state-1)*PRESETH), 134, PRESETH, TFT_GREY);
+    tft.drawRect(0, start+((state-1)*PRESETH), 134, PRESETH, TFT_GREENYELLOW);
 }
 
 void TFTUtils::loadBrightness() {
@@ -190,7 +194,6 @@ void TFTUtils::updateInvertValue(){
 void TFTUtils::updateBatteryValue(){
     float volts = battGetVoltage();
     int state = (int)battCalcPercentage(volts)/20;
-
     // String voltage = "" + String(volts) + "v";
     // displayBottomLine(voltage);
     tft.fillRect(78,216,44,10,TFT_BLACK);
@@ -241,16 +244,7 @@ void TFTUtils::updateSampleTime(){
 void TFTUtils::toggleWindow(){
     wstate++;
     if(wstate==1)showWindowBike();
-    if(wstate==2)restoreMain();
-}
-
-void TFTUtils::restoreMain(){
-    showMain();
-    delay(10);
-    state = 0;
-    wstate = 0;
-    loadLastData();
-    Serial.println("-->[TGUI] displayed restored main");
+    if(wstate==2)showMain();
 }
 
 void TFTUtils::loadLastData(){
@@ -278,7 +272,7 @@ void TFTUtils::checkButtons() {
             press1 = 1;
             if(state++==0)showSetup();
             if(state>=1)refreshSetup();
-            if(state==5)restoreMain();
+            if(state==5)showMain();
         }
     } else
         press1 = 0;

@@ -113,6 +113,10 @@ class TFTUtils {
 
     float km;
 
+    int hours;
+
+    int minutes;
+
     int dw = 0;  // display width
 
     int dh = 0;  // display height
@@ -136,6 +140,8 @@ class TFTUtils {
     float _humi = 0.0;
 
     float _temp = 0.0;
+
+    int _mainValue = 0;
 
     int _average = 0;
 
@@ -204,6 +210,8 @@ class TFTUtils {
     void toggleWindow();
 
     void restoreMain();
+
+    void loadLastData();
 
     void showWindowBike();
 

@@ -72,7 +72,7 @@ void TFTUtils::showMain() {
     showStatus();
     tft.setCursor(80, 204, 1);
     tft.println("BATT:");
-    updateBatteryValue();
+    // updateBatteryValue();
 
     tft.setCursor(80, 152, 2);
     tft.println("HEALTH:");
@@ -93,7 +93,7 @@ void TFTUtils::showWindowBike(){
     showStatus();
     tft.setCursor(80, 204, 1);
     tft.println("BATT:");
-    updateBatteryValue();
+    // updateBatteryValue();
 
     tft.setCursor(80, 152, 2);
     tft.println("HEALTH:");
@@ -107,6 +107,9 @@ void TFTUtils::showWindowBike(){
 
     tft.fillRect(68, 152, 1, 74, TFT_GREY);
 
+    loadLastData();
+
+    Serial.println("-->[TGUI] displayed bike window");
 }
 
 void TFTUtils::showSetup() {
@@ -236,20 +239,24 @@ void TFTUtils::updateSampleTime(){
 }
 
 void TFTUtils::toggleWindow(){
-    if(wstate++==0)showWindowBike();
-    if(wstate==1){
-        wstate=0;
-        restoreMain();
-    }
+    wstate++;
+    if(wstate==1)showWindowBike();
+    if(wstate==2)restoreMain();
 }
 
 void TFTUtils::restoreMain(){
     showMain();
     delay(10);
     state = 0;
+    wstate = 0;
+    loadLastData();
+    Serial.println("-->[TGUI] displayed restored main");
+}
+
+void TFTUtils::loadLastData(){
     drawBarGraph(_deviceType);
     displaySensorAverage(_average);
-    displaySensorData(_average, 0, _humi, _temp, _rssi, _deviceType);
+    displaySensorData(_mainValue, 0, _humi, _temp, _rssi, _deviceType);
 }
 
 void TFTUtils::checkButtons() {
@@ -373,31 +380,47 @@ void TFTUtils::displaySensorAverage(int average) {
 
 // TODO: separate this function, format/display
 void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
-    if (state==0) {
+    if (state == 0) {
+
+        char output[5];
         tft.fillRect(1, 170, 64, 20, TFT_BLACK);
         tft.fillRect(1, 210, 64, 20, TFT_BLACK);
-
         tft.setFreeFont(&Orbitron_Medium_20);
-        tft.setCursor(1, 187);
-        tft.printf("%02.1f", temp);
 
-        tft.setCursor(1, 227);
-        tft.printf("%02d%%", (int)humi);
+        if (wstate == 0) {
+            
+            tft.setCursor(1, 187);
+            tft.printf("%02.1f", temp);
+
+            tft.setCursor(1, 227);
+            tft.printf("%02d%%", (int)humi);
+
+            _humi = humi;
+            _temp = temp;
+            _mainValue = mainValue;
+
+            sprintf(output, "%04d", mainValue);
+            displayCenterBig(output);
+
+            if (deviceType <= 3)
+                displayMainUnit("PM2.5");
+            else
+                displayMainUnit("PPM");
+        }
+        else {
+            tft.setCursor(1, 187);
+            tft.printf("%02.1f", km);
+
+            tft.setCursor(1, 227);
+            tft.printf("%01d:%02d", hours, minutes);
+
+            sprintf(output, "%03.1f", speed);
+            displayCenterBig(output);
+            displayMainUnit("KM/h");
+        }
 
         _rssi = abs(rssi);
         pkts[MAX_X - 1] = mainValue;
-
-        _humi = humi;
-        _temp = temp;
-
-        char output[4];
-        sprintf(output, "%04d", mainValue);
-        displayCenterBig(output);
-
-        if (deviceType <= 3)
-            displayMainUnit("PM2.5");
-        else
-            displayMainUnit("PPM");
 
         drawBarGraph(deviceType);
         displaySensorAverage(_average);

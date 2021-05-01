@@ -209,8 +209,6 @@ class TFTUtils {
 
     void toggleWindow();
 
-    void restoreMain();
-
     void loadLastData();
 
     void showWindowBike();

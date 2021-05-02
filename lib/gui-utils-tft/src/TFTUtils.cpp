@@ -244,14 +244,13 @@ void TFTUtils::updateSampleTime(){
 }
 
 void TFTUtils::toggleMain(){
-    wstate++;
+    if(++wstate==2)wstate = 0;
     restoreMain();
 }
 
 void TFTUtils::restoreMain(){
     if(wstate==0)showMain();
     if(wstate==1)showWindowBike();
-    if(wstate==2)wstate = 0;
 }
 
 void TFTUtils::loadLastData(){
@@ -382,12 +381,12 @@ void TFTUtils::displaySensorAverage(int average) {
 // TODO: separate this function, format/display
 void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
     if (state == 0) {
-        if (wstate == 0) {
+        char output[6];
+        tft.fillRect(1, 170, 64, 20, TFT_BLACK);
+        tft.fillRect(1, 210, 64, 20, TFT_BLACK);
+        tft.setFreeFont(&Orbitron_Medium_20);
 
-            char output[6];
-            tft.fillRect(1, 170, 64, 20, TFT_BLACK);
-            tft.fillRect(1, 210, 64, 20, TFT_BLACK);
-            tft.setFreeFont(&Orbitron_Medium_20);
+        if (wstate == 0) {
 
             tft.setCursor(1, 187);
             tft.printf("%02.1f", temp);
@@ -406,10 +405,20 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
                 displayMainUnit("PM2.5");
             else
                 displayMainUnit("PPM");
-        }
-        else
-            displayTrackStatus();
+        } 
+        else {
 
+            tft.setCursor(1, 187);
+            tft.printf("%02.1f", _km);
+
+            tft.setCursor(1, 227);
+            tft.printf("%01d:%02d", _hours, _minutes);
+
+            char output[20];
+            sprintf(output, "%04.1f", _speed);
+            displayCenterBig(output);
+            displayMainUnit("KM/h");
+        }
 
         _rssi = abs(rssi);
         pkts[MAX_X - 1] = mainValue;
@@ -417,23 +426,6 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
         drawBarGraph(deviceType);
         displaySensorAverage(_average);
     }
-}
-
-void TFTUtils::displayTrackStatus() {
-    tft.fillRect(1, 170, 64, 20, TFT_BLACK);
-    tft.fillRect(1, 210, 64, 20, TFT_BLACK);
-    tft.setFreeFont(&Orbitron_Medium_20);
-
-    tft.setCursor(1, 187);
-    tft.printf("%02.1f", _km);
-
-    tft.setCursor(1, 227);
-    tft.printf("%01d:%02d", _hours, _minutes);
-
-    char output[20];
-    sprintf(output, "%04.1f", _speed);
-    displayCenterBig(output);
-    displayMainUnit("KM/h");
 }
 
 void TFTUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {

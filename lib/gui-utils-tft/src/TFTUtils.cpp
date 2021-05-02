@@ -85,9 +85,9 @@ void TFTUtils::showMain() {
     tft.println("HUM: ");
 
     tft.fillRect(68, 152, 1, 74, TFT_GREY);
-
+    
     state = 0;
-    wstate = 0;
+
     loadLastData();
 
     Serial.println("-->[TGUI] displayed main screen");
@@ -110,6 +110,8 @@ void TFTUtils::showWindowBike(){
     tft.println("TIME: ");
 
     tft.fillRect(68, 152, 1, 74, TFT_GREY);
+
+    state = 0;
 
     loadLastData();
 
@@ -241,24 +243,28 @@ void TFTUtils::updateSampleTime(){
     tft.println(""+String(_sample_time)+"s");
 }
 
-void TFTUtils::toggleWindow(){
+void TFTUtils::toggleMain(){
     wstate++;
+    restoreMain();
+}
+
+void TFTUtils::restoreMain(){
+    if(wstate==0)showMain();
     if(wstate==1)showWindowBike();
-    if(wstate==2)showMain();
+    if(wstate==2)wstate = 0;
 }
 
 void TFTUtils::loadLastData(){
     drawBarGraph(_deviceType);
     displaySensorAverage(_average);
     displaySensorData(_mainValue, 0, _humi, _temp, _rssi, _deviceType);
-    displayTrackStatus();
 }
 
 void TFTUtils::checkButtons() {
     if (digitalRead(BUTTON_R) == 0) {
         if (press2 == 0) {
             press2 = 1;
-            if(state==0)toggleWindow();
+            if(state==0)toggleMain();
             if(state==1)updateBrightness();
             if(state==2)invertScreen();
             if(state==3)notifyWifiMode();
@@ -273,7 +279,7 @@ void TFTUtils::checkButtons() {
             press1 = 1;
             if(state++==0)showSetup();
             if(state>=1)refreshSetup();
-            if(state==5)showMain();
+            if(state==5)restoreMain();
         }
     } else
         press1 = 0;
@@ -401,6 +407,9 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
             else
                 displayMainUnit("PPM");
         }
+        else
+            displayTrackStatus();
+
 
         _rssi = abs(rssi);
         pkts[MAX_X - 1] = mainValue;
@@ -411,22 +420,20 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
 }
 
 void TFTUtils::displayTrackStatus() {
-    if (state == 0 && wstate == 1) {
-        char output[15];
-        tft.fillRect(1, 170, 64, 20, TFT_BLACK);
-        tft.fillRect(1, 210, 64, 20, TFT_BLACK);
-        tft.setFreeFont(&Orbitron_Medium_20);
+    tft.fillRect(1, 170, 64, 20, TFT_BLACK);
+    tft.fillRect(1, 210, 64, 20, TFT_BLACK);
+    tft.setFreeFont(&Orbitron_Medium_20);
 
-        tft.setCursor(1, 187);
-        tft.printf("%02.1f", _km);
+    tft.setCursor(1, 187);
+    tft.printf("%02.1f", _km);
 
-        tft.setCursor(1, 227);
-        tft.printf("%01d:%02d", _hours, _minutes);
+    tft.setCursor(1, 227);
+    tft.printf("%01d:%02d", _hours, _minutes);
 
-        sprintf(output, "%04.1f", _speed);
-        displayCenterBig(output);
-        displayMainUnit("KM/h");
-    }
+    char output[20];
+    sprintf(output, "%04.1f", _speed);
+    displayCenterBig(output);
+    displayMainUnit("KM/h");
 }
 
 void TFTUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {

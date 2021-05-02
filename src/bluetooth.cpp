@@ -94,8 +94,12 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
 class MyStatusCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
         std::string value = pCharacteristic->getValue();
-        if (value.length() > 0) {
-            Serial.printf("-->[BTLE][STATUS] write: %s\n",value.c_str());
+        if (value.length() > 0 && cfg.getTrackStatusValues(value.c_str())) {
+            Serial.println("-->[E][BTLE][STATUS] "+String(value.c_str()));
+            gui.setSpeed(cfg.track.spd);
+            gui.setDistance(cfg.track.kms);
+            gui.setTrackTime(cfg.track.hrs,cfg.track.min,cfg.track.seg);
+            gui.displayTrackStatus();
         }
         else {
             Serial.println("-->[E][BTLE][STATUS] write error!");

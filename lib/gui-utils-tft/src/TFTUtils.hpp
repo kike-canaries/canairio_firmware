@@ -75,6 +75,14 @@ class TFTUtils {
 
     void suspend();
 
+    void displayTrackStatus();
+
+    void setSpeed(float speed);
+
+    void setDistance(float distance);
+
+    void setTrackTime(int h, int m, int s);
+
     String getFirmwareVersionCode ();
 
    private:
@@ -109,14 +117,6 @@ class TFTUtils {
 
     bool fanState;
 
-    float speed;
-
-    float km;
-
-    int hours;
-
-    int minutes;
-
     int dw = 0;  // display width
 
     int dh = 0;  // display height
@@ -148,6 +148,16 @@ class TFTUtils {
     bool _wifi_enable;
 
     int _sample_time = 5;
+
+    float _speed = 0.0;
+
+    float _km;
+
+    int _hours;
+
+    int _minutes;
+
+    int _seconds;
 
     void showStatus();
 

@@ -3,6 +3,7 @@
 
 #include <ArduinoJson.h>
 #include <Preferences.h>
+#include <GUILib.hpp>
 
 class ConfigApp {
    public:
@@ -34,6 +35,14 @@ class ConfigApp {
     bool isNewIfxdbConfig;
     bool isNewAPIConfig;
     bool isNewWifi;
+
+    struct trackStatus {
+        float kms = 0.0;
+        float spd = 0.0;
+        int hrs = 0;
+        int min = 0;
+        int seg = 0;
+    } track;
 
     void init(const char app_name[]);
 
@@ -90,6 +99,8 @@ class ConfigApp {
     int32_t getBrightness();
 
     void colorsInvertedEnable(bool enable);
+
+    bool getTrackStatusValues(const char *json);
 
    private:
     ///preferences main key

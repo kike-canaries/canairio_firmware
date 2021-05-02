@@ -223,8 +223,6 @@ class TFTUtils {
 
     void showWindowBike();
 
-    void displayTrackStatus();
-
     GUIUserPreferencesCallbacks* mGUICallBacks = nullptr;
 
     TFTUtils* getInstance();

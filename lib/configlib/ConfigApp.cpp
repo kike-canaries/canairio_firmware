@@ -281,6 +281,24 @@ bool ConfigApp::save(const char *json) {
     }
 }
 
+bool ConfigApp::getTrackStatusValues(const char *json) {
+    StaticJsonDocument<200> doc;
+    auto error = deserializeJson(doc, json);
+    if (error) {
+        Serial.print(F("-->[E][CONF] deserialize Json failed with code "));
+        Serial.println(error.c_str());
+        return false;
+    }
+    if (doc.containsKey("spd")) track.spd = doc["spd"] | 0.0;
+    if (doc.containsKey("kms")) track.kms = doc["kms"] | 0.0;
+    if (doc.containsKey("hrs")) track.hrs = doc["hrs"] | 0;
+    if (doc.containsKey("min")) track.min = doc["min"] | 0;
+    if (doc.containsKey("seg")) track.seg = doc["seg"] | 0;
+
+    return true;
+}
+
+
 String ConfigApp::getDeviceId() {
     uint8_t baseMac[6];
     // Get MAC address for WiFi station

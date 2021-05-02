@@ -251,6 +251,7 @@ void TFTUtils::loadLastData(){
     drawBarGraph(_deviceType);
     displaySensorAverage(_average);
     displaySensorData(_mainValue, 0, _humi, _temp, _rssi, _deviceType);
+    displayTrackStatus();
 }
 
 void TFTUtils::checkButtons() {
@@ -375,14 +376,13 @@ void TFTUtils::displaySensorAverage(int average) {
 // TODO: separate this function, format/display
 void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
     if (state == 0) {
-
-        char output[5];
-        tft.fillRect(1, 170, 64, 20, TFT_BLACK);
-        tft.fillRect(1, 210, 64, 20, TFT_BLACK);
-        tft.setFreeFont(&Orbitron_Medium_20);
-
         if (wstate == 0) {
-            
+
+            char output[6];
+            tft.fillRect(1, 170, 64, 20, TFT_BLACK);
+            tft.fillRect(1, 210, 64, 20, TFT_BLACK);
+            tft.setFreeFont(&Orbitron_Medium_20);
+
             tft.setCursor(1, 187);
             tft.printf("%02.1f", temp);
 
@@ -401,23 +401,31 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
             else
                 displayMainUnit("PPM");
         }
-        else {
-            tft.setCursor(1, 187);
-            tft.printf("%02.1f", km);
-
-            tft.setCursor(1, 227);
-            tft.printf("%01d:%02d", hours, minutes);
-
-            sprintf(output, "%03.1f", speed);
-            displayCenterBig(output);
-            displayMainUnit("KM/h");
-        }
 
         _rssi = abs(rssi);
         pkts[MAX_X - 1] = mainValue;
 
         drawBarGraph(deviceType);
         displaySensorAverage(_average);
+    }
+}
+
+void TFTUtils::displayTrackStatus() {
+    if (state == 0 && wstate == 1) {
+        char output[15];
+        tft.fillRect(1, 170, 64, 20, TFT_BLACK);
+        tft.fillRect(1, 210, 64, 20, TFT_BLACK);
+        tft.setFreeFont(&Orbitron_Medium_20);
+
+        tft.setCursor(1, 187);
+        tft.printf("%02.1f", _km);
+
+        tft.setCursor(1, 227);
+        tft.printf("%01d:%02d", _hours, _minutes);
+
+        sprintf(output, "%04.1f", _speed);
+        displayCenterBig(output);
+        displayMainUnit("KM/h");
     }
 }
 
@@ -567,6 +575,20 @@ void TFTUtils::notifyBrightness() {
 
 void TFTUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
     mGUICallBacks = pCallBacks;
+}
+
+void TFTUtils::setSpeed(float speed){
+    _speed = speed;
+}
+
+void TFTUtils::setDistance(float distance){
+    _km = distance;
+}
+
+void TFTUtils::setTrackTime(int h, int m, int s){
+    _hours = h;
+    _minutes = m;
+    _seconds = s;
 }
 
 TFTUtils* TFTUtils::getInstance() {

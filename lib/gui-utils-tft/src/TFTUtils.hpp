@@ -75,8 +75,6 @@ class TFTUtils {
 
     void suspend();
 
-    void displayTrackStatus();
-
     void setSpeed(float speed);
 
     void setDistance(float distance);
@@ -217,11 +215,15 @@ class TFTUtils {
 
     void notifyBrightness();
 
-    void toggleWindow();
+    void toggleMain();
+
+    void restoreMain();
 
     void loadLastData();
 
     void showWindowBike();
+
+    void displayTrackStatus();
 
     GUIUserPreferencesCallbacks* mGUICallBacks = nullptr;
 

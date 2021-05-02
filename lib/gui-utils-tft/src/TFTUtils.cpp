@@ -113,7 +113,7 @@ void TFTUtils::showWindowBike(){
 
     loadLastData();
 
-    Serial.println("-->[TGUI] displayed bike window");
+    Serial.println("-->[TGUI] displayed bike screen");
 }
 
 void TFTUtils::showSetup() {

@@ -3,7 +3,6 @@
 
 #include <ArduinoJson.h>
 #include <Preferences.h>
-#include <GUILib.hpp>
 
 class ConfigApp {
    public:

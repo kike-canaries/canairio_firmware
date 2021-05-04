@@ -6,6 +6,9 @@
 #include <Arduino.h>
 #include <GUILib.hpp>
 
+uint64_t count = 20;
+uint16_t total = 1000;
+int max_value = random(0,150);
 bool toggle;
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
@@ -53,13 +56,38 @@ void testExtraWelcomeLines() {
     gui.welcomeAddMessage("Line test welcome 4");
 }
 
+void guiTask(void* pvParameters) {
+    Serial.println("-->[Setup] GUI task loop");
+    while (1) {
+
+        gui.pageStart();
+        gui.displayMainValues();
+        gui.displayStatus(true, true, true);
+        gui.pageEnd();
+
+        delay(80);
+    }
+}
+
+void setupGUITask() {
+    xTaskCreatePinnedToCore(
+        guiTask,    /* Function to implement the task */
+        "tempTask ", /* Name of the task */
+        10000,        /* Stack size in words */
+        NULL,        /* Task input parameter */
+        5,           /* Priority of the task */
+        NULL,        /* Task handle. */
+        1);          /* Core where the task should run */
+}
+
 void setup(void) {
     Serial.begin(115200);
-    delay(500);
+    delay(100);
     Serial.println("\n== INIT SETUP ==\n");
-    Serial.println("-->[SETUP] console ready");
+
     gui.displayInit();
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
+
     gui.showWelcome();
     // delay(500);
     gui.displayBottomLine("CanAirIOAF4");
@@ -78,37 +106,27 @@ void setup(void) {
 
     delay(500);
     gui.showMain();
+    delay(100);
+    setupGUITask();
 }
 
 bool getBoolean() {
     return random(0, 2) == 1 ? true : false;
 }
 
-uint64_t count = 20;
-uint16_t total = 1000;
-int max_value = random(0,150);
-
 void loop(void) {
 
-    gui.pageStart();
+    if (count % 20 == 0 ) max_value = random (3,120);
 
-    if (count % 300 == 0 ) max_value = random (3,120);
+    if (count % 5 == 0) gui.setSensorData(random(0,max_value), 230,random(0, 99), random(0, 800)/25.0, random(50, 90), 1);
 
-    if (count % 30 == 0) gui.setSensorData(random(0,max_value), 230,random(0, 99), random(0, 800)/25.0, random(50, 90), 1);
-
-    if (count % 15 == 0) functionPtr[random(0, 3)]();  // Call a test function in random sequence
+    functionPtr[random(0, 3)]();  // Call a test function in random sequence
 
     // gui.showProgress(count++,1000);
 
     // gui.displayStatus(getBoolean(), true, getBoolean());
 
-    gui.displayMainValues();
-    gui.displayStatus(true, true, true);
-    gui.checkButtons();
-    gui.pageEnd();
-
-    delay(80);
-
     count++;
 
+    delay(1000);
 }

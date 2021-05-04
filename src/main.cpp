@@ -16,7 +16,7 @@
 #include <bluetooth.hpp>
 #include <wifi.hpp>
 
-void displayGUI() {
+void refreshGUIData() {
     gui.displaySensorLiveIcon();  // all sensors read are ok
     int deviceType = sensors.getPmDeviceTypeSelected();
     uint16_t mainValue = 0;
@@ -32,7 +32,7 @@ void displayGUI() {
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();
 
-    gui.displaySensorData(
+    gui.setSensorData(
         mainValue,
         getChargeLevel(),
         humi,
@@ -67,7 +67,7 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
 /// sensors data callback
 void onSensorDataOk() {
     log_i("[MAIN] onSensorDataOk");
-    displayGUI();
+    refreshGUIData();
 }
 
 /// sensors error callback
@@ -104,6 +104,30 @@ void startingSensors() {
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
+
+void guiTask(void* pvParameters) {
+    Serial.println("-->[Setup] GUI task loop");
+    while (1) {
+
+        gui.pageStart();
+        gui.displayMainValues();
+        gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
+        gui.pageEnd();
+
+        delay(80);
+    }
+}
+
+void setupGUITask() {
+    xTaskCreatePinnedToCore(
+        guiTask,    /* Function to implement the task */
+        "tempTask ", /* Name of the task */
+        10000,        /* Stack size in words */
+        NULL,        /* Task input parameter */
+        5,           /* Priority of the task */
+        NULL,        /* Task handle. */
+        1);          /* Core where the task should run */
+}
 
 void setup() {
     Serial.begin(115200);
@@ -170,16 +194,15 @@ void setup() {
     gui.welcomeAddMessage("==SETUP READY==");
     delay(1000);
     gui.showMain();
-    displayGUI();  // display main screen
+    refreshGUIData();
     delay(1500);
     sensors.loop();
     sensors.setSampleTime(cfg.stime);        // config sensors sample time (first use)
-
+    setupGUITask();
 }
 
 void loop() {
     sensors.loop();  // read sensor data and showed it
-    gui.pageStart();
 
     batteryloop();   // battery charge status
     bleLoop();       // notify data to connected devices
@@ -189,7 +212,5 @@ void loop() {
     otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers
     
-    gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
-    gui.pageEnd();
-    delay(80);
+    delay(500);
 }

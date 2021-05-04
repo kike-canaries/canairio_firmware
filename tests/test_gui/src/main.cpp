@@ -6,9 +6,6 @@
 #include <Arduino.h>
 #include <GUILib.hpp>
 
-uint64_t count = 20;
-uint16_t total = 1000;
-int max_value = random(0,150);
 bool toggle;
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
@@ -114,11 +111,15 @@ bool getBoolean() {
     return random(0, 2) == 1 ? true : false;
 }
 
+uint64_t count = 0;
+int max_value = 1;
+
+
 void loop(void) {
 
-    if (count % 20 == 0 ) max_value = random (3,120);
+    if (count % 30 == 0 ) max_value = random (5,random(4,35));
 
-    if (count % 5 == 0) gui.setSensorData(random(0,max_value), 230,random(0, 99), random(0, 800)/25.0, random(50, 90), 1);
+    if (count % 5 == 0) gui.setSensorData(random(1,max_value), 230,random(0, 99), random(0, 800)/25.0, random(50, 90), 1);
 
     functionPtr[random(0, 3)]();  // Call a test function in random sequence
 
@@ -128,5 +129,5 @@ void loop(void) {
 
     count++;
 
-    delay(1000);
+    delay(500);
 }

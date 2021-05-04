@@ -73,10 +73,6 @@ class TFTUtils {
 
     void setSampleTime(int time);
 
-    void checkButtons();
-
-    void suspend();
-
     void setSpeed(float speed);
 
     void setDistance(float distance);
@@ -226,6 +222,10 @@ class TFTUtils {
     void loadLastData();
 
     void showWindowBike();
+
+    void checkButtons();
+
+    void suspend();
 
     GUIUserPreferencesCallbacks* mGUICallBacks = nullptr;
 

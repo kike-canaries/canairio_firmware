@@ -47,9 +47,11 @@ class TFTUtils {
     
     void welcomeRepeatMessage(String msg);
 
-    void displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType);
+    void setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType);
 
     void displayStatus(bool wifiOn, bool bleOn, bool blePair);
+
+    void displayMainValues();
 
     void displayDataOnIcon();
 
@@ -157,12 +159,14 @@ class TFTUtils {
 
     int _seconds;
 
+    bool isNewData;
+
     void showStatus();
 
     void showSetup();
 
     void refreshSetup();
-
+    
     void displaySensorAverage(int average);
 
     void displayMainUnit(String unit);
@@ -179,9 +183,9 @@ class TFTUtils {
 
     double getMultiplicator();
 
-    uint32_t getAQIColor(uint32_t value,int deviceType);
+    uint32_t getAQIColor(uint32_t value);
     
-    void drawBarGraph(int deviceType);
+    void drawBarGraph();
 
     void drawBluetoothIcon();
 

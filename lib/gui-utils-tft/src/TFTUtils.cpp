@@ -254,9 +254,10 @@ void TFTUtils::restoreMain(){
 }
 
 void TFTUtils::loadLastData(){
-    drawBarGraph(_deviceType);
+    isNewData = true;
+    drawBarGraph();
     displaySensorAverage(_average);
-    displaySensorData(_mainValue, 0, _humi, _temp, _rssi, _deviceType);
+    displayMainValues();
 }
 
 void TFTUtils::checkButtons() {
@@ -378,9 +379,8 @@ void TFTUtils::displaySensorAverage(int average) {
     }
 }
 
-// TODO: separate this function, format/display
-void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
-    if (state == 0) {
+void TFTUtils::displayMainValues(){
+    if (state == 0 && isNewData) {
         char output[6];
         tft.fillRect(1, 170, 64, 20, TFT_BLACK);
         tft.fillRect(1, 210, 64, 20, TFT_BLACK);
@@ -389,19 +389,15 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
         if (wstate == 0) {
 
             tft.setCursor(1, 187);
-            tft.printf("%02.1f", temp);
+            tft.printf("%02.1f", _temp);
 
             tft.setCursor(1, 227);
-            tft.printf("%02d%%", (int)humi);
+            tft.printf("%02d%%", (int)_humi);
 
-            _humi = humi;
-            _temp = temp;
-            _mainValue = mainValue;
-
-            sprintf(output, "%04d", mainValue);
+            sprintf(output, "%04d", _mainValue);
             displayCenterBig(output);
 
-            if (deviceType <= 3)
+            if (_deviceType <= 3)
                 displayMainUnit("PM2.5");
             else
                 displayMainUnit("PPM");
@@ -420,12 +416,21 @@ void TFTUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
             displayMainUnit("KM/h");
         }
 
-        _rssi = abs(rssi);
-        pkts[MAX_X - 1] = mainValue;
-
-        drawBarGraph(deviceType);
+        drawBarGraph();
         displaySensorAverage(_average);
+        isNewData = false;
     }
+}
+
+// TODO: separate this function, format/display
+void TFTUtils::setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
+    _deviceType = deviceType;
+    _humi = humi;
+    _temp = temp;
+    _mainValue = mainValue;
+    _rssi = abs(rssi);
+    pkts[MAX_X - 1] = mainValue;
+    isNewData = true;
 }
 
 void TFTUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
@@ -453,8 +458,8 @@ void TFTUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
     }
 }
 
-uint32_t TFTUtils::getAQIColor(uint32_t value, int deviceType) {
-    if (deviceType <= 3) {
+uint32_t TFTUtils::getAQIColor(uint32_t value) {
+    if (_deviceType <= 3) {
 
         if (value <= 13)       return TFT_GREEN;
         else if (value <= 35)  return TFT_YELLOW;
@@ -474,7 +479,7 @@ uint32_t TFTUtils::getAQIColor(uint32_t value, int deviceType) {
     }
 }
 
-void TFTUtils::drawBarGraph(int deviceType) {
+void TFTUtils::drawBarGraph() {
     double multiplicator = getMultiplicator();
     int len;
     tft.fillRect(0, 149 - MAX_Y, MAX_X, MAX_Y, TFT_BLACK);
@@ -483,7 +488,7 @@ void TFTUtils::drawBarGraph(int deviceType) {
     for (int i = 0; i < MAX_X; i++) {
         len = pkts[i] * multiplicator;
         _average = pkts[i] + _average;
-        int color = getAQIColor(pkts[i],deviceType);
+        int color = getAQIColor(pkts[i]);
         tft.drawLine(i, 150, i, 150 - (len > MAX_Y ? MAX_Y : len),color);
         if (i < MAX_X - 1) pkts[i] = pkts[i + 1];
     }

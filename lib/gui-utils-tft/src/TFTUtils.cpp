@@ -249,17 +249,23 @@ void TFTUtils::updateSampleTime(){
 
 void TFTUtils::updateCalibrationField(){
     static uint_fast64_t calibretts = 0;   // timestamp for GUI refresh
-    if (millis() - calibretts > 1000) {
+    if (state >= 1 && millis() - calibretts > 1000) {
         calibretts = millis();
-        Serial.println("-->[TGUI] update calibration field");
         tft.fillRect(MARVALL, SSTART + PRESETH * 4, 54, 13, TFT_BLACK);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.setCursor(MARVALL, SSTART + PRESETH * 4, 2);
-        if (_calibration_counter > 0)
+        if (_calibration_counter > 0){
+            Serial.println("-->[TGUI] coundown to calibration: "+String(_calibration_counter));
             tft.println("" + String(_calibration_counter--) + "s");
-        else if (_calibration_counter == 0)
+        }
+        else if (_calibration_counter == 0) {
             tft.println("READY");
-        else
+            _calibration_counter=-1;
+            if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onCalibrationReady();
+        }
+        else if (_calibration_counter == -1)
+            tft.println("READY");
+        else 
             tft.println("START");
     }
 }
@@ -277,7 +283,7 @@ void TFTUtils::toggleMain(){
 void TFTUtils::restoreMain(){
     if(wstate==0)showMain();
     if(wstate==1)showWindowBike();
-    if(_calibration_counter>=0)_calibration_counter = -1;
+    if(_calibration_counter>=0)_calibration_counter = -2;
 }
 
 void TFTUtils::loadLastData(){
@@ -589,7 +595,7 @@ void TFTUtils::pageStart() {
         loopts = millis();
         updateBatteryValue();
     }
-    if (_calibration_counter >= 0) updateCalibrationField();
+    updateCalibrationField();
 }
 
 void TFTUtils::pageEnd() {

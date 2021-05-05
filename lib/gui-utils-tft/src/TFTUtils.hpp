@@ -145,7 +145,7 @@ class TFTUtils {
 
     int _sample_time = 5;
 
-    int _calibration_counter = -1;
+    int _calibration_counter = -2;
 
     float _speed = 0.0;
 
@@ -246,6 +246,7 @@ public:
 	virtual void onBrightness(int value);
     virtual void onColorsInverted(bool enable);
     virtual void onSampleTime(int time);
+    virtual void onCalibrationReady();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTHANDLER)

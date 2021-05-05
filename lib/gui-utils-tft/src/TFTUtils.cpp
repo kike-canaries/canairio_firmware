@@ -142,10 +142,14 @@ void TFTUtils::showSetup() {
     tft.setCursor(MARGINL, SSTART+PRESETH*3, 2);
     tft.println("STIME:");
 
+    tft.setCursor(MARGINL, SSTART+PRESETH*4, 2);
+    tft.println("CALIBRT:");
+
     updateInvertValue();
     updateWifiMode();
     updateSampleTime();
     loadBrightness();
+    updateCalibrationField();
 
     tft.fillRect(68, SSTART, 1, 150, TFT_GREY);
 
@@ -243,6 +247,28 @@ void TFTUtils::updateSampleTime(){
     tft.println(""+String(_sample_time)+"s");
 }
 
+void TFTUtils::updateCalibrationField(){
+    static uint_fast64_t calibretts = 0;   // timestamp for GUI refresh
+    if (millis() - calibretts > 1000) {
+        calibretts = millis();
+        Serial.println("-->[TGUI] update calibration field");
+        tft.fillRect(MARVALL, SSTART + PRESETH * 4, 54, 13, TFT_BLACK);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.setCursor(MARVALL, SSTART + PRESETH * 4, 2);
+        if (_calibration_counter > 0)
+            tft.println("" + String(_calibration_counter--) + "s");
+        else if (_calibration_counter == 0)
+            tft.println("READY");
+        else
+            tft.println("START");
+    }
+}
+
+void TFTUtils::startCalibration(){
+    Serial.println("-->[TGUI] starting sensor calibration");
+    _calibration_counter = 10;
+}
+
 void TFTUtils::toggleMain(){
     if(++wstate==2)wstate = 0;
     restoreMain();
@@ -251,6 +277,7 @@ void TFTUtils::toggleMain(){
 void TFTUtils::restoreMain(){
     if(wstate==0)showMain();
     if(wstate==1)showWindowBike();
+    if(_calibration_counter>=0)_calibration_counter = -1;
 }
 
 void TFTUtils::loadLastData(){
@@ -269,6 +296,7 @@ void TFTUtils::checkButtons() {
             if(state==2)invertScreen();
             if(state==3)notifyWifiMode();
             if(state==4)notifySampleTime();
+            if(state==5)startCalibration();
         }
     } else
         press2 = 0;
@@ -279,7 +307,7 @@ void TFTUtils::checkButtons() {
             press1 = 1;
             if(state++==0)showSetup();
             if(state>=1)refreshSetup();
-            if(state==5)restoreMain();
+            if(state==6)restoreMain();
         }
     } else
         press1 = 0;
@@ -561,6 +589,7 @@ void TFTUtils::pageStart() {
         loopts = millis();
         updateBatteryValue();
     }
+    if (_calibration_counter >= 0) updateCalibrationField();
 }
 
 void TFTUtils::pageEnd() {

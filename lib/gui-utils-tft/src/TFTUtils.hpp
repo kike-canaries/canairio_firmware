@@ -145,6 +145,8 @@ class TFTUtils {
 
     int _sample_time = 5;
 
+    int _calibration_counter = -1;
+
     float _speed = 0.0;
 
     float _km;
@@ -214,6 +216,10 @@ class TFTUtils {
     void updateSampleTime();
 
     void notifyBrightness();
+
+    void updateCalibrationField();
+
+    void startCalibration();
 
     void toggleMain();
 

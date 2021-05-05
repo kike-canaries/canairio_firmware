@@ -122,7 +122,7 @@ void loop(void) {
 
     if (count % 30 == 0 ) max_value = random (5,random(4,35));
 
-    if (count % 5 == 0) gui.setSensorData(random(1,max_value), 230,random(0, 99), random(0, 800)/25.0, random(50, 90), 1);
+    if (count % 5 == 0) gui.setSensorData(random(1,max_value), 230,random(0, 99), random(0, 800)/25.0, random(50, 90), 4);
 
     functionPtr[random(0, 3)]();  // Call a test function in random sequence
 

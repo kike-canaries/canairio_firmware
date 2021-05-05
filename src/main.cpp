@@ -62,6 +62,10 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
         cfg.reload();
         if(sensors.sample_time != cfg.stime) sensors.setSampleTime(cfg.stime);
     };
+    void onCalibrationReady(){
+        Serial.println("-->[MAIN] onCalibrationReady");
+        sensors.scd30.setForcedRecalibrationFactor(400);
+    };
 };
 
 /// sensors data callback

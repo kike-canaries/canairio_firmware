@@ -159,6 +159,10 @@ class TFTUtils {
 
     bool isNewData;
 
+    int aqicolors[6] = {TFT_GREEN, TFT_YELLOW, TFT_ORANGE, TFT_RED, TFT_PURPLE, TFT_BROWN};
+
+    String aqilabels[6] = {"GOOD", "MODERATE", "UNH SEN G", "UNHEALTY", "VERY UNH", "VERY UNH"};
+
     void showStatus();
 
     void showSetup();

@@ -21,6 +21,9 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     void onSampleTime(int time){
         Serial.println("-->[SETUP] onSampleTime changed: "+String(time));
     };
+    void onCalibrationReady(){
+        Serial.println("-->[SETUP] onCalibrationReady");
+    };
 };
 
 void testSensorLiveIcon() {

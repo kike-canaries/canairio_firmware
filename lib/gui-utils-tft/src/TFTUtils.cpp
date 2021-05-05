@@ -283,7 +283,7 @@ void TFTUtils::toggleMain(){
 void TFTUtils::restoreMain(){
     if(wstate==0)showMain();
     if(wstate==1)showWindowBike();
-    if(_calibration_counter>=0)_calibration_counter = -2;
+    if(_calibration_counter>=-1)_calibration_counter = -2;
 }
 
 void TFTUtils::loadLastData(){
@@ -356,7 +356,7 @@ void TFTUtils::displayCenterBig(String msg) {
     tft.setFreeFont(&Orbitron_Light_32);
     tft.setTextDatum(MC_DATUM);
     tft.setTextColor(TFT_WHITE,TFT_BLACK);
-    tft.fillRect(2, 25, 130, 32, TFT_BLACK);
+    tft.fillRect(2, 25, 130, 40, TFT_BLACK);
     tft.drawString(msg.c_str(), tft.width() / 2, 36);
 }
 
@@ -396,21 +396,8 @@ void TFTUtils::displayBigLabel(int cursor, String msg) {
 }
 
 void TFTUtils::displaySensorAverage(int average) {
-    if (state == 0) {
-        if (average < 13) {
-            displayEmoticonColor(TFT_GREEN, "GOOD");
-        } else if (average < 36) {
-            displayEmoticonColor(TFT_YELLOW, "MODERATE");
-        } else if (average < 56) {
-            displayEmoticonColor(TFT_ORANGE, "UNH SEN G");
-        } else if (average < 151) {
-            displayEmoticonColor(TFT_RED, "UNHEALTY");
-        } else if (average < 251) {
-            displayEmoticonColor(TFT_PURPLE, "VERY UNH");
-        } else {
-            displayEmoticonColor(TFT_BROWN, "HAZARDOUS");
-        }
-    }
+    int color =getAQIColor(average);
+    displayEmoticonColor(aqicolors[color], aqilabels[color]);
 }
 
 void TFTUtils::displayMainValues(){
@@ -495,21 +482,20 @@ void TFTUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
 uint32_t TFTUtils::getAQIColor(uint32_t value) {
     if (_deviceType <= 3) {
 
-        if (value <= 13)       return TFT_GREEN;
-        else if (value <= 35)  return TFT_YELLOW;
-        else if (value <= 55)  return TFT_ORANGE;
-        else if (value <= 150) return TFT_RED;
-        else if (value <= 250) return TFT_PURPLE;
-        else                   return TFT_BROWN;
+        if (value <= 13)       return 0;
+        else if (value <= 35)  return 1;
+        else if (value <= 55)  return 2;
+        else if (value <= 150) return 3;
+        else if (value <= 250) return 4;
+        else                   return 5;
 
     } else {
-
-        if (value <= 600)       return TFT_GREEN;
-        else if (value <= 800)  return TFT_YELLOW;
-        else if (value <= 1000) return TFT_ORANGE;
-        else if (value <= 1500) return TFT_RED;
-        else if (value <= 2000) return TFT_PURPLE;
-        else                    return TFT_BROWN;
+        if (value <= 600)       return 0;
+        else if (value <= 800)  return 1;
+        else if (value <= 1000) return 2;
+        else if (value <= 1500) return 3;
+        else if (value <= 2000) return 4;
+        else                    return 5;
     }
 }
 
@@ -522,7 +508,7 @@ void TFTUtils::drawBarGraph() {
     for (int i = 0; i < MAX_X; i++) {
         len = pkts[i] * multiplicator;
         _average = pkts[i] + _average;
-        int color = getAQIColor(pkts[i]);
+        int color = aqicolors[getAQIColor(pkts[i])];
         tft.drawLine(i, 150, i, 150 - (len > MAX_Y ? MAX_Y : len),color);
         if (i < MAX_X - 1) pkts[i] = pkts[i + 1];
     }

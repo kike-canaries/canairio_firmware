@@ -57,14 +57,16 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
         cfg.colorsInvertedEnable(enable);
     };
     void onSampleTime(int time){
-        Serial.println("-->[MAIN] onSampleTime changed: "+String(time));
-        cfg.saveSampleTime(time);
-        cfg.reload();
-        if(sensors.sample_time != cfg.stime) sensors.setSampleTime(cfg.stime);
+        if(sensors.sample_time != time) {
+            Serial.println("-->[MAIN] onSampleTime changed: "+String(time));
+            cfg.saveSampleTime(time);
+            cfg.reload();
+            sensors.setSampleTime(cfg.stime);
+        } 
     };
     void onCalibrationReady(){
         Serial.println("-->[MAIN] onCalibrationReady");
-        sensors.scd30.setForcedRecalibrationFactor(400);
+        sensors.setCO2RecalibrationFactor(400);
     };
 };
 
@@ -110,7 +112,7 @@ void startingSensors() {
 ******************************************************************************/
 
 void guiTask(void* pvParameters) {
-    Serial.println("-->[Setup] GUI task loop");
+    Serial.println("-->[INFO] config GUI task loop");
     while (1) {
 
         gui.pageStart();
@@ -206,8 +208,8 @@ void setup() {
 }
 
 void loop() {
-    sensors.loop();  // read sensor data and showed it
 
+    sensors.loop();  // read sensor data and showed it
     batteryloop();   // battery charge status
     bleLoop();       // notify data to connected devices
     wifiLoop();      // check wifi and reconnect it

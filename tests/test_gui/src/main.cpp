@@ -56,30 +56,6 @@ void testExtraWelcomeLines() {
     gui.welcomeAddMessage("Line test welcome 4");
 }
 
-void guiTask(void* pvParameters) {
-    Serial.println("-->[Setup] GUI task loop");
-    while (1) {
-
-        gui.pageStart();
-        gui.displayMainValues();
-        gui.displayStatus(true, true, true);
-        gui.pageEnd();
-
-        delay(80);
-    }
-}
-
-void setupGUITask() {
-    xTaskCreatePinnedToCore(
-        guiTask,    /* Function to implement the task */
-        "tempTask ", /* Name of the task */
-        10000,        /* Stack size in words */
-        NULL,        /* Task input parameter */
-        5,           /* Priority of the task */
-        NULL,        /* Task handle. */
-        1);          /* Core where the task should run */
-}
-
 void setup(void) {
     Serial.begin(115200);
     delay(100);
@@ -107,7 +83,6 @@ void setup(void) {
     delay(500);
     gui.showMain();
     delay(100);
-    setupGUITask();
 }
 
 bool getBoolean() {
@@ -123,6 +98,8 @@ void loop(void) {
     if (count % 30 == 0 ) max_value = random (5,random(4,35));
 
     if (count % 5 == 0) gui.setSensorData(random(1,max_value), 230,random(0, 99), random(0, 800)/25.0, random(50, 90), 4);
+
+    gui.setGUIStatusFlags(true, true, true);
 
     functionPtr[random(0, 3)]();  // Call a test function in random sequence
 

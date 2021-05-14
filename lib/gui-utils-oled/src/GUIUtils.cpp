@@ -358,38 +358,14 @@ void GUIUtils::displayMainValues() {
         sprintf(output, "%04d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
     else
         sprintf(output, "%03d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
-    //displayBottomLine(String(output));
-#ifdef TTGO_TQ
-    u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.drawFrame(100, 0, 27, 13);
-    u8g2.drawBox(97, 4, 3, 5);
-    u8g2.setDrawColor(0);
-    u8g2.drawBox(102, 2, 24, 9);
-    u8g2.setDrawColor(1);
+    displayBottomLine(String(output));
 
-    if (chargeLevel < 80) {
-        u8g2.setCursor(80, 12);
-    }
-    if (chargeLevel > 24) {
-        u8g2.drawBox(120, 2, 5, 9);
-    }
-    if (chargeLevel > 49) {
-        u8g2.drawBox(114, 2, 5, 9);
-    }
-    if (chargeLevel > 74) {
-        u8g2.drawBox(108, 2, 5, 9);
-    }
-    if (chargeLevel > 99) {
-        u8g2.drawBox(102, 2, 5, 9);
-        u8g2.setCursor(76, 12);
-    }
-#endif
 #ifdef EMOTICONS
 #ifndef TTGO_TQ
     u8g2.setFont(u8g2_font_4x6_tf);
     u8g2.setCursor(48, 0);
     sprintf(output, "%04d", _mainValue);
-    u8g2.print(output);
+    // u8g2.print(output);  //TODO: it sometime fails
 #endif
 #endif
     u8g2.setFont(u8g2_font_6x12_tf);

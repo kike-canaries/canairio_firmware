@@ -49,7 +49,7 @@ class TFTUtils {
 
     void setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType);
 
-    void displayStatus(bool wifiOn, bool bleOn, bool blePair);
+    void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 
     void displayMainValues();
 
@@ -73,9 +73,7 @@ class TFTUtils {
 
     void setSampleTime(int time);
 
-    void setSpeed(float speed);
-
-    void setDistance(float distance);
+    void setTrackValues(float speed, float distance);
 
     void setTrackTime(int h, int m, int s);
 
@@ -157,7 +155,17 @@ class TFTUtils {
 
     int _seconds;
 
+    bool _wifiOn;
+
+    bool _bleOn;
+
+    bool _blePair;
+
     bool isNewData;
+
+    TaskHandle_t xHandle;
+
+    bool taskGUIrunning;
 
     int aqicolors[6] = {TFT_GREEN, TFT_YELLOW, TFT_ORANGE, TFT_RED, TFT_PURPLE, TFT_BROWN};
 
@@ -174,6 +182,8 @@ class TFTUtils {
     void displayMainUnit(String unit);
 
     void displayCenterBig(String msg);
+    
+    void displayGUIStatusFlags();
 
     void displayEmoticonLabel(int numsmile, String msg);
 
@@ -236,6 +246,8 @@ class TFTUtils {
     void checkButtons();
 
     void suspend();
+
+    void setupGUITask();
 
     GUIUserPreferencesCallbacks* mGUICallBacks = nullptr;
 

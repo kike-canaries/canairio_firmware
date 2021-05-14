@@ -111,30 +111,6 @@ void startingSensors() {
 *  M A I N
 ******************************************************************************/
 
-void guiTask(void* pvParameters) {
-    Serial.println("-->[INFO] config GUI task loop");
-    while (1) {
-
-        gui.pageStart();
-        gui.displayMainValues();
-        gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
-        gui.pageEnd();
-
-        delay(80);
-    }
-}
-
-void setupGUITask() {
-    xTaskCreatePinnedToCore(
-        guiTask,    /* Function to implement the task */
-        "tempTask ", /* Name of the task */
-        10000,        /* Stack size in words */
-        NULL,        /* Task input parameter */
-        5,           /* Priority of the task */
-        NULL,        /* Task handle. */
-        1);          /* Core where the task should run */
-}
-
 void setup() {
     Serial.begin(115200);
     delay(400);
@@ -204,7 +180,6 @@ void setup() {
     delay(1500);
     sensors.loop();
     sensors.setSampleTime(cfg.stime);        // config sensors sample time (first use)
-    setupGUITask();
 }
 
 void loop() {
@@ -217,6 +192,8 @@ void loop() {
     influxDbLoop();  // influxDB publication
     otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers
-    
+                     // update GUI flags:
+    gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
+
     delay(500);
 }

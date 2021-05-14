@@ -11,8 +11,8 @@ void guiTask(void* pvParameters) {
     while (1) {
 
         gui.pageStart();
-        gui.displayGUIStatusFlags();
         gui.displayMainValues();
+        gui.displayGUIStatusFlags();
         gui.pageEnd();
 
         delay(1000);

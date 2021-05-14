@@ -4,6 +4,29 @@
 *   D I S P L A Y  M E T H O D S
 ******************************************************************************/
 
+void guiTask(void* pvParameters) {
+    Serial.println("-->[TGUI] starting task loop");
+    while (1) {
+
+        gui.pageStart();
+        gui.displayMainValues();
+        gui.pageEnd();
+
+        delay(80);
+    }
+}
+
+void TFTUtils::setupGUITask() {
+    taskGUIrunning = true;
+    xTaskCreatePinnedToCore(
+        guiTask,    /* Function to implement the task */
+        "tempTask ", /* Name of the task */
+        10000,        /* Stack size in words */
+        NULL,        /* Task input parameter */
+        5,           /* Priority of the task */
+        &xHandle,    /* Task handle. */
+        1);          /* Core where the task should run */
+}
 
 void TFTUtils::displayInit() {
     pinMode(BUTTON_L, INPUT_PULLUP);
@@ -89,6 +112,8 @@ void TFTUtils::showMain() {
     state = 0;
 
     loadLastData();
+
+    if(!taskGUIrunning) setupGUITask();           // init GUI thread
 
     Serial.println("-->[TGUI] displayed main screen");
 }
@@ -445,6 +470,7 @@ void TFTUtils::displayMainValues(){
 
 // TODO: separate this function, format/display
 void TFTUtils::setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
+    vTaskSuspend(xHandle);
     _deviceType = deviceType;
     _humi = humi;
     _temp = temp;
@@ -452,18 +478,27 @@ void TFTUtils::setSensorData(int mainValue, int chargeLevel, float humi, float t
     _rssi = abs(rssi);
     pkts[MAX_X - 1] = mainValue;
     isNewData = true;
+    vTaskResume(xHandle);
 }
 
-void TFTUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
+void TFTUtils::setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair) {
+    vTaskSuspend(xHandle);
+    _wifiOn = wifiOn;
+    _bleOn = bleOn;
+    _blePair = blePair;
+    vTaskResume(xHandle);
+}
+
+void TFTUtils::displayGUIStatusFlags() {
     static uint_fast64_t sensor_status_ts = 0;   // timestamp for GUI refresh
     if ((millis() - sensor_status_ts > 1000)) { 
         sensor_status_ts = millis();
 
         tft.fillRect(0, 0, 135, 18, TFT_BLACK);
 
-        if (bleOn && blePair)
+        if (_bleOn && _blePair)
             drawBluetoothIcon();
-        if (wifiOn){
+        if (_wifiOn){
             if (_rssi < 60) drawWifiHighIcon();
             else if (_rssi < 70) drawWifiMidIcon();
             else drawWifiLowIcon();
@@ -582,6 +617,7 @@ void TFTUtils::pageStart() {
         updateBatteryValue();
     }
     updateCalibrationField();
+    displayGUIStatusFlags();
 }
 
 void TFTUtils::pageEnd() {
@@ -604,18 +640,19 @@ void TFTUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
     mGUICallBacks = pCallBacks;
 }
 
-void TFTUtils::setSpeed(float speed){
+void TFTUtils::setTrackValues(float speed, float distance){
+    vTaskSuspend(xHandle);
     _speed = speed;
-}
-
-void TFTUtils::setDistance(float distance){
     _km = distance;
+    vTaskResume(xHandle);
 }
 
 void TFTUtils::setTrackTime(int h, int m, int s){
+    vTaskSuspend(xHandle);
     _hours = h;
     _minutes = m;
     _seconds = s;
+    vTaskResume(xHandle);
 }
 
 TFTUtils* TFTUtils::getInstance() {

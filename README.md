@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/kike-canaries/canairio_firmware.svg?branch=master)](https://travis-ci.com/kike-canaries/canairio_firmware) [![PlatformIO](https://github.com/kike-canaries/canairio_firmware/workflows/PlatformIO/badge.svg)](https://github.com/kike-canaries/canairio_firmware/actions/) ![ViewCount](https://views.whatilearened.today/views/github/kike-canaries/canairio_firmware.svg) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO)  
 
-<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage_vertical.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage_vertical.jpg" align="right" width="200" ></a>
+<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage_vertical.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage_vertical.jpg" align="right" width="190" ></a>
 
 # CanAirIO firmware
 
@@ -12,8 +12,10 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 
 ## Boards supported
 
+The [last release](https://github.com/kike-canaries/canairio_firmware/releases) of CanAirIO Device supports the next boards:
+
 | Firmware Name | Boards supported |   Display  |  Guide and schematics  |
-| ------------- |:-------------:| -------------:| ----------------------:|
+| ------------- |:-------------:| :-------------:| :----------------------:|
 | **TTGO_T7**     | TTGO T7, D1Mini, ** | OLED 64x48 | [CanAirIO v2.1](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647) |
 | **ESP32DevKit** | ESP32DevKit, NodeMCU V3, ** | OLED 128x64 | [HacksterIO](https://www.hackster.io/canairio/build-low-cost-air-quality-sensor-canairio-without-soldering-d87494) |
 | **TTGO_TQ** | TTGO TQ | Builtin OLED  | [TTGO_TQ board](https://de.aliexpress.com/item/10000291636371.html) |

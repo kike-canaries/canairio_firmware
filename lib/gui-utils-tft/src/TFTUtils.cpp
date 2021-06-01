@@ -225,8 +225,8 @@ void TFTUtils::updateInvertValue(){
 void TFTUtils::updateBatteryValue(){
     float volts = battGetVoltage();
     int state = (int)battCalcPercentage(volts)/20;
-    // String voltage = "" + String(volts) + "v";
-    // displayBottomLine(voltage);
+    String voltage = "" + String(volts) + "v";
+    displayBottomLine(voltage);
     tft.fillRect(78,216,44,10,TFT_BLACK);
 
     for (int i = 0; i < state + 1; i++) {

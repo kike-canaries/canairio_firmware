@@ -86,8 +86,9 @@ void startingSensors() {
     gui.welcomeAddMessage("Detected sensor:");
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
-    sensors.setSampleTime(2);                       // config sensors sample time (first use)
+    sensors.setSampleTime(1);                       // config sensors sample time (first use)
     sensors.setDebugMode(false);                    // [optional] debug mode
+    sensors.detectI2COnly(false);                   // force to only i2c sensors
     sensors.init(cfg.getSensorType());              // start all sensors and
                                                     // try to detect configured PM sensor.
                                                     // Sensors PM2.5 supported: Panasonic, Honeywell, Plantower and Sensirion
@@ -174,10 +175,10 @@ void setup() {
     gui.welcomeAddMessage(cfg.getDeviceId());   // mac address
     gui.welcomeAddMessage("Watchdog:"+String(WATCHDOG_TIME));
     gui.welcomeAddMessage("==SETUP READY==");
-    delay(1000);
+    delay(500);
     gui.showMain();
     refreshGUIData();
-    delay(1500);
+    delay(500);
     sensors.loop();
     sensors.setSampleTime(cfg.stime);        // config sensors sample time (first use)
 }

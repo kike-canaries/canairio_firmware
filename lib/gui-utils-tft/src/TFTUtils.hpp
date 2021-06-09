@@ -22,6 +22,7 @@
 #define lightblue 0x01E9
 #define darkred 0xA041
 #define blue 0x5D9B
+#define ligthgreen 0xF59F
 
 
 class GUIUserPreferencesCallbacks; 

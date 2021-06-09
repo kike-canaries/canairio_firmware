@@ -228,9 +228,10 @@ void TFTUtils::updateBatteryValue(){
     String voltage = "" + String(volts) + "v";
     displayBottomLine(voltage);
     tft.fillRect(78,216,44,10,TFT_BLACK);
+    int color = battIsCharging() ? TFT_GREENYELLOW : blue;
 
-    for (int i = 0; i < state + 1; i++) {
-        tft.fillRect(78 + (i * 7), 216, 3, 10, blue);
+    for (int i = 0; i < state ; i++) {
+        tft.fillRect(78 + (i * 7), 216, 3, 10, color);
     }
 }
 

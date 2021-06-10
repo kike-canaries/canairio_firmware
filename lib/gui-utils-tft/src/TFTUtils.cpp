@@ -663,11 +663,11 @@ void TFTUtils::setTrackTime(int h, int m, int s){
 }
 
 void TFTUtils::suspendTaskGUI(){
-    vTaskSuspend(xHandle);
+    if(taskGUIrunning) vTaskSuspend(xHandle);
 }
 
 void TFTUtils::resumeTaskGUI(){
-    vTaskResume(xHandle);
+    if(taskGUIrunning) vTaskResume(xHandle);
 }
 
 TFTUtils* TFTUtils::getInstance() {

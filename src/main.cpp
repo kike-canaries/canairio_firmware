@@ -86,9 +86,9 @@ void startingSensors() {
     gui.welcomeAddMessage("Detected sensor:");
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
-    sensors.setSampleTime(1);                       // config sensors sample time (first use)
+    sensors.setSampleTime(1);                       // sample time only for first use
     sensors.setDebugMode(false);                    // [optional] debug mode
-    sensors.detectI2COnly(true);                   // force to only i2c sensors
+    sensors.detectI2COnly(true);                    // force to only i2c sensors
     sensors.init(cfg.getSensorType());              // start all sensors and
                                                     // try to detect configured PM sensor.
                                                     // Sensors PM2.5 supported: Panasonic, Honeywell, Plantower and Sensirion

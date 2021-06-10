@@ -161,22 +161,26 @@ void apiLoop() {
 class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
     void onStart() {
         gui.showWelcome();
-        gui.welcomeAddMessage("Upgrading..");
     };
     void onProgress(unsigned int progress, unsigned int total) {
         gui.showProgress(progress, total);
     };
     void onEnd() {
+        gui.showWelcome();
         gui.welcomeAddMessage("");
         gui.welcomeAddMessage("success!");
-        delay(1000);
+        delay(2000);
         gui.welcomeAddMessage("rebooting..");
-        delay(500);
+        delay(3000);
     }
     void onError() {
+        gui.showWelcome();
         gui.welcomeAddMessage("");
-        gui.welcomeAddMessage("error, try again!");
-        delay(2000);
+        gui.welcomeAddMessage("!OTA Error!");
+        gui.welcomeAddMessage("!Please try again!");
+        delay(5000);
+        gui.showWelcome();
+        gui.showMain();
     }
 };
 
@@ -190,6 +194,9 @@ void otaLoop() {
 }
 
 void onUpdateMessage(const char *msg){
+    gui.suspendTaskGUI();
+    gui.showWelcome();
+    gui.welcomeAddMessage("");
     gui.welcomeAddMessage("Updating to:");
     gui.welcomeAddMessage(msg);
     gui.welcomeAddMessage("please wait..");

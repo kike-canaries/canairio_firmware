@@ -110,9 +110,9 @@ void TFTUtils::showMain() {
     tft.fillRect(68, 152, 1, 74, TFT_GREY);
 
     // drawing battery container
-    tft.drawRect(RCOLSTART, 215, 41, 12, TFT_WHITE);
-    tft.fillRect(RCOLSTART + 41, 217, 1, 8, TFT_WHITE);
-    tft.fillRect(RCOLSTART + 42, 219, 1, 4, TFT_WHITE);
+    tft.drawRect(RCOLSTART-1, 215, 42, 12, TFT_GREY);
+    tft.fillRect(RCOLSTART + 41, 217, 1, 8, TFT_GREY);
+    tft.fillRect(RCOLSTART + 42, 219, 1, 4, TFT_GREY);
     
     state = 0;
 
@@ -236,7 +236,7 @@ void TFTUtils::updateBatteryValue(){
     int color = battIsCharging() ? TFT_GREENYELLOW : blue;
 
     for (int i = 0; i < state + 1 ; i++) {
-        tft.fillRect(RCOLSTART + (i * 7), 217, 3, 8, i == 0 ? TFT_WHITE : color);
+        tft.fillRect(RCOLSTART + (i * 7), 217, 3, 8, i == 0 ? TFT_GREY : color);
     }
 }
 
@@ -410,7 +410,7 @@ void TFTUtils::displayEmoticonLabel(int cursor, String msg) {
 }
 
 void TFTUtils::displayEmoticonColor(uint32_t color, String msg) {
-    tft.fillRect(78, 170, 56, 20, color);
+    tft.fillRect(RCOLSTART-1, 170, 56, 20, color);
     // tft.setFreeFont(&Orbitron_Medium_20);
     tft.setTextFont(1);
     // tft.setTextSize(0);

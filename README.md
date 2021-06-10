@@ -156,7 +156,7 @@ When creating a pull request, we recommend that you do the following:
 
 Also you can make a donation, be a patreon or buy a device:  
 
-<a href="images/ethereum_donation_address.png" target="_blank"><img src="images/ethereum_donation_address.png" align="right" width="190" margin-left="20px" ></a>
+<a href="images/ethereum_donation_address.png" target="_blank"><img src="images/ethereum_donation_address.png" align="right" width="220" margin-left="10px" ></a>
 
 - Via **Ethereum**: `0x1779cD3b85b6D8Cf1A5886B2CF5C53a0E072C108`
 - Via **Liberapay**: [CanAirIO in LiberaPay](https://liberapay.com/CanAirIO)

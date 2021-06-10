@@ -144,14 +144,14 @@ Also you can do it with esptool:
 
 # Supporting the project
 
-If you want to contribute to the code, consider posting a bug report, feature request or a pull request.
+If you want to contribute to the code or documentation, consider posting a bug report, feature request or a pull request.
 
 When creating a pull request, we recommend that you do the following:
 
 - Clone the repository
 - Create a new branch for your fix or feature. For example, git checkout -b fix/my-fix or git checkout -b feat/my-feature.
-- Run a any clang formatter, for example `vscode` formatter. We are using Google style. More info [here](https://clang.llvm.org/docs/ClangFormatStyleOptions.html)
-- Document the PR description and code will be great
+- Run to any clang formatter if it is a code, for example using the `vscode` formatter. We are using Google style. More info [here](https://clang.llvm.org/docs/ClangFormatStyleOptions.html)
+- Document the PR description or code will be great
 - Target your pull request to be merged with `devel` branch
 
 Also you can make a donation, be a patreon or buy a device:  
@@ -162,56 +162,6 @@ Also you can make a donation, be a patreon or buy a device:
 - Via **Liberapay**: [CanAirIO in LiberaPay](https://liberapay.com/CanAirIO)
 - **Buy a device**: [CanAirIO Bike in Tindie](https://www.tindie.com/products/hpsaturn/canairio-bike/)
 - [Inviting us **a coffee**](https://www.buymeacoffee.com/hpsaturn) 
-
-
-# Android CanAirIO App
-
-For now you need any Android device with Bluetooth 4 or above. You can download the CanAirIO app from [GooglePlay](https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter), keep in mind that it is in continuos development then please any feedback, report errors, or any thing please let us knowed it via our [contact form](http://canair.io/#three) or on our [Telegram chat](https://t.me/canairio)
-
-You have **two configuration options or modes** of your CanAirIO device from the app:
-
-## Mobile Station Mode
-
-For record tracks on your device (Sdcard) or publish it to the cloud (share), please follow the next steps:
-
-### Connection to device
-
-<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/device_connection.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/device_connection.jpg" width="512" align="center" ></a>
-
-### Recording track and share
-
-<a href="https://github.com/kike-canaries/esp32-hpma115s0/blob/master/images/app_track_record.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/esp32-hpma115s0/master/images/app_track_record.jpg" width="512" align="center" ></a>
-
-**NOTE**: Also all recorded tracks will be saved in the `/sdcard/canairio/` directory on `json` format.
-
----
-
-## Fixed Station Mode
-
-<img width="640" src="screenshots/influxdb_grafana.jpg">
-
-Also, you can connect your CanAirIO device to the WiFi and leave this like a fixed station. In this mode you only need the Android app only for initial settings, after that the device could be publish data without the phone. For this you need configure it in `settings` section:
-
-### Settings
-
-<img align="right" width="400" src="screenshots/canairio_app_settings.png">
-
-
-- **Station Name**: for example: `PM25_Berlin_Pankow`
-- **Wifi Name and Password**:
-  - Your Wifi network credentials.
-  - Save the credentials with the switch.
-- **InfluxDB Cloud**: add the next values,
-  - Database name: `canairio`  
-  - Hostname: `influxdb.canair.io`
-  - Save the settings with the switch.
-
-The data will be configured and showed in [CanAirIO Grafana Server](https://bit.ly/3bLpz0H).
-
-### Settings Tools
-
-- Reboot device: Only for restart your CanAirIO device
-- Factory Reset: For set all settings to default on your CanAirIO device
 
 ## TODO
 
@@ -230,8 +180,8 @@ The data will be configured and showed in [CanAirIO Grafana Server](https://bit.
 
 ## CanAirIO device HOWTO guide
 
-You can build a device to measure air quality by using a PM2.5 or similar sensor, for then publish it to CanAirio cloud or a personal server using [CanAirIO App](https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter), more info here:
+We have some build guides with different alternatives, please visit our [CanAirIO documentation](https://canair.io/docs).
 
-[CanAirIO guide wiki](https://github.com/kike-canaries/esp32-hpma115s0/wiki)  
+<a href="https://canair.io/docs" target="_blank"><img src="https://raw.githubusercontent.com/wiki/kike-canaries/canairio_firmware/images/collage.jpg" height="600" ></a>
 
-<a href="https://raw.githubusercontent.com/wiki/kike-canaries/canairio_firmware/images/collage.jpg" target="_blank"><img src="https://raw.githubusercontent.com/wiki/kike-canaries/canairio_firmware/images/collage.jpg" height="600" ></a>
+---

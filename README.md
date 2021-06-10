@@ -142,6 +142,27 @@ Also you can do it with esptool:
 ./esptool.py --port /dev/ttyUSB0 erase_flash
 ```
 
+# Supporting the project
+
+If you want to contribute to the code, consider posting a bug report, feature request or a pull request.
+
+When creating a pull request, we recommend that you do the following:
+
+- Clone the repository
+- Create a new branch for your fix or feature. For example, git checkout -b fix/my-fix or git checkout -b feat/my-feature.
+- Run a any clang formatter, for example `vscode` formatter. We are using Google style. More info [here](https://clang.llvm.org/docs/ClangFormatStyleOptions.html)
+- Document the PR description and code will be great
+- Target your pull request to be merged with `devel` branch
+
+Also you can make a donation, be a patreon or buy a device:  
+
+<a href="images/ethereum_donation_address.png" target="_blank"><img src="images/ethereum_donation_address.png" align="right" width="190" margin-left="20px" ></a>
+
+- Via **Ethereum**: `0x1779cD3b85b6D8Cf1A5886B2CF5C53a0E072C108`
+- Via **Liberapay**: [CanAirIO in LiberaPay](https://liberapay.com/CanAirIO)
+- **Buy a device**: [CanAirIO Bike in Tindie](https://www.tindie.com/products/hpsaturn/canairio-bike/)
+- [Inviting us **a coffee**](https://www.buymeacoffee.com/hpsaturn) 
+
 
 # Android CanAirIO App
 

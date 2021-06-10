@@ -93,11 +93,11 @@ void TFTUtils::showStatus() {
 
 void TFTUtils::showMain() {
     showStatus();
-    tft.setCursor(80, 204, 1);
+    tft.setCursor(RCOLSTART, 204, 1);
     tft.println("BATT:");
     updateBatteryValue();
 
-    tft.setCursor(80, 152, 2);
+    tft.setCursor(RCOLSTART, 152, 2);
     tft.println("HEALTH:");
 
     tft.setTextColor(TFT_WHITE, lightblue);
@@ -108,6 +108,11 @@ void TFTUtils::showMain() {
     tft.println("HUM: ");
 
     tft.fillRect(68, 152, 1, 74, TFT_GREY);
+
+    // drawing battery container
+    tft.drawRect(RCOLSTART, 215, 41, 12, TFT_WHITE);
+    tft.fillRect(RCOLSTART + 41, 217, 1, 8, TFT_WHITE);
+    tft.fillRect(RCOLSTART + 42, 219, 1, 4, TFT_WHITE);
     
     state = 0;
 
@@ -227,11 +232,11 @@ void TFTUtils::updateBatteryValue(){
     int state = (int)battCalcPercentage(volts)/20;
     String voltage = "" + String(volts) + "v";
     displayBottomLine(voltage);
-    tft.fillRect(78,216,44,10,TFT_BLACK);
+    tft.fillRect(RCOLSTART,216,40,10,TFT_BLACK);
     int color = battIsCharging() ? TFT_GREENYELLOW : blue;
 
     for (int i = 0; i < state + 1 ; i++) {
-        tft.fillRect(78 + (i * 7), 216, 3, 10, i == 0 ? TFT_WHITE : color);
+        tft.fillRect(RCOLSTART + (i * 7), 217, 3, 8, i == 0 ? TFT_WHITE : color);
     }
 }
 

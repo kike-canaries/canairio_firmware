@@ -9,6 +9,9 @@
 #include "Orbitron_Medium_20.h"
 #include "icons.h"
 
+// Main windows
+#define RCOLSTART 80
+
 // Graph bars definition
 #define MAX_X 135
 #define MAX_Y 80

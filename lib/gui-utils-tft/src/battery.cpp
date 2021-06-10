@@ -64,5 +64,5 @@ void battUpdateChargeStatus() {
 }
 
 bool battIsCharging() {
-    return curv > BATTERY_MAX_V;
+    return curv > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V ) / 2;
 }

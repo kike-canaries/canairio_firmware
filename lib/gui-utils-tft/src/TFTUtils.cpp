@@ -351,11 +351,12 @@ void TFTUtils::checkButtons() {
 }
 
 void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
-    
+    vTaskSuspend(xHandle);
+    if(progress == 0) showWelcome();
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setFreeFont(&Orbitron_Medium_20);
     tft.setCursor(8, 103);
-    tft.println("Update:");
+    tft.println("Updating:");
 
     tft.setFreeFont(&Orbitron_Light_32);
     tft.setTextDatum(TC_DATUM);
@@ -658,6 +659,14 @@ void TFTUtils::setTrackTime(int h, int m, int s){
     _hours = h;
     _minutes = m;
     _seconds = s;
+    vTaskResume(xHandle);
+}
+
+void TFTUtils::suspendTaskGUI(){
+    vTaskSuspend(xHandle);
+}
+
+void TFTUtils::resumeTaskGUI(){
     vTaskResume(xHandle);
 }
 

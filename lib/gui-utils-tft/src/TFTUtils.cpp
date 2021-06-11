@@ -93,11 +93,11 @@ void TFTUtils::showStatus() {
 
 void TFTUtils::showMain() {
     showStatus();
-    tft.setCursor(80, 204, 1);
+    tft.setCursor(RCOLSTART, 204, 1);
     tft.println("BATT:");
     updateBatteryValue();
 
-    tft.setCursor(80, 152, 2);
+    tft.setCursor(RCOLSTART, 152, 2);
     tft.println("HEALTH:");
 
     tft.setTextColor(TFT_WHITE, lightblue);
@@ -108,6 +108,11 @@ void TFTUtils::showMain() {
     tft.println("HUM: ");
 
     tft.fillRect(68, 152, 1, 74, TFT_GREY);
+
+    // drawing battery container
+    tft.drawRect(RCOLSTART-1, 215, 42, 12, TFT_GREY);
+    tft.fillRect(RCOLSTART + 41, 217, 1, 8, TFT_GREY);
+    tft.fillRect(RCOLSTART + 42, 219, 1, 4, TFT_GREY);
     
     state = 0;
 
@@ -227,10 +232,11 @@ void TFTUtils::updateBatteryValue(){
     int state = (int)battCalcPercentage(volts)/20;
     String voltage = "" + String(volts) + "v";
     displayBottomLine(voltage);
-    tft.fillRect(78,216,44,10,TFT_BLACK);
+    tft.fillRect(RCOLSTART,216,40,10,TFT_BLACK);
+    int color = battIsCharging() ? TFT_GREENYELLOW : blue;
 
-    for (int i = 0; i < state + 1; i++) {
-        tft.fillRect(78 + (i * 7), 216, 3, 10, blue);
+    for (int i = 0; i < state + 1 ; i++) {
+        tft.fillRect(RCOLSTART + (i * 7), 217, 3, 8, i == 0 ? TFT_GREY : color);
     }
 }
 
@@ -320,8 +326,9 @@ void TFTUtils::loadLastData(){
 
 void TFTUtils::checkButtons() {
     if (digitalRead(BUTTON_R) == 0) {
-        if (press2 == 0) {
-            press2 = 1;
+        holdR++;
+        if (pressR == 0) {
+            pressR = 1;
             if(state==0)toggleMain();
             if(state==1)updateBrightness();
             if(state==2)invertScreen();
@@ -329,27 +336,34 @@ void TFTUtils::checkButtons() {
             if(state==4)notifySampleTime();
             if(state==5)startCalibration();
         }
-    } else
-        press2 = 0;
+        if (holdR > 20) suspend();
+    } else {
+        holdR = 0;
+        pressR = 0;
+    }
 
     if (digitalRead(BUTTON_L) == 0) {
-        if (press1 == 0) {
-            if (digitalRead(BUTTON_R)==0) suspend();
-            press1 = 1;
-            if(state++==0)showSetup();
-            if(state>=1)refreshSetup();
-            if(state==6)restoreMain();
+        holdL++;
+        if (pressL == 0) {
+            pressL = 1;
+            if (state++ == 0) showSetup();
+            if (state >= 1) refreshSetup();
+            if (state == 6) restoreMain();
         }
-    } else
-        press1 = 0;
+        if(holdL > 10 && state >= 1) restoreMain();
+    } else {
+        holdL = 0;
+        pressL = 0;
+    }
 }
 
 void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
-    
+    vTaskSuspend(xHandle);
+    if(progress == 0) showWelcome();
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setFreeFont(&Orbitron_Medium_20);
     tft.setCursor(8, 103);
-    tft.println("Update:");
+    tft.println("Updating:");
 
     tft.setFreeFont(&Orbitron_Light_32);
     tft.setTextDatum(TC_DATUM);
@@ -360,8 +374,20 @@ void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
 
 void TFTUtils::suspend() {
     showWelcome();
-    welcomeAddMessage("Shutting down..");
-    while(digitalRead(BUTTON_R)!=0) delay(10);
+    welcomeAddMessage("");
+    welcomeAddMessage("Shutting down in 3");
+    delay(1000);
+    int count = 2;
+    while(digitalRead(BUTTON_R)==0 && count > 0){
+        welcomeAddMessage("Shutting down in "+String(count--));
+        delay(1000);
+    } 
+    if(digitalRead(BUTTON_R)!=0) {
+        showMain();
+        return;
+    }
+    welcomeAddMessage("");
+    welcomeAddMessage("Suspending..");
     delay(2000);
     int r = digitalRead(TFT_BL);
     digitalWrite(TFT_BL, !r);
@@ -372,9 +398,9 @@ void TFTUtils::suspend() {
     delay(10);
     //Disable timer wake, because here use external IO port to wake up
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
-    esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
+    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);  // <== Don't works help wanted!
     esp_deep_sleep_disable_rom_logging();
-    esp_deep_sleep_start();
+    esp_deep_sleep_start();  
 }
 
 void TFTUtils::displayCenterBig(String msg) {
@@ -404,7 +430,7 @@ void TFTUtils::displayEmoticonLabel(int cursor, String msg) {
 }
 
 void TFTUtils::displayEmoticonColor(uint32_t color, String msg) {
-    tft.fillRect(78, 170, 56, 20, color);
+    tft.fillRect(RCOLSTART-1, 170, 56, 20, color);
     // tft.setFreeFont(&Orbitron_Medium_20);
     tft.setTextFont(1);
     // tft.setTextSize(0);
@@ -653,6 +679,14 @@ void TFTUtils::setTrackTime(int h, int m, int s){
     _minutes = m;
     _seconds = s;
     vTaskResume(xHandle);
+}
+
+void TFTUtils::suspendTaskGUI(){
+    if(taskGUIrunning) vTaskSuspend(xHandle);
+}
+
+void TFTUtils::resumeTaskGUI(){
+    if(taskGUIrunning) vTaskResume(xHandle);
 }
 
 TFTUtils* TFTUtils::getInstance() {

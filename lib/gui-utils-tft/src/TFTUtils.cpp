@@ -326,8 +326,9 @@ void TFTUtils::loadLastData(){
 
 void TFTUtils::checkButtons() {
     if (digitalRead(BUTTON_R) == 0) {
-        if (press2 == 0) {
-            press2 = 1;
+        holdR++;
+        if (pressR == 0) {
+            pressR = 1;
             if(state==0)toggleMain();
             if(state==1)updateBrightness();
             if(state==2)invertScreen();
@@ -335,19 +336,25 @@ void TFTUtils::checkButtons() {
             if(state==4)notifySampleTime();
             if(state==5)startCalibration();
         }
-    } else
-        press2 = 0;
+    } else {
+        holdR = 0;
+        pressR = 0;
+    }
 
     if (digitalRead(BUTTON_L) == 0) {
-        if (press1 == 0) {
-            if (digitalRead(BUTTON_R)==0) suspend();
-            press1 = 1;
-            if(state++==0)showSetup();
-            if(state>=1)refreshSetup();
-            if(state==6)restoreMain();
+        holdL++;
+        if (pressL == 0) {
+            pressL = 1;
+            if (digitalRead(BUTTON_R) == 0 && holdR > 10) suspend();
+            if (state++ == 0) showSetup();
+            if (state >= 1) refreshSetup();
+            if (state == 6) restoreMain();
         }
-    } else
-        press1 = 0;
+        if(holdL > 10 && state >= 1) restoreMain();
+    } else {
+        holdL = 0;
+        pressL = 0;
+    }
 }
 
 void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
@@ -367,8 +374,20 @@ void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
 
 void TFTUtils::suspend() {
     showWelcome();
-    welcomeAddMessage("Shutting down..");
-    while(digitalRead(BUTTON_R)!=0) delay(10);
+    welcomeAddMessage("");
+    welcomeAddMessage("Shutting down in 5");
+    delay(1000);
+    int count = 4;
+    while(digitalRead(BUTTON_R)==0 && count > 0){
+        welcomeAddMessage("Shutting down in "+String(count--));
+        delay(1000);
+    } 
+    if(digitalRead(BUTTON_R)!=0) {
+        state=5;
+        return;
+    }
+    welcomeAddMessage("");
+    welcomeAddMessage("Suspending..");
     delay(2000);
     int r = digitalRead(TFT_BL);
     digitalWrite(TFT_BL, !r);
@@ -379,7 +398,7 @@ void TFTUtils::suspend() {
     delay(10);
     //Disable timer wake, because here use external IO port to wake up
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
-    esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
+    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
     esp_deep_sleep_disable_rom_logging();
     esp_deep_sleep_start();
 }

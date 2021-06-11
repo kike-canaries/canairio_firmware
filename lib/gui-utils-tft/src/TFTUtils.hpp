@@ -127,9 +127,13 @@ class TFTUtils {
 
     int state = 0;
 
-    int press1 = 0;
+    int pressL = 0;
 
-    int press2 = 0;
+    int pressR = 0;
+
+    uint32_t holdL = 0;
+
+    uint32_t holdR = 0; 
 
     int wstate = 0;
 

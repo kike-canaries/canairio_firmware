@@ -336,6 +336,7 @@ void TFTUtils::checkButtons() {
             if(state==4)notifySampleTime();
             if(state==5)startCalibration();
         }
+        if (holdR > 20) suspend();
     } else {
         holdR = 0;
         pressR = 0;
@@ -345,7 +346,6 @@ void TFTUtils::checkButtons() {
         holdL++;
         if (pressL == 0) {
             pressL = 1;
-            if (digitalRead(BUTTON_R) == 0 && holdR > 10) suspend();
             if (state++ == 0) showSetup();
             if (state >= 1) refreshSetup();
             if (state == 6) restoreMain();
@@ -375,15 +375,15 @@ void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
 void TFTUtils::suspend() {
     showWelcome();
     welcomeAddMessage("");
-    welcomeAddMessage("Shutting down in 5");
+    welcomeAddMessage("Shutting down in 3");
     delay(1000);
-    int count = 4;
+    int count = 2;
     while(digitalRead(BUTTON_R)==0 && count > 0){
         welcomeAddMessage("Shutting down in "+String(count--));
         delay(1000);
     } 
     if(digitalRead(BUTTON_R)!=0) {
-        state=5;
+        showMain();
         return;
     }
     welcomeAddMessage("");
@@ -398,9 +398,9 @@ void TFTUtils::suspend() {
     delay(10);
     //Disable timer wake, because here use external IO port to wake up
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
-    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
+    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);  // <== Don't works help wanted!
     esp_deep_sleep_disable_rom_logging();
-    esp_deep_sleep_start();
+    esp_deep_sleep_start();  
 }
 
 void TFTUtils::displayCenterBig(String msg) {

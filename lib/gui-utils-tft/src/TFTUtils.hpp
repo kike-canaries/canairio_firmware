@@ -9,6 +9,9 @@
 #include "Orbitron_Medium_20.h"
 #include "icons.h"
 
+// Main windows
+#define RCOLSTART 80
+
 // Graph bars definition
 #define MAX_X 135
 #define MAX_Y 80
@@ -22,6 +25,7 @@
 #define lightblue 0x01E9
 #define darkred 0xA041
 #define blue 0x5D9B
+#define ligthgreen 0xF59F
 
 
 class GUIUserPreferencesCallbacks; 
@@ -77,6 +81,10 @@ class TFTUtils {
 
     void setTrackTime(int h, int m, int s);
 
+    void suspendTaskGUI();
+
+    void resumeTaskGUI();
+
     String getFirmwareVersionCode ();
 
    private:
@@ -119,9 +127,13 @@ class TFTUtils {
 
     int state = 0;
 
-    int press1 = 0;
+    int pressL = 0;
 
-    int press2 = 0;
+    int pressR = 0;
+
+    uint32_t holdL = 0;
+
+    uint32_t holdR = 0; 
 
     int wstate = 0;
 

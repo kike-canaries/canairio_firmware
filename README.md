@@ -191,6 +191,5 @@ For our supporters, patrons or donors, we will send the files for our coming ver
 
 We have some build guides with different alternatives, please visit our [CanAirIO documentation](https://canair.io/docs).
 
-<a href="https://canair.io/docs" target="_blank"><img src="https://raw.githubusercontent.com/wiki/kike-canaries/canairio_firmware/images/collage.jpg" height="600" ></a>
+<a href="https://canair.io/docs" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage.jpg" height="400" ></a>
 
----

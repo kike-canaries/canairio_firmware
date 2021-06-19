@@ -2,9 +2,9 @@
 
 [![Build Status](https://travis-ci.com/kike-canaries/canairio_firmware.svg?branch=master)](https://travis-ci.com/kike-canaries/canairio_firmware) [![PlatformIO](https://github.com/kike-canaries/canairio_firmware/workflows/PlatformIO/badge.svg)](https://github.com/kike-canaries/canairio_firmware/actions/) ![ViewCount](https://views.whatilearened.today/views/github/kike-canaries/canairio_firmware.svg) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO)  
 
-<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage_vertical.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage_vertical.jpg" align="right" width="190" ></a>
-
 # CanAirIO firmware
+
+![CanAirIO Community](https://canair.io/docs/images/canairio_collage_community.jpg)
 
 <a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/android-hpma115s0/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>
 
@@ -155,15 +155,23 @@ When creating a pull request, we recommend that you do the following:
 - Document the PR description or code will be great
 - Target your pull request to be merged with `devel` branch
 
-Also you can make a donation, be a patreon or buy a device:  
+Also you can consider make a donation, be a patron or buy a device:  
 
-<a href="images/ethereum_donation_address.png" target="_blank"><img src="images/ethereum_donation_address.png" align="right" width="220" margin-left="10px" ></a>
-
-- Via **Ethereum**: `0x1779cD3b85b6D8Cf1A5886B2CF5C53a0E072C108`
-- Via **Liberapay**: [CanAirIO in LiberaPay](https://liberapay.com/CanAirIO)
+- Via **Ethereum**:
+- 0x1779cD3b85b6D8Cf1A5886B2CF5C53a0E072C108
+- Be a patron: [Github Sponsors](https://github.com/sponsors/hpsaturn), [LiberaPay](https://liberapay.com/CanAirIO)
 - **Buy a device**: [CanAirIO Bike in Tindie](https://www.tindie.com/products/hpsaturn/canairio-bike/)
-- [Inviting us **a coffee**](https://www.buymeacoffee.com/hpsaturn) 
+- Inviting us **a coffee**: [buymeacoffee](https://www.buymeacoffee.com/hpsaturn), [Sponsors](https://github.com/sponsors/hpsaturn?frequency=one-time) 
 
+<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" align="center_horizontal" width="180" ></a>
+
+**NOTE:**  Supporting our Citizen Science Initiative many people be able to fight for air quality rights in many countries with this kind of problems. More info in [CanAir.IO](https://canair.io)
+
+For our supporters, patrons or donors, we will send the files for our coming version:
+
+## CanAirIO CO2 and CanAirIO Mini box
+
+![CanAirIO CO2 and Mini](https://canair.io/docs/images/canairio_bike_co2_mini.jpg)
 ## TODO
 
 - [X] Enable/Disable APIs from App
@@ -183,6 +191,5 @@ Also you can make a donation, be a patreon or buy a device:
 
 We have some build guides with different alternatives, please visit our [CanAirIO documentation](https://canair.io/docs).
 
-<a href="https://canair.io/docs" target="_blank"><img src="https://raw.githubusercontent.com/wiki/kike-canaries/canairio_firmware/images/collage.jpg" height="600" ></a>
+<a href="https://canair.io/docs" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage.jpg" height="400" ></a>
 
----

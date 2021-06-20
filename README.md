@@ -69,7 +69,7 @@ Also you can specify the IP address:
 
 ## Via binaries (Windows)
 
-Please read procedure on `firmware` section on [HacksterIO Guide](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a#toc-firmware-y-software-3) for details for load firmware via oficial **Espressif Download Tool** in Windows
+Please read the [Espressif Uploader](https://canair.io/docs/firmware_upload.html#espressif-uploader) section in the main documentation for details to load the firmware via the oficial **Espressif Download Tool** in Windows.
 
 
 ## Via PlatformIO (Compiling on Linux, Mac or Windows)

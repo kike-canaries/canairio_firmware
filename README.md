@@ -2,9 +2,9 @@
 
 [![Build Status](https://travis-ci.com/kike-canaries/canairio_firmware.svg?branch=master)](https://travis-ci.com/kike-canaries/canairio_firmware) [![PlatformIO](https://github.com/kike-canaries/canairio_firmware/workflows/PlatformIO/badge.svg)](https://github.com/kike-canaries/canairio_firmware/actions/) ![ViewCount](https://views.whatilearened.today/views/github/kike-canaries/canairio_firmware.svg) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO)  
 
-<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage_vertical.jpg" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage_vertical.jpg" align="right" width="190" ></a>
-
 # CanAirIO firmware
+
+![CanAirIO Community](https://canair.io/docs/images/canairio_collage_community.jpg)
 
 <a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/android-hpma115s0/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>
 
@@ -16,6 +16,7 @@ The [last release](https://github.com/kike-canaries/canairio_firmware/releases) 
 
 | Firmware Name | Boards supported |   Display  |  Guide and schematics  |
 | ------------- |:-------------:| :-------------:| :----------------------:|
+| **TTGO_TDISPLAY**     | TTGO T-Display | eTFT | [CanAirIO Bike](https://canair.io/docs/canairio_bike.html) |
 | **TTGO_T7**     | TTGO T7, D1Mini, ** | OLED 64x48 | [CanAirIO v2.1](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647) |
 | **ESP32DevKit** | ESP32DevKit, NodeMCU V3, ** | OLED 128x64 | [HacksterIO](https://www.hackster.io/canairio/build-low-cost-air-quality-sensor-canairio-without-soldering-d87494) |
 | **TTGO_TQ** | TTGO TQ | Builtin OLED  | [TTGO_TQ board](https://de.aliexpress.com/item/10000291636371.html) |
@@ -68,7 +69,7 @@ Also you can specify the IP address:
 
 ## Via binaries (Windows)
 
-Please read procedure on `firmware` section on [HacksterIO Guide](https://www.hackster.io/114723/canairio-red-ciudadana-para-monitoreo-de-calidad-del-aire-96f79a#toc-firmware-y-software-3) for details for load firmware via oficial **Espressif Download Tool** in Windows
+Please read the [Espressif Uploader](https://canair.io/docs/firmware_upload.html#espressif-uploader) section in the main documentation for details to load the firmware via the oficial **Espressif Download Tool** in Windows.
 
 
 ## Via PlatformIO (Compiling on Linux, Mac or Windows)
@@ -154,15 +155,23 @@ When creating a pull request, we recommend that you do the following:
 - Document the PR description or code will be great
 - Target your pull request to be merged with `devel` branch
 
-Also you can make a donation, be a patreon or buy a device:  
+Also you can consider make a donation, be a patron or buy a device:  
 
-<a href="images/ethereum_donation_address.png" target="_blank"><img src="images/ethereum_donation_address.png" align="right" width="220" margin-left="10px" ></a>
-
-- Via **Ethereum**: `0x1779cD3b85b6D8Cf1A5886B2CF5C53a0E072C108`
-- Via **Liberapay**: [CanAirIO in LiberaPay](https://liberapay.com/CanAirIO)
+- Via **Ethereum**:
+- 0x1779cD3b85b6D8Cf1A5886B2CF5C53a0E072C108
+- Be a patron: [Github Sponsors](https://github.com/sponsors/hpsaturn), [LiberaPay](https://liberapay.com/CanAirIO)
 - **Buy a device**: [CanAirIO Bike in Tindie](https://www.tindie.com/products/hpsaturn/canairio-bike/)
-- [Inviting us **a coffee**](https://www.buymeacoffee.com/hpsaturn) 
+- Inviting us **a coffee**: [buymeacoffee](https://www.buymeacoffee.com/hpsaturn), [Sponsors](https://github.com/sponsors/hpsaturn?frequency=one-time) 
 
+<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" align="center_horizontal" width="180" ></a>
+
+**NOTE:**  Supporting our Citizen Science Initiative many people be able to fight for air quality rights in many countries with this kind of problems. More info in [CanAir.IO](https://canair.io)
+
+For our supporters, patrons or donors, we will send the files for our coming version:
+
+## CanAirIO CO2 and CanAirIO Mini box
+
+![CanAirIO CO2 and Mini](https://canair.io/docs/images/canairio_bike_co2_mini.jpg)
 ## TODO
 
 - [X] Enable/Disable APIs from App
@@ -182,6 +191,5 @@ Also you can make a donation, be a patreon or buy a device:
 
 We have some build guides with different alternatives, please visit our [CanAirIO documentation](https://canair.io/docs).
 
-<a href="https://canair.io/docs" target="_blank"><img src="https://raw.githubusercontent.com/wiki/kike-canaries/canairio_firmware/images/collage.jpg" height="600" ></a>
+<a href="https://canair.io/docs" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage.jpg" height="400" ></a>
 
----

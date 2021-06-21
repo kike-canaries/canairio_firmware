@@ -31,7 +31,7 @@ void IRAM_ATTR resetModule() {
 void Watchdog::init() {
     timer = timerBegin(0, 80, true);                         // timer 0, div 80
     timerAttachInterrupt(timer, &resetModule, true);         // setting callback
-    timerAlarmWrite(timer, WATCHDOG_TIME * 1000000, false);  // set time in us (30s)
+    timerAlarmWrite(timer, WATCHDOG_TIME * 1000000, false);  // set time in us
     timerAlarmEnable(timer);                                 // enable interrupt
 
     Serial.print("-->[WDOG] watchdog config to check each ");

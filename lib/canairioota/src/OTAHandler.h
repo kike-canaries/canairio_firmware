@@ -8,7 +8,7 @@
 #include "esp32fota.h"
 #include <esp_task_wdt.h>
 
-#define FOTA_CHECK_INTERVAL 60   // seconds
+#define FOTA_CHECK_INTERVAL 120   // seconds
 
 typedef void (*voidMessageCbFn)(const char *msg);
 

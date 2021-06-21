@@ -10,7 +10,7 @@
  * the device going to reboot. Also please see the
  * FORCE_WATCHDOG flag on platformio.ini.
  */
-#define WATCHDOG_TIME 30        // check each WATCHDOG_TIME in seconds
+#define WATCHDOG_TIME 120        // check each WATCHDOG_TIME in seconds
 
 #ifdef FORCE_WATCHDOG
 #define FORCE_WATCHDOG_TIME 15  // force reboot in minutes

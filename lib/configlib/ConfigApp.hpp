@@ -36,6 +36,7 @@ class ConfigApp {
     bool isNewWifi;
 
     bool devmode;
+    int  toffset = 0;
 
     void init(const char app_name[]);
 
@@ -86,6 +87,8 @@ class ConfigApp {
     void reboot();
 
     void setDebugMode(bool enable);
+
+    bool saveTempOffset(int offset);
 
    private:
     ///preferences main key

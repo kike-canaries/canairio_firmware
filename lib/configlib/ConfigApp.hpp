@@ -35,6 +35,8 @@ class ConfigApp {
     bool isNewAPIConfig;
     bool isNewWifi;
 
+    bool devmode;
+
     void init(const char app_name[]);
 
     void reload();
@@ -60,6 +62,8 @@ class ConfigApp {
     bool ifxdbEnable(bool enable);
 
     bool apiEnable(bool enable);
+
+    bool debugEnable(bool enable);
 
     String getCurrentConfig();
 
@@ -98,9 +102,7 @@ class ConfigApp {
     bool api_enable;
     ///WiFi state
     bool wifi_connected;
-    ///enable debug mode
-    bool devmode;
-
+        
     void saveString(String key, String value);
     void saveInt(String key, int value);
     void saveBool(String key, bool value);

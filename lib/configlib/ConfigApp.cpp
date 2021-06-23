@@ -5,12 +5,12 @@ void ConfigApp::init(const char app_name[]) {
     strcpy(_app_name, app_name);
     chipid = ESP.getEfuseMac();
     deviceId = getDeviceId();
+    reload();
     // override with debug INFO level (>=3)
     #ifdef CORE_DEBUG_LEVEL
     if (CORE_DEBUG_LEVEL>=3) devmode = true;  
     #endif
     if (devmode) Serial.println("-->[CONF] debug is enable.");
-    reload();
 }
 
 void ConfigApp::reload() {
@@ -20,7 +20,7 @@ void ConfigApp::reload() {
     // wifi settings
     wifi_enable = preferences.getBool("wifiEnable", false);
     ssid = preferences.getString("ssid", "");
-    pass = preferences.getString("pass", "");
+    pass = preferences.getString("pass", ""); 
     // influx db optional settings
     ifxdb_enable = preferences.getBool("ifxEnable", false);
     ifx.db = preferences.getString("ifxdb", ifx.db);
@@ -40,6 +40,9 @@ void ConfigApp::reload() {
     spd = preferences.getFloat("spd", 0);
     stime = preferences.getInt("stime", 5);
     stype = preferences.getInt("stype", 0);
+    toffset = preferences.getFloat("toffset", 0.0);
+    devmode = preferences.getBool("debugEnable", false);
+    i2conly = preferences.getBool("i2conly", false);
 
     preferences.end();
 }
@@ -61,6 +64,9 @@ String ConfigApp::getCurrentConfig() {
     doc["apisrv"] = preferences.getString("apisrv", "");     // API hostname
     doc["apiuri"] = preferences.getString("apiuri", "");     // API uri endpoint
     doc["apiprt"] = preferences.getInt("apiprt", 80);        // API port
+    doc["denb"] = preferences.getBool("debugEnable", false); // debug mode enable
+    doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
+    doc["toffset"] = preferences.getFloat("toffset", 0.0);      // temperature offset
     doc["lskey"] = lastKeySaved;                             // last key saved
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
     doc["wsta"] = wifi_connected;                            // current wifi state 
@@ -105,6 +111,13 @@ int32_t ConfigApp::getInt(String key, int defaultValue){
     return out;
 }
 
+void ConfigApp::saveFloat(String key, float value){
+    preferences.begin(_app_name, false);
+    preferences.putFloat(key.c_str(), value);
+    preferences.end();
+    setLastKeySaved(key);
+}
+
 void ConfigApp::saveBool(String key, bool value){
     preferences.begin(_app_name, false);
     preferences.putBool(key.c_str(), value);
@@ -142,6 +155,13 @@ bool ConfigApp::saveSensorType(int type) {
 
 int ConfigApp::getSensorType(){
     return stype;
+}
+
+bool ConfigApp::saveTempOffset(float offset) {
+    saveFloat("toffset", offset);
+    Serial.print("-->[CONF] sensor temperature offset: ");
+    Serial.println(offset);
+    return true;
 }
 
 bool ConfigApp::saveWifi(String ssid, String pass){
@@ -240,6 +260,20 @@ bool ConfigApp::apiEnable(bool enable) {
     return true;
 }
 
+bool ConfigApp::debugEnable(bool enable) {
+    saveBool("debugEnable", enable);
+    devmode = enable;
+    Serial.println("-->[CONF] updating debug mode: " + String(enable));
+    return true;
+}
+
+bool ConfigApp::saveI2COnly(bool enable) {
+    saveBool("i2conly", enable);
+    i2conly = enable;
+    Serial.println("-->[CONF] forced only i2c sensors: " + String(enable));
+    return true;
+}
+
 bool ConfigApp::save(const char *json) {
     StaticJsonDocument<1000> doc;
     auto error = deserializeJson(doc, json);
@@ -266,12 +300,16 @@ bool ConfigApp::save(const char *json) {
     if (doc.containsKey("ssid")) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
     if (doc.containsKey("apiusr")) return saveAPI(doc["apiusr"] | "", doc["apipss"] | "", doc["apisrv"] | "", doc["apiuri"] | "", doc["apiprt"] | 0);
     if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["alt"].as<float>(), doc["spd"].as<float>());
+    if (doc.containsKey("toffset")) return saveTempOffset(doc["toffset"].as<float>());
+    
 
     // some actions with chopid validation (for security reasons)
     if (cmd == ((uint16_t)(chipid >> 32)) && act.length() > 0) {
         if (act.equals("wst")) return wifiEnable(doc["wenb"].as<bool>());
         if (act.equals("ist")) return ifxdbEnable(doc["ienb"].as<bool>());
         if (act.equals("ast")) return apiEnable(doc["aenb"].as<bool>());
+        if (act.equals("dst")) return debugEnable(doc["denb"].as<bool>());
+        if (act.equals("i2c")) return saveI2COnly(doc["i2conly"].as<bool>());
         if (act.equals("rbt")) reboot();
         if (act.equals("cls")) clear();
         return true;
@@ -349,10 +387,6 @@ void ConfigApp::reboot() {
     ESP.restart();
 }
 
-void ConfigApp::setDebugMode(bool enable){
-    devmode = enable;
-}
-
 void ConfigApp::saveBrightness(int value){
     saveInt("bright",value);
 }
@@ -366,10 +400,6 @@ void ConfigApp::colorsInvertedEnable(bool enable){
 }
 
 void ConfigApp::DEBUG(const char *text, const char *textb) {
-    // override with debug INFO level (>=3)
-#ifdef CORE_DEBUG_LEVEL
-    if (CORE_DEBUG_LEVEL >= 3) devmode = true;
-#endif
     if (devmode) {
         _debugPort.print(text);
         if (textb) {

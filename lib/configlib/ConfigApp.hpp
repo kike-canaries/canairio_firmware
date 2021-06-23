@@ -43,6 +43,12 @@ class ConfigApp {
         int seg = 0;
     } track;
 
+    bool devmode;
+
+    bool i2conly;
+
+    float toffset = 0.0;
+
     void init(const char app_name[]);
 
     void reload();
@@ -69,6 +75,8 @@ class ConfigApp {
 
     bool apiEnable(bool enable);
 
+    bool debugEnable(bool enable);
+
     String getCurrentConfig();
 
     bool isWifiEnable();
@@ -91,8 +99,6 @@ class ConfigApp {
 
     void reboot();
 
-    void setDebugMode(bool enable);
-
     void saveBrightness(int value);
 
     int32_t getBrightness();
@@ -100,6 +106,8 @@ class ConfigApp {
     void colorsInvertedEnable(bool enable);
 
     bool getTrackStatusValues(const char *json);
+
+    bool saveTempOffset(float offset);
 
    private:
     ///preferences main key
@@ -116,18 +124,20 @@ class ConfigApp {
     bool api_enable;
     ///WiFi state
     bool wifi_connected;
-    ///enable debug mode
-    bool devmode;
-
+        
     void saveString(String key, String value);
 
     void saveInt(String key, int value);
 
     int32_t getInt(String key, int defaultValue);
 
+    void saveFloat(String key, float value);
+
     void saveBool(String key, bool value);
 
     void setLastKeySaved(String key);
+
+    bool saveI2COnly(bool enable);
 
     void DEBUG(const char* text, const char* textb = "");
 

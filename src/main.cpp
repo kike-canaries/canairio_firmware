@@ -33,6 +33,7 @@ void startingSensors() {
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
     sensors.setSampleTime(cfg.stime);               // config sensors sample time
     sensors.setTempOffset(cfg.toffset);             // temperature compensation
+    sensors.detectI2COnly(cfg.i2conly);             // force only i2c sensors
     sensors.setDebugMode(cfg.devmode);              // [optional] debug mode
     sensors.init(cfg.getSensorType());              // start all sensors and
                                                     // try to detect configured PM sensor.

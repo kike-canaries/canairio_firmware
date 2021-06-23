@@ -40,7 +40,7 @@ void ConfigApp::reload() {
     spd = preferences.getFloat("spd", 0);
     stime = preferences.getInt("stime", 5);
     stype = preferences.getInt("stype", 0);
-    toffset = preferences.getInt("toffset", 0);
+    toffset = preferences.getFloat("toffset", 0.0);
     devmode = preferences.getBool("debugEnable", false);
 
     preferences.end();
@@ -64,7 +64,7 @@ String ConfigApp::getCurrentConfig() {
     doc["apiuri"] = preferences.getString("apiuri", "");     // API uri endpoint
     doc["apiprt"] = preferences.getInt("apiprt", 80);        // API port
     doc["denb"] = preferences.getBool("debugEnable", false); // debug mode enable
-    doc["toffset"] = preferences.getInt("toffset", 0);      // temperature offset
+    doc["toffset"] = preferences.getFloat("toffset", 0.0);      // temperature offset
     doc["lskey"] = lastKeySaved;                             // last key saved
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
     doc["wsta"] = wifi_connected;                            // current wifi state 
@@ -98,6 +98,13 @@ void ConfigApp::saveString(String key, String value){
 void ConfigApp::saveInt(String key, int value){
     preferences.begin(_app_name, false);
     preferences.putInt(key.c_str(), value);
+    preferences.end();
+    setLastKeySaved(key);
+}
+
+void ConfigApp::saveFloat(String key, float value){
+    preferences.begin(_app_name, false);
+    preferences.putFloat(key.c_str(), value);
     preferences.end();
     setLastKeySaved(key);
 }
@@ -141,8 +148,8 @@ int ConfigApp::getSensorType(){
     return stype;
 }
 
-bool ConfigApp::saveTempOffset(int offset) {
-    saveInt("toffset", offset);
+bool ConfigApp::saveTempOffset(float offset) {
+    saveFloat("toffset", offset);
     Serial.print("-->[CONF] sensor temperature offset: ");
     Serial.println(offset);
     return true;
@@ -277,7 +284,7 @@ bool ConfigApp::save(const char *json) {
     if (doc.containsKey("ssid")) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
     if (doc.containsKey("apiusr")) return saveAPI(doc["apiusr"] | "", doc["apipss"] | "", doc["apisrv"] | "", doc["apiuri"] | "", doc["apiprt"] | 0);
     if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["alt"].as<float>(), doc["spd"].as<float>());
-    if (doc.containsKey("toffset")) return saveTempOffset(doc["toffset"] | 0);
+    if (doc.containsKey("toffset")) return saveTempOffset(doc["toffset"].as<float>());
 
     // some actions with chopid validation (for security reasons)
     if (cmd == ((uint16_t)(chipid >> 32)) && act.length() > 0) {

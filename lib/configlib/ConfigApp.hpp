@@ -36,7 +36,8 @@ class ConfigApp {
     bool isNewWifi;
 
     bool devmode;
-    int  toffset = 0;
+
+    float toffset = 0.0;
 
     void init(const char app_name[]);
 
@@ -88,7 +89,7 @@ class ConfigApp {
 
     void setDebugMode(bool enable);
 
-    bool saveTempOffset(int offset);
+    bool saveTempOffset(float offset);
 
    private:
     ///preferences main key
@@ -108,6 +109,7 @@ class ConfigApp {
         
     void saveString(String key, String value);
     void saveInt(String key, int value);
+    void saveFloat(String key, float value);
     void saveBool(String key, bool value);
     void setLastKeySaved(String key);
     void DEBUG(const char* text, const char* textb = "");

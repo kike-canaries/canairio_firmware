@@ -42,6 +42,7 @@ void ConfigApp::reload() {
     stype = preferences.getInt("stype", 0);
     toffset = preferences.getFloat("toffset", 0.0);
     devmode = preferences.getBool("debugEnable", false);
+    i2conly = preferences.getBool("i2conly", false);
 
     preferences.end();
 }
@@ -64,6 +65,7 @@ String ConfigApp::getCurrentConfig() {
     doc["apiuri"] = preferences.getString("apiuri", "");     // API uri endpoint
     doc["apiprt"] = preferences.getInt("apiprt", 80);        // API port
     doc["denb"] = preferences.getBool("debugEnable", false); // debug mode enable
+    doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
     doc["toffset"] = preferences.getFloat("toffset", 0.0);      // temperature offset
     doc["lskey"] = lastKeySaved;                             // last key saved
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
@@ -258,6 +260,13 @@ bool ConfigApp::debugEnable(bool enable) {
     return true;
 }
 
+bool ConfigApp::saveI2COnly(bool enable) {
+    saveBool("i2conly", enable);
+    i2conly = enable;
+    Serial.println("-->[CONF] forced only i2c sensors: " + String(enable));
+    return true;
+}
+
 bool ConfigApp::save(const char *json) {
     StaticJsonDocument<1000> doc;
     auto error = deserializeJson(doc, json);
@@ -285,6 +294,7 @@ bool ConfigApp::save(const char *json) {
     if (doc.containsKey("apiusr")) return saveAPI(doc["apiusr"] | "", doc["apipss"] | "", doc["apisrv"] | "", doc["apiuri"] | "", doc["apiprt"] | 0);
     if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["alt"].as<float>(), doc["spd"].as<float>());
     if (doc.containsKey("toffset")) return saveTempOffset(doc["toffset"].as<float>());
+    
 
     // some actions with chopid validation (for security reasons)
     if (cmd == ((uint16_t)(chipid >> 32)) && act.length() > 0) {
@@ -292,6 +302,7 @@ bool ConfigApp::save(const char *json) {
         if (act.equals("ist")) return ifxdbEnable(doc["ienb"].as<bool>());
         if (act.equals("ast")) return apiEnable(doc["aenb"].as<bool>());
         if (act.equals("dst")) return debugEnable(doc["denb"].as<bool>());
+        if (act.equals("i2c")) return saveI2COnly(doc["i2conly"].as<bool>());
         if (act.equals("rbt")) reboot();
         if (act.equals("cls")) clear();
         return true;

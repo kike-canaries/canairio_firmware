@@ -37,6 +37,8 @@ class ConfigApp {
 
     bool devmode;
 
+    bool i2conly;
+
     float toffset = 0.0;
 
     void init(const char app_name[]);
@@ -112,6 +114,7 @@ class ConfigApp {
     void saveFloat(String key, float value);
     void saveBool(String key, bool value);
     void setLastKeySaved(String key);
+    bool saveI2COnly(bool enable);
     void DEBUG(const char* text, const char* textb = "");
 
     // @todo use DEBUG_ESP_PORT ?

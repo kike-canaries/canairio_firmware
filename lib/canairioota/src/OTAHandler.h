@@ -4,8 +4,8 @@
 #include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-#include "esp_system.h"
-#include "esp32fota.h"
+#include <esp_system.h>
+#include <esp32fota.h>
 #include <esp_task_wdt.h>
 
 #define FOTA_CHECK_INTERVAL 120   // seconds

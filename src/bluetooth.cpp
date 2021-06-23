@@ -47,9 +47,12 @@ String getSensorData() {
 *************************************************************************/
 
 void bleServerDataRefresh(){
+    pCharactData->setValue(getSensorData().c_str());
+}
+
+void bleServerConfigRefresh(){
     cfg.setWifiConnected(WiFi.isConnected());  // for notify on each write
     pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
-    pCharactData->setValue(getSensorData().c_str());
 }
 
 class MyServerCallbacks : public BLEServerCallbacks {
@@ -72,6 +75,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
                 cfg.reload();
                 gui.displayPreferenceSaveIcon();
                 if(sensors.sample_time != cfg.stime) sensors.setSampleTime(cfg.stime);
+                if(sensors.toffset != cfg.toffset) sensors.setTempOffset(cfg.toffset);
                 if (cfg.isNewIfxdbConfig) influxDbInit();
                 if (cfg.isNewAPIConfig) apiInit();
                 if (!cfg.isWifiEnable()) wifiStop();
@@ -79,7 +83,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
             else{
                 Serial.println("-->[E][BTLE][CONFIG] saving error!");
             }
-            bleServerDataRefresh();
+            bleServerConfigRefresh();
         }
     }
 };
@@ -105,6 +109,7 @@ void bleServerInit() {
     // Setting Config callback
     pCharactConfig->setCallbacks(new MyConfigCallbacks());
     // Set callback data:
+    bleServerConfigRefresh();
     bleServerDataRefresh();
     // Start the service
     pService->start();

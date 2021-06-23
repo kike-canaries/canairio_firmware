@@ -76,6 +76,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
                 gui.displayPreferenceSaveIcon();
                 if(sensors.sample_time != cfg.stime) sensors.setSampleTime(cfg.stime);
                 if(sensors.toffset != cfg.toffset) sensors.setTempOffset(cfg.toffset);
+                if(sensors.devmode != cfg.devmode) sensors.setDebugMode(cfg.devmode);
                 if (cfg.isNewIfxdbConfig) influxDbInit();
                 if (cfg.isNewAPIConfig) apiInit();
                 if (!cfg.isWifiEnable()) wifiStop();

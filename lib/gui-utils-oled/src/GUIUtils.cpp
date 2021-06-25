@@ -484,7 +484,14 @@ void GUIUtils::setTrackValues(float speed, float distance){
 }
 
 void GUIUtils::setTrackTime(int h, int m, int s){
+}
 
+void GUIUtils::suspendTaskGUI(){
+    if(taskGUIrunning) vTaskSuspend(xHandle);
+}
+
+void GUIUtils::resumeTaskGUI(){
+    if(taskGUIrunning) vTaskResume(xHandle);
 }
 
 void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){

@@ -5,12 +5,12 @@ void ConfigApp::init(const char app_name[]) {
     strcpy(_app_name, app_name);
     chipid = ESP.getEfuseMac();
     deviceId = getDeviceId();
+    reload();
     // override with debug INFO level (>=3)
     #ifdef CORE_DEBUG_LEVEL
     if (CORE_DEBUG_LEVEL>=3) devmode = true;  
     #endif
-    if (devmode) Serial.println("-->[CONFIG] debug is enable.");
-    reload();
+    if (devmode) Serial.println("-->[CONF] debug is enable.");
 }
 
 void ConfigApp::reload() {
@@ -20,7 +20,7 @@ void ConfigApp::reload() {
     // wifi settings
     wifi_enable = preferences.getBool("wifiEnable", false);
     ssid = preferences.getString("ssid", "");
-    pass = preferences.getString("pass", "");
+    pass = preferences.getString("pass", ""); 
     // influx db optional settings
     ifxdb_enable = preferences.getBool("ifxEnable", false);
     ifx.db = preferences.getString("ifxdb", ifx.db);
@@ -40,6 +40,9 @@ void ConfigApp::reload() {
     spd = preferences.getFloat("spd", 0);
     stime = preferences.getInt("stime", 5);
     stype = preferences.getInt("stype", 0);
+    toffset = preferences.getFloat("toffset", 0.0);
+    devmode = preferences.getBool("debugEnable", false);
+    i2conly = preferences.getBool("i2conly", false);
 
     preferences.end();
 }
@@ -61,6 +64,9 @@ String ConfigApp::getCurrentConfig() {
     doc["apisrv"] = preferences.getString("apisrv", "");     // API hostname
     doc["apiuri"] = preferences.getString("apiuri", "");     // API uri endpoint
     doc["apiprt"] = preferences.getInt("apiprt", 80);        // API port
+    doc["denb"] = preferences.getBool("debugEnable", false); // debug mode enable
+    doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
+    doc["toffset"] = preferences.getFloat("toffset", 0.0);      // temperature offset
     doc["lskey"] = lastKeySaved;                             // last key saved
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
     doc["wsta"] = wifi_connected;                            // current wifi state 
@@ -74,7 +80,7 @@ String ConfigApp::getCurrentConfig() {
     if (devmode) {
         char buf[1000];
         serializeJsonPretty(doc, buf, 1000);
-        Serial.printf("-->[CONFIG] response: %s", buf);
+        Serial.printf("-->[CONF] response: %s", buf);
         Serial.println("");
     }
     return output;
@@ -98,6 +104,13 @@ void ConfigApp::saveInt(String key, int value){
     setLastKeySaved(key);
 }
 
+void ConfigApp::saveFloat(String key, float value){
+    preferences.begin(_app_name, false);
+    preferences.putFloat(key.c_str(), value);
+    preferences.end();
+    setLastKeySaved(key);
+}
+
 void ConfigApp::saveBool(String key, bool value){
     preferences.begin(_app_name, false);
     preferences.putBool(key.c_str(), value);
@@ -108,33 +121,40 @@ void ConfigApp::saveBool(String key, bool value){
 bool ConfigApp::saveDeviceName(String name) {
     if (name.length() > 0) {
         saveString("dname",name);
-        Serial.println("-->[CONFIG] set device name to: " + name);
+        Serial.println("-->[CONF] set device name to: " + name);
         return true;
     }
-    DEBUG("-->[E][CONFIG] device name is empty!");
+    DEBUG("-->[E][CONF] device name is empty!");
     return false;
 }
 
 bool ConfigApp::saveSampleTime(int time) {
     if (time >= 5) {
         saveInt("stime", time);
-        Serial.print("-->[CONFIG] sensor sample time set to: ");
+        Serial.print("-->[CONF] sensor sample time set to: ");
         Serial.println(time);
         return true;
     }
-    DEBUG("-->[W][CONFIG] warning: sample time is too low!");
+    DEBUG("-->[W][CONF] warning: sample time is too low!");
     return false;
 }
 
 bool ConfigApp::saveSensorType(int type) {
     saveInt("stype", type);
-    Serial.print("-->[CONFIG] sensor device type: ");
+    Serial.print("-->[CONF] sensor device type: ");
     Serial.println(type);
     return true;
 }
 
 int ConfigApp::getSensorType(){
     return stype;
+}
+
+bool ConfigApp::saveTempOffset(float offset) {
+    saveFloat("toffset", offset);
+    Serial.print("-->[CONF] sensor temperature offset: ");
+    Serial.println(offset);
+    return true;
 }
 
 bool ConfigApp::saveWifi(String ssid, String pass){
@@ -147,11 +167,11 @@ bool ConfigApp::saveWifi(String ssid, String pass){
         setLastKeySaved("ssid");
         wifi_enable = true;
         isNewWifi = true;  // for execute wifi reconnect
-        Serial.println("-->[CONFIG] WiFi credentials saved!");
-        log_i("-->[CONFIG] ssid:%s pass:%s",ssid,pass);
+        Serial.println("-->[CONF] WiFi credentials saved!");
+        log_i("-->[CONF] ssid:%s pass:%s",ssid,pass);
         return true;
     }
-    DEBUG("-->[W][CONFIG] empty Wifi SSID");
+    DEBUG("-->[W][CONF] empty Wifi SSID");
     return false;
 }
 
@@ -166,11 +186,11 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
         setLastKeySaved("ifxdb");
         isNewIfxdbConfig = true;
         ifxdb_enable = true;
-        Serial.printf("-->[CONFIG] influxdb: %s@%s:%i\n",db.c_str(),ip.c_str(),pt);
-        Serial.println("-->[CONFIG] influxdb config saved.");
+        Serial.printf("-->[CONF] influxdb: %s@%s:%i\n",db.c_str(),ip.c_str(),pt);
+        Serial.println("-->[CONF] influxdb config saved.");
         return true;
     }
-    DEBUG("-->[W][CONFIG] wrong InfluxDb params!");
+    DEBUG("-->[W][CONF] wrong InfluxDb params!");
     return false;
 }
 
@@ -187,11 +207,11 @@ bool ConfigApp::saveAPI(String usr, String pass, String srv, String uri, int pt)
         setLastKeySaved("api");
         isNewAPIConfig = true;
         api_enable = true;
-        log_i("[CONFIG] API: %s@%s/%s",usr.c_str(),srv.c_str(),uri.c_str());
-        Serial.println("-->[CONFIG] API config saved.");
+        log_i("[CONF] API: %s@%s/%s",usr.c_str(),srv.c_str(),uri.c_str());
+        Serial.println("-->[CONF] API config saved.");
         return true;
     }
-    DEBUG("-->[W][CONFIG] wrong API params!");
+    DEBUG("-->[W][CONF] wrong API params!");
     return false;
 }
 
@@ -204,32 +224,46 @@ bool ConfigApp::saveGeo(double lat, double lon, float alt, float spd){
         preferences.putFloat("spd", spd);
         preferences.end();
         setLastKeySaved("lat");
-        log_i("-->[CONFIG] geo:(%d,%d) alt:%d spd:%d",lat,lon,alt,spd);
-        Serial.println("-->[CONFIG] updated location!");
+        log_i("-->[CONF] geo:(%d,%d) alt:%d spd:%d",lat,lon,alt,spd);
+        Serial.println("-->[CONF] updated location!");
         return true;
     }
-    DEBUG("-->[W][CONFIG] wrong GEO params!");
+    DEBUG("-->[W][CONF] wrong GEO params!");
     return false;
 }
 
 bool ConfigApp::wifiEnable(bool enable) {
     saveBool("wifiEnable", enable);
     wifi_enable = enable;
-    Serial.println("-->[CONFIG] updating WiFi state: " + String(enable));
+    Serial.println("-->[CONF] updating WiFi state: " + String(enable));
     return true;
 }
 
 bool ConfigApp::ifxdbEnable(bool enable) {
     saveBool("ifxEnable", enable);
     ifxdb_enable = enable;
-    Serial.println("-->[CONFIG] updating InfluxDB state: " + String(enable));
+    Serial.println("-->[CONF] updating InfluxDB state: " + String(enable));
     return true;
 }
 
 bool ConfigApp::apiEnable(bool enable) {
     saveBool("apiEnable", enable);
     api_enable = enable;
-    Serial.println("-->[CONFIG] updating API state: " + String(enable));
+    Serial.println("-->[CONF] updating API state: " + String(enable));
+    return true;
+}
+
+bool ConfigApp::debugEnable(bool enable) {
+    saveBool("debugEnable", enable);
+    devmode = enable;
+    Serial.println("-->[CONF] updating debug mode: " + String(enable));
+    return true;
+}
+
+bool ConfigApp::saveI2COnly(bool enable) {
+    saveBool("i2conly", enable);
+    i2conly = enable;
+    Serial.println("-->[CONF] forced only i2c sensors: " + String(enable));
     return true;
 }
 
@@ -237,7 +271,7 @@ bool ConfigApp::save(const char *json) {
     StaticJsonDocument<1000> doc;
     auto error = deserializeJson(doc, json);
     if (error) {
-        Serial.print(F("-->[E][CONFIG] deserialize Json failed with code "));
+        Serial.print(F("-->[E][CONF] deserialize Json failed with code "));
         Serial.println(error.c_str());
         return false;
     }
@@ -245,7 +279,7 @@ bool ConfigApp::save(const char *json) {
     if (devmode) {
         char output[1000];
         serializeJsonPretty(doc, output, 1000);
-        Serial.printf("-->[CONFIG] request: %s", output);
+        Serial.printf("-->[CONF] request: %s", output);
         Serial.println("");
     }
     
@@ -259,17 +293,21 @@ bool ConfigApp::save(const char *json) {
     if (doc.containsKey("ssid")) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
     if (doc.containsKey("apiusr")) return saveAPI(doc["apiusr"] | "", doc["apipss"] | "", doc["apisrv"] | "", doc["apiuri"] | "", doc["apiprt"] | 0);
     if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["alt"].as<float>(), doc["spd"].as<float>());
+    if (doc.containsKey("toffset")) return saveTempOffset(doc["toffset"].as<float>());
+    
 
     // some actions with chopid validation (for security reasons)
     if (cmd == ((uint16_t)(chipid >> 32)) && act.length() > 0) {
         if (act.equals("wst")) return wifiEnable(doc["wenb"].as<bool>());
         if (act.equals("ist")) return ifxdbEnable(doc["ienb"].as<bool>());
         if (act.equals("ast")) return apiEnable(doc["aenb"].as<bool>());
+        if (act.equals("dst")) return debugEnable(doc["denb"].as<bool>());
+        if (act.equals("i2c")) return saveI2COnly(doc["i2conly"].as<bool>());
         if (act.equals("rbt")) reboot();
         if (act.equals("cls")) clear();
         return true;
     } else {
-        Serial.println("-->[E][CONFIG] invalid config file!");
+        Serial.println("-->[E][CONF] invalid config file!");
         return false;
     }
 }
@@ -307,25 +345,17 @@ void ConfigApp::clear() {
     preferences.begin(_app_name, false);
     preferences.clear();
     preferences.end();
-    Serial.println("-->[CONFIG] clear settings!");
+    Serial.println("-->[CONF] clear settings!");
     reboot();
 }
 
 void ConfigApp::reboot() {
-    Serial.println("-->[CONFIG] reboot..");
+    Serial.println("-->[CONF] reboot..");
     delay(100);
     ESP.restart();
 }
 
-void ConfigApp::setDebugMode(bool enable){
-    devmode = enable;
-}
-
 void ConfigApp::DEBUG(const char *text, const char *textb) {
-    // override with debug INFO level (>=3)
-#ifdef CORE_DEBUG_LEVEL
-    if (CORE_DEBUG_LEVEL >= 3) devmode = true;
-#endif
     if (devmode) {
         _debugPort.print(text);
         if (textb) {

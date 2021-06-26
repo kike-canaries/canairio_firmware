@@ -54,7 +54,7 @@ void OTAHandler::checkRemoteOTA(bool notify) {
     if (updatedNeeded) {
         if(_onUpdateMsgCb != nullptr) 
             _onUpdateMsgCb(String(esp32FOTA.getPayloadVersion()).c_str());
-        delay(1000);
+        delay(100);
         esp_task_wdt_init(120,0); 
         Serial.println("-->[FOTA] starting..");
         esp32FOTA.execOTA();

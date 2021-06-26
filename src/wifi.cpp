@@ -93,6 +93,7 @@ void influxDbLoop() {
                 Serial.println("-->[E][IFDB] !! try wifi restart.. !!");
                 wifiRestart();
             } else {
+                if(cfg.devmode) Serial.println("-->[IFDB] write done.");
                 log_i("[IFDB] write done. Response: %d", influx.getResponse());
                 gui.displayDataOnIcon();
             }
@@ -216,8 +217,8 @@ void wifiConnect(const char* ssid, const char* pass) {
         Serial.print("-->[WIFI] ");
         Serial.println(WiFi.localIP());
         Serial.println("-->[WIFI] publish interval: "+String(cfg.stime * 2)+" sec.");
-        otaInit();
         wd.pause();
+        otaInit();
         ota.checkRemoteOTA();
         wd.resume();
     } else {

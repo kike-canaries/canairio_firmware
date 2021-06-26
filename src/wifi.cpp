@@ -93,6 +93,7 @@ void influxDbLoop() {
                 Serial.println("-->[E][IFDB] !! try wifi restart.. !!");
                 wifiRestart();
             } else {
+                if(cfg.devmode) Serial.println("-->[IFDB] write done.");
                 log_i("[IFDB] write done. Response: %d", influx.getResponse());
                 gui.displayDataOnIcon();
             }

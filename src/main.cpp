@@ -61,6 +61,7 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
             Serial.println("-->[MAIN] onSampleTime changed: "+String(time));
             cfg.saveSampleTime(time);
             cfg.reload();
+            bleServerConfigRefresh();
             sensors.setSampleTime(cfg.stime);
         } 
     };

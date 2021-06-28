@@ -16,3 +16,4 @@
 void bleLoop();
 void bleServerInit();
 bool bleIsConnected();
+void bleServerConfigRefresh();

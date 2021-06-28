@@ -20,7 +20,9 @@ void refreshGUIData() {
     gui.displaySensorLiveIcon();  // all sensors read are ok
     int deviceType = sensors.getPmDeviceTypeSelected();
     uint16_t mainValue = 0;
-    if (deviceType <= 3) {
+    if (deviceType == -1) {
+        // mainValue = getPaxValue();
+    } else if (deviceType <= 3) {
         mainValue = sensors.getPM25();
     } else {
         mainValue = sensors.getCO2();
@@ -187,6 +189,7 @@ void loop() {
     batteryloop();   // battery charge status
     bleLoop();       // notify data to connected devices
     wifiLoop();      // check wifi and reconnect it
+    snifferLoop();   // pax counter calc
     apiLoop();       // CanAir.io API !! D E P R E C A T E D !!
     influxDbLoop();  // influxDB publication
     otaLoop();       // check for firmware updates
@@ -194,5 +197,5 @@ void loop() {
                      // update GUI flags:
     gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
 
-    delay(500);
+    delay(1000);
 }

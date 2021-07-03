@@ -281,6 +281,8 @@ const wifi_promiscuous_filter_t filt={
 
 vector<MACPool> listOfMAC;
 
+uint_fast16_t pax_count;
+
 typedef struct {
   uint8_t mac[6];
 } __attribute__((packed)) MacAddr;
@@ -335,25 +337,26 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
       //Serial.println(listOfMAC[listOfMAC.size()-1].getMAC());
 
       // purge outdated MACs
-
       for (auto it = listOfMAC.begin(); it != listOfMAC.end(); ) {
-          if (millis()-it->getTime() > 300000) { // remove if older than 5min
+          if (millis()-it->getTime() > 60000) { // remove if older than 1min
               it = listOfMAC.erase(it);
           } else {
               ++it;
           }
       }
 
-      // update the risk index
+      pax_count = listOfMAC.size();
 
-      int recentLowSingal = 0;
-      int recentHighSingal = 0;
-      for (int i = 0; i < listOfMAC.size(); i++) {
-          if (millis()-listOfMAC[i].getTime() < 30000 && listOfMAC[i].getNewMAC()==true) {
-              if (listOfMAC[i].getSignal() < -60) { recentLowSingal++; } else { recentHighSingal++; }
-          }
-          // new low and high signals from last 30sec
-      }
+    //   // update the risk index
+
+    //   int recentLowSingal = 0;
+    //   int recentHighSingal = 0;
+    //   for (int i = 0; i < listOfMAC.size(); i++) {
+    //       if (millis()-listOfMAC[i].getTime() < 30000 && listOfMAC[i].getNewMAC()==true) {
+    //           if (listOfMAC[i].getSignal() < -60) { recentLowSingal++; } else { recentHighSingal++; }
+    //       }
+    //       // new low and high signals from last 30sec
+    //   }
       
     }
 }
@@ -376,9 +379,13 @@ void snifferLoop(){
     esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
     // for (int loops = 0; loops < 10; loops++) {
     //     drawProgressBar(0,TFT_HEIGHT/2, TFT_WIDTH, 10, (loops+1)*10, TFT_WHITE, TFT_BLUE);
-    //     for (channel = 0; channel < 12; channel++) {
-    //         esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
-    //         delay(50);
-    //     }
+        for (channel = 0; channel < 12; channel++) {
+            esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+            delay(50);
+        }
     // }
+}
+
+uint16_t getPaxCount(){
+    return pax_count;
 }

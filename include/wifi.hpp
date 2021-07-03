@@ -35,3 +35,4 @@ bool influxDbWrite();
 void influxDbLoop();
 
 void snifferLoop();
+uint16_t getPaxCount();

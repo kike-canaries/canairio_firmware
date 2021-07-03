@@ -470,7 +470,7 @@ void TFTUtils::displayMainValues(){
             displayCenterBig(output);
 
             if (_deviceType <= 3)
-                displayMainUnit("PM2.5");
+                displayMainUnit("PAX");
             else
                 displayMainUnit("PPM");
         } 

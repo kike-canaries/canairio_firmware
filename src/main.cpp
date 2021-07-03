@@ -21,7 +21,7 @@ void refreshGUIData() {
     int deviceType = sensors.getPmDeviceTypeSelected();
     uint16_t mainValue = 0;
     if (deviceType == -1) {
-        // mainValue = getPaxValue();
+        mainValue = getPaxCount();
     } else if (deviceType <= 3) {
         mainValue = sensors.getPM25();
     } else {
@@ -82,6 +82,7 @@ void onSensorDataOk() {
 /// sensors error callback
 void onSensorDataError(const char * msg){
     log_w("[MAIN] onSensorDataError", msg);
+    refreshGUIData();
 }
 
 void startingSensors() {
@@ -197,5 +198,5 @@ void loop() {
                      // update GUI flags:
     gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
 
-    delay(1000);
+    delay(500);
 }

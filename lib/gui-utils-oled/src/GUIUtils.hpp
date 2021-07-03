@@ -55,6 +55,10 @@ class GUIUtils {
 
     void setTrackTime(int h, int m, int s);
 
+    void suspendTaskGUI();
+
+    void resumeTaskGUI();
+
     String getFirmwareVersionCode ();
 
    private:

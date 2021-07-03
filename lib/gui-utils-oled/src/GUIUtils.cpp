@@ -43,7 +43,7 @@ void GUIUtils::displayInit() {
 #else  // display via i2c for TTGO_T7 (old D1MINI) board
     U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
 #endif
-
+    u8g2.setBusClock(100000);
     u8g2.begin();
     u8g2.setFont(u8g2_font_6x10_tf);
     u8g2.setContrast(255);
@@ -484,7 +484,14 @@ void GUIUtils::setTrackValues(float speed, float distance){
 }
 
 void GUIUtils::setTrackTime(int h, int m, int s){
+}
 
+void GUIUtils::suspendTaskGUI(){
+    if(taskGUIrunning) vTaskSuspend(xHandle);
+}
+
+void GUIUtils::resumeTaskGUI(){
+    if(taskGUIrunning) vTaskResume(xHandle);
 }
 
 void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){

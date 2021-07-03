@@ -358,7 +358,7 @@ void TFTUtils::checkButtons() {
 }
 
 void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
-    vTaskSuspend(xHandle);
+    suspendTaskGUI();
     if(progress == 0) showWelcome();
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setFreeFont(&Orbitron_Medium_20);
@@ -496,7 +496,7 @@ void TFTUtils::displayMainValues(){
 
 // TODO: separate this function, format/display
 void TFTUtils::setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
-    vTaskSuspend(xHandle);
+    suspendTaskGUI();
     _deviceType = deviceType;
     _humi = humi;
     _temp = temp;
@@ -504,15 +504,15 @@ void TFTUtils::setSensorData(int mainValue, int chargeLevel, float humi, float t
     _rssi = abs(rssi);
     pkts[MAX_X - 1] = mainValue;
     isNewData = true;
-    vTaskResume(xHandle);
+    resumeTaskGUI();
 }
 
 void TFTUtils::setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair) {
-    vTaskSuspend(xHandle);
+    suspendTaskGUI();
     _wifiOn = wifiOn;
     _bleOn = bleOn;
     _blePair = blePair;
-    vTaskResume(xHandle);
+    resumeTaskGUI();
 }
 
 void TFTUtils::displayGUIStatusFlags() {
@@ -667,18 +667,18 @@ void TFTUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
 }
 
 void TFTUtils::setTrackValues(float speed, float distance){
-    vTaskSuspend(xHandle);
+    suspendTaskGUI();
     _speed = speed;
     _km = distance;
-    vTaskResume(xHandle);
+    resumeTaskGUI();
 }
 
 void TFTUtils::setTrackTime(int h, int m, int s){
-    vTaskSuspend(xHandle);
+    suspendTaskGUI();
     _hours = h;
     _minutes = m;
     _seconds = s;
-    vTaskResume(xHandle);
+    resumeTaskGUI();
 }
 
 void TFTUtils::suspendTaskGUI(){

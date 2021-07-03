@@ -61,6 +61,7 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
             Serial.println("-->[MAIN] onSampleTime changed: "+String(time));
             cfg.saveSampleTime(time);
             cfg.reload();
+            bleServerConfigRefresh();
             sensors.setSampleTime(cfg.stime);
         } 
     };
@@ -87,13 +88,11 @@ void startingSensors() {
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
     sensors.setSampleTime(1);                       // sample time only for first use
-    sensors.setDebugMode(false);                    // [optional] debug mode
-    sensors.detectI2COnly(true);                    // force to only i2c sensors
+    sensors.setTempOffset(cfg.toffset);             // temperature compensation
+    sensors.detectI2COnly(cfg.i2conly);             // force only i2c sensors
+    sensors.setDebugMode(cfg.devmode);              // debugging mode 
     sensors.init(cfg.getSensorType());              // start all sensors and
-                                                    // try to detect configured PM sensor.
-                                                    // Sensors PM2.5 supported: Panasonic, Honeywell, Plantower and Sensirion
-                                                    // Sensors CO2 supported: Sensirion, Winsen, Cubic
-                                                    // The configured sensor is choosed on Android app.
+                                                    // The UART sensor is choosed on Android app.
                                                     // For more information about the supported sensors,
                                                     // please see the canairio_sensorlib documentation.
 
@@ -118,7 +117,6 @@ void setup() {
     Serial.println("\n== CanAirIO Setup ==\n");
 
     // init app preferences and load settings
-    cfg.setDebugMode(false);
     cfg.init("canairio");
 
     // init graphic user interface

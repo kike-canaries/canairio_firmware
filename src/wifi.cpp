@@ -101,56 +101,6 @@ void influxDbLoop() {
 }
 
 /******************************************************************************
-*   C A N A I R I O  A P I   M E T H O D S
-******************************************************************************/
-
-bool apiIsConfigured() {
-    return cfg.apiusr.length() > 0 && cfg.apipss.length() > 0 && cfg.dname.length() > 0;
-}
-
-void apiInit() {
-    if (WiFi.isConnected() && apiIsConfigured() && cfg.isApiEnable()) {
-        // stationId and deviceId, optional endpoint, host and port
-        if (cfg.apiuri.equals("") && cfg.apisrv.equals(""))
-            api.configure(cfg.dname.c_str(), cfg.deviceId.c_str());
-        else
-            api.configure(cfg.dname.c_str(), cfg.deviceId.c_str(), cfg.apiuri.c_str(), cfg.apisrv.c_str(), cfg.apiprt);
-        api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
-        // api.dev = true;
-        cfg.isNewAPIConfig = false;  // flag for config via BLE
-        Serial.println("-->[API] connected.");
-        delay(100);
-    }
-}
-
-void apiLoop() {
-    static uint_fast64_t timeStamp = 0;
-    if (millis() - timeStamp > cfg.stime * 2 * 1000) {
-        timeStamp = millis();
-        if (sensors.isDataReady() && WiFi.isConnected() && cfg.isWifiEnable() && cfg.isApiEnable() && apiIsConfigured()) {
-            log_i("[API] writing to %s", api.ip);
-            bool status = api.write(
-                sensors.getPM1(),
-                sensors.getPM25(),
-                sensors.getPM10(),
-                sensors.getHumidity(),
-                sensors.getTemperature(),
-                cfg.lat,
-                cfg.lon,
-                cfg.stime);
-            int code = api.getResponse();
-            if (status) {
-                log_i("done. [%d]",code);
-                gui.displayDataOnIcon();
-            } else {
-                Serial.println("-->[E][API] write error!");
-                if (code == -1) Serial.println("-->[E][API] publish error (-1)");
-            }
-        }
-    }
-}
-
-/******************************************************************************
 *   W I F I   M E T H O D S
 ******************************************************************************/
 
@@ -249,7 +199,6 @@ void wifiLoop() {
         if (cfg.isWifiEnable() && cfg.ssid.length() > 0 && !WiFi.isConnected()) {
             wifiInit();
             influxDbInit();
-            apiInit();
         }
         cfg.setWifiConnected(WiFi.isConnected());
     }

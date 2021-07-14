@@ -36,8 +36,6 @@ void ConfigApp::reload() {
     // station and sensor settings
     lat = preferences.getDouble("lat", 0);
     lon = preferences.getDouble("lon", 0);
-    alt = preferences.getFloat("alt", 0);
-    spd = preferences.getFloat("spd", 0);
     stime = preferences.getInt("stime", 5);
     stype = preferences.getInt("stype", 0);
     toffset = preferences.getFloat("toffset", 0.0);
@@ -215,16 +213,15 @@ bool ConfigApp::saveAPI(String usr, String pass, String srv, String uri, int pt)
     return false;
 }
 
-bool ConfigApp::saveGeo(double lat, double lon, float alt, float spd){
+bool ConfigApp::saveGeo(double lat, double lon, String geo){
     if (lat != 0 && lon != 0) {
         preferences.begin(_app_name, false);
         preferences.putDouble("lat", lat);
         preferences.putDouble("lon", lon);
-        preferences.putFloat("alt", alt);
-        preferences.putFloat("spd", spd);
+        preferences.putString("geo", geo);
         preferences.end();
         setLastKeySaved("lat");
-        log_i("-->[CONF] geo:(%d,%d) alt:%d spd:%d",lat,lon,alt,spd);
+        log_i("-->[CONF] geo: %s (%d,%d)",geo,lat,lon);
         Serial.println("-->[CONF] updated location!");
         return true;
     }
@@ -292,7 +289,7 @@ bool ConfigApp::save(const char *json) {
     if (doc.containsKey("ifxdb")) return saveInfluxDb(doc["ifxdb"] | "", doc["ifxip"] | "", doc["ifxpt"] | 0);
     if (doc.containsKey("ssid")) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
     if (doc.containsKey("apiusr")) return saveAPI(doc["apiusr"] | "", doc["apipss"] | "", doc["apisrv"] | "", doc["apiuri"] | "", doc["apiprt"] | 0);
-    if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["alt"].as<float>(), doc["spd"].as<float>());
+    if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
     if (doc.containsKey("toffset")) return saveTempOffset(doc["toffset"].as<float>());
     
 

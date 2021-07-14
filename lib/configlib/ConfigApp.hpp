@@ -23,14 +23,8 @@ class ConfigApp {
         uint16_t pt = 8086;
     } ifx;
 
-    String apiusr;
-    String apipss;
-    String apisrv;
-    String apiuri;
-    int apiprt;
-
     bool isNewIfxdbConfig;
-    bool isNewAPIConfig;
+
     bool isNewWifi;
 
     bool devmode;
@@ -55,15 +49,11 @@ class ConfigApp {
 
     bool saveInfluxDb(String db, String ip, int pt);
 
-    bool saveAPI(String usr, String pass, String srv, String uri, int pt);
-
     bool saveGeo(double lat, double lon, String geo);
 
     bool wifiEnable(bool enable);
 
     bool ifxdbEnable(bool enable);
-
-    bool apiEnable(bool enable);
 
     bool debugEnable(bool enable);
 
@@ -72,8 +62,6 @@ class ConfigApp {
     bool isWifiEnable();
 
     bool isIfxEnable();
-
-    bool isApiEnable();
 
     void setWifiConnected(bool connected);
 
@@ -102,8 +90,6 @@ class ConfigApp {
     bool wifi_enable;
     ///InfluxDB cloud publication on/off
     bool ifxdb_enable;
-    ///**deprecated** CanAirIO API on/off
-    bool api_enable;
     ///WiFi state
     bool wifi_connected;
         

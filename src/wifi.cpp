@@ -44,7 +44,7 @@ void influxDbParseFields(char* fields) {
 
     sprintf(
         fields,
-        "pm1=%u,pm25=%u,pm10=%u,co2=%u,co2hum=%f,co2tmp=%f,hum=%f,tmp=%f,prs=%f,gas=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
+        "pm1=%u,pm25=%u,pm10=%u,co2=%u,co2hum=%f,co2tmp=%f,hum=%f,tmp=%f,prs=%f,gas=%f,lat=%f,lng=%f,alt=%f,stime=%i",
         sensors.getPM1(),
         sensors.getPM25(),
         sensors.getPM10(),
@@ -58,9 +58,8 @@ void influxDbParseFields(char* fields) {
         cfg.lat,
         cfg.lon,
         sensors.getAltitude(),
-        cfg.spd,
-        cfg.stime,
-        0);
+        cfg.stime
+    );
 }
 
 void influxDbAddTags(char* tags) {
@@ -138,8 +137,6 @@ void apiLoop() {
                 sensors.getTemperature(),
                 cfg.lat,
                 cfg.lon,
-                cfg.alt,
-                cfg.spd,
                 cfg.stime);
             int code = api.getResponse();
             if (status) {

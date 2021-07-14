@@ -13,8 +13,6 @@ class ConfigApp {
     int stype;
     double lat;
     double lon;
-    float alt;
-    float spd;
 
     String ssid;
     String pass;
@@ -59,7 +57,7 @@ class ConfigApp {
 
     bool saveAPI(String usr, String pass, String srv, String uri, int pt);
 
-    bool saveGeo(double lat, double lon, float alt, float spd);
+    bool saveGeo(double lat, double lon, String geo);
 
     bool wifiEnable(bool enable);
 

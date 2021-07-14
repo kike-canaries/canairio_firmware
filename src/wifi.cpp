@@ -11,10 +11,13 @@ CanAirIoApi api(false);
 ******************************************************************************/
 
 bool influxDbIsConfigured() {
-    if(cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.dname.length()==0) {
-        Serial.println("-->[W][IFDB] ifxdb is configured but device name is missing!");
+    if(cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0) {
+        if (cfg.dname.length()==0) 
+            Serial.println("-->[W][IFDB] ifxdb is configured but device name is missing!");
+        if (cfg.geo.length()==0)  
+            Serial.println("-->[W][IFDB] ifxdb is configured but Location (GeoHash) is missing!");
     }
-    return cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.dname.length() > 0;
+    return cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.dname.length() > 0 && cfg.geo.length() > 0;
 }
 
 void influxDbInit() {
@@ -63,7 +66,15 @@ void influxDbParseFields(char* fields) {
 }
 
 void influxDbAddTags(char* tags) {
-    sprintf(tags, "mac=%s,dtype=%s",cfg.deviceId.c_str(),sensors.getPmDeviceSelected().c_str());
+    sprintf(
+        tags, 
+        "mac=%s,dtype=%s,geo3=%s,geo=%s,dname=%s",
+        cfg.deviceId.c_str(),
+        sensors.getPmDeviceSelected().c_str(),
+        cfg.geo.substring(0,3).c_str(),
+        cfg.geo.c_str(),
+        cfg.dname.substring(0,8).c_str()
+    );
 }
 
 bool influxDbWrite() {
@@ -73,7 +84,7 @@ bool influxDbWrite() {
     char fields[1024];
     influxDbParseFields(fields);
     log_i("[IFDB] Adding fields: %s", fields);
-    return influx.write(cfg.dname.c_str(), tags, fields);
+    return influx.write("fixed_stations", tags, fields);
 }
 
 void influxDbLoop() {

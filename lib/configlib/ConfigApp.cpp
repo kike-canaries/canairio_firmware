@@ -29,6 +29,7 @@ void ConfigApp::reload() {
     // station and sensor settings
     lat = preferences.getDouble("lat", 0);
     lon = preferences.getDouble("lon", 0);
+    geo = preferences.getString("geo", "");
     stime = preferences.getInt("stime", 5);
     stype = preferences.getInt("stype", 0);
     toffset = preferences.getFloat("toffset", 0.0);
@@ -50,6 +51,7 @@ String ConfigApp::getCurrentConfig() {
     doc["ifxdb"] = preferences.getString("ifxdb", ifx.db);   // influxdb database name
     doc["ifxip"] = preferences.getString("ifxip", ifx.ip);   // influxdb database ip
     doc["ifxpt"] = preferences.getUInt("ifxpt", ifx.pt);     // influxdb sensor tags
+    doc["geo"] = preferences.getString("geo", "");           // influxdb GeoHash tag
     doc["denb"] = preferences.getBool("debugEnable", false); // debug mode enable
     doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
     doc["toffset"] = preferences.getFloat("toffset", 0.0);      // temperature offset

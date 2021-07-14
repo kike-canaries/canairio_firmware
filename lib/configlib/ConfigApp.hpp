@@ -13,6 +13,7 @@ class ConfigApp {
     int stype;
     double lat;
     double lon;
+    String geo;
 
     String ssid;
     String pass;

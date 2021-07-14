@@ -22,10 +22,6 @@ void wifiRestart();
 void wifiLoop();
 int  getWifiRSSI();
 
-bool apiIsConfigured();
-void apiInit();
-void apiLoop();
-
 bool influxDbIsConfigured();
 void influxDbInit();
 void influxDbParseFields(char* fields);

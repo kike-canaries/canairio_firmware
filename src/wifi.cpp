@@ -12,10 +12,13 @@ CanAirIoApi api(false);
 ******************************************************************************/
 
 bool influxDbIsConfigured() {
-    if(cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.dname.length()==0) {
-        Serial.println("-->[W][IFDB] ifxdb is configured but device name is missing!");
+    if(cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0) {
+        if (cfg.dname.length()==0) 
+            Serial.println("-->[W][IFDB] ifxdb is configured but device name is missing!");
+        if (cfg.geo.length()==0)  
+            Serial.println("-->[W][IFDB] ifxdb is configured but Location (GeoHash) is missing!");
     }
-    return cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.dname.length() > 0;
+    return cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.dname.length() > 0 && cfg.geo.length() > 0;
 }
 
 void influxDbInit() {
@@ -45,7 +48,7 @@ void influxDbParseFields(char* fields) {
 
     sprintf(
         fields,
-        "pm1=%u,pm25=%u,pm10=%u,co2=%u,co2hum=%f,co2tmp=%f,hum=%f,tmp=%f,prs=%f,gas=%f,lat=%f,lng=%f,alt=%f,spd=%f,stime=%i,tstp=%u",
+        "pm1=%u,pm25=%u,pm10=%u,co2=%u,co2hum=%f,co2tmp=%f,hum=%f,tmp=%f,prs=%f,gas=%f,lat=%f,lng=%f,alt=%f,stime=%i",
         sensors.getPM1(),
         sensors.getPM25(),
         sensors.getPM10(),
@@ -59,13 +62,20 @@ void influxDbParseFields(char* fields) {
         cfg.lat,
         cfg.lon,
         sensors.getAltitude(),
-        cfg.spd,
-        cfg.stime,
-        0);
+        cfg.stime
+    );
 }
 
 void influxDbAddTags(char* tags) {
-    sprintf(tags, "mac=%s,dtype=%s",cfg.deviceId.c_str(),sensors.getPmDeviceSelected().c_str());
+    sprintf(
+        tags, 
+        "mac=%s,dtype=%s,geo3=%s,geo=%s,dname=%s",
+        cfg.deviceId.c_str(),
+        sensors.getPmDeviceSelected().c_str(),
+        cfg.geo.substring(0,3).c_str(),
+        cfg.geo.c_str(),
+        cfg.dname.substring(0,8).c_str()
+    );
 }
 
 bool influxDbWrite() {
@@ -75,7 +85,7 @@ bool influxDbWrite() {
     char fields[1024];
     influxDbParseFields(fields);
     log_i("[IFDB] Adding fields: %s", fields);
-    return influx.write(cfg.dname.c_str(), tags, fields);
+    return influx.write("fixed_stations", tags, fields);
 }
 
 void influxDbLoop() {
@@ -100,58 +110,6 @@ void influxDbLoop() {
             }
         }
     }  
-}
-
-/******************************************************************************
-*   ( DEPRECATED ) C A N A I R I O  A P I   M E T H O D S 
-******************************************************************************/
-
-bool apiIsConfigured() {
-    return cfg.apiusr.length() > 0 && cfg.apipss.length() > 0 && cfg.dname.length() > 0;
-}
-
-void apiInit() {
-    if (WiFi.isConnected() && apiIsConfigured() && cfg.isApiEnable()) {
-        // stationId and deviceId, optional endpoint, host and port
-        if (cfg.apiuri.equals("") && cfg.apisrv.equals(""))
-            api.configure(cfg.dname.c_str(), cfg.deviceId.c_str());
-        else
-            api.configure(cfg.dname.c_str(), cfg.deviceId.c_str(), cfg.apiuri.c_str(), cfg.apisrv.c_str(), cfg.apiprt);
-        api.authorize(cfg.apiusr.c_str(), cfg.apipss.c_str());
-        // api.dev = true;
-        cfg.isNewAPIConfig = false;  // flag for config via BLE
-        Serial.println("-->[API] connected.");
-        delay(100);
-    }
-}
-
-void apiLoop() {
-    static uint_fast64_t timeStamp = 0;
-    if (millis() - timeStamp > cfg.stime * 2 * 1000) {
-        timeStamp = millis();
-        if (sensors.isDataReady() && WiFi.isConnected() && cfg.isWifiEnable() && cfg.isApiEnable() && apiIsConfigured()) {
-            log_i("[API] writing to %s", api.ip);
-            bool status = api.write(
-                sensors.getPM1(),
-                sensors.getPM25(),
-                sensors.getPM10(),
-                sensors.getHumidity(),
-                sensors.getTemperature(),
-                cfg.lat,
-                cfg.lon,
-                cfg.alt,
-                cfg.spd,
-                cfg.stime);
-            int code = api.getResponse();
-            if (status) {
-                log_i("done. [%d]",code);
-                gui.displayDataOnIcon();
-            } else {
-                Serial.println("-->[E][API] write error!");
-                if (code == -1) Serial.println("-->[E][API] publish error (-1)");
-            }
-        }
-    }
 }
 
 /******************************************************************************
@@ -262,7 +220,6 @@ void wifiLoop() {
         if (cfg.isWifiEnable() && cfg.ssid.length() > 0 && !WiFi.isConnected()) {
             wifiInit();
             influxDbInit();
-            apiInit();
         }
         cfg.setWifiConnected(WiFi.isConnected());
     }

@@ -26,18 +26,10 @@ void ConfigApp::reload() {
     ifx.db = preferences.getString("ifxdb", ifx.db);
     ifx.ip = preferences.getString("ifxip", ifx.ip);
     ifx.pt = preferences.getUInt("ifxpt", ifx.pt);
-    // canairio api settings
-    api_enable = preferences.getBool("apiEnable", false);
-    apiusr = preferences.getString("apiusr", "");
-    apipss = preferences.getString("apipss", "");
-    apisrv = preferences.getString("apisrv", "");
-    apiuri = preferences.getString("apiuri", "");
-    apiprt = preferences.getInt("apiprt", 80);
     // station and sensor settings
     lat = preferences.getDouble("lat", 0);
     lon = preferences.getDouble("lon", 0);
-    alt = preferences.getFloat("alt", 0);
-    spd = preferences.getFloat("spd", 0);
+    geo = preferences.getString("geo", "");
     stime = preferences.getInt("stime", 5);
     stype = preferences.getInt("stype", 0);
     toffset = preferences.getFloat("toffset", 0.0);
@@ -59,11 +51,7 @@ String ConfigApp::getCurrentConfig() {
     doc["ifxdb"] = preferences.getString("ifxdb", ifx.db);   // influxdb database name
     doc["ifxip"] = preferences.getString("ifxip", ifx.ip);   // influxdb database ip
     doc["ifxpt"] = preferences.getUInt("ifxpt", ifx.pt);     // influxdb sensor tags
-    doc["aenb"] = preferences.getBool("apiEnable", false);   // CanAirIO API on/off
-    doc["apiusr"] = preferences.getString("apiusr", "");     // API username
-    doc["apisrv"] = preferences.getString("apisrv", "");     // API hostname
-    doc["apiuri"] = preferences.getString("apiuri", "");     // API uri endpoint
-    doc["apiprt"] = preferences.getInt("apiprt", 80);        // API port
+    doc["geo"] = preferences.getString("geo", "");           // influxdb GeoHash tag
     doc["denb"] = preferences.getBool("debugEnable", false); // debug mode enable
     doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
     doc["toffset"] = preferences.getFloat("toffset", 0.0);      // temperature offset
@@ -201,37 +189,15 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
     return false;
 }
 
-bool ConfigApp::saveAPI(String usr, String pass, String srv, String uri, int pt){
-    if (usr.length() > 0 && pass.length() > 0 && srv.length() > 0 && uri.length() > 0) {
-        preferences.begin(_app_name, false);
-        preferences.putString("apiusr", usr);
-        preferences.putString("apipss", pass);
-        preferences.putString("apisrv", srv);
-        preferences.putString("apiuri", uri);
-        if (pt > 0) preferences.putInt("apiprt", pt);
-        preferences.putBool("apiEnable", true);
-        preferences.end();
-        setLastKeySaved("api");
-        isNewAPIConfig = true;
-        api_enable = true;
-        log_i("[CONF] API: %s@%s/%s",usr.c_str(),srv.c_str(),uri.c_str());
-        Serial.println("-->[CONF] API config saved.");
-        return true;
-    }
-    DEBUG("-->[W][CONF] wrong API params!");
-    return false;
-}
-
-bool ConfigApp::saveGeo(double lat, double lon, float alt, float spd){
+bool ConfigApp::saveGeo(double lat, double lon, String geo){
     if (lat != 0 && lon != 0) {
         preferences.begin(_app_name, false);
         preferences.putDouble("lat", lat);
         preferences.putDouble("lon", lon);
-        preferences.putFloat("alt", alt);
-        preferences.putFloat("spd", spd);
+        preferences.putString("geo", geo);
         preferences.end();
         setLastKeySaved("lat");
-        log_i("[CONF] geo:(%d,%d) alt:%d spd:%d",lat,lon,alt,spd);
+        log_i("-->[CONF] geo: %s (%d,%d)",geo,lat,lon);
         Serial.println("-->[CONF] updated location!");
         return true;
     }
@@ -250,13 +216,6 @@ bool ConfigApp::ifxdbEnable(bool enable) {
     saveBool("ifxEnable", enable);
     ifxdb_enable = enable;
     Serial.println("-->[CONF] updating InfluxDB state: " + String(enable));
-    return true;
-}
-
-bool ConfigApp::apiEnable(bool enable) {
-    saveBool("apiEnable", enable);
-    api_enable = enable;
-    Serial.println("-->[CONF] updating API state: " + String(enable));
     return true;
 }
 
@@ -298,8 +257,7 @@ bool ConfigApp::save(const char *json) {
     if (doc.containsKey("stype")) return saveSensorType(doc["stype"] | 0);
     if (doc.containsKey("ifxdb")) return saveInfluxDb(doc["ifxdb"] | "", doc["ifxip"] | "", doc["ifxpt"] | 0);
     if (doc.containsKey("ssid")) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
-    if (doc.containsKey("apiusr")) return saveAPI(doc["apiusr"] | "", doc["apipss"] | "", doc["apisrv"] | "", doc["apiuri"] | "", doc["apiprt"] | 0);
-    if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["alt"].as<float>(), doc["spd"].as<float>());
+    if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
     if (doc.containsKey("toffset")) return saveTempOffset(doc["toffset"].as<float>());
     
 
@@ -307,7 +265,6 @@ bool ConfigApp::save(const char *json) {
     if (cmd == ((uint16_t)(chipid >> 32)) && act.length() > 0) {
         if (act.equals("wst")) return wifiEnable(doc["wenb"].as<bool>());
         if (act.equals("ist")) return ifxdbEnable(doc["ienb"].as<bool>());
-        if (act.equals("ast")) return apiEnable(doc["aenb"].as<bool>());
         if (act.equals("dst")) return debugEnable(doc["denb"].as<bool>());
         if (act.equals("i2c")) return saveI2COnly(doc["i2conly"].as<bool>());
         if (act.equals("rbt")) reboot();
@@ -355,10 +312,6 @@ String ConfigApp::getDeviceIdShort() {
 
 bool ConfigApp::isWifiEnable() {
     return wifi_enable;
-}
-
-bool ConfigApp::isApiEnable() {
-    return api_enable;
 }
 
 bool ConfigApp::isIfxEnable() {

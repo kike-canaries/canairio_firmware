@@ -3,7 +3,7 @@
 #include <esp_wifi.h>
 #include <InfluxDbClient.h>
 #include <ConfigApp.hpp>
-#include <GUIUtils.hpp>
+#include <GUILib.hpp>
 #include <Watchdog.hpp>
 #include <Sensors.hpp>
 

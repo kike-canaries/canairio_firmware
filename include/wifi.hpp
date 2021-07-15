@@ -1,10 +1,9 @@
 #include <WiFi.h>
 #include <OTAHandler.h>
 #include <esp_wifi.h>
-#include <CanAirIoApi.hpp>
+#include <InfluxDbClient.h>
 #include <ConfigApp.hpp>
-#include <InfluxArduino.hpp>
-#include <GUILib.hpp>
+#include <GUIUtils.hpp>
 #include <Watchdog.hpp>
 #include <Sensors.hpp>
 
@@ -22,9 +21,5 @@ void wifiRestart();
 void wifiLoop();
 int  getWifiRSSI();
 
-bool influxDbIsConfigured();
 void influxDbInit();
-void influxDbParseFields(char* fields);
-void influxDbAddTags(char* tags);
-bool influxDbWrite();
 void influxDbLoop();

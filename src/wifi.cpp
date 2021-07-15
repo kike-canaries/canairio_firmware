@@ -17,20 +17,15 @@ bool ifx_ready;
 ******************************************************************************/
 
 bool influxDbIsConfigured() {
-    if(cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0) {
-        if (cfg.dname.length()==0) 
-            Serial.println("-->[W][IFDB] ifxdb is configured but device name is missing!");
-        if (cfg.geo.length()==0)  
-            Serial.println("-->[W][IFDB] ifxdb is configured but Location (GeoHash) is missing!");
+    if(cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.geo.length()==0) {
+        Serial.println("-->[W][IFDB] ifxdb is configured but Location (GeoHash) is missing!");
     }
-    return cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.dname.length() > 0 && cfg.geo.length() > 0;
+    return cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.geo.length() > 0;
 }
 
 void influxDbAddTags() {
     sensor.addTag("mac",cfg.deviceId.c_str());
     sensor.addTag("geo3",cfg.geo.substring(0,3).c_str());
-    sensor.addTag("coid",cfg.dname.substring(0,2));
-    sensor.addTag("stid",cfg.dname.substring(3,5));
 }
 
 void influxDbInit() {
@@ -54,9 +49,6 @@ void influxDbInit() {
 /**
  * @influxDbParseFields:
  *
- * Supported:
- * "id","pm1","pm25","pm10,"hum","tmp","lat","lng","alt","spd","stime","tstp"
- *
  */
 void influxDbParseFields() {
     // select humi and temp for publish it
@@ -67,10 +59,12 @@ void influxDbParseFields() {
 
     sensor.clearFields();
 
-    String name = ""+cfg.dname.substring(0,2);
-    name = name + String(FLAVOR).substring(0,7);
-    name = name + cfg.getDeviceIdShort();
+    String name = ""+cfg.geo.substring(0,3);         // GeoHash ~70km https://en.wikipedia.org/wiki/Geohash
+    name = name + String(FLAVOR).substring(0,7);     // Flavor short, firmware name (board)
+    name = name + cfg.getDeviceId().substring(10);    // MAC address 4 digts
     name.replace("_","");
+    name.replace(":","");
+    name.toUpperCase();
 
     sensor.addField("pm1",sensors.getPM1());
     sensor.addField("pm25",sensors.getPM25());

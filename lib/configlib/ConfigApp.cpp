@@ -198,7 +198,8 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
         preferences.end();
         setLastKeySaved("lat");
         log_i("-->[CONF] geo: %s (%d,%d)",geo,lat,lon);
-        Serial.println("-->[CONF] updated location!");
+        Serial.print("-->[CONF] updated GeoHash to ");
+        Serial.println(geo);
         return true;
     }
     DEBUG("-->[W][CONF] wrong GEO params!");

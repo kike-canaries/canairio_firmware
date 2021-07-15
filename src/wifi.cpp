@@ -67,6 +67,11 @@ void influxDbParseFields() {
 
     sensor.clearFields();
 
+    String name = ""+cfg.dname.substring(0,2);
+    name = name + String(FLAVOR).substring(0,7);
+    name = name + cfg.getDeviceIdShort();
+    name.replace("_","");
+
     sensor.addField("pm1",sensors.getPM1());
     sensor.addField("pm25",sensors.getPM25());
     sensor.addField("pm10",sensors.getPM10());
@@ -79,7 +84,7 @@ void influxDbParseFields() {
     sensor.addField("prs",sensors.getPressure());
     sensor.addField("gas",sensors.getGas());
     sensor.addField("alt",sensors.getAltitude());
-    sensor.addField("dtype",sensors.getPmDeviceSelected().c_str());
+    sensor.addField("name",name.c_str());
 }
 
 bool influxDbWrite() {

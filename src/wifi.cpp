@@ -47,9 +47,6 @@ void influxDbInit() {
             ifx_ready = true;
         }
         else Serial.println("-->[E][IFDB] connection error!");
-        
-        // influx.setWriteOptions(WriteOptions().batchSize(MAX_BATCH_SIZE).bufferSize(WRITE_BUFFER_SIZE));
-        Serial.printf("-->[IFDB] write options ready!");
         delay(100);
     }
 }
@@ -87,10 +84,10 @@ void influxDbParseFields() {
 
 bool influxDbWrite() {
     influxDbParseFields();
-    Serial.println(influx.pointToLineProtocol(sensor));
-    if (!influx.writePoint(sensor)); {
+    if(cfg.devmode) Serial.println(influx.pointToLineProtocol(sensor));
+    if (!influx.writePoint(sensor)) {
         Serial.print("Write Point failed: ");
-        Serial.println(influx.getLastErrorMessage());
+        Serial.println(influx.getLastErrorMessage().length());
         return false;
     }
     return true;
@@ -101,22 +98,12 @@ void influxDbLoop() {
     if (millis() - timeStamp > cfg.stime * 2 * 1000) {
         timeStamp = millis();
         if (ifx_ready && sensors.isDataReady() && WiFi.isConnected() && cfg.isIfxEnable()) {
-            if (!influxDbWrite()){
-                Serial.printf("-->[E][IFDB] !! write error with config: %s@%s:%i !!\n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
-            }
-            // int ifx_retry = 0;
-            // while (!influxDbWrite() && (ifx_retry++ < IFX_RETRY_CONNECTION)) {
-            //     delay(10000);
-            // }
-            // if (ifx_retry > IFX_RETRY_CONNECTION) {
-            //     Serial.printf("-->[E][IFDB] !! write error with config: %s@%s:%i !!\n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
-            //     Serial.println("-->[E][IFDB] !! try wifi restart.. !!");
-            //     wifiRestart();
-            // } 
-            else {
+            if (influxDbWrite()){
                 if(cfg.devmode) Serial.println("-->[IFDB] write done.");
                 gui.displayDataOnIcon();
             }
+            else
+                Serial.printf("-->[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
         }
     }  
 }

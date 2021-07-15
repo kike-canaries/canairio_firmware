@@ -86,8 +86,8 @@ bool influxDbWrite() {
     influxDbParseFields();
     if(cfg.devmode) Serial.println(influx.pointToLineProtocol(sensor));
     if (!influx.writePoint(sensor)) {
-        Serial.print("Write Point failed: ");
-        Serial.println(influx.getLastErrorMessage().length());
+        Serial.print("-->[E][IFDB] Write Point failed: ");
+        Serial.println(influx.getLastErrorMessage());
         return false;
     }
     return true;
@@ -135,7 +135,6 @@ class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
     }
 };
 
-
 void otaLoop() {
     if (WiFi.isConnected()) {
         wd.pause();
@@ -163,8 +162,9 @@ void wifiConnect(const char* ssid, const char* pass) {
     WiFi.begin(ssid, pass);
     while (!WiFi.isConnected() && wifi_retry++ < WIFI_RETRY_CONNECTION) {
         Serial.print(".");
-        delay(100);  // increment this delay on possible reconnect issues
+        delay(200);  // increment this delay on possible reconnect issues
     }
+    delay(500);
     if (WiFi.isConnected()) {
         cfg.isNewWifi = false;  // flag for config via BLE
         Serial.println(" done.");

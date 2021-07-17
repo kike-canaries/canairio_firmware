@@ -306,8 +306,8 @@ String ConfigApp::getDeviceId() {
 
 String ConfigApp::getDeviceIdShort() {
     String devId = getDeviceId();
+    devId = devId.substring(13);
     devId.replace(":","");
-    devId = devId.substring(3,6);
     return devId;
 }
 

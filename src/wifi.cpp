@@ -48,7 +48,6 @@ void influxDbInit() {
         // influx = InfluxDBClient(url.c_str(),cfg.ifx.db.c_str());
         influx.setConnectionParamsV1(url.c_str(),cfg.ifx.db.c_str());
         if(cfg.devmode) Serial.printf("-->[IFDB] config: %s@%s:%i\n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
-        cfg.isNewIfxdbConfig = false;       // flag for config via BLE
         influxDbAddTags();
         if(influx.validateConnection()) {
             Serial.printf("-->[IFDB] connected to %s\n",influx.getServerUrl().c_str());

@@ -179,7 +179,6 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
         preferences.putBool("ifxEnable", true);
         preferences.end();
         setLastKeySaved("ifxdb");
-        isNewIfxdbConfig = true;
         ifxdb_enable = true;
         Serial.printf("-->[CONF] influxdb: %s@%s:%i\n",db.c_str(),ip.c_str(),pt);
         Serial.println("-->[CONF] influxdb config saved.");

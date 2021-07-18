@@ -24,8 +24,6 @@ class ConfigApp {
         uint16_t pt = 8086;
     } ifx;
 
-    bool isNewIfxdbConfig;
-
     bool isNewWifi;
 
     struct trackStatus {

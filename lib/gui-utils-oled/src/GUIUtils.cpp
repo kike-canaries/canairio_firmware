@@ -14,8 +14,7 @@ void guiTask(void* pvParameters) {
         gui.displayMainValues();
         gui.displayGUIStatusFlags();
         gui.pageEnd();
-
-        delay(1000);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
 
@@ -390,7 +389,7 @@ void GUIUtils::displayMainValues() {
 
 // TODO: separate this function, format/display
 void GUIUtils::setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
-    vTaskSuspend(xHandle);
+    // vTaskSuspend(xHandle);
     _deviceType = deviceType;
     _humi = humi;
     _temp = temp;
@@ -398,14 +397,19 @@ void GUIUtils::setSensorData(int mainValue, int chargeLevel, float humi, float t
     _average = mainValue;
     _rssi = abs(rssi);
     isNewData = true;
-    vTaskResume(xHandle);
+    // vTaskResume(xHandle);
 }
+
 void GUIUtils::setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair) {
-    vTaskSuspend(xHandle);
-    _wifiOn = wifiOn;
-    _bleOn = bleOn;
-    _blePair = blePair;
-    vTaskResume(xHandle);
+    static uint_least64_t guiTimeStamp = 0;
+    if (millis() - guiTimeStamp > 500) {
+        guiTimeStamp = millis();
+        vTaskSuspend(xHandle);
+        _wifiOn = wifiOn;
+        _bleOn = bleOn;
+        _blePair = blePair;
+        vTaskResume(xHandle);
+    }
 }
 
 void GUIUtils::displayGUIStatusFlags() {

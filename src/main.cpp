@@ -181,7 +181,7 @@ void setup() {
 void loop() {
 
     sensors.loop();  // read sensor data and showed it
-    batteryloop();   // battery charge status
+    batteryloop();   // battery charge status (deprecated)
     bleLoop();       // notify data to connected devices
     wifiLoop();      // check wifi and reconnect it
     influxDbLoop();  // influxDB publication
@@ -189,6 +189,4 @@ void loop() {
     wd.loop();       // watchdog for check loop blockers
                      // update GUI flags:
     gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
-
-    delay(500);
 }

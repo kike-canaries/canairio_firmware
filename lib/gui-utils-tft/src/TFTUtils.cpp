@@ -7,12 +7,10 @@
 void guiTask(void* pvParameters) {
     Serial.println("-->[TGUI] starting task loop");
     while (1) {
-
         gui.pageStart();
         gui.displayMainValues();
         gui.pageEnd();
-
-        delay(80);
+        vTaskDelay(80 / portTICK_PERIOD_MS);
     }
 }
 
@@ -508,11 +506,15 @@ void TFTUtils::setSensorData(int mainValue, int chargeLevel, float humi, float t
 }
 
 void TFTUtils::setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair) {
-    suspendTaskGUI();
-    _wifiOn = wifiOn;
-    _bleOn = bleOn;
-    _blePair = blePair;
-    resumeTaskGUI();
+    static uint_fast64_t gui_status_ts = 0;  // timestamp for GUI refresh
+    if ((millis() - gui_status_ts > 500)) {
+        gui_status_ts = millis();
+        suspendTaskGUI();
+        _wifiOn = wifiOn;
+        _bleOn = bleOn;
+        _blePair = blePair;
+        resumeTaskGUI();
+    }
 }
 
 void TFTUtils::displayGUIStatusFlags() {

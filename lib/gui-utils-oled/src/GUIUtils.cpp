@@ -389,7 +389,7 @@ void GUIUtils::displayMainValues() {
 
 // TODO: separate this function, format/display
 void GUIUtils::setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
-    // vTaskSuspend(xHandle);
+    vTaskSuspend(xHandle);
     _deviceType = deviceType;
     _humi = humi;
     _temp = temp;
@@ -397,7 +397,7 @@ void GUIUtils::setSensorData(int mainValue, int chargeLevel, float humi, float t
     _average = mainValue;
     _rssi = abs(rssi);
     isNewData = true;
-    // vTaskResume(xHandle);
+    vTaskResume(xHandle);
 }
 
 void GUIUtils::setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair) {

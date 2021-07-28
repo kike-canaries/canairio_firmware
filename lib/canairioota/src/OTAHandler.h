@@ -17,7 +17,7 @@ class OTAHandler {
     public:
         OTAHandler();
         void setup(const char* ESP_ID, const char* ESP_PASS);
-        void setCallbacks(OTAHandlerCallbacks* pCallbacks);
+        void setCallbacks(OTAHandlerCallbacks* pCallBacks);
         void setOnUpdateMessageCb(voidMessageCbFn cb);
         void loop();
         void checkRemoteOTA(bool notify = true);

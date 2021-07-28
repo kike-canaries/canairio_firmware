@@ -13,8 +13,7 @@ class ConfigApp {
     int stype;
     double lat;
     double lon;
-    float alt;
-    float spd;
+    String geo;
 
     String ssid;
     String pass;
@@ -25,15 +24,15 @@ class ConfigApp {
         uint16_t pt = 8086;
     } ifx;
 
-    String apiusr;
-    String apipss;
-    String apisrv;
-    String apiuri;
-    int apiprt;
-
-    bool isNewIfxdbConfig;
-    bool isNewAPIConfig;
     bool isNewWifi;
+
+    struct trackStatus {
+        float kms = 0.0;
+        float spd = 0.0;
+        int hrs = 0;
+        int min = 0;
+        int seg = 0;
+    } track;
 
     bool devmode;
 
@@ -57,15 +56,11 @@ class ConfigApp {
 
     bool saveInfluxDb(String db, String ip, int pt);
 
-    bool saveAPI(String usr, String pass, String srv, String uri, int pt);
-
-    bool saveGeo(double lat, double lon, float alt, float spd);
+    bool saveGeo(double lat, double lon, String geo);
 
     bool wifiEnable(bool enable);
 
     bool ifxdbEnable(bool enable);
-
-    bool apiEnable(bool enable);
 
     bool debugEnable(bool enable);
 
@@ -75,13 +70,13 @@ class ConfigApp {
 
     bool isIfxEnable();
 
-    bool isApiEnable();
-
     void setWifiConnected(bool connected);
 
     bool isWifiConnected();
 
     String getDeviceId();
+
+    String getDeviceIdShort();
 
     int getSensorType();
 
@@ -89,7 +84,13 @@ class ConfigApp {
 
     void reboot();
 
-    void setDebugMode(bool enable);
+    void saveBrightness(int value);
+
+    int32_t getBrightness();
+
+    void colorsInvertedEnable(bool enable);
+
+    bool getTrackStatusValues(const char *json);
 
     bool saveTempOffset(float offset);
 
@@ -104,17 +105,23 @@ class ConfigApp {
     bool wifi_enable;
     ///InfluxDB cloud publication on/off
     bool ifxdb_enable;
-    ///**deprecated** CanAirIO API on/off
-    bool api_enable;
     ///WiFi state
     bool wifi_connected;
         
     void saveString(String key, String value);
+
     void saveInt(String key, int value);
+
+    int32_t getInt(String key, int defaultValue);
+
     void saveFloat(String key, float value);
+
     void saveBool(String key, bool value);
+
     void setLastKeySaved(String key);
+
     bool saveI2COnly(bool enable);
+
     void DEBUG(const char* text, const char* textb = "");
 
     // @todo use DEBUG_ESP_PORT ?

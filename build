@@ -157,6 +157,7 @@ else
       build HELTEC
       build TTGO_TQ
       build ESP32DEVKIT
+      build TTGO_TDISPLAY
       printOutput
       ;;
 

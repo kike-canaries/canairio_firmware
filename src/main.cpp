@@ -10,20 +10,76 @@
 
 #include <Watchdog.hpp>
 #include <ConfigApp.hpp>
-#include <GUIUtils.hpp>
+#include <GUILib.hpp>
 #include <Sensors.hpp>
 #include <battery.hpp>
 #include <bluetooth.hpp>
 #include <wifi.hpp>
 
+void refreshGUIData() {
+    gui.displaySensorLiveIcon();  // all sensors read are ok
+    int deviceType = sensors.getPmDeviceTypeSelected();
+    uint16_t mainValue = 0;
+    if (deviceType <= 3) {
+        mainValue = sensors.getPM25();
+    } else {
+        mainValue = sensors.getCO2();
+    }
+
+    float humi = sensors.getHumidity();
+    if (humi == 0.0) humi = sensors.getCO2humi();
+
+    float temp = sensors.getTemperature();
+    if (temp == 0.0) temp = sensors.getCO2temp();
+
+    gui.setSensorData(
+        mainValue,
+        getChargeLevel(),
+        humi,
+        temp,
+        getWifiRSSI(),
+        deviceType);
+}
+
+class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
+    void onWifiMode(bool enable){
+        Serial.println("-->[MAIN] onWifi changed: "+String(enable));
+        cfg.wifiEnable(enable);
+        cfg.reload();
+        if (!enable) wifiStop();
+    };
+    void onBrightness(int value){
+        Serial.println("-->[MAIN] onBrightness changed: "+String(value));
+        cfg.saveBrightness(value);
+    };
+    void onColorsInverted(bool enable){
+        Serial.println("-->[MAIN] onColorsInverted changed: "+String(enable));
+        cfg.colorsInvertedEnable(enable);
+    };
+    void onSampleTime(int time){
+        if(sensors.sample_time != time) {
+            Serial.println("-->[MAIN] onSampleTime changed: "+String(time));
+            cfg.saveSampleTime(time);
+            cfg.reload();
+            bleServerConfigRefresh();
+            sensors.setSampleTime(cfg.stime);
+        } 
+    };
+    void onCalibrationReady(){
+        Serial.println("-->[MAIN] onCalibrationReady");
+        sensors.setCO2RecalibrationFactor(400);
+    };
+};
+
 /// sensors data callback
 void onSensorDataOk() {
-    gui.displaySensorLiveIcon();  // all sensors read are ok
+    log_i("[MAIN] onSensorDataOk");
+    refreshGUIData();
 }
 
 /// sensors error callback
 void onSensorDataError(const char * msg){
-    Serial.println(msg);
+    log_w("[MAIN] onSensorDataError", msg);
 }
 
 void startingSensors() {
@@ -31,15 +87,12 @@ void startingSensors() {
     gui.welcomeAddMessage("Detected sensor:");
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
-    sensors.setSampleTime(cfg.stime);               // config sensors sample time
+    sensors.setSampleTime(1);                       // sample time only for first use
     sensors.setTempOffset(cfg.toffset);             // temperature compensation
     sensors.detectI2COnly(cfg.i2conly);             // force only i2c sensors
-    sensors.setDebugMode(cfg.devmode);              // [optional] debug mode
+    sensors.setDebugMode(cfg.devmode);              // debugging mode 
     sensors.init(cfg.getSensorType());              // start all sensors and
-                                                    // try to detect configured PM sensor.
-                                                    // Sensors PM2.5 supported: Panasonic, Honeywell, Plantower and Sensirion
-                                                    // Sensors CO2 supported: Sensirion, Winsen, Cubic
-                                                    // The configured sensor is choosed on Android app.
+                                                    // The UART sensor is choosed on Android app.
                                                     // For more information about the supported sensors,
                                                     // please see the canairio_sensorlib documentation.
 
@@ -54,40 +107,6 @@ void startingSensors() {
     }
 }
 
-void displayGUI() {
-    static uint_fast64_t timeStampGUI = 0;   // timestamp for GUI refresh
-    if ((millis() - timeStampGUI > 1000)) {  // it should be minor than sensor loop
-        timeStampGUI = millis();
-
-        int deviceType = sensors.getPmDeviceTypeSelected();
-        uint16_t mainValue = 0;
-        if (deviceType <= 3){
-            mainValue = sensors.getPM25();
-        }
-        else{
-            mainValue = sensors.getCO2();
-        }
-
-        float humi = sensors.getHumidity();
-        if (humi == 0.0) humi = sensors.getCO2humi();
-
-        float temp = sensors.getTemperature();
-        if (temp == 0.0) temp = sensors.getCO2temp();
-
-        gui.pageStart();
-        gui.displaySensorAverage(mainValue, deviceType);
-        gui.displaySensorData(
-            mainValue,
-            getChargeLevel(),
-            humi,
-            temp,
-            getWifiRSSI(),
-            deviceType);
-        gui.displayStatus(WiFi.isConnected(), true, bleIsConnected());
-        gui.pageEnd();
-    }
-}
-
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
@@ -96,15 +115,18 @@ void setup() {
     Serial.begin(115200);
     delay(400);
     Serial.println("\n== CanAirIO Setup ==\n");
-    pinMode(BUILTIN_LED, OUTPUT);
-
-    // init graphic user interface
-    gui.displayInit();
-    gui.showWelcome();
 
     // init app preferences and load settings
-    // cfg.setDebugMode(true);
     cfg.init("canairio");
+
+    // init graphic user interface
+    gui.setBrightness(cfg.getBrightness());
+    gui.setWifiMode(cfg.isWifiEnable());
+    gui.setSampleTime(cfg.stime);
+    gui.displayInit();
+    gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
+    gui.showWelcome();
+
 
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC: " + cfg.deviceId);
@@ -115,6 +137,8 @@ void setup() {
 
     // init all sensors
     Serial.println("-->[INFO] Detecting sensors..");
+    pinMode(PMS_EN, OUTPUT);
+    digitalWrite(PMS_EN, HIGH);
     startingSensors();
 
     // init battery (only for some boards)
@@ -131,12 +155,9 @@ void setup() {
     gui.welcomeAddMessage("Bluetooth ready.");
 
     Serial.println("-->[INFO] InfluxDb API:\t" + String(cfg.isIfxEnable()));
-    Serial.println("-->[INFO] CanAirIO API:\t" + String(cfg.isApiEnable()));
-    gui.welcomeAddMessage("CanAirIO API:"+String(cfg.isApiEnable()));
     gui.welcomeAddMessage("InfluxDb :"+String(cfg.isIfxEnable()));
 
     influxDbInit();     // Instance DB handler
-    apiInit();          // DEPRECATED
 
     // wifi status 
     if (WiFi.isConnected())
@@ -149,18 +170,23 @@ void setup() {
     gui.welcomeAddMessage(cfg.getDeviceId());   // mac address
     gui.welcomeAddMessage("Watchdog:"+String(WATCHDOG_TIME));
     gui.welcomeAddMessage("==SETUP READY==");
-    delay(2000);
-    displayGUI();  // display main screen
+    delay(500);
+    gui.showMain();
+    refreshGUIData();
+    delay(500);
+    sensors.loop();
+    sensors.setSampleTime(cfg.stime);        // config sensors sample time (first use)
 }
 
 void loop() {
+
     sensors.loop();  // read sensor data and showed it
-    batteryloop();   // battery charge status
+    batteryloop();   // battery charge status (deprecated)
     bleLoop();       // notify data to connected devices
     wifiLoop();      // check wifi and reconnect it
-    apiLoop();       // CanAir.io API !! D E P R E C A T E D !!
     influxDbLoop();  // influxDB publication
     otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers
-    displayGUI();    // run GUI page
+                     // update GUI flags:
+    gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
 }

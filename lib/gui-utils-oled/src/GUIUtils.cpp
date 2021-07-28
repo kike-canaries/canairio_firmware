@@ -6,6 +6,30 @@
 *   D I S P L A Y  M E T H O D S
 ******************************************************************************/
 
+void guiTask(void* pvParameters) {
+    Serial.println("-->[OGUI] starting task loop");
+    while (1) {
+
+        gui.pageStart();
+        gui.displayMainValues();
+        gui.displayGUIStatusFlags();
+        gui.pageEnd();
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+}
+
+void GUIUtils::setupGUITask() {
+    taskGUIrunning = true;
+    xTaskCreatePinnedToCore(
+        guiTask,     /* Function to implement the task */
+        "tempTask ", /* Name of the task */
+        10000,       /* Stack size in words */
+        NULL,        /* Task input parameter */
+        5,           /* Priority of the task */
+        &xHandle,    /* Task handle. */
+        1);          /* Core where the task should run */
+}
+
 void GUIUtils::displayInit() {
 #ifdef WEMOSOLED  // display via i2c for WeMOS OLED board & TTGO18650
     U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
@@ -15,7 +39,7 @@ void GUIUtils::displayInit() {
     U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, 4, 5);
 #elif ESP32DEVKIT
     U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
-#else  // display via i2c for D1MINI board
+#else  // display via i2c for TTGO_T7 (old D1MINI) board
     U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
 #endif
     u8g2.setBusClock(100000);
@@ -30,7 +54,7 @@ void GUIUtils::displayInit() {
     this->u8g2 = u8g2;
     dw = u8g2.getDisplayWidth();
     dh = u8g2.getDisplayHeight();
-    Serial.println("-->[OLED] display config ready.");
+    Serial.println("-->[OGUI] display config ready.");
 }
 
 void GUIUtils::showWelcome() {
@@ -45,6 +69,10 @@ void GUIUtils::showWelcome() {
     lastDrawedLine = 10;
     // only for first screen
     u8g2.sendBuffer();
+}
+
+void GUIUtils::showMain() {
+    if(!taskGUIrunning) setupGUITask();           // init GUI thread
 }
 
 void GUIUtils::showProgress(unsigned int progress, unsigned int total) {
@@ -322,45 +350,21 @@ void GUIUtils::displaySensorAverage(int average, int deviceType) {
 #endif
 }
 
-// TODO: separate this function, format/display
-void GUIUtils::displaySensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
+void GUIUtils::displayMainValues() {
+    displaySensorAverage(_average, _deviceType);
     char output[22];
-    if (deviceType <= 4)
-        sprintf(output, "%04d E%02d H%02d%% T%02d°C", mainValue, 0, (int)humi, (int)temp);
+    if (_deviceType <= 4)
+        sprintf(output, "%04d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
     else
-        sprintf(output, "%03d E%02d H%02d%% T%02d°C", mainValue, 0, (int)humi, (int)temp);
+        sprintf(output, "%03d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
     displayBottomLine(String(output));
-#ifdef TTGO_TQ
-    u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.drawFrame(100, 0, 27, 13);
-    u8g2.drawBox(97, 4, 3, 5);
-    u8g2.setDrawColor(0);
-    u8g2.drawBox(102, 2, 24, 9);
-    u8g2.setDrawColor(1);
 
-    if (chargeLevel < 80) {
-        u8g2.setCursor(80, 12);
-    }
-    if (chargeLevel > 24) {
-        u8g2.drawBox(120, 2, 5, 9);
-    }
-    if (chargeLevel > 49) {
-        u8g2.drawBox(114, 2, 5, 9);
-    }
-    if (chargeLevel > 74) {
-        u8g2.drawBox(108, 2, 5, 9);
-    }
-    if (chargeLevel > 99) {
-        u8g2.drawBox(102, 2, 5, 9);
-        u8g2.setCursor(76, 12);
-    }
-#endif
 #ifdef EMOTICONS
 #ifndef TTGO_TQ
     u8g2.setFont(u8g2_font_4x6_tf);
     u8g2.setCursor(48, 0);
-    sprintf(output, "%04d", mainValue);
-    u8g2.print(output);
+    sprintf(output, "%04d", _mainValue);
+    // u8g2.print(output);  //TODO: it sometime fails
 #endif
 #endif
     u8g2.setFont(u8g2_font_6x12_tf);
@@ -373,22 +377,48 @@ void GUIUtils::displaySensorData(int mainValue, int chargeLevel, float humi, flo
     u8g2.setCursor(100, 13);  // valor RSSI
 #endif
 #endif
-    if (rssi == 0) {
+    if (_rssi == 0) {
         u8g2.print("   ");
     } else {
-        rssi = abs(rssi);
-        sprintf(output, "%02d", rssi);
-        u8g2.print(rssi);
+        _rssi = abs(_rssi);
+        sprintf(output, "%02d", _rssi);
+        u8g2.print(_rssi);
+    }
+    isNewData = false;
+}
+
+// TODO: separate this function, format/display
+void GUIUtils::setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
+    vTaskSuspend(xHandle);
+    _deviceType = deviceType;
+    _humi = humi;
+    _temp = temp;
+    _mainValue = mainValue;
+    _average = mainValue;
+    _rssi = abs(rssi);
+    isNewData = true;
+    vTaskResume(xHandle);
+}
+
+void GUIUtils::setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair) {
+    static uint_least64_t guiTimeStamp = 0;
+    if (millis() - guiTimeStamp > 500) {
+        guiTimeStamp = millis();
+        vTaskSuspend(xHandle);
+        _wifiOn = wifiOn;
+        _bleOn = bleOn;
+        _blePair = blePair;
+        vTaskResume(xHandle);
     }
 }
 
-void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
+void GUIUtils::displayGUIStatusFlags() {
 #ifdef TTGO_TQ
-    if (bleOn)
+    if (_bleOn)
         u8g2.drawBitmap(dw - 9, dh - 8, 1, 8, ic_bluetooth_on);
-    if (blePair)
+    if (_blePair)
         u8g2.drawBitmap(dw - 9, dh - 8, 1, 8, ic_bluetooth_pair);
-    if (wifiOn)
+    if (_wifiOn)
         u8g2.drawBitmap(dw - 18, dh - 8, 1, 8, ic_wifi_on);
     if (dataOn)
         u8g2.drawBitmap(dw - 35, dh - 8, 1, 8, ic_data_on);
@@ -398,11 +428,11 @@ void GUIUtils::displayStatus(bool wifiOn, bool bleOn, bool blePair) {
         u8g2.drawBitmap(dw - 48, dh - 8, 1, 8, ic_sensor_live);
 
 #else
-    if (bleOn)
+    if (_bleOn)
         u8g2.drawBitmap(dw - 10, dh - 8, 1, 8, ic_bluetooth_on);
-    if (blePair)
+    if (_blePair)
         u8g2.drawBitmap(dw - 10, dh - 8, 1, 8, ic_bluetooth_pair);
-    if (wifiOn)
+    if (_wifiOn)
         u8g2.drawBitmap(dw - 20, dh - 8, 1, 8, ic_wifi_on);
     if (dataOn)
         u8g2.drawBitmap(dw - 30, dh - 8, 1, 8, ic_data_on);
@@ -439,6 +469,37 @@ void GUIUtils::pageStart() {
 
 void GUIUtils::pageEnd() {
     u8g2.nextPage();
+}
+
+void GUIUtils::setBrightness(uint32_t value){
+
+}
+
+void GUIUtils::setWifiMode(bool enable){
+
+}
+
+void GUIUtils::setSampleTime(int time){
+
+}
+
+void GUIUtils::setTrackValues(float speed, float distance){
+
+}
+
+void GUIUtils::setTrackTime(int h, int m, int s){
+}
+
+void GUIUtils::suspendTaskGUI(){
+    if(taskGUIrunning) vTaskSuspend(xHandle);
+}
+
+void GUIUtils::resumeTaskGUI(){
+    if(taskGUIrunning) vTaskResume(xHandle);
+}
+
+void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
+
 }
 
 /// Firmware version from platformio.ini

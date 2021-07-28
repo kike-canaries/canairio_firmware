@@ -3,6 +3,7 @@
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharactData = NULL;
 BLECharacteristic* pCharactConfig = NULL;
+BLECharacteristic* pCharactStatus = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 
@@ -67,6 +68,8 @@ class MyServerCallbacks : public BLEServerCallbacks {
     };
 };  // BLEServerCallbacks
 
+
+// Config BLE callbacks
 class MyConfigCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
         std::string value = pCharacteristic->getValue();
@@ -74,17 +77,33 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
             if (cfg.save(value.c_str())) {
                 cfg.reload();
                 gui.displayPreferenceSaveIcon();
-                if(sensors.sample_time != cfg.stime) sensors.setSampleTime(cfg.stime);
+                if(sensors.sample_time != cfg.stime) {
+                    sensors.setSampleTime(cfg.stime);
+                    gui.setSampleTime(cfg.stime);
+                }
                 if(sensors.toffset != cfg.toffset) sensors.setTempOffset(cfg.toffset);
                 if(sensors.devmode != cfg.devmode) sensors.setDebugMode(cfg.devmode);
-                if (cfg.isNewIfxdbConfig) influxDbInit();
-                if (cfg.isNewAPIConfig) apiInit();
                 if (!cfg.isWifiEnable()) wifiStop();
             }
             else{
                 Serial.println("-->[E][BTLE][CONFIG] saving error!");
             }
             bleServerConfigRefresh();
+        }
+    }
+};
+
+// Status BLE callbacks
+class MyStatusCallbacks : public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic* pCharacteristic) {
+        std::string value = pCharacteristic->getValue();
+        if (value.length() > 0 && cfg.getTrackStatusValues(value.c_str())) {
+            log_v("-->[E][BTLE][STATUS] "+String(value.c_str()));
+            gui.setTrackValues(cfg.track.spd,cfg.track.kms);
+            gui.setTrackTime(cfg.track.hrs,cfg.track.min,cfg.track.seg);
+        }
+        else {
+            Serial.println("-->[E][BTLE][STATUS] write error!");
         }
     }
 };
@@ -105,10 +124,16 @@ void bleServerInit() {
     pCharactConfig = pService->createCharacteristic(
         CHARAC_CONFIG_UUID,
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+    // Create a BLE Characteristic for Sensor mode: STATIC/MOVIL
+    pCharactStatus = pService->createCharacteristic(
+        CHARAC_STATUS_UUID,
+        BLECharacteristic::PROPERTY_WRITE);
     // Create a Data Descriptor (for notifications)
     pCharactData->addDescriptor(new BLE2902());
-    // Setting Config callback
+    // Config callback
     pCharactConfig->setCallbacks(new MyConfigCallbacks());
+    // Status callback
+    pCharactStatus->setCallbacks(new MyStatusCallbacks());
     // Set callback data:
     bleServerConfigRefresh();
     bleServerDataRefresh();
@@ -122,7 +147,7 @@ void bleServerInit() {
 void bleLoop() {
     static uint_fast64_t bleTimeStamp = 0;
     // notify changed value
-    if (deviceConnected && sensors.isDataReady() && (millis() - bleTimeStamp > 5000)) {  // each 5 secs
+    if (deviceConnected && (millis() - bleTimeStamp > cfg.stime * 1000)) {  // each 5 secs
         log_i("[BTLE] sending notification..");
         log_d("[BTLE] %s",getNotificationData().c_str());
         log_d("[BTLE] sending config data..");

@@ -54,6 +54,7 @@ espota.py
 esptool.py
 md5output.txt
 releases/manifest
+releases/installer/rev*
 
 # IDE
 .travis.yml

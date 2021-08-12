@@ -67,7 +67,7 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     };
     void onCalibrationReady(){
         Serial.println("-->[MAIN] onCalibrationReady");
-        sensors.setCO2RecalibrationFactor(416);
+        sensors.setCO2RecalibrationFactor(418);   // ==> Calibration factor on outdoors
     };
 };
 

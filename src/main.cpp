@@ -158,12 +158,9 @@ void setup() {
     gui.welcomeAddMessage("Bluetooth ready.");
 
     Serial.println("-->[INFO] InfluxDb API:\t" + String(cfg.isIfxEnable()));
-    Serial.println("-->[INFO] CanAirIO API:\t" + String(cfg.isApiEnable()));
-    gui.welcomeAddMessage("CanAirIO API:"+String(cfg.isApiEnable()));
     gui.welcomeAddMessage("InfluxDb :"+String(cfg.isIfxEnable()));
 
     influxDbInit();     // Instance DB handler
-    apiInit();          // DEPRECATED
 
     // wifi status 
     if (WiFi.isConnected())
@@ -187,16 +184,13 @@ void setup() {
 void loop() {
 
     sensors.loop();  // read sensor data and showed it
-    batteryloop();   // battery charge status
+    batteryloop();   // battery charge status (deprecated)
     bleLoop();       // notify data to connected devices
     wifiLoop();      // check wifi and reconnect it
     snifferLoop();   // pax counter calc
-    apiLoop();       // CanAir.io API !! D E P R E C A T E D !!
     influxDbLoop();  // influxDB publication
     otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers
                      // update GUI flags:
     gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
-
-    delay(500);
 }

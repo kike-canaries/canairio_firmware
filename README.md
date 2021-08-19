@@ -49,13 +49,11 @@ cd canairio_installer
 ./install.sh canairio_TTGO_T7_rev605_20200925.bin
 ```
 
-For more options run `./canairio_installer help`.  
-
 **Note**: you need python2 or python3 with pyserial in your system.
 
 ### OTA alternative
 
-After that you will able to send OTA updates to any board supported, like this:
+After USB binary installation, you will able to send OTA updates to any board supported, like this:
 
 ``` bash
 ./install.sh ota canairio_d1mini_rev414_20190829.bin
@@ -67,6 +65,9 @@ Also you can specify the IP address:
 ./install.sh ota canairio_xxx.bin 192.168.1.10
 ```
 
+More details and options of `CanAirIO Installer` [here](https://github.com/kike-canaries/canairio_firmware/tree/master/releases/installer/canairio_installer#readme)
+
+
 ## Via binaries (Windows)
 
 Please read the [Espressif Uploader](https://canair.io/docs/firmware_upload.html#espressif-uploader) section in the main documentation for details to load the firmware via the oficial **Espressif Download Tool** in Windows.
@@ -76,37 +77,21 @@ Please read the [Espressif Uploader](https://canair.io/docs/firmware_upload.html
 
 Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
 
-For **default** board `TTGO_T7`, clone and upload firmware via USB cable:
+For the **default** board `TTGO_TDISPLAY` (CanAirIO Bike), clone and upload firmware via USB cable:
 
 ``` bash
-git clone https://github.com/kike-canaries/esp32-hpma115s0.git
-cd esp32-hpma115s0
+git clone https://github.com/kike-canaries/canairio_firmware
+cd canairio_firmware
+pio run --target upload
+```
+
+For a specific firmware for example for a TTGO-T7 board, only change the last line for:
+
+``` bash
 pio run -e TTGO_T7 --target upload
 ```
 
-After that, it able for sending updates via OTA protocol using Wifi in your LAN, is more fastest than USB and you can disconnect your board, but `you need first save Wifi credentials` via Android CanAirIO app [see below](#settings).
-
-For **local OTA updates** you only run
-
-``` bash
-pio run -e TTGO_T7_OTA --target upload
-```
-
-Also you can specify the IP address on `platformio.ini` config file
-
-**Optional** for other board, please select the right environment for example for `wemos` board:
-
-``` bash
-pio run -e WEMOSOLED --target upload
-```
-
-Also you can change in `platformio.ini` the next parameters:
-
--D CORE_DEBUG_LEVEL=0, set to 3 for get more verbose log.  
--D EMOTICONS, comment or uncomment for enable emoticons.  
-upload_port, in OTA section is for set to CanAirIO device IP address.
-
-#### Building Installer
+### Building Installer
 
 You can build `CanAirIO Installer` zip package with all binaries of all board flavors running the next command:
 
@@ -117,30 +102,30 @@ You can build `CanAirIO Installer` zip package with all binaries of all board fl
 The directory output is in: `releases/installer`  
 Also the binaries flavors directory: `releases/binaries/`
 
-### Troubleshooting
+More details and options of `CanAirIO Installer` [here](https://github.com/kike-canaries/canairio_firmware/tree/master/releases/installer/canairio_installer#readme)
 
+
+### Troubleshooting
 
 If you have some issues with Bluetooth library internals, or libraries issues, please upgrade all frameworks and tools on PlatformIO:
 
 ``` bash
 pio update
 sudo pio upgrade
-pio run -t clean
-rm -rf .pio
 pio lib update
-pio run --target upload
 ```
 
-If you want clear all ESP32 preferences and flash variables, please execute before:
+And maybe clean all caches:
+
+``` bash
+pio run -t clean
+rm -rf .pio
+```
+
+If you want clear all ESP32 preferences and flash variables in your board, please execute before:
 
 ```bash
 ./install.sh erase /dev/ttyUSB0
-```
-
-Also you can do it with esptool:
-
-```bash
-./esptool.py --port /dev/ttyUSB0 erase_flash
 ```
 
 # Supporting the project
@@ -167,12 +152,20 @@ Also you can consider make a donation, be a patron or buy a device:
 
 **NOTE:**  Supporting our Citizen Science Initiative many people be able to fight for air quality rights in many countries with this kind of problems. More info in [CanAir.IO](https://canair.io)
 
-For our supporters, patrons or donors, we will send the files for our coming version:
+For our supporters, patrons or donors, we will send the preview versions of our coming versions:
 
 ## CanAirIO CO2 and CanAirIO Mini box
 
 ![CanAirIO CO2 and Mini](https://canair.io/docs/images/canairio_bike_co2_mini.jpg)
-## TODO
+
+
+# CanAirIO device HOWTO guide
+
+We have some build guides with different alternatives, please visit our [CanAirIO documentation](https://canair.io/docs).
+
+<a href="https://canair.io/docs" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage.jpg" height="400" ></a>
+
+# TODO
 
 - [X] Enable/Disable APIs from App
 - [X] Locatitation settings via Bluetooth
@@ -182,14 +175,6 @@ For our supporters, patrons or donors, we will send the files for our coming ver
 - [X] OTA updates (LAN and WAN) (dev/prod, see releases for details) 
 - [x] Multiple variables in chart (C02,PM2.5,Hum,Temp,etc)
 - [x] Map of each recorded track in details
-- [ ] InfluxDB schema (by countries)
+- [x] InfluxDB schema (by geohashes)
 - [ ] Anonymous authentication
-
----
-
-## CanAirIO device HOWTO guide
-
-We have some build guides with different alternatives, please visit our [CanAirIO documentation](https://canair.io/docs).
-
-<a href="https://canair.io/docs" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage.jpg" height="400" ></a>
 

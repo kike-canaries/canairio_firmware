@@ -71,6 +71,13 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     };
 };
 
+class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
+    void onCO2Calibration () {
+        Serial.println("-->[MAIN] onRemoteConfig CO2 Calibration");
+        sensors.setCO2RecalibrationFactor(418);   // ==> Calibration factor on outdoors
+    };
+};
+
 /// sensors data callback
 void onSensorDataOk() {
     log_i("[MAIN] onSensorDataOk");
@@ -140,6 +147,8 @@ void setup() {
     pinMode(PMS_EN, OUTPUT);
     digitalWrite(PMS_EN, HIGH);
     startingSensors();
+    // Setting callback for remote commands via Bluetooth config
+    cfg.setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());
 
     // init battery (only for some boards)
     batteryInit();

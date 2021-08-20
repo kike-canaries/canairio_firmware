@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include <Preferences.h>
 
+class RemoteConfigCallbacks;
 class ConfigApp {
    public:
     uint64_t chipid;
@@ -94,6 +95,8 @@ class ConfigApp {
 
     bool saveTempOffset(float offset);
 
+    void setRemoteConfigCallbacks(RemoteConfigCallbacks* pCallbacks);
+
    private:
     ///preferences main key
     char* _app_name;
@@ -107,6 +110,8 @@ class ConfigApp {
     bool ifxdb_enable;
     ///WiFi state
     bool wifi_connected;
+
+    RemoteConfigCallbacks* mRemoteConfigCallBacks = nullptr;
         
     void saveString(String key, String value);
 
@@ -122,6 +127,8 @@ class ConfigApp {
 
     bool saveI2COnly(bool enable);
 
+    void performCO2Calibration();
+
     void DEBUG(const char* text, const char* textb = "");
 
     // @todo use DEBUG_ESP_PORT ?
@@ -130,6 +137,12 @@ class ConfigApp {
 #else
     Stream& _debugPort = Serial;  // debug output stream ref
 #endif
+};
+
+class RemoteConfigCallbacks {
+public:
+    virtual ~RemoteConfigCallbacks () {};
+    virtual void onCO2Calibration();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_CFGHANDLER)

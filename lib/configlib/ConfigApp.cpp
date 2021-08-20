@@ -269,6 +269,7 @@ bool ConfigApp::save(const char *json) {
         if (act.equals("i2c")) return saveI2COnly(doc["i2conly"].as<bool>());
         if (act.equals("rbt")) reboot();
         if (act.equals("cls")) clear();
+        if (act.equals("clb")) performCO2Calibration();
         return true;
     } else {
         Serial.println("-->[E][CONF] invalid config file!");
@@ -340,6 +341,10 @@ void ConfigApp::reboot() {
     ESP.restart();
 }
 
+void ConfigApp::performCO2Calibration() {
+    if(mRemoteConfigCallBacks!=nullptr) this->mRemoteConfigCallBacks->onCO2Calibration();
+}
+
 void ConfigApp::saveBrightness(int value){
     saveInt("bright",value);
 }
@@ -361,6 +366,10 @@ void ConfigApp::DEBUG(const char *text, const char *textb) {
         }
         _debugPort.println();
     }
+}
+
+void ConfigApp::setRemoteConfigCallbacks(RemoteConfigCallbacks* pCallbacks){
+    mRemoteConfigCallBacks = pCallbacks;
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_CFGHANDLER)

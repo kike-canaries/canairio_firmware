@@ -40,6 +40,8 @@ class ConfigApp {
     bool i2conly;
 
     float toffset = 0.0;
+    
+    float altoffset = 0.0;
 
     void init(const char app_name[]);
 
@@ -94,6 +96,8 @@ class ConfigApp {
     bool getTrackStatusValues(const char *json);
 
     bool saveTempOffset(float offset);
+
+    bool saveAltitudeOffset(float offset);
 
     void setRemoteConfigCallbacks(RemoteConfigCallbacks* pCallbacks);
 

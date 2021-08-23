@@ -95,7 +95,8 @@ void startingSensors() {
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
     sensors.setSampleTime(1);                       // sample time only for first use
-    sensors.setTempOffset(cfg.toffset);             // temperature compensation
+    sensors.setTempOffset(cfg.toffset);                // temperature compensation
+    sensors.setCO2AltitudeCompensation(cfg.altoffset); // CO2 altitude compensation
     sensors.detectI2COnly(cfg.i2conly);             // force only i2c sensors
     sensors.setDebugMode(cfg.devmode);              // debugging mode 
     sensors.init(cfg.getSensorType());              // start all sensors and

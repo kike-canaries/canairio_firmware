@@ -181,8 +181,7 @@ void wifiConnect(const char* ssid, const char* pass) {
     if (WiFi.isConnected()) {
         cfg.isNewWifi = false;  // flag for config via BLE
         Serial.println(" done.");
-        Serial.println("-->[WIFI] connected!");
-        Serial.print("-->[WIFI] ");
+        Serial.print("-->[WIFI] IP: ");
         Serial.println(WiFi.localIP());
         Serial.println("-->[WIFI] publish interval: "+String(cfg.stime * 2)+" sec.");
         wd.pause();

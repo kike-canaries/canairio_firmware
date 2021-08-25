@@ -33,6 +33,7 @@ void ConfigApp::reload() {
     stime = preferences.getInt("stime", 5);
     stype = preferences.getInt("stype", 0);
     toffset = preferences.getFloat("toffset", 0.0);
+    altoffset = preferences.getFloat("altoffset", 0.0);
     devmode = preferences.getBool("debugEnable", false);
     i2conly = preferences.getBool("i2conly", false);
 
@@ -44,7 +45,7 @@ String ConfigApp::getCurrentConfig() {
     preferences.begin(_app_name, false);
     doc["dname"] = preferences.getString("dname", "");       // device or station name
     doc["stime"] = preferences.getInt("stime", 5);           // sensor measure time
-    doc["stype"] = preferences.getInt("stype", 0);          // sensor type { Honeywell, Panasonic, Sensirion };
+    doc["stype"] = preferences.getInt("stype", 0);           // sensor type { Honeywell, Panasonic, Sensirion };
     doc["wenb"] = preferences.getBool("wifiEnable", false);  // wifi on/off
     doc["ssid"] = preferences.getString("ssid", "");         // influxdb database name
     doc["ienb"] = preferences.getBool("ifxEnable", false);   // ifxdb on/off
@@ -54,7 +55,8 @@ String ConfigApp::getCurrentConfig() {
     doc["geo"] = preferences.getString("geo", "");           // influxdb GeoHash tag
     doc["denb"] = preferences.getBool("debugEnable", false); // debug mode enable
     doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
-    doc["toffset"] = preferences.getFloat("toffset", 0.0);      // temperature offset
+    doc["toffset"] = preferences.getFloat("toffset", 0.0);   // temperature offset
+    doc["altoffset"] = preferences.getFloat("altoffset",0.0);// altitude offset
     doc["lskey"] = lastKeySaved;                             // last key saved
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
     doc["wsta"] = wifi_connected;                            // current wifi state 
@@ -148,6 +150,13 @@ int ConfigApp::getSensorType(){
 bool ConfigApp::saveTempOffset(float offset) {
     saveFloat("toffset", offset);
     Serial.print("-->[CONF] sensor temperature offset: ");
+    Serial.println(offset);
+    return true;
+}
+
+bool ConfigApp::saveAltitudeOffset(float offset) {
+    saveFloat("altoffset", offset);
+    Serial.print("-->[CONF] sensor altitude offset: ");
     Serial.println(offset);
     return true;
 }
@@ -259,6 +268,7 @@ bool ConfigApp::save(const char *json) {
     if (doc.containsKey("ssid")) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
     if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
     if (doc.containsKey("toffset")) return saveTempOffset(doc["toffset"].as<float>());
+    if (doc.containsKey("altoffset")) return saveAltitudeOffset(doc["altoffset"].as<float>());
     
 
     // some actions with chopid validation (for security reasons)
@@ -269,6 +279,7 @@ bool ConfigApp::save(const char *json) {
         if (act.equals("i2c")) return saveI2COnly(doc["i2conly"].as<bool>());
         if (act.equals("rbt")) reboot();
         if (act.equals("cls")) clear();
+        if (act.equals("clb")) performCO2Calibration();
         return true;
     } else {
         Serial.println("-->[E][CONF] invalid config file!");
@@ -340,6 +351,10 @@ void ConfigApp::reboot() {
     ESP.restart();
 }
 
+void ConfigApp::performCO2Calibration() {
+    if(mRemoteConfigCallBacks!=nullptr) this->mRemoteConfigCallBacks->onCO2Calibration();
+}
+
 void ConfigApp::saveBrightness(int value){
     saveInt("bright",value);
 }
@@ -361,6 +376,10 @@ void ConfigApp::DEBUG(const char *text, const char *textb) {
         }
         _debugPort.println();
     }
+}
+
+void ConfigApp::setRemoteConfigCallbacks(RemoteConfigCallbacks* pCallbacks){
+    mRemoteConfigCallBacks = pCallbacks;
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_CFGHANDLER)

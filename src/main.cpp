@@ -71,6 +71,13 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     };
 };
 
+class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
+    void onCO2Calibration () {
+        Serial.println("-->[MAIN] onRemoteConfig CO2 Calibration");
+        sensors.setCO2RecalibrationFactor(418);   // ==> Calibration factor on outdoors
+    };
+};
+
 /// sensors data callback
 void onSensorDataOk() {
     log_i("[MAIN] onSensorDataOk");
@@ -89,6 +96,7 @@ void startingSensors() {
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
     sensors.setSampleTime(1);                       // sample time only for first use
     sensors.setTempOffset(cfg.toffset);             // temperature compensation
+    sensors.setCO2AltitudeOffset(cfg.altoffset);    // CO2 altitude compensation
     sensors.detectI2COnly(cfg.i2conly);             // force only i2c sensors
     sensors.setDebugMode(cfg.devmode);              // debugging mode 
     sensors.init(cfg.getSensorType());              // start all sensors and
@@ -140,6 +148,8 @@ void setup() {
     pinMode(PMS_EN, OUTPUT);
     digitalWrite(PMS_EN, HIGH);
     startingSensors();
+    // Setting callback for remote commands via Bluetooth config
+    cfg.setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());
 
     // init battery (only for some boards)
     batteryInit();

@@ -46,8 +46,7 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
     
     esp32FOTA.checkURL = "http://influxdb.canair.io:8080/releases/" + String(TARGET) + "/firmware_" + String(FLAVOR) + ".json";
     
-    Serial.println("-->[INFO] OTA ready on: ");
-    Serial.print("-->[INFO] ");
+    Serial.print("-->[INFO] OTA on: ");
     Serial.print(ESP_ID);
     Serial.print(".local with passw: ");
     Serial.println(ESP_PASS);

@@ -76,6 +76,11 @@ class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
         Serial.println("-->[MAIN] onRemoteConfig CO2 Calibration");
         sensors.setCO2RecalibrationFactor(418);   // ==> Calibration factor on outdoors
     };
+
+    void onAltitudeOffset (float altitude) {
+        Serial.println("-->[MAIN] onRemoteConfig new Altitude Offset");
+        sensors.setCO2AltitudeOffset(altitude);
+    };
 };
 
 /// sensors data callback
@@ -183,7 +188,7 @@ void setup() {
     delay(500);
     gui.showMain();
     refreshGUIData();
-    delay(500);
+    delay(600);
     sensors.loop();
     sensors.setSampleTime(cfg.stime);        // config sensors sample time (first use)
 }

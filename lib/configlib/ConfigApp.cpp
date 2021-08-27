@@ -158,6 +158,7 @@ bool ConfigApp::saveAltitudeOffset(float offset) {
     saveFloat("altoffset", offset);
     Serial.print("-->[CONF] sensor altitude offset: ");
     Serial.println(offset);
+    if(mRemoteConfigCallBacks!=nullptr) this->mRemoteConfigCallBacks->onAltitudeOffset(offset);
     return true;
 }
 

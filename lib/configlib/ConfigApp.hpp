@@ -147,6 +147,7 @@ class RemoteConfigCallbacks {
 public:
     virtual ~RemoteConfigCallbacks () {};
     virtual void onCO2Calibration();
+    virtual void onAltitudeOffset(float altitude);
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_CFGHANDLER)

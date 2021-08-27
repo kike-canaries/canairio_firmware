@@ -76,6 +76,11 @@ class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
         Serial.println("-->[MAIN] onRemoteConfig CO2 Calibration");
         sensors.setCO2RecalibrationFactor(418);   // ==> Calibration factor on outdoors
     };
+
+    void onAltitudeOffset (float altitude) {
+        Serial.println("-->[MAIN] onRemoteConfig new Altitude Offset");
+        sensors.setCO2AltitudeOffset(altitude);
+    };
 };
 
 /// sensors data callback

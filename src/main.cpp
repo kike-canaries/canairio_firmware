@@ -188,7 +188,7 @@ void setup() {
     delay(500);
     gui.showMain();
     refreshGUIData();
-    delay(500);
+    delay(600);
     sensors.loop();
     sensors.setSampleTime(cfg.stime);        // config sensors sample time (first use)
 }

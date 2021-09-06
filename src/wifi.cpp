@@ -88,7 +88,7 @@ void influxDbParseFields() {
 
 bool influxDbWrite() {
     influxDbParseFields();
-    if(cfg.devmode) Serial.println(influx.pointToLineProtocol(sensor));
+    log_d("[IFDB] %s",influx.pointToLineProtocol(sensor).c_str());
     if (!influx.writePoint(sensor)) {
         Serial.print("-->[E][IFDB] Write Point failed: ");
         Serial.println(influx.getLastErrorMessage());
@@ -229,15 +229,17 @@ int getWifiRSSI() {
     else return 0;
 }
 
+/******************************************************************************
+*   P A X   C O U N T E R  
+******************************************************************************/
+
 unsigned int channel;
+uint_fast16_t pax_count;
+vector<MACPool> listOfMAC;
 
 const wifi_promiscuous_filter_t filt={
     .filter_mask=WIFI_PROMIS_FILTER_MASK_MGMT|WIFI_PROMIS_FILTER_MASK_DATA
 };
-
-vector<MACPool> listOfMAC;
-
-uint_fast16_t pax_count;
 
 typedef struct {
   uint8_t mac[6];
@@ -287,10 +289,8 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
       }
 
       // new MAC
-
       listOfMAC.push_back(MACPool(sourceMac,signal,millis(),true));
-
-      //Serial.println(listOfMAC[listOfMAC.size()-1].getMAC());
+      log_d("[WIFI] %s",listOfMAC[listOfMAC.size()-1].getMAC().c_str());
 
       // purge outdated MACs
       for (auto it = listOfMAC.begin(); it != listOfMAC.end(); ) {
@@ -302,44 +302,34 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
       }
 
       pax_count = listOfMAC.size();
-
-    //   // update the risk index
-
-    //   int recentLowSingal = 0;
-    //   int recentHighSingal = 0;
-    //   for (int i = 0; i < listOfMAC.size(); i++) {
-    //       if (millis()-listOfMAC[i].getTime() < 30000 && listOfMAC[i].getNewMAC()==true) {
-    //           if (listOfMAC[i].getSignal() < -60) { recentLowSingal++; } else { recentHighSingal++; }
-    //       }
-    //       // new low and high signals from last 30sec
-    //   }
-      
+      if(cfg.devmode) Serial.printf("-->[WIFI] new PAX count: %d\n",pax_count);
     }
 }
 
-void snifferLoop(){
-    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    esp_wifi_init(&cfg);
-    //Serial.println("Enable WiFi");
-    // set WiFi in promiscuous mode
-    //esp_wifi_set_mode(WIFI_MODE_STA);            // Promiscuous works only with station mode
-    esp_wifi_set_mode(WIFI_MODE_NULL);
-    // power save options
-    esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
-    esp_wifi_set_storage(WIFI_STORAGE_RAM);
-    esp_wifi_start();
-    esp_wifi_set_max_tx_power(-4);
-    esp_wifi_set_promiscuous(true);
-    esp_wifi_set_promiscuous_filter(&filt);
-    esp_wifi_set_promiscuous_rx_cb(&sniffer);  // Set up promiscuous callback
-    esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
-    // for (int loops = 0; loops < 10; loops++) {
-    //     drawProgressBar(0,TFT_HEIGHT/2, TFT_WIDTH, 10, (loops+1)*10, TFT_WHITE, TFT_BLUE);
+void snifferLoop() {
+    if (cfg.isWifiEnable()) return;                                    // PAX counter only should works with WiFi Off
+    static uint32_t snifferTimeStamp = 0;                              // timestamp for sensor loop check data
+    if ((millis() - snifferTimeStamp > cfg.stime * (uint32_t)1000)) {  // sample time for each capture
+        snifferTimeStamp = millis();
+        wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+        esp_wifi_init(&cfg);
+        //set WiFi in promiscuous mode
+        //esp_wifi_set_mode(WIFI_MODE_STA);            // Promiscuous works only with station mode
+        esp_wifi_set_mode(WIFI_MODE_NULL);
+        // power save options
+        esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
+        esp_wifi_set_storage(WIFI_STORAGE_RAM);
+        esp_wifi_start();
+        esp_wifi_set_max_tx_power(-4);
+        esp_wifi_set_promiscuous(true);
+        esp_wifi_set_promiscuous_filter(&filt);
+        esp_wifi_set_promiscuous_rx_cb(&sniffer);      // Set up promiscuous callback
+        esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
         for (channel = 0; channel < 12; channel++) {
             esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
             delay(50);
         }
-    // }
+    }
 }
 
 uint16_t getPaxCount(){

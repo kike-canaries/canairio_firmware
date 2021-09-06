@@ -20,6 +20,7 @@ void refreshGUIData() {
     gui.displaySensorLiveIcon();  // all sensors read are ok
     int deviceType = sensors.getPmDeviceTypeSelected();
     uint16_t mainValue = 0;
+
     if (deviceType == -1) {
         mainValue = getPaxCount();
     } else if (deviceType <= 3) {
@@ -202,7 +203,7 @@ void loop() {
     batteryloop();   // battery charge status (deprecated)
     bleLoop();       // notify data to connected devices
     wifiLoop();      // check wifi and reconnect it
-    snifferLoop();   // pax counter calc
+    snifferLoop();   // pax counter calc (only when WiFi is Off)
     influxDbLoop();  // influxDB publication
     otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers

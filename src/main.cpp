@@ -94,7 +94,7 @@ void onSensorDataOk() {
 
 /// sensors error callback
 void onSensorDataError(const char * msg){
-    log_w("[MAIN] onSensorDataError", msg);
+    log_w("[MAIN] onSensorDataError %s", msg);
     refreshGUIData();
 }
 

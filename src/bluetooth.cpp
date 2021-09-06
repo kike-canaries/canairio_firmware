@@ -43,6 +43,7 @@ String getSensorData() {
     doc["hum"] = sensors.getHumidity();
     doc["alt"] = sensors.getAltitude();
     doc["pre"] = sensors.getPressure();
+    doc["PAX"] = getPaxCount();
     doc["dsl"] = sensors.getPmDeviceSelected();
     String json;
     serializeJson(doc, json);

@@ -467,8 +467,11 @@ void TFTUtils::displayMainValues(){
             sprintf(output, "%04d", _mainValue);
             displayCenterBig(output);
 
-            if (_deviceType <= 3)
+
+            if (_deviceType == -1)
                 displayMainUnit("PAX");
+            if (_deviceType <= 3)
+                displayMainUnit("PM2.5");
             else
                 displayMainUnit("PPM");
         } 

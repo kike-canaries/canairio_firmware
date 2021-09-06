@@ -29,11 +29,7 @@ String getSensorData() {
     int deviceType = sensors.getPmDeviceTypeSelected();
     
     doc["P1"] = sensors.getPM1();
-    if(deviceType == -1)
-        doc["P25"] = getPaxCount();
-    else
-        doc["P25"] = sensors.getPM25();
-
+    doc["P25"] = sensors.getPM25();
     doc["P4"] = sensors.getPM4();
     doc["P10"] = sensors.getPM10();
     doc["CO2"] = sensors.getCO2();

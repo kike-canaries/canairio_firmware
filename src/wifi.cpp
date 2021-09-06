@@ -307,7 +307,7 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
 }
 
 void snifferLoop() {
-    if (cfg.isWifiEnable()) return;                                    // PAX counter only should works with WiFi Off
+    if (cfg.isWifiEnable()) return;                                    // PAX counter only start when the WiFi Off
     static uint32_t snifferTimeStamp = 0;                              // timestamp for sensor loop check data
     if ((millis() - snifferTimeStamp > cfg.stime * (uint32_t)1000)) {  // sample time for each capture
         snifferTimeStamp = millis();

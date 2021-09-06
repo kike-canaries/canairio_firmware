@@ -26,7 +26,6 @@ String getNotificationData() {
 
 String getSensorData() {
     StaticJsonDocument<512> doc;
-    int deviceType = sensors.getPmDeviceTypeSelected();
     
     doc["P1"] = sensors.getPM1();
     doc["P25"] = sensors.getPM25();

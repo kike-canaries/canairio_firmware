@@ -151,7 +151,9 @@ void GUIUtils::displayCenterBig(String msg, int deviceType) {
     u8g2.print(msg.c_str());
     u8g2.setCursor(94, 34);
     u8g2.setFont(u8g2_font_6x13_tf);
-    if (deviceType <= 3)
+    if (deviceType == -1)
+        u8g2.print("PAX");
+    else if (deviceType == 3)
         u8g2.print("ug/m3");
     else
         u8g2.print("ppm");

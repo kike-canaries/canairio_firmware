@@ -9,8 +9,8 @@
 void guiTask(void* pvParameters) {
     Serial.println("-->[OGUI] starting task loop");
     while (1) {
-
         gui.pageStart();
+        Serial.println("MARK");
         gui.displayMainValues();
         gui.displayGUIStatusFlags();
         gui.pageEnd();
@@ -115,7 +115,7 @@ void GUIUtils::welcomeRepeatMessage(String msg) {
     welcomeAddMessage(msg);
 }
 
-void GUIUtils::displayCenterBig(String msg, int deviceType) {
+void GUIUtils::displayCenterBig(String msg) {
 #ifndef EMOTICONS
 #ifdef TTGO_TQ
     u8g2.setCursor(0, 1);
@@ -132,7 +132,7 @@ void GUIUtils::displayCenterBig(String msg, int deviceType) {
     u8g2.print(msg.c_str());
 #else
     if (dw > 64) {
-        if (deviceType <= 3) {  // PM
+        if (_deviceType <= 3) {  // PM
             u8g2.setCursor(dw - 64, 6);
             u8g2.setFont(u8g2_font_inb24_mn);
         } else {  // CO2
@@ -140,7 +140,7 @@ void GUIUtils::displayCenterBig(String msg, int deviceType) {
             u8g2.setFont(u8g2_font_inb19_mn);
         }
     } else {
-        if (deviceType <= 3) {  // PM
+        if (_deviceType <= 3) {  // PM
             u8g2.setCursor(dw - 28, 7);
             u8g2.setFont(u8g2_font_9x18B_tf);
         } else {  // CO2
@@ -151,9 +151,9 @@ void GUIUtils::displayCenterBig(String msg, int deviceType) {
     u8g2.print(msg.c_str());
     u8g2.setCursor(94, 34);
     u8g2.setFont(u8g2_font_6x13_tf);
-    if (deviceType == -1)
+    if (_deviceType == -1)
         u8g2.print("PAX");
-    else if (deviceType == 3)
+    else if (_deviceType == 3)
         u8g2.print("ug/m3");
     else
         u8g2.print("ppm");
@@ -210,7 +210,7 @@ void GUIUtils::displayBigLabel(int cursor, String msg) {
 #endif
 }
 
-void GUIUtils::displaySensorAverage(int average, int deviceType) {
+void GUIUtils::displaySensorAverage(int average) {
 #ifndef EMOTICONS
 #ifdef TTGO_TQ
     if (average < 13) {
@@ -228,7 +228,7 @@ void GUIUtils::displaySensorAverage(int average, int deviceType) {
     }
 #endif
 #else
-    if (deviceType <= 3) {  //PM sensors
+    if (_deviceType <= 3) {  //PM sensors
         if (average < 13) {
 #ifdef TTGO_TQ
             u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
@@ -292,7 +292,7 @@ void GUIUtils::displaySensorAverage(int average, int deviceType) {
         }
         char output[4];
         sprintf(output, "%03d", average);
-        displayCenterBig(output, deviceType);
+        displayCenterBig(output);
     } else {  //PM sensors
         if (average < 600) {
 #ifdef TTGO_TQ
@@ -347,14 +347,14 @@ void GUIUtils::displaySensorAverage(int average, int deviceType) {
         }
         char output[4];
         sprintf(output, "%04d", average);
-        displayCenterBig(output, deviceType);
+        displayCenterBig(output);
     }
 #endif
 }
 
 void GUIUtils::displayMainValues() {
-    displaySensorAverage(_average, _deviceType);
-    char output[22];
+    displaySensorAverage(_average);
+    char output[50];
     if (_deviceType <= 4)
         sprintf(output, "%04d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
     else

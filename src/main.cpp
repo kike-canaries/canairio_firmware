@@ -34,7 +34,7 @@ void refreshGUIData() {
 
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();
-
+    
     gui.setSensorData(
         mainValue,
         getChargeLevel(),

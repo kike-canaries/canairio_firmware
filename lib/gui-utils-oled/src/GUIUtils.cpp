@@ -10,7 +10,6 @@ void guiTask(void* pvParameters) {
     Serial.println("-->[OGUI] starting task loop");
     while (1) {
         gui.pageStart();
-        Serial.println("MARK");
         gui.displayMainValues();
         gui.displayGUIStatusFlags();
         gui.pageEnd();
@@ -65,13 +64,14 @@ void GUIUtils::showWelcome() {
     u8g2.setFont(u8g2_font_4x6_tf);
     u8g2.drawStr(dw - 18, 1, getFirmwareVersionCode().c_str());
     u8g2.drawLine(0, 9, dw - 1, 9);
-    u8g2.sendBuffer();
     lastDrawedLine = 10;
     // only for first screen
     u8g2.sendBuffer();
 }
 
 void GUIUtils::showMain() {
+    u8g2.clearBuffer();
+    u8g2.sendBuffer();
     if(!taskGUIrunning) setupGUITask();           // init GUI thread
 }
 
@@ -391,7 +391,7 @@ void GUIUtils::displayMainValues() {
 
 // TODO: separate this function, format/display
 void GUIUtils::setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
-    vTaskSuspend(xHandle);
+    suspendTaskGUI();
     _deviceType = deviceType;
     _humi = humi;
     _temp = temp;
@@ -399,18 +399,18 @@ void GUIUtils::setSensorData(int mainValue, int chargeLevel, float humi, float t
     _average = mainValue;
     _rssi = abs(rssi);
     isNewData = true;
-    vTaskResume(xHandle);
+    resumeTaskGUI();
 }
 
 void GUIUtils::setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair) {
     static uint_least64_t guiTimeStamp = 0;
     if (millis() - guiTimeStamp > 500) {
         guiTimeStamp = millis();
-        vTaskSuspend(xHandle);
+        suspendTaskGUI();
         _wifiOn = wifiOn;
         _bleOn = bleOn;
         _blePair = blePair;
-        vTaskResume(xHandle);
+        resumeTaskGUI();
     }
 }
 

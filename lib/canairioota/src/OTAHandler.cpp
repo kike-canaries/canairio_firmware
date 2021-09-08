@@ -1,6 +1,6 @@
 #include <OTAHandler.h>
 
-esp32FOTA esp32FOTA(FLAVOR, REVISION);
+esp32FOTA fota(FLAVOR, REVISION);
 
 OTAHandler::OTAHandler(){
     m_pOTAHandlerCallbacks = nullptr;
@@ -44,7 +44,7 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
     // Remote OTA config
     // TODO: pass host and target via bluetooth
     
-    esp32FOTA.checkURL = "http://influxdb.canair.io:8080/releases/" + String(TARGET) + "/firmware_" + String(FLAVOR) + ".json";
+    fota.checkURL = "http://influxdb.canair.io:8080/releases/" + String(TARGET) + "/firmware_" + String(FLAVOR) + ".json";
     
     Serial.print("-->[INFO] OTA on: ");
     Serial.print(ESP_ID);
@@ -53,14 +53,14 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
 }
 
 void OTAHandler::checkRemoteOTA(bool notify) {
-    bool updatedNeeded = esp32FOTA.execHTTPcheck();
+    bool updatedNeeded = fota.execHTTPcheck();
     if (updatedNeeded) {
         Serial.println("-->[FOTA] starting upgrade..");
         if(_onUpdateMsgCb != nullptr) 
-            _onUpdateMsgCb(String(esp32FOTA.getPayloadVersion()).c_str());
+            _onUpdateMsgCb(String(fota.getPayloadVersion()).c_str());
         delay(100);
         esp_task_wdt_init(120,0); 
-        esp32FOTA.execOTA();
+        fota.execOTA();
     } else if (notify)
         Serial.println("-->[FOTA] not need update");
 }

@@ -6,7 +6,6 @@
 #include <GUILib.hpp>
 #include <Watchdog.hpp>
 #include <Sensors.hpp>
-#include <MACPool.hpp>
 
 #define PUBLISH_INTERVAL 30       // publish to cloud each 30 seconds
 #define WIFI_RETRY_CONNECTION 30  // 30 seconds wait for wifi connection
@@ -15,7 +14,6 @@
 void otaLoop();
 void otaInit();
 bool wifiCheck();
-void wifiConnect(const char* ssid, const char* pass);
 void wifiInit();
 void wifiStop();
 void wifiRestart();
@@ -25,5 +23,3 @@ int  getWifiRSSI();
 void influxDbInit();
 void influxDbLoop();
 
-void snifferLoop();
-uint16_t getPaxCount();

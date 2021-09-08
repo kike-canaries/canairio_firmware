@@ -94,6 +94,13 @@ void snifferInit() {
     esp_wifi_set_promiscuous(true);
     esp_wifi_set_promiscuous_filter(&filt);
     esp_wifi_set_promiscuous_rx_cb(&sniffer);      // Set up promiscuous callback
+
+    esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+    for (channel = 0; channel < 12; channel++) {
+        esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+        delay(50);
+    }
+    sniffer_start = true;
 }
 
 void snifferStop () {
@@ -108,9 +115,8 @@ void snifferLoop() {
     if ((millis() - snifferTimeStamp > cfg.stime * (uint32_t)1000)) {  // sample time for each capture
         snifferTimeStamp = millis();
         if (cfg.isWifiEnable()) return;
-        snifferInit();
-        Serial.println("-->[WIFI] PAX counter sniffer scan..");
-        esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+        if (!sniffer_start) snifferInit();
+        if (cfg.devmode) Serial.println("-->[WIFI] PAX counter sniffer scan..");
         for (channel = 0; channel < 12; channel++) {
             esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
             delay(50);

@@ -79,27 +79,31 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
     }
 }
 
+void wifiScanChannels() {
+    for (channel = 0; channel < WIFI_CHANNEL_MAX; channel++) {
+        esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
+        delay(50);
+    }
+}
+
 void snifferInit() {
     Serial.println("-->[WIFI] starting PAX counter sniffer..");
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     esp_wifi_init(&cfg);
+    esp_wifi_set_storage(WIFI_STORAGE_RAM);
     //set WiFi in promiscuous mode
     //esp_wifi_set_mode(WIFI_MODE_STA);            // Promiscuous works only with station mode
     esp_wifi_set_mode(WIFI_MODE_NULL);
     // power save options
     esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
-    esp_wifi_set_storage(WIFI_STORAGE_RAM);
+    // esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
     esp_wifi_start();
-    esp_wifi_set_max_tx_power(-4);
+    // esp_wifi_set_max_tx_power(-4);
     esp_wifi_set_promiscuous(true);
     esp_wifi_set_promiscuous_filter(&filt);
     esp_wifi_set_promiscuous_rx_cb(&sniffer);      // Set up promiscuous callback
-
     esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
-    for (channel = 0; channel < 12; channel++) {
-        esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
-        delay(50);
-    }
+    wifiScanChannels();    
     sniffer_start = true;
 }
 
@@ -117,10 +121,7 @@ void snifferLoop() {
         if (cfg.isWifiEnable()) return;
         if (!sniffer_start) snifferInit();
         if (cfg.devmode) Serial.println("-->[WIFI] PAX counter sniffer scan..");
-        for (channel = 0; channel < 12; channel++) {
-            esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
-            delay(50);
-        }
+        wifiScanChannels();
     }
 }
 

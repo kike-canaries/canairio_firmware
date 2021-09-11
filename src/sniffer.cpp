@@ -97,7 +97,7 @@ void snifferInit() {
     esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
     // esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
     esp_wifi_start();
-    // esp_wifi_set_max_tx_power(-4);
+    esp_wifi_set_max_tx_power(-4);
     esp_wifi_set_promiscuous(true);
     esp_wifi_set_promiscuous_filter(&filt);
     esp_wifi_set_promiscuous_rx_cb(&sniffer);      // Set up promiscuous callback
@@ -114,8 +114,8 @@ void snifferStop () {
 }
 
 void snifferLoop() {
-    static uint32_t snifferTimeStamp = 0;                              // timestamp for sensor loop check data
-    if ((millis() - snifferTimeStamp > cfg.stime * (uint32_t)1000)) {  // sample time for each capture
+    static uint32_t snifferTimeStamp = 0;                                  // timestamp for sensor loop check data
+    if ((millis() - snifferTimeStamp > cfg.stime / 5 * (uint32_t)1000)) {  // sample time for each capture
         snifferTimeStamp = millis();
         if (cfg.isWifiEnable()) return;
         if (!sniffer_start) snifferInit();

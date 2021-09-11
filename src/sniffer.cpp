@@ -80,10 +80,9 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
 }
 
 void wifiScanChannels() {
-    for (channel = 0; channel < WIFI_CHANNEL_MAX; channel++) {
-        esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
-        delay(50);
-    }
+    channel = (channel % WIFI_CHANNEL_MAX) + 1;
+    if (cfg.devmode) Serial.printf("-->[WIFI] PAX scanning channel %i\n",channel);
+    esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
 }
 
 void snifferInit() {
@@ -120,7 +119,6 @@ void snifferLoop() {
         snifferTimeStamp = millis();
         if (cfg.isWifiEnable()) return;
         if (!sniffer_start) snifferInit();
-        if (cfg.devmode) Serial.println("-->[WIFI] PAX counter sniffer scan..");
         wifiScanChannels();
     }
 }

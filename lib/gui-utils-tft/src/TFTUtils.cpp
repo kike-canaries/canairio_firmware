@@ -254,7 +254,7 @@ void TFTUtils::updateWifiMode(){
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setCursor(MARVALL, SSTART+PRESETH*2, 2);
     if(_wifi_enable) tft.println("On");
-    else tft.println("Off");
+    else tft.println("PAX");
 }
 
 void TFTUtils::notifySampleTime(){

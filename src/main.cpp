@@ -202,8 +202,8 @@ void loop() {
     sensors.loop();  // read sensor data and showed it
     batteryloop();   // battery charge status (deprecated)
     bleLoop();       // notify data to connected devices
-    wifiLoop();      // check wifi and reconnect it
     snifferLoop();   // pax counter calc (only when WiFi is Off)
+    wifiLoop();      // check wifi and reconnect it
     influxDbLoop();  // influxDB publication
     otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers

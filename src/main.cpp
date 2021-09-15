@@ -20,7 +20,10 @@ void refreshGUIData() {
     gui.displaySensorLiveIcon();  // all sensors read are ok
     int deviceType = sensors.getPmDeviceTypeSelected();
     uint16_t mainValue = 0;
-    if (deviceType <= 3) {
+
+    if (deviceType == -1) {
+        mainValue = getPaxCount();
+    } else if (deviceType <= 3) {
         mainValue = sensors.getPM25();
     } else {
         mainValue = sensors.getCO2();
@@ -31,7 +34,7 @@ void refreshGUIData() {
 
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();
-
+    
     gui.setSensorData(
         mainValue,
         getChargeLevel(),
@@ -91,7 +94,8 @@ void onSensorDataOk() {
 
 /// sensors error callback
 void onSensorDataError(const char * msg){
-    log_w("[MAIN] onSensorDataError", msg);
+    log_w("[MAIN] onSensorDataError %s", msg);
+    refreshGUIData();
 }
 
 void startingSensors() {
@@ -198,6 +202,7 @@ void loop() {
     sensors.loop();  // read sensor data and showed it
     batteryloop();   // battery charge status (deprecated)
     bleLoop();       // notify data to connected devices
+    snifferLoop();   // pax counter calc (only when WiFi is Off)
     wifiLoop();      // check wifi and reconnect it
     influxDbLoop();  // influxDB publication
     otaLoop();       // check for firmware updates

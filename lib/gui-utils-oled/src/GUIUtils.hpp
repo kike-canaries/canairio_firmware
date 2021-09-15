@@ -103,9 +103,9 @@ class GUIUtils {
 
     bool taskGUIrunning;
 
-    void displaySensorAverage(int average, int deviceType);
+    void displaySensorAverage(int average);
 
-    void displayCenterBig(String msg, int deviceType);
+    void displayCenterBig(String msg);
 
     void displayEmoticonLabel(int numsmile, String msg);
 

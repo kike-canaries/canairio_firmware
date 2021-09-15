@@ -254,7 +254,7 @@ void TFTUtils::updateWifiMode(){
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setCursor(MARVALL, SSTART+PRESETH*2, 2);
     if(_wifi_enable) tft.println("On");
-    else tft.println("Off");
+    else tft.println("PAX");
 }
 
 void TFTUtils::notifySampleTime(){
@@ -467,7 +467,10 @@ void TFTUtils::displayMainValues(){
             sprintf(output, "%04d", _mainValue);
             displayCenterBig(output);
 
-            if (_deviceType <= 3)
+
+            if (_deviceType == -1)
+                displayMainUnit("PAX");
+            else if (_deviceType <= 3)
                 displayMainUnit("PM2.5");
             else
                 displayMainUnit("PPM");

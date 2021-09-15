@@ -1,5 +1,9 @@
 #include <wifi.hpp>
 
+#define WRITE_PRECISION WritePrecision::S
+#define MAX_BATCH_SIZE 100
+#define WRITE_BUFFER_SIZE 1024
+
 uint32_t ifxdbwcount;
 int rssi = 0;
 String hostId = "";
@@ -7,11 +11,6 @@ String hostId = "";
 InfluxDBClient influx;
 Point sensor ("fixed_stations_01");
 bool ifx_ready;
-
-#define WRITE_PRECISION WritePrecision::S
-#define MAX_BATCH_SIZE 100
-#define WRITE_BUFFER_SIZE 1024
-
 
 /******************************************************************************
 *   I N F L U X D B   M E T H O D S
@@ -88,7 +87,7 @@ void influxDbParseFields() {
 
 bool influxDbWrite() {
     influxDbParseFields();
-    if(cfg.devmode) Serial.println(influx.pointToLineProtocol(sensor));
+    log_d("[IFDB] %s",influx.pointToLineProtocol(sensor).c_str());
     if (!influx.writePoint(sensor)) {
         Serial.print("-->[E][IFDB] Write Point failed: ");
         Serial.println(influx.getLastErrorMessage());
@@ -228,3 +227,4 @@ int getWifiRSSI() {
     if (WiFi.isConnected()) return WiFi.RSSI();
     else return 0;
 }
+

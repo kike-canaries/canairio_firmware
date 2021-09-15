@@ -14,7 +14,6 @@
 void otaLoop();
 void otaInit();
 bool wifiCheck();
-void wifiConnect(const char* ssid, const char* pass);
 void wifiInit();
 void wifiStop();
 void wifiRestart();
@@ -23,3 +22,4 @@ int  getWifiRSSI();
 
 void influxDbInit();
 void influxDbLoop();
+

@@ -1,11 +1,13 @@
 ---
-name: I am having difficulty installing CanAirIO firmware or getting it to work
-about: You have run into problems while downloading or installing CanAirIO firmware or app, or you are running into some other issue before even being able to run the app from the IDE.
+name: CanAirIO firmware installation issues
+about: You have run into problems while downloading or installing CanAirIO firmware or app
 title: ''
 labels: 'question'
 assignees: ''
 
 ---
+
+Thank you to try to install CanAirIO firmware, please tell us any issue here.
 
 ## Steps to Reproduce
 

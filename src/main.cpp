@@ -16,6 +16,9 @@
 #include <bluetooth.hpp>
 #include <wifi.hpp>
 
+#include <power.h>
+#define LORA_TX_INTERVAL 300
+
 void refreshGUIData() {
     gui.displaySensorLiveIcon();  // all sensors read are ok
     int deviceType = sensors.getPmDeviceTypeSelected();
@@ -133,6 +136,12 @@ void setup() {
     delay(400);
     Serial.println("\n== CanAirIO Setup ==\n");
 
+     //if( ReadVBat() < 3300)
+    //{
+    //   Serial.println("Goto DeepSleep (VBat to low)");
+    //   PowerDeepSleepTimer(LORA_TX_INTERVAL);
+    //}
+    
     // init app preferences and load settings
     cfg.init("canairio");
 
@@ -209,4 +218,7 @@ void loop() {
     wd.loop();       // watchdog for check loop blockers
                      // update GUI flags:
     gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
+    
+    PowerDeepSleepTimer(LORA_TX_INTERVAL - 30 - 8); // 30sec for SDS011, 8 sec for remaining code 
+    
 }

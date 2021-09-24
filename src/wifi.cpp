@@ -1,9 +1,5 @@
 #include <wifi.hpp>
 
-#define WRITE_PRECISION WritePrecision::S
-#define MAX_BATCH_SIZE 100
-#define WRITE_BUFFER_SIZE 1024
-
 uint32_t ifxdbwcount;
 int rssi = 0;
 String hostId = "";

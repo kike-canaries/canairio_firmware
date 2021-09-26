@@ -1,6 +1,6 @@
 
 
-[![Build Status](https://travis-ci.com/kike-canaries/canairio_firmware.svg?branch=master)](https://travis-ci.com/kike-canaries/canairio_firmware) [![PlatformIO](https://github.com/kike-canaries/canairio_firmware/workflows/PlatformIO/badge.svg)](https://github.com/kike-canaries/canairio_firmware/actions/) ![ViewCount](https://views.whatilearened.today/views/github/kike-canaries/canairio_firmware.svg) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO)  
+[![Build Status](https://travis-ci.com/kike-canaries/canairio_firmware.svg?branch=master)](https://travis-ci.com/kike-canaries/canairio_firmware) [![PlatformIO](https://github.com/kike-canaries/canairio_firmware/workflows/PlatformIO/badge.svg)](https://github.com/kike-canaries/canairio_firmware/actions/) ![ViewCount](https://views.whatilearened.today/views/github/kike-canaries/canairio_firmware.svg) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO) [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fcanairio)](https://t.me/canairio)
 
 # CanAirIO firmware
 

@@ -70,14 +70,14 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     };
     void onCalibrationReady(){
         Serial.println("-->[MAIN] onCalibrationReady");
-        sensors.setCO2RecalibrationFactor(418);   // ==> Calibration factor on outdoors
+        sensors.setCO2RecalibrationFactor(400);   // ==> Calibration factor on outdoors
     };
 };
 
 class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
     void onCO2Calibration () {
         Serial.println("-->[MAIN] onRemoteConfig CO2 Calibration");
-        sensors.setCO2RecalibrationFactor(418);   // ==> Calibration factor on outdoors
+        sensors.setCO2RecalibrationFactor(400);   // ==> Calibration factor on outdoors
     };
 
     void onAltitudeOffset (float altitude) {
@@ -205,7 +205,7 @@ void loop() {
     snifferLoop();   // pax counter calc (only when WiFi is Off)
     wifiLoop();      // check wifi and reconnect it
     influxDbLoop();  // influxDB publication
-    otaLoop();       // check for firmware updates
+//    otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers
                      // update GUI flags:
     gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());

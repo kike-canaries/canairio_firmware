@@ -140,9 +140,9 @@ class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
 
 void otaLoop() {
     if (WiFi.isConnected()) {
-        wd.pause();
-        ota.loop();
-        wd.resume();
+    //    wd.pause();
+    //    ota.loop();
+    //    wd.resume();
     }
 }
 
@@ -179,10 +179,10 @@ void wifiConnect(const char* ssid, const char* pass) {
         Serial.print("-->[WIFI] IP: ");
         Serial.println(WiFi.localIP());
         Serial.println("-->[WIFI] publish interval: "+String(cfg.stime * 2)+" sec.");
-        wd.pause();
-        otaInit();
-        ota.checkRemoteOTA();
-        wd.resume();
+        //wd.pause();
+        //otaInit();
+        //ota.checkRemoteOTA();
+        //wd.resume();
     } else {
         Serial.println("fail!\n-->[E][WIFI] disconnected!");
     }
@@ -211,16 +211,22 @@ void wifiLoop() {
     static uint_least64_t wifiTimeStamp = 0;
     if (millis() - wifiTimeStamp > 5000) {
         wifiTimeStamp = millis();
+        getWifiRSSI();
         if (cfg.isWifiEnable() && cfg.ssid.length() > 0 && !WiFi.isConnected()) {
             wifiInit();
         }
         influxDbInit();
         cfg.setWifiConnected(WiFi.isConnected());
     }
+    //getWifiRSSI();
 }
 
 int getWifiRSSI() {
-    if (WiFi.isConnected()) return WiFi.RSSI();
+    if (WiFi.isConnected()) {
+        Serial.print("-->[WIFI] RSSI: ");
+        Serial.println(WiFi.RSSI());
+        return WiFi.RSSI();
+    }
     else return 0;
 }
 

@@ -100,6 +100,13 @@ void influxDbLoop() {
             if (influxDbWrite()){
                 if(cfg.devmode) Serial.println("-->[IFDB] write done.");
                 gui.displayDataOnIcon();
+                delay(200);
+                if (!bleIsConnected()) {
+                PowerDeepSleepTimer(60);
+                //esp_sleep_enable_timer_wakeup(60 * 1000000);
+                
+                //esp_deep_sleep_start();
+                }
             }
             else
                 Serial.printf("-->[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);

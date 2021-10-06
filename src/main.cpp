@@ -205,7 +205,7 @@ void loop() {
     snifferLoop();   // pax counter calc (only when WiFi is Off)
     wifiLoop();      // check wifi and reconnect it
     influxDbLoop();  // influxDB publication
-//    otaLoop();       // check for firmware updates
+    otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers
                      // update GUI flags:
     gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());

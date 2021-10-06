@@ -140,9 +140,9 @@ class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
 
 void otaLoop() {
     if (WiFi.isConnected()) {
-    //    wd.pause();
-    //    ota.loop();
-    //    wd.resume();
+        wd.pause();
+        ota.loop();
+        wd.resume();
     }
 }
 

@@ -1,5 +1,8 @@
 #include <wifi.hpp>
 
+#include <bluetooth.hpp>
+#include <power.h>
+
 uint32_t ifxdbwcount;
 int rssi = 0;
 String hostId = "";
@@ -101,11 +104,9 @@ void influxDbLoop() {
                 if(cfg.devmode) Serial.println("-->[IFDB] write done.");
                 gui.displayDataOnIcon();
                 delay(200);
-                if (!bleIsConnected()) {
-                PowerDeepSleepTimer(60);
-                //esp_sleep_enable_timer_wakeup(60 * 1000000);
-                
-                //esp_deep_sleep_start();
+               Serial.println(F("Go DeepSleep"));
+                Serial.flush();
+                if (!bleIsConnected()) PowerDeepSleepTimer(120);
                 }
             }
             else

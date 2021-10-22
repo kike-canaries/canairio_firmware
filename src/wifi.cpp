@@ -1,7 +1,7 @@
 #include <wifi.hpp>
 
-#include <bluetooth.hpp>
 #include <power.h>
+#include <bluetooth.hpp>
 
 uint32_t ifxdbwcount;
 int rssi = 0;
@@ -107,7 +107,6 @@ void influxDbLoop() {
                Serial.println(F("Go DeepSleep"));
                 Serial.flush();
                 if (!bleIsConnected()) PowerDeepSleepTimer(120);
-                }
             }
             else
                 Serial.printf("-->[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);

@@ -149,6 +149,7 @@ void TFTUtils::showWindowBike(){
 void TFTUtils::showInfoWindow() {
     showStatus();
     tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
+    tft.setTextFont(1);
     tft.setFreeFont(&Orbitron_Medium_20);
     tft.setTextDatum(MC_DATUM);
     tft.drawString("DEVICE INFO", tft.width() / 2, 30);

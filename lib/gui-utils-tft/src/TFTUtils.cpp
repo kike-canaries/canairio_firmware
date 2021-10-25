@@ -146,7 +146,48 @@ void TFTUtils::showWindowBike(){
     Serial.println("-->[TGUI] displayed bike screen");
 }
 
+void TFTUtils::showInfoWindow() {
+    showStatus();
+    tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
+    tft.setFreeFont(&Orbitron_Medium_20);
+    tft.setTextDatum(MC_DATUM);
+    tft.drawString("DEVICE INFO", tft.width() / 2, 30);
+
+    tft.setTextFont(1);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.drawLine(18,44,117,44,TFT_GREY);
+
+    tft.setTextColor(TFT_WHITE, lightblue);
+    tft.setCursor(MARGINL, SSTART, 2);
+    tft.println("r"+String(REVISION)+"\n");
+Flavor  : " + String(FLAVOR));    
+Target  : " + String(TARGET));    tft.setCursor(MARGINL, SSTART+PRESETH, 2);
+    tft.println("COLORS:");
+
+    tft.setCursor(MARGINL, SSTART+PRESETH*2, 2);
+    tft.println("WiFi:");
+
+    tft.setCursor(MARGINL, SSTART+PRESETH*3, 2);
+    tft.println("STIME:");
+
+    tft.setCursor(MARGINL, SSTART+PRESETH*4, 2);
+    tft.println("CALIBRT:");
+
+    tft.setCursor(MARGINL, SSTART+PRESETH*5, 2);
+    tft.println("INFO:");
+
+    updateInvertValue();
+    updateWifiMode();
+    updateSampleTime();
+    loadBrightness();
+    updateCalibrationField();
+
+
+    Serial.println("-->[TGUI] displayed info screen");
+}
+
 void TFTUtils::showSetup() {
+    
     showStatus();
     tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
     tft.setFreeFont(&Orbitron_Medium_20);
@@ -172,6 +213,9 @@ void TFTUtils::showSetup() {
 
     tft.setCursor(MARGINL, SSTART+PRESETH*4, 2);
     tft.println("CALIBRT:");
+
+    tft.setCursor(MARGINL, SSTART+PRESETH*5, 2);
+    tft.println("INFO:");
 
     updateInvertValue();
     updateWifiMode();
@@ -333,6 +377,7 @@ void TFTUtils::checkButtons() {
             if(state==3)notifyWifiMode();
             if(state==4)notifySampleTime();
             if(state==5)startCalibration();
+            if(state==6)showInfoWindow();
         }
         if (holdR > 20) suspend();
     } else {
@@ -346,7 +391,7 @@ void TFTUtils::checkButtons() {
             pressL = 1;
             if (state++ == 0) showSetup();
             if (state >= 1) refreshSetup();
-            if (state == 6) restoreMain();
+            if (state == 7) restoreMain();
         }
         if(holdL > 10 && state >= 1) restoreMain();
     } else {

@@ -189,6 +189,8 @@ class TFTUtils {
 
     void refreshSetup();
     
+    void showInfoWindow();
+    
     void displaySensorAverage(int average);
 
     void displayMainUnit(String unit);

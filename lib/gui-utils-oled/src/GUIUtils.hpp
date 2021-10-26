@@ -45,6 +45,8 @@ class GUIUtils {
 
     void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 
+    void setInfoData(String info);
+
     void setBrightness(uint32_t value);
 
     void setWifiMode(bool enable);

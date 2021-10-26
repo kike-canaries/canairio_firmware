@@ -224,3 +224,14 @@ int getWifiRSSI() {
     else return 0;
 }
 
+String getDeviceInfo () {
+    String info = String(FLAVOR) + "\n";
+    info = info + "Rev" + String(REVISION) +" v" + String(VERSION) + "\n\n";
+    info = info + "Host: " + hostId + "\n";
+    info = info + WiFi.localIP().toString() + "\n";
+    info = info + "OTA: " + String(TARGET) + " Channel\n\n";
+    info = info + "Fixed station name:\n";
+    info = info + influxdbGetStationName();
+    return info;
+}
+

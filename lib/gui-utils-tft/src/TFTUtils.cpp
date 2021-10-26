@@ -152,38 +152,19 @@ void TFTUtils::showInfoWindow() {
     tft.setTextFont(1);
     tft.setFreeFont(&Orbitron_Medium_20);
     tft.setTextDatum(MC_DATUM);
-    tft.drawString("DEVICE INFO", tft.width() / 2, 30);
-
-    tft.setTextFont(1);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.drawString("DEVINFO", tft.width() / 2, 30);
     tft.drawLine(18,44,117,44,TFT_GREY);
 
-    tft.setTextColor(TFT_WHITE, lightblue);
-    tft.setCursor(MARGINL, SSTART, 2);
-    tft.println("r"+String(REVISION)+"\n");
-Flavor  : " + String(FLAVOR));    
-Target  : " + String(TARGET));    tft.setCursor(MARGINL, SSTART+PRESETH, 2);
-    tft.println("COLORS:");
-
-    tft.setCursor(MARGINL, SSTART+PRESETH*2, 2);
-    tft.println("WiFi:");
-
-    tft.setCursor(MARGINL, SSTART+PRESETH*3, 2);
-    tft.println("STIME:");
-
-    tft.setCursor(MARGINL, SSTART+PRESETH*4, 2);
-    tft.println("CALIBRT:");
-
-    tft.setCursor(MARGINL, SSTART+PRESETH*5, 2);
-    tft.println("INFO:");
-
-    updateInvertValue();
-    updateWifiMode();
-    updateSampleTime();
-    loadBrightness();
-    updateCalibrationField();
-
-
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setTextFont(2);
+    tft.setTextDatum(TL_DATUM);
+    tft.setTextPadding(5);
+    tft.setCursor(0, SSTART, 2);
+    String info = String(FLAVOR) + "\n";
+    info = info + "V" + String(VERSION) + " REV" + String(REVISION) + "\n";
+    info = info + "OTA: " + String(TARGET) + " CHANNEL\n";
+    info.toUpperCase();
+    tft.println(info);
     Serial.println("-->[TGUI] displayed info screen");
 }
 
@@ -217,6 +198,9 @@ void TFTUtils::showSetup() {
 
     tft.setCursor(MARGINL, SSTART+PRESETH*5, 2);
     tft.println("INFO:");
+
+    tft.setCursor(MARVALL, SSTART+PRESETH*5, 2);
+    tft.println(String(VERSION));
 
     updateInvertValue();
     updateWifiMode();
@@ -314,16 +298,17 @@ void TFTUtils::setSampleTime(int time){
     updateSampleTime();
 }
 
-void TFTUtils::updateSampleTime(){
-    tft.fillRect(MARVALL, SSTART+PRESETH*3, 54, 13, TFT_BLACK);
+void TFTUtils::updateSampleTime() {
+    if (state < 1) return;
+    tft.fillRect(MARVALL, SSTART + PRESETH * 3, 54, 13, TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setCursor(MARVALL, SSTART+PRESETH*3, 2);
-    tft.println(""+String(_sample_time)+"s");
+    tft.setCursor(MARVALL, SSTART + PRESETH * 3, 2);
+    tft.println("" + String(_sample_time) + "s");
 }
 
 void TFTUtils::updateCalibrationField(){
     static uint_fast64_t calibretts = 0;   // timestamp for GUI refresh
-    if (state >= 1 && millis() - calibretts > 1000) {
+    if (state >= 1 && state != 6 && millis() - calibretts > 1000) {
         calibretts = millis();
         tft.fillRect(MARVALL, SSTART + PRESETH * 4, 54, 13, TFT_BLACK);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);

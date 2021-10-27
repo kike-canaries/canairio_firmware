@@ -425,7 +425,6 @@ void TFTUtils::suspend() {
     tft.writecommand(TFT_DISPOFF);
     tft.writecommand(TFT_SLPIN);
     digitalWrite(ADC_EN, HIGH);
-    adc1_ulp_enable();
     delay(10);
     //Disable timer wake, because here use external IO port to wake up
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);

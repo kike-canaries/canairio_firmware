@@ -42,6 +42,8 @@ void refreshGUIData() {
         temp,
         getWifiRSSI(),
         deviceType);
+
+    gui.setInfoData(getDeviceInfo());
 }
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
@@ -70,14 +72,14 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     };
     void onCalibrationReady(){
         Serial.println("-->[MAIN] onCalibrationReady");
-        sensors.setCO2RecalibrationFactor(418);   // ==> Calibration factor on outdoors
+        sensors.setCO2RecalibrationFactor(400);   // ==> Calibration factor on outdoors
     };
 };
 
 class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
     void onCO2Calibration () {
         Serial.println("-->[MAIN] onRemoteConfig CO2 Calibration");
-        sensors.setCO2RecalibrationFactor(418);   // ==> Calibration factor on outdoors
+        sensors.setCO2RecalibrationFactor(400);   // ==> Calibration factor on outdoors
     };
 
     void onAltitudeOffset (float altitude) {

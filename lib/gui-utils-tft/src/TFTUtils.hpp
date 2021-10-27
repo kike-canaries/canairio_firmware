@@ -3,6 +3,9 @@
 
 #include <SPI.h>
 #include <TFT_eSPI.h>  // Hardware-specific library
+#include <esp_bt_main.h>
+#include <esp_bt.h>
+#include <esp_wifi.h>
 // #include "ani.h"
 #include "hal.hpp"
 #include "battery.hpp"

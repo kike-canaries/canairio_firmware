@@ -31,7 +31,6 @@ void setupBattery() {
 }
 
 float battGetVoltage() {
-    // setupBattery();
     digitalWrite(ADC_EN, HIGH);
     delay(10);                         // suggested by @ygator user in issue #2
     uint16_t v = analogRead(ADC_PIN);

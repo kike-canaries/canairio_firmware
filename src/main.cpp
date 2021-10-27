@@ -42,6 +42,8 @@ void refreshGUIData() {
         temp,
         getWifiRSSI(),
         deviceType);
+
+    gui.setInfoData(getDeviceInfo());
 }
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {

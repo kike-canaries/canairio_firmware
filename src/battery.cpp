@@ -21,6 +21,8 @@ void batteryInit() {
 #endif
 }
 
+
+// D E P R E C A T E D !!!
 void batteryloop() {
 #ifdef TTGO_TQ
     static uint_fast64_t timeStamp = 0;  // timestamp for loop check

@@ -428,7 +428,7 @@ void TFTUtils::suspend() {
     delay(10);
     //Disable timer wake, because here use external IO port to wake up
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
-    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);  // <== Don't works help wanted!
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);  // <== Don't works help wanted!
     esp_deep_sleep_disable_rom_logging();
     esp_deep_sleep_start();  
 }

@@ -146,7 +146,31 @@ void TFTUtils::showWindowBike(){
     Serial.println("-->[TGUI] displayed bike screen");
 }
 
+void TFTUtils::showInfoWindow() {
+    showStatus();
+    tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
+    tft.setTextFont(1);
+    tft.setFreeFont(&Orbitron_Medium_20);
+    tft.setTextDatum(MC_DATUM);
+    tft.drawString("DEVINFO", tft.width() / 2, 30);
+    tft.drawLine(18,44,117,44,TFT_GREY);
+    state = 7;
+    refreshInfoWindow();
+    Serial.println("-->[TGUI] displayed info screen");
+}
+
+void TFTUtils::refreshInfoWindow() {
+    if (state != 7) return;
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setTextFont(2);
+    tft.setTextPadding(5);
+    tft.setTextDatum(CR_DATUM);
+    tft.setCursor(0, 50, 2);
+    tft.println(_info);
+}
+
 void TFTUtils::showSetup() {
+    
     showStatus();
     tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
     tft.setFreeFont(&Orbitron_Medium_20);
@@ -172,6 +196,12 @@ void TFTUtils::showSetup() {
 
     tft.setCursor(MARGINL, SSTART+PRESETH*4, 2);
     tft.println("CALIBRT:");
+
+    tft.setCursor(MARGINL, SSTART+PRESETH*5, 2);
+    tft.println("INFO:");
+
+    tft.setCursor(MARVALL, SSTART+PRESETH*5, 2);
+    tft.println(String(VERSION));
 
     updateInvertValue();
     updateWifiMode();
@@ -269,16 +299,17 @@ void TFTUtils::setSampleTime(int time){
     updateSampleTime();
 }
 
-void TFTUtils::updateSampleTime(){
-    tft.fillRect(MARVALL, SSTART+PRESETH*3, 54, 13, TFT_BLACK);
+void TFTUtils::updateSampleTime() {
+    if (state < 1) return;
+    tft.fillRect(MARVALL, SSTART + PRESETH * 3, 54, 13, TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setCursor(MARVALL, SSTART+PRESETH*3, 2);
-    tft.println(""+String(_sample_time)+"s");
+    tft.setCursor(MARVALL, SSTART + PRESETH * 3, 2);
+    tft.println("" + String(_sample_time) + "s");
 }
 
 void TFTUtils::updateCalibrationField(){
     static uint_fast64_t calibretts = 0;   // timestamp for GUI refresh
-    if (state >= 1 && millis() - calibretts > 1000) {
+    if (state >= 1 && state < 6 && millis() - calibretts > 1000) {
         calibretts = millis();
         tft.fillRect(MARVALL, SSTART + PRESETH * 4, 54, 13, TFT_BLACK);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -333,6 +364,7 @@ void TFTUtils::checkButtons() {
             if(state==3)notifyWifiMode();
             if(state==4)notifySampleTime();
             if(state==5)startCalibration();
+            if(state==6)showInfoWindow();
         }
         if (holdR > 20) suspend();
     } else {
@@ -346,7 +378,7 @@ void TFTUtils::checkButtons() {
             pressL = 1;
             if (state++ == 0) showSetup();
             if (state >= 1) refreshSetup();
-            if (state == 6) restoreMain();
+            if (state >= 7) restoreMain();
         }
         if(holdL > 10 && state >= 1) restoreMain();
     } else {
@@ -520,6 +552,12 @@ void TFTUtils::setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair) {
     }
 }
 
+void TFTUtils::setInfoData(String info) {
+    suspendTaskGUI();
+    _info = info;
+    resumeTaskGUI();
+}
+
 void TFTUtils::displayGUIStatusFlags() {
     static uint_fast64_t sensor_status_ts = 0;   // timestamp for GUI refresh
     if ((millis() - sensor_status_ts > 1000)) { 
@@ -649,6 +687,7 @@ void TFTUtils::pageStart() {
     }
     updateCalibrationField();
     displayGUIStatusFlags();
+    refreshInfoWindow();
 }
 
 void TFTUtils::pageEnd() {

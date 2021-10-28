@@ -104,9 +104,15 @@ void influxDbLoop() {
                 if(cfg.devmode) Serial.println("-->[IFDB] write done.");
                 gui.displayDataOnIcon();
                 delay(200);
-                Serial.println(F("-->[IFDB] Go DeepSleep"));
-                Serial.flush();
-                if (!bleIsConnected()) PowerDeepSleepTimer(60);
+                if (!bleIsConnected()) {
+                    
+                    Serial.println(F("-->[IFDB] Go DeepSleep"));
+                    Serial.flush();
+                    PowerDeepSleepTimer(60);
+                }
+                else {
+                    Serial.println(F("-->[IFDB] BLE client connected, skip deep sleep"));
+                }
             }
             else
                 Serial.printf("-->[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);

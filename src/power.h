@@ -5,7 +5,8 @@
 #include <esp_bt.h>
 #include <esp_wifi.h>
 
-void PowerDeepSleepTimer(int);
-void PowerLightSleepTimer(int);
+void powerDeepSleepButton();
+void powerDeepSleepTimer(int);
+void powerLightSleepTimer(int);
 
 #endif

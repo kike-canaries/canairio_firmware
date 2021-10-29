@@ -1,8 +1,10 @@
 #include <power.h>
 
 void prepairShutdown() {
+#ifdef TTGO_TDISPLAY
     digitalWrite(ADC_EN, LOW);
     delay(10);
+#endif
 }
 
 void completeShutdown(){

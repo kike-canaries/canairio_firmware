@@ -1,6 +1,4 @@
 #include <wifi.hpp>
-
-#include <power.h>
 #include <bluetooth.hpp>
 
 uint32_t ifxdbwcount;
@@ -105,10 +103,9 @@ void influxDbLoop() {
                 gui.displayDataOnIcon();
                 delay(200);
                 if (!bleIsConnected()) {
-                    
                     Serial.println(F("-->[IFDB] Go DeepSleep"));
                     Serial.flush();
-                    PowerDeepSleepTimer(60);
+                    powerDeepSleepTimer(240);
                 }
                 else {
                     Serial.println(F("-->[IFDB] BLE client connected, skip deep sleep"));

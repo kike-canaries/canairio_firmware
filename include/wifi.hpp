@@ -6,6 +6,7 @@
 #include <GUILib.hpp>
 #include <Watchdog.hpp>
 #include <Sensors.hpp>
+#include "power.h"
 
 #define PUBLISH_INTERVAL 30       // publish to cloud each 30 seconds
 #define WIFI_RETRY_CONNECTION 30  // 30 seconds wait for wifi connection

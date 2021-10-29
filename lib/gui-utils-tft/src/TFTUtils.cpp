@@ -424,8 +424,7 @@ void TFTUtils::suspend() {
     delay(10);
     tft.writecommand(TFT_DISPOFF);
     tft.writecommand(TFT_SLPIN);
-    digitalWrite(ADC_EN, LOW);
-    delay(10);
+    
     if (mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onPowerOff(); 
 }
 

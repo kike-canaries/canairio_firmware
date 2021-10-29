@@ -8,6 +8,7 @@ String hostId = "";
 InfluxDBClient influx;
 Point sensor ("fixed_stations_01");
 bool ifx_ready;
+int ifx_retry;
 
 /******************************************************************************
 *   I N F L U X D B   M E T H O D S
@@ -101,18 +102,22 @@ void influxDbLoop() {
             if (influxDbWrite()){
                 if(cfg.devmode) Serial.println("-->[IFDB] write done.");
                 gui.displayDataOnIcon();
-                delay(200);
                 if (!bleIsConnected()) {
                     Serial.println(F("-->[IFDB] Go DeepSleep"));
                     Serial.flush();
-                    powerDeepSleepTimer(240);
+                    powerDeepSleepTimer(60);
                 }
                 else {
                     Serial.println(F("-->[IFDB] BLE client connected, skip deep sleep"));
                 }
             }
-            else
+            else{
                 Serial.printf("-->[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
+                if (ifx_retry++ > IFX_RETRY_CONNECTION) {
+                    Serial.println(F("-->[IFDB] many errors on IFDB write, shutdown.."));
+                    powerDeepSleepTimer(60);
+                }
+            }
         }
     }  
 }

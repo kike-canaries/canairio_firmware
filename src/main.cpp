@@ -212,6 +212,6 @@ void loop() {
     influxDbLoop();  // influxDB publication
     otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers
-                     // update GUI flags:
-    gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
+                     
+    gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected()); // update GUI flags:
 }

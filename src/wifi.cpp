@@ -94,6 +94,16 @@ bool influxDbWrite() {
     return true;
 }
 
+void suspendDevice() {
+    if (!bleIsConnected()) {
+        Serial.println(F("-->[IFDB] == shutdown =="));
+        Serial.flush();
+        powerDeepSleepTimer(DEEP_SLEEP_TIME);
+    } else {
+        Serial.println(F("-->[IFDB] BLE client connected, skip shutdown"));
+    }
+}
+
 void influxDbLoop() {
     static uint_fast64_t timeStamp = 0;
     if (millis() - timeStamp > cfg.stime * 2 * 1000) {
@@ -102,20 +112,13 @@ void influxDbLoop() {
             if (influxDbWrite()){
                 if(cfg.devmode) Serial.println("-->[IFDB] write done.");
                 gui.displayDataOnIcon();
-                if (!bleIsConnected()) {
-                    Serial.println(F("-->[IFDB] Go DeepSleep"));
-                    Serial.flush();
-                    powerDeepSleepTimer(60);
-                }
-                else {
-                    Serial.println(F("-->[IFDB] BLE client connected, skip deep sleep"));
-                }
+                suspendDevice();
             }
             else{
                 Serial.printf("-->[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
                 if (ifx_retry++ > IFX_RETRY_CONNECTION) {
                     Serial.println(F("-->[IFDB] many errors on IFDB write, shutdown.."));
-                    powerDeepSleepTimer(60);
+                    suspendDevice();
                 }
             }
         }

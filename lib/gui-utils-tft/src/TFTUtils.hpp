@@ -9,6 +9,7 @@
 #include "Orbitron_Medium_20.h"
 #include "icons.h"
 
+
 // Main windows
 #define RCOLSTART 80
 
@@ -283,6 +284,7 @@ public:
     virtual void onColorsInverted(bool enable);
     virtual void onSampleTime(int time);
     virtual void onCalibrationReady();
+    virtual void onPowerOff();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTHANDLER)

@@ -1,5 +1,10 @@
 #include <power.h>
 
+void prepairShutdown() {
+    digitalWrite(ADC_EN, LOW);
+    delay(10);
+}
+
 void completeShutdown(){
     esp_bluedroid_disable();
     esp_bt_controller_disable();
@@ -9,6 +14,7 @@ void completeShutdown(){
 }
 
 void powerDeepSleepButton(){
+    prepairShutdown();
     //Disable timer wake, because here use external IO port to wake up
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
@@ -16,6 +22,7 @@ void powerDeepSleepButton(){
 }
 
 void powerDeepSleepTimer(int seconds) {
+    prepairShutdown();
     esp_sleep_enable_timer_wakeup(seconds * 1000000);
     completeShutdown(); 
 }

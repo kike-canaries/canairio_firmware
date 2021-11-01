@@ -55,6 +55,8 @@ class TFTUtils {
 
     void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 
+    void setInfoData(String info);
+
     void displayMainValues();
 
     void displayDataOnIcon();
@@ -173,6 +175,8 @@ class TFTUtils {
 
     bool _blePair;
 
+    String _info = "";
+
     bool isNewData;
 
     TaskHandle_t xHandle;
@@ -188,6 +192,10 @@ class TFTUtils {
     void showSetup();
 
     void refreshSetup();
+    
+    void showInfoWindow();
+
+    void refreshInfoWindow();
     
     void displaySensorAverage(int average);
 

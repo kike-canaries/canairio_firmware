@@ -19,6 +19,7 @@ void wifiStop();
 void wifiRestart();
 void wifiLoop();
 int  getWifiRSSI();
+String getDeviceInfo();
 
 void influxDbInit();
 void influxDbLoop();

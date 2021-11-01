@@ -52,8 +52,10 @@ updateFlavorBinaries() {
 }
 
 clean () {
-  rm -r $RELDIR/$BINDIR
-  rm -r $RELDIR/$MANIFEST
+  rm -rf $RELDIR/$BINDIR
+  rm -rf $RELDIR/$MANIFEST
+  rm -f $INSDIR/*.bin
+  rm -f $INSDIR/*.py   # old installer
 }
 
 build () {

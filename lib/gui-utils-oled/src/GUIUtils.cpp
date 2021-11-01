@@ -414,6 +414,10 @@ void GUIUtils::setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair) {
     }
 }
 
+void GUIUtils::setInfoData(String info) {
+    // TODO: 
+}
+
 void GUIUtils::displayGUIStatusFlags() {
 #ifdef TTGO_TQ
     if (_bleOn)

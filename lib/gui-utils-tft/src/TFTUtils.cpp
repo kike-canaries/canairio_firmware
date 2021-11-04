@@ -676,7 +676,7 @@ void TFTUtils::drawDataIcon () {
 }
 
 void TFTUtils::drawPreferenceSaveIcon () {
-    tft.drawBitmap(83, 1, iconSave, 12, 16, TFT_BLACK, TFT_WHITE);
+    tft.drawBitmap(83, 1, iconSave, 12, 16, TFT_BLACK, TFT_GREEN);
 }
 
 void TFTUtils::pageStart() {

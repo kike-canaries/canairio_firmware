@@ -575,7 +575,7 @@ void TFTUtils::displayGUIStatusFlags() {
 
         if (sensorLive) drawFanIcon();
         if (dataOn) drawDataIcon();
-        // if (preferenceSave);
+        if (preferenceSave) drawPreferenceSaveIcon();
 
         if (dataOn) dataOn = false;                              // reset trigger for publish data ok.
         if (preferenceSave) preferenceSave = false;              // reset trigger for save preference ok.
@@ -673,6 +673,10 @@ void TFTUtils::drawFanIcon () {
 
 void TFTUtils::drawDataIcon () {
     tft.drawBitmap(96, 1, iconArrows, 12, 16, TFT_BLACK, TFT_WHITE);
+}
+
+void TFTUtils::drawPreferenceSaveIcon () {
+    tft.drawBitmap(83, 1, iconSave, 12, 16, TFT_BLACK, TFT_WHITE);
 }
 
 void TFTUtils::pageStart() {

@@ -231,6 +231,8 @@ class TFTUtils {
 
     void drawDataIcon();
 
+    void drawPreferenceSaveIcon();
+
     void invertScreen();
 
     void updateInvertValue();

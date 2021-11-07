@@ -12,7 +12,6 @@
 #include <ConfigApp.hpp>
 #include <GUILib.hpp>
 #include <Sensors.hpp>
-#include <battery.hpp>
 #include <bluetooth.hpp>
 #include <wifi.hpp>
 
@@ -37,7 +36,6 @@ void refreshGUIData() {
     
     gui.setSensorData(
         mainValue,
-        getChargeLevel(),
         humi,
         temp,
         getWifiRSSI(),
@@ -162,9 +160,6 @@ void setup() {
     // Setting callback for remote commands via Bluetooth config
     cfg.setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());
 
-    // init battery (only for some boards)
-    batteryInit();
-
     // init watchdog timer for reboot in any loop blocker
     wd.init();
 
@@ -202,7 +197,6 @@ void setup() {
 void loop() {
 
     sensors.loop();  // read sensor data and showed it
-    batteryloop();   // battery charge status (deprecated)
     bleLoop();       // notify data to connected devices
     snifferLoop();   // pax counter calc (only when WiFi is Off)
     wifiLoop();      // check wifi and reconnect it

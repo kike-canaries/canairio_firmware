@@ -3,6 +3,7 @@
 
 #include <U8g2lib.h>
 #include "hal.hpp"
+#include "battery.hpp"
 
 class GUIUserPreferencesCallbacks; 
 class GUIUtils {
@@ -41,7 +42,7 @@ class GUIUtils {
 
     void clearScreen();
     
-    void setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType);
+    void setSensorData(int mainValue, float humi, float temp, int rssi, int deviceType);
 
     void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 

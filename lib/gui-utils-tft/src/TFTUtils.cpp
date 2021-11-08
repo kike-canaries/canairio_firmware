@@ -528,7 +528,7 @@ void TFTUtils::displayMainValues(){
 }
 
 // TODO: separate this function, format/display
-void TFTUtils::setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
+void TFTUtils::setSensorData(int mainValue, float humi, float temp, int rssi, int deviceType) {
     suspendTaskGUI();
     _deviceType = deviceType;
     _humi = humi;

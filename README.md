@@ -35,7 +35,7 @@ We have different alternatives for load the current firmware. In order of comple
 
 You will able to install the last version of CanAirIO firmware with internet updates via a simple Arduino sketch that it will doing all for you, you only need to use the official [Arduino IDE](https://www.arduino.cc/en/software) or [Arduino Droid app for Android](https://play.google.com/store/apps/details?id=name.antonsmirnov.android.arduinodroid2&hl=en&gl=US) for load this [simple sketch](https://github.com/hpsaturn/esp32-canairio-loader/blob/master/canairio_loader/canairio_loader.ino). Please follow the instructions [here](https://github.com/hpsaturn/esp32-canairio-loader) or follow the next [YouTube video guide](https://youtu.be/FjfGdnTk-rc) for Android OTG installation alternative.
 
-## Via binaries (Linux and MacOSx)
+## Via binaries 
 
 You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. Download the last **production** release from `assets` section, for example: 
 
@@ -43,14 +43,18 @@ You can download the last firmware version in [releases](https://github.com/kike
 
 please uncompress the zip file and connect your CanAirIO device to your USB and execute the next command for upload the firmware to your model board, for example to a TTGO_T7 board you should run the next commands:
 
+### Linux and MacOSx
+
 ``` bash
 unzip canairio_rev414_20190829.zip
 cd canairio_installer
 ./install.sh canairio_TTGO_T7_rev839.bin
 ```
-
 **Note**: you need python2 or python3 with pyserial in your system.
 
+### Windows
+
+Please read the [Espressif Uploader](https://canair.io/docs/firmware_upload.html#espressif-uploader) section in the main documentation for details to load the firmware via the oficial **Espressif Download Tool** in Windows.
 
 ### OTA WAN updates
 
@@ -74,10 +78,6 @@ Also you can specify the IP address:
 
 More details and options of `CanAirIO Installer` [here](https://github.com/kike-canaries/canairio_firmware/tree/master/releases/installer/canairio_installer#readme)
 
-
-## Via binaries (Windows)
-
-Please read the [Espressif Uploader](https://canair.io/docs/firmware_upload.html#espressif-uploader) section in the main documentation for details to load the firmware via the oficial **Espressif Download Tool** in Windows.
 
 ## Via PlatformIO (Compiling on Linux, Mac or Windows)
 

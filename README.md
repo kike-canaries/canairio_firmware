@@ -37,21 +37,28 @@ You will able to install the last version of CanAirIO firmware with internet upd
 
 ## Via binaries (Linux and MacOSx)
 
-You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. Download the last release from `assets` section in releases and please uncompress zip file.
+You can download the last firmware version in [releases](https://github.com/kike-canaries/esp32-hpma115s0/releases) section. Download the last **production** release from `assets` section, for example: 
 
-### USB alternative
+![releases assets](images/assets.jpg)
 
-Connect your CanAirIO device to your USB and execute the next command for your model board*, like this:
+please uncompress the zip file and connect your CanAirIO device to your USB and execute the next command for upload the firmware to your model board, for example to a TTGO_T7 board you should run the next commands:
 
 ``` bash
 unzip canairio_rev414_20190829.zip
 cd canairio_installer
-./install.sh canairio_TTGO_T7_rev605_20200925.bin
+./install.sh canairio_TTGO_T7_rev839.bin
 ```
 
 **Note**: you need python2 or python3 with pyserial in your system.
 
-### OTA alternative
+
+### OTA WAN updates
+
+CanAirIO has two channels for remote OTA updates of your device, production channel and development channel. With that you don't need again install the firmware for any update, all here is automatic and you only need have WiFi enable on your device for receive this firmware updates.
+
+If you want the last testing updates, please choose in the previous step the development firmware (zip file with **dev** name), and upload it to your board.
+
+### OTA LAN alternative
 
 After USB binary installation, you will able to send OTA updates to any board supported, like this:
 
@@ -71,7 +78,6 @@ More details and options of `CanAirIO Installer` [here](https://github.com/kike-
 ## Via binaries (Windows)
 
 Please read the [Espressif Uploader](https://canair.io/docs/firmware_upload.html#espressif-uploader) section in the main documentation for details to load the firmware via the oficial **Espressif Download Tool** in Windows.
-
 
 ## Via PlatformIO (Compiling on Linux, Mac or Windows)
 
@@ -176,5 +182,8 @@ We have some build guides with different alternatives, please visit our [CanAirI
 - [x] Multiple variables in chart (C02,PM2.5,Hum,Temp,etc)
 - [x] Map of each recorded track in details
 - [x] InfluxDB schema (by geohashes)
+- [x] New pax counter variable (People around the device)
+- [ ] Pax counter disable/enable
+- [ ] Sensor community alternativa for fixed stations
 - [ ] Anonymous authentication
 

@@ -51,6 +51,11 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
         cfg.reload();
         if (!enable) wifiStop();
     };
+    void onPaxMode(bool enable){
+        Serial.println("-->[MAIN] onPax changed: "+String(enable));
+        cfg.paxEnable(enable);
+        cfg.reload();
+    };
     void onBrightness(int value){
         Serial.println("-->[MAIN] onBrightness changed: "+String(value));
         cfg.saveBrightness(value);

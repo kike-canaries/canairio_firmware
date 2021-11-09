@@ -119,9 +119,9 @@ void snifferLoop() {
     static uint32_t snifferTimeStamp = 0;                                  // timestamp for sensor loop check data
     if ((millis() - snifferTimeStamp > cfg.stime / 5 * (uint32_t)1000)) {  // sample time for each capture
         snifferTimeStamp = millis();
-        if (cfg.isWifiEnable() && sniffer_start) snifferStop();
-        else if (!cfg.isWifiEnable() && !sniffer_start) snifferInit();
-        else if (sniffer_start) wifiScanChannels();
+        if (!cfg.isWifiEnable() && cfg.isPaxEnable() && !sniffer_start) snifferInit();
+        else if (!cfg.isWifiEnable() && cfg.isPaxEnable() && sniffer_start) wifiScanChannels();
+        else if (!cfg.isWifiEnable() && !cfg.isPaxEnable() && sniffer_start) snifferStop();
     }
 }
 

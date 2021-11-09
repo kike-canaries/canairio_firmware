@@ -76,6 +76,8 @@ class TFTUtils {
     void setBrightness(uint32_t value);
 
     void setWifiMode(bool enable);
+    
+    void setPaxMode(bool enable);
 
     void setSampleTime(int time);
 
@@ -154,6 +156,8 @@ class TFTUtils {
     int _average = 0;
 
     bool _wifi_enable;
+    
+    bool _pax_enable;
 
     int _sample_time = 5;
 
@@ -281,6 +285,7 @@ class GUIUserPreferencesCallbacks {
 public:
     virtual ~GUIUserPreferencesCallbacks () {};
     virtual void onWifiMode(bool enable);
+    virtual void onPaxMode(bool enable);
 	virtual void onBrightness(int value);
     virtual void onColorsInverted(bool enable);
     virtual void onSampleTime(int time);

@@ -144,6 +144,7 @@ void setup() {
     // init graphic user interface
     gui.setBrightness(cfg.getBrightness());
     gui.setWifiMode(cfg.isWifiEnable());
+    gui.setPaxMode(cfg.isPaxEnable());
     gui.setSampleTime(cfg.stime);
     gui.displayInit();
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());

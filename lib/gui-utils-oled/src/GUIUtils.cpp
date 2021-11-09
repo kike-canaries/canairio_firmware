@@ -490,6 +490,10 @@ void GUIUtils::setWifiMode(bool enable){
 
 }
 
+void GUIUtils::setPaxMode(bool enable){
+
+}
+
 void GUIUtils::setSampleTime(int time){
 
 }
@@ -499,6 +503,7 @@ void GUIUtils::setTrackValues(float speed, float distance){
 }
 
 void GUIUtils::setTrackTime(int h, int m, int s){
+
 }
 
 void GUIUtils::suspendTaskGUI(){

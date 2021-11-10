@@ -75,7 +75,8 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
       }
 
       pax_count = listOfMAC.size();
-      if(cfg.devmode) Serial.printf("-->[WIFI] new PAX count: %d\n",pax_count);
+    //   if(cfg.devmode) Serial.printf("-->[WIFI] new PAX count: %d\n",pax_count);
+      delay(10);
     }
 }
 

@@ -52,6 +52,8 @@ class GUIUtils {
 
     void setWifiMode(bool enable);
 
+    void setPaxMode(bool enable);
+
     void setSampleTime(int time);
 
     void setTrackValues(float speed, float distance);
@@ -124,7 +126,8 @@ class GUIUserPreferencesCallbacks {
 public:
     virtual ~GUIUserPreferencesCallbacks () {};
     virtual void onWifiMode(bool enable);
-	virtual void onBrightness(int value);
+    virtual void onPaxMode(bool enable);
+    virtual void onBrightness(int value);
     virtual void onColorsInverted(bool enable);
     virtual void onSampleTime(int time);
     virtual void onCalibrationReady();

@@ -5,8 +5,10 @@ void prepairShutdown() {
 #ifdef TTGO_TDISPLAY
     digitalWrite(ADC_EN, LOW);
     delay(10);
+#else
+   gui.PowerSave(); 
 #endif
-gui.PowerSave();
+
 }
 
 void completeShutdown(){

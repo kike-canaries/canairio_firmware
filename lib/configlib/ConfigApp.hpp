@@ -55,6 +55,8 @@ class ConfigApp {
 
     bool saveSensorType(int type);
 
+    bool saveSSID(String ssid);
+
     bool saveWifi(String ssid, String pass);
 
     bool saveInfluxDb(String db, String ip, int pt);

@@ -171,6 +171,14 @@ We have some build guides with different alternatives, please visit our [CanAirI
 
 <a href="https://canair.io/docs" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/collage.jpg" height="400" ></a>
 
+## Building Guide
+
+<a href="https://youtu.be/V2eO1UN5u7Y" target="_blank" style="padding-left: 20px" ><img src="images/canairio_bike_make_of_youtube.jpg" width="420" ></a>
+
+## Soldering Guide (some improvements)
+
+<a href="https://youtu.be/Oarq0K0Sz3c" target="_blank" style="padding-left: 20px" ><img src="images/canairio_bike_soldering_on_youtube.jpg" width="420" ></a>
+
 # TODO
 
 - [X] Enable/Disable APIs from App
@@ -183,7 +191,8 @@ We have some build guides with different alternatives, please visit our [CanAirI
 - [x] Map of each recorded track in details
 - [x] InfluxDB schema (by geohashes)
 - [x] New pax counter variable (People around the device)
-- [ ] Pax counter disable/enable
+- [x] WiFi SSIDs scanner for have a choose list of it in the app
+- [x] Pax counter disable/enable
 - [ ] Sensor community alternativa for fixed stations
 - [ ] Anonymous authentication
 

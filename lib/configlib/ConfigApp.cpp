@@ -35,6 +35,7 @@ void ConfigApp::reload() {
     toffset = preferences.getFloat("toffset", 0.0);
     altoffset = preferences.getFloat("altoffset", 0.0);
     devmode = preferences.getBool("debugEnable", false);
+    pax_enable = preferences.getBool("paxEnable", true);
     i2conly = preferences.getBool("i2conly", false);
 
     preferences.end();
@@ -54,6 +55,7 @@ String ConfigApp::getCurrentConfig() {
     doc["ifxpt"] = preferences.getUInt("ifxpt", ifx.pt);     // influxdb sensor tags
     doc["geo"] = preferences.getString("geo", "");           // influxdb GeoHash tag
     doc["denb"] = preferences.getBool("debugEnable", false); // debug mode enable
+    doc["penb"] = preferences.getBool("paxEnable", true);    // PaxCounter enable
     doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
     doc["toffset"] = preferences.getFloat("toffset", 0.0);   // temperature offset
     doc["altoffset"] = preferences.getFloat("altoffset",0.0);// altitude offset
@@ -162,6 +164,19 @@ bool ConfigApp::saveAltitudeOffset(float offset) {
     return true;
 }
 
+bool ConfigApp::saveSSID(String ssid){
+    if (ssid.length() > 0) {
+        preferences.begin(_app_name, false);
+        preferences.putString("ssid", ssid);
+        preferences.end();
+        setLastKeySaved("ssid");
+        Serial.println("-->[CONF] WiFi SSID saved!");
+        return true;
+    }
+    DEBUG("-->[W][CONF] empty Wifi SSID");
+    return false;
+}
+
 bool ConfigApp::saveWifi(String ssid, String pass){
     if (ssid.length() > 0) {
         preferences.begin(_app_name, false);
@@ -236,6 +251,13 @@ bool ConfigApp::debugEnable(bool enable) {
     return true;
 }
 
+bool ConfigApp::paxEnable(bool enable) {
+    saveBool("paxEnable", enable);
+    pax_enable = enable;
+    Serial.println("-->[CONF] updating PaxCounter mode: " + String(enable));
+    return true;
+}
+
 bool ConfigApp::saveI2COnly(bool enable) {
     saveBool("i2conly", enable);
     i2conly = enable;
@@ -266,7 +288,8 @@ bool ConfigApp::save(const char *json) {
     if (doc.containsKey("stime")) return saveSampleTime(doc["stime"] | 0);
     if (doc.containsKey("stype")) return saveSensorType(doc["stype"] | 0);
     if (doc.containsKey("ifxdb")) return saveInfluxDb(doc["ifxdb"] | "", doc["ifxip"] | "", doc["ifxpt"] | 0);
-    if (doc.containsKey("ssid")) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
+    if (doc.containsKey("pass") && doc.containsKey("ssid")) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
+    if (doc.containsKey("ssid")) return saveSSID(doc["ssid"] | "");
     if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
     if (doc.containsKey("toffset")) return saveTempOffset(doc["toffset"].as<float>());
     if (doc.containsKey("altoffset")) return saveAltitudeOffset(doc["altoffset"].as<float>());
@@ -278,6 +301,7 @@ bool ConfigApp::save(const char *json) {
         if (act.equals("ist")) return ifxdbEnable(doc["ienb"].as<bool>());
         if (act.equals("dst")) return debugEnable(doc["denb"].as<bool>());
         if (act.equals("i2c")) return saveI2COnly(doc["i2conly"].as<bool>());
+        if (act.equals("pst")) return paxEnable(doc["penb"].as<bool>());
         if (act.equals("rbt")) reboot();
         if (act.equals("cls")) clear();
         if (act.equals("clb")) performCO2Calibration();
@@ -324,6 +348,10 @@ String ConfigApp::getDeviceIdShort() {
 
 bool ConfigApp::isWifiEnable() {
     return wifi_enable;
+}
+
+bool ConfigApp::isPaxEnable() {
+    return pax_enable;
 }
 
 bool ConfigApp::isIfxEnable() {

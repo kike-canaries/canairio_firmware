@@ -79,19 +79,25 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
             if (cfg.save(value.c_str())) {
                 cfg.reload();
                 gui.displayPreferenceSaveIcon();
+                
+                gui.setWifiMode(cfg.isWifiEnable());
+                if (!cfg.isWifiEnable()) wifiStop();
+                
                 if(sensors.sample_time != cfg.stime) {
                     sensors.setSampleTime(cfg.stime);
                     gui.setSampleTime(cfg.stime);
                 }
                 if(sensors.toffset != cfg.toffset) sensors.setTempOffset(cfg.toffset);
                 if(sensors.devmode != cfg.devmode) sensors.setDebugMode(cfg.devmode);
-                if (!cfg.isWifiEnable()) wifiStop();
             }
             else{
                 Serial.println("-->[E][BTLE][CONFIG] saving error!");
             }
-            bleServerConfigRefresh();
         }
+    };
+
+    void onRead(BLECharacteristic* pCharacteristic) {
+        bleServerConfigRefresh();
     }
 };
 

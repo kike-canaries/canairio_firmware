@@ -291,6 +291,7 @@ void TFTUtils::notifyWifiMode(){
 }
 
 void TFTUtils::updateWifiMode(){
+    if (state < 1) return;
     tft.fillRect(MARVALL, SSTART+PRESETH*2, 54, 13, TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setCursor(MARVALL, SSTART+PRESETH*2, 2);

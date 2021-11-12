@@ -164,6 +164,19 @@ bool ConfigApp::saveAltitudeOffset(float offset) {
     return true;
 }
 
+bool ConfigApp::saveSSID(String ssid){
+    if (ssid.length() > 0) {
+        preferences.begin(_app_name, false);
+        preferences.putString("ssid", ssid);
+        preferences.end();
+        setLastKeySaved("ssid");
+        Serial.println("-->[CONF] WiFi SSID saved!");
+        return true;
+    }
+    DEBUG("-->[W][CONF] empty Wifi SSID");
+    return false;
+}
+
 bool ConfigApp::saveWifi(String ssid, String pass){
     if (ssid.length() > 0) {
         preferences.begin(_app_name, false);
@@ -275,7 +288,8 @@ bool ConfigApp::save(const char *json) {
     if (doc.containsKey("stime")) return saveSampleTime(doc["stime"] | 0);
     if (doc.containsKey("stype")) return saveSensorType(doc["stype"] | 0);
     if (doc.containsKey("ifxdb")) return saveInfluxDb(doc["ifxdb"] | "", doc["ifxip"] | "", doc["ifxpt"] | 0);
-    if (doc.containsKey("ssid")) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
+    if (doc.containsKey("pass") && doc.containsKey("ssid")) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
+    if (doc.containsKey("ssid")) return saveSSID(doc["ssid"] | "");
     if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
     if (doc.containsKey("toffset")) return saveTempOffset(doc["toffset"].as<float>());
     if (doc.containsKey("altoffset")) return saveAltitudeOffset(doc["altoffset"].as<float>());

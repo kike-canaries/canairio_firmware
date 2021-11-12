@@ -93,8 +93,11 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
             else{
                 Serial.println("-->[E][BTLE][CONFIG] saving error!");
             }
-            bleServerConfigRefresh();
         }
+    };
+
+    void onRead(BLECharacteristic* pCharacteristic) {
+        bleServerConfigRefresh();
     }
 };
 

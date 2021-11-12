@@ -55,6 +55,8 @@ class ConfigApp {
 
     bool saveSensorType(int type);
 
+    bool saveSSID(String ssid);
+
     bool saveWifi(String ssid, String pass);
 
     bool saveInfluxDb(String db, String ip, int pt);
@@ -66,10 +68,14 @@ class ConfigApp {
     bool ifxdbEnable(bool enable);
 
     bool debugEnable(bool enable);
+    
+    bool paxEnable(bool enable);
 
     String getCurrentConfig();
 
     bool isWifiEnable();
+    
+    bool isPaxEnable();
 
     bool isIfxEnable();
 
@@ -112,6 +118,8 @@ class ConfigApp {
     bool wifi_enable;
     ///InfluxDB cloud publication on/off
     bool ifxdb_enable;
+    /// PaxCounter on/off
+    bool pax_enable = true;
     ///WiFi state
     bool wifi_connected;
 

@@ -273,18 +273,31 @@ void TFTUtils::setWifiMode(bool enable){
     updateWifiMode();
 }
 
-void TFTUtils::notifyWifiMode(){
-    _wifi_enable = !_wifi_enable;
+void TFTUtils::setPaxMode(bool enable){
+    _pax_enable = enable;
     updateWifiMode();
+}
+
+void TFTUtils::notifyWifiMode(){
+    if(_wifi_enable && !_pax_enable)  {
+        _wifi_enable = !_wifi_enable;
+        _pax_enable = !_pax_enable;
+    } 
+    else if (_pax_enable) _pax_enable = !_pax_enable;
+    else _wifi_enable = !_wifi_enable;
     if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onWifiMode(_wifi_enable);
+    if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onPaxMode(_pax_enable);
+    updateWifiMode();
 }
 
 void TFTUtils::updateWifiMode(){
+    if (state < 1) return;
     tft.fillRect(MARVALL, SSTART+PRESETH*2, 54, 13, TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setCursor(MARVALL, SSTART+PRESETH*2, 2);
     if(_wifi_enable) tft.println("On");
-    else tft.println("PAX");
+    else if (_pax_enable) tft.println("PAX");
+    else tft.println("Off");
 }
 
 void TFTUtils::notifySampleTime(){
@@ -528,7 +541,7 @@ void TFTUtils::displayMainValues(){
 }
 
 // TODO: separate this function, format/display
-void TFTUtils::setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
+void TFTUtils::setSensorData(int mainValue, float humi, float temp, int rssi, int deviceType) {
     suspendTaskGUI();
     _deviceType = deviceType;
     _humi = humi;
@@ -575,7 +588,7 @@ void TFTUtils::displayGUIStatusFlags() {
 
         if (sensorLive) drawFanIcon();
         if (dataOn) drawDataIcon();
-        // if (preferenceSave);
+        if (preferenceSave) drawPreferenceSaveIcon();
 
         if (dataOn) dataOn = false;                              // reset trigger for publish data ok.
         if (preferenceSave) preferenceSave = false;              // reset trigger for save preference ok.
@@ -673,6 +686,10 @@ void TFTUtils::drawFanIcon () {
 
 void TFTUtils::drawDataIcon () {
     tft.drawBitmap(96, 1, iconArrows, 12, 16, TFT_BLACK, TFT_WHITE);
+}
+
+void TFTUtils::drawPreferenceSaveIcon () {
+    tft.drawBitmap(83, 1, iconSave, 12, 16, TFT_BLACK, TFT_GREEN);
 }
 
 void TFTUtils::pageStart() {

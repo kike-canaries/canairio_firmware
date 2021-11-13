@@ -31,7 +31,13 @@ The [last release](https://github.com/kike-canaries/canairio_firmware/releases) 
 
 We have different alternatives for load the current firmware. In order of complexity they are:
 
-## Via CanAirIO loader (RECOMMENDED)
+## Via CanAirIO Web Installer (RECOMMENDED)
+
+If you already have a ESP32 board, you can test our CanAirIO firmware on one click, with our web installer:  
+
+[![video_2021-11-13_23-36-10](https://user-images.githubusercontent.com/423856/141661066-0fafcaa9-98b4-419b-b1e7-4371f3cb99b8.gif)](https://canair.io/installer.html)
+
+## Via CanAirIO loader
 
 You will able to install the last version of CanAirIO firmware with internet updates via a simple Arduino sketch that it will doing all for you, you only need to use the official [Arduino IDE](https://www.arduino.cc/en/software) or [Arduino Droid app for Android](https://play.google.com/store/apps/details?id=name.antonsmirnov.android.arduinodroid2&hl=en&gl=US) for load this [simple sketch](https://github.com/hpsaturn/esp32-canairio-loader/blob/master/canairio_loader/canairio_loader.ino). Please follow the instructions [here](https://github.com/hpsaturn/esp32-canairio-loader) or follow the next [YouTube video guide](https://youtu.be/FjfGdnTk-rc) for Android OTG installation alternative.
 

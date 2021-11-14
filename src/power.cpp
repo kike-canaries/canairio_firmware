@@ -1,10 +1,14 @@
 #include <power.h>
+#include <GUIUtils.hpp>
 
 void prepairShutdown() {
 #ifdef TTGO_TDISPLAY
     digitalWrite(ADC_EN, LOW);
     delay(10);
+#else
+   gui.PowerSave(); 
 #endif
+
 }
 
 void completeShutdown(){

@@ -1,5 +1,7 @@
 #include "TFTUtils.hpp"
 
+#include "driver/rtc_io.h"
+
 /******************************************************************************
 *   D I S P L A Y  M E T H O D S
 ******************************************************************************/
@@ -431,6 +433,12 @@ void TFTUtils::suspend() {
     esp_bluedroid_disable();
     esp_bt_controller_disable();
     esp_wifi_stop();
+
+    rtc_gpio_init(GPIO_NUM_14);
+    rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
+	rtc_gpio_set_level(GPIO_NUM_14, 1);
+    delay(500); 
+
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
     esp_deep_sleep_disable_rom_logging();
     esp_deep_sleep_start();  

@@ -12,6 +12,8 @@
 #include "Orbitron_Medium_20.h"
 #include "icons.h"
 
+#include "driver/rtc_io.h"
+
 // Main windows
 #define RCOLSTART 80
 

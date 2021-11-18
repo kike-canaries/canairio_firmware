@@ -1,5 +1,4 @@
 #include <power.h>
-//#include <GUIUtils.hpp>
 
 void prepairShutdown() {
 #ifdef TTGO_TDISPLAY

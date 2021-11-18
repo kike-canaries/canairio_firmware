@@ -35,6 +35,7 @@ void powerDeepSleepButton(){
 void powerDeepSleepTimer(int seconds) {
     prepairShutdown();
     esp_sleep_enable_timer_wakeup(seconds * 1000000);
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
     completeShutdown(); 
 }
 

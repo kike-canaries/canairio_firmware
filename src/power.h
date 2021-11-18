@@ -7,7 +7,7 @@
 #include <esp_wifi.h>
 #include "hal.hpp"
 #include "driver/rtc_io.h"
-//#include <GUIUtils.hpp>
+#include <GUIUtils.hpp>
 
 void powerDeepSleepButton();
 void powerDeepSleepTimer(int);

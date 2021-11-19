@@ -2,6 +2,7 @@
 #include <OTAHandler.h>
 #include <esp_wifi.h>
 #include <InfluxDbClient.h>
+#include <HAMqttDevice.h>
 #include <ConfigApp.hpp>
 #include <GUILib.hpp>
 #include <Watchdog.hpp>

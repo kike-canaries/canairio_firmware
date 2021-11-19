@@ -9,6 +9,38 @@ String hostId = "";
 
 HAMqttDevice hassSensor("CanAirIO Device", HAMqttDevice::SENSOR);
 
+EspMQTTClient hassMQTT(
+  "192.168.178.88",
+  1883,
+  "", 
+  "",
+  "HassMQTTClient"
+);
+
+void onConnectionEstablished() {
+    Serial.printf("-->[MQTT] connected to %s\n",hassMQTT.getMqttServerIp());
+    hassMQTT.subscribe(hassSensor.getCommandTopic(), [](const String& payload) {
+        if (payload.equals("ON"))
+            Serial.printf("-->[MQTT] %d\n",true);
+        else if (payload.equals("OFF"))
+            Serial.printf("-->[MQTT] %d\n",false);
+
+        hassMQTT.publish(hassSensor.getStateTopic(), payload);
+        // valueChangedMillis = millis();
+    });
+}
+
+void mqttInit() {
+
+     hassSensor
+    .enableAttributesTopic()
+    .addConfigVar("bri_stat_t", "~/br/state")
+    .addConfigVar("bri_cmd_t", "~/br/cmd")
+    .addConfigVar("bri_scl", "100");
+     hassMQTT.setOnConnectionEstablishedCallback(onConnectionEstablished);
+     hassMQTT.enableHTTPWebUpdater();
+}
+
 /******************************************************************************
 *   I N F L U X D B   M E T H O D S
 ******************************************************************************/
@@ -187,6 +219,7 @@ void wifiConnect(const char* ssid, const char* pass) {
         wd.pause();
         otaInit();
         ota.checkRemoteOTA();
+        mqttInit();
         wd.resume();
     } else {
         Serial.println("fail!\n-->[E][WIFI] disconnected!");
@@ -222,6 +255,7 @@ void wifiLoop() {
         influxDbInit();
         cfg.setWifiConnected(WiFi.isConnected());
     }
+    hassMQTT.loop();
 }
 
 int getWifiRSSI() {

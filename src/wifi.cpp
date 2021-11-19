@@ -1,16 +1,21 @@
 #include <wifi.hpp>
 
-uint32_t ifxdbwcount;
 int rssi = 0;
 String hostId = "";
 
-InfluxDBClient influx;
-Point sensor ("fixed_stations_01");
-bool ifx_ready;
+/******************************************************************************
+*   H A S S   M E T H O D S
+******************************************************************************/
+
+HAMqttDevice hassSensor("CanAirIO Device", HAMqttDevice::SENSOR);
 
 /******************************************************************************
 *   I N F L U X D B   M E T H O D S
 ******************************************************************************/
+
+InfluxDBClient influx;
+Point sensor ("fixed_stations_01");
+bool ifx_ready;
 
 bool influxDbIsConfigured() {
     if(cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.geo.length()==0) {

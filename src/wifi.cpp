@@ -8,6 +8,7 @@ String hostId = "";
 ******************************************************************************/
 
 HAMqttDevice hassSensor("CanAirIO Device", HAMqttDevice::SENSOR);
+HAMqttDevice anaireSensor("CanAirIO Device", HAMqttDevice::SENSOR);
 
 EspMQTTClient hassMQTT(
   "192.168.178.88",
@@ -17,17 +18,52 @@ EspMQTTClient hassMQTT(
   "HassMQTTClient"
 );
 
+EspMQTTClient anaireMQTT(
+  "mqtt.anaire.org",
+  80,
+  "", 
+  "",
+  "HassMQTTClient"
+);
+
 void onConnectionEstablished() {
-    Serial.printf("-->[MQTT] connected to %s\n",hassMQTT.getMqttServerIp());
+    Serial.printf("-->[MQTT] Hass connected to %s\n",hassMQTT.getMqttServerIp());
     hassMQTT.subscribe(hassSensor.getCommandTopic(), [](const String& payload) {
         if (payload.equals("ON"))
-            Serial.printf("-->[MQTT] %d\n",true);
+            Serial.printf("-->[MQTT] Hass command: %d\n",true);
         else if (payload.equals("OFF"))
-            Serial.printf("-->[MQTT] %d\n",false);
+            Serial.printf("-->[MQTT] Hass command %d\n",false);
 
         hassMQTT.publish(hassSensor.getStateTopic(), payload);
         // valueChangedMillis = millis();
     });
+}
+
+void onAnaireConnectionEstablished() {
+    Serial.printf("-->[MQTT] Anaire connected to %s\n",anaireMQTT.getMqttServerIp());
+    hassMQTT.subscribe("measurement", [](const String& payload) {
+            Serial.printf("-->[MQTT] Anaire measurement: %s\n",payload.c_str());
+    });
+}
+
+String getAnaireDeviceId() {  // Get TTGO T-Display info and fill up anaire_device_id with last 6 digits (in HEX) of WiFi mac address
+    uint32_t chipId = 0;
+    for (int i = 0; i < 17; i = i + 8) {
+        chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+    }
+    return String(chipId, HEX);  // HEX format for backwards compatibility to Anaire devices based on NodeMCU board
+}
+
+void mqttPublish() {
+    char MQTT_message[256];
+    sprintf(MQTT_message, "{id: %s,CO2: %d,humidity: %f,temperature: %f,VBat: %f}", 
+        getAnaireDeviceId().c_str(),
+        sensors.getCO2(), 
+        sensors.getCO2humi(),
+        sensors.getCO2temp(),
+        0.0
+    );
+    anaireMQTT.publish("measurement", MQTT_message);
 }
 
 void mqttInit() {
@@ -37,8 +73,25 @@ void mqttInit() {
     .addConfigVar("bri_stat_t", "~/br/state")
     .addConfigVar("bri_cmd_t", "~/br/cmd")
     .addConfigVar("bri_scl", "100");
+
+    
      hassMQTT.setOnConnectionEstablishedCallback(onConnectionEstablished);
      hassMQTT.enableHTTPWebUpdater();
+     hassMQTT.enableDebuggingMessages();
+
+     anaireMQTT.setOnConnectionEstablishedCallback(onAnaireConnectionEstablished);
+     anaireMQTT.enableHTTPWebUpdater();
+     anaireMQTT.enableDebuggingMessages();
+}
+
+void mqttLoop () {
+    static uint_fast64_t mqttTimeStamp = 0;
+    if (millis() - mqttTimeStamp > cfg.stime * 2 * 1000) {
+        mqttTimeStamp = millis();
+        mqttPublish();
+    }
+    hassMQTT.loop();
+    anaireMQTT.loop();
 }
 
 /******************************************************************************
@@ -255,7 +308,7 @@ void wifiLoop() {
         influxDbInit();
         cfg.setWifiConnected(WiFi.isConnected());
     }
-    hassMQTT.loop();
+    mqttLoop();
 }
 
 int getWifiRSSI() {

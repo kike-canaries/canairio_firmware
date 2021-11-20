@@ -10,6 +10,7 @@ class ConfigApp {
     uint64_t chipid;
     String deviceId;
     String dname;
+    String anaireId;
     int stime;
     int stype;
     double lat;
@@ -153,6 +154,8 @@ class ConfigApp {
     bool saveI2COnly(bool enable);
 
     void performCO2Calibration();
+
+    String getAnaireDeviceId();
 
     void DEBUG(const char* text, const char* textb = "");
 

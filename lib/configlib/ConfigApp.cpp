@@ -38,7 +38,7 @@ void ConfigApp::reload() {
     devmode = preferences.getBool("debugEnable", false);
     pax_enable = preferences.getBool("paxEnable", true);
     i2conly = preferences.getBool("i2conly", false);
-    hassip = preferences.getString("hassip", "");
+    hassip = preferences.getString("hassip", "192.168.178.88");
     hasspt = preferences.getUInt("hasspt", 1883);
     hassusr = preferences.getString("hassusr", "");
     hasspsw = preferences.getString("hasspsw", "");
@@ -64,7 +64,7 @@ String ConfigApp::getCurrentConfig() {
     doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
     doc["toffset"] = preferences.getFloat("toffset", 0.0);   // temperature offset
     doc["altoffset"] = preferences.getFloat("altoffset",0.0);// altitude offset
-    doc["hassip"] = preferences.getString("hassip", "");     // Home Assistant MQTT server ip
+    doc["hassip"] = preferences.getString("hassip", "192.168.178.88");     // Home Assistant MQTT server ip
     doc["hasspt"] = preferences.getUInt("hasspt", 1883);     // Home Assistant MQTT server port
     doc["hassusr"] = preferences.getString("hassusr", "");   // Home Assistant MQTT user
     doc["hasspsw"] = preferences.getString("hasspsw", "");   // Home Assistant MQTT password

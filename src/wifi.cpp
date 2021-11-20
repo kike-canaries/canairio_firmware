@@ -77,13 +77,13 @@ void hassInit() {
     
      hassMQTT.setOnConnectionEstablishedCallback(onConnectionEstablished);
      hassMQTT.enableHTTPWebUpdater();
-     hassMQTT.enableDebuggingMessages();
+     if(cfg.devmode) hassMQTT.enableDebuggingMessages();
 }
 
 void anaireInit() { 
     anaireMQTT.setOnConnectionEstablishedCallback(onAnaireConnectionEstablished);
     anaireMQTT.enableHTTPWebUpdater();
-    anaireMQTT.enableDebuggingMessages();
+    if(cfg.devmode) anaireMQTT.enableDebuggingMessages();
 }
 
 void mqttInit() {

@@ -19,6 +19,11 @@ class ConfigApp {
     String ssid;
     String pass;
 
+    String hassip;
+    String hassusr;
+    String hasspsw;
+    int16_t hasspt;
+
     struct ifxdbValues {
         String db = "canairio";
         String ip = "influxdb.canair.io";
@@ -70,6 +75,14 @@ class ConfigApp {
     bool debugEnable(bool enable);
     
     bool paxEnable(bool enable);
+
+    bool saveHassIP(String ip);
+
+    bool saveHassPort(int port);
+
+    bool saveHassPassword(String pass);
+
+    bool saveHassUser(String user);
 
     String getCurrentConfig();
 

@@ -37,6 +37,10 @@ void ConfigApp::reload() {
     devmode = preferences.getBool("debugEnable", false);
     pax_enable = preferences.getBool("paxEnable", true);
     i2conly = preferences.getBool("i2conly", false);
+    hassip = preferences.getString("hassip", "");
+    hasspt = preferences.getUInt("hasspt", 1883);
+    hassusr = preferences.getString("hassusr", "");
+    hasspsw = preferences.getString("hasspsw", "");
 
     preferences.end();
 }
@@ -59,6 +63,10 @@ String ConfigApp::getCurrentConfig() {
     doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
     doc["toffset"] = preferences.getFloat("toffset", 0.0);   // temperature offset
     doc["altoffset"] = preferences.getFloat("altoffset",0.0);// altitude offset
+    doc["hassip"] = preferences.getString("hassip", "");     // Home Assistant MQTT server ip
+    doc["hasspt"] = preferences.getUInt("hasspt", 1883);     // Home Assistant MQTT server port
+    doc["hassusr"] = preferences.getString("hassusr", "");   // Home Assistant MQTT user
+    doc["hasspsw"] = preferences.getString("hasspsw", "");   // Home Assistant MQTT password
     doc["lskey"] = lastKeySaved;                             // last key saved
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
     doc["wsta"] = wifi_connected;                            // current wifi state 
@@ -265,6 +273,42 @@ bool ConfigApp::saveI2COnly(bool enable) {
     return true;
 }
 
+bool ConfigApp::saveHassIP(String ip) {
+    preferences.begin(_app_name, false);
+    preferences.putString("hassip", ip);
+    preferences.end();
+    setLastKeySaved("hassip");
+    Serial.printf("-->[CONF] Hass IP: %s saved.\n",ip.c_str());
+    return true;
+}
+
+bool ConfigApp::saveHassPort(int port) {
+    preferences.begin(_app_name, false);
+    preferences.putInt("hasspt", port);
+    preferences.end();
+    setLastKeySaved("hasspt");
+    Serial.printf("-->[CONF] Hass Port: %i saved.\n", port);
+    return true;
+}
+
+bool ConfigApp::saveHassUser(String user) {
+    preferences.begin(_app_name, false);
+    preferences.putString("hassusr", user);
+    preferences.end();
+    setLastKeySaved("hassusr");
+    Serial.printf("-->[CONF] Hass User: %s saved.\n", user.c_str());
+    return true;
+}
+
+bool ConfigApp::saveHassPassword(String passw) {
+    preferences.begin(_app_name, false);
+    preferences.putString("hasspsw", passw);
+    preferences.end();
+    setLastKeySaved("hasspsw");
+    Serial.println("-->[CONF] Hass password saved.");
+    return true;
+}
+
 bool ConfigApp::save(const char *json) {
     StaticJsonDocument<1000> doc;
     auto error = deserializeJson(doc, json);
@@ -293,8 +337,11 @@ bool ConfigApp::save(const char *json) {
     if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
     if (doc.containsKey("toffset")) return saveTempOffset(doc["toffset"].as<float>());
     if (doc.containsKey("altoffset")) return saveAltitudeOffset(doc["altoffset"].as<float>());
+    if (doc.containsKey("hassip")) return saveHassIP(doc["hassip"] | "");
+    if (doc.containsKey("hasspt")) return saveHassPort(doc["hasspt"] | 1883);
+    if (doc.containsKey("hassusr")) return saveHassUser(doc["hassusr"] | "");
+    if (doc.containsKey("hasspsw")) return saveHassPassword(doc["hasspsw"] | "");
     
-
     // some actions with chopid validation (for security reasons)
     if (cmd == ((uint16_t)(chipid >> 32)) && act.length() > 0) {
         if (act.equals("wst")) return wifiEnable(doc["wenb"].as<bool>());

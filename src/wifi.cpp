@@ -70,8 +70,12 @@ void mqttPublish() {
     anaireMqttPublish();
 }
 
+bool isHassEnabled() {
+    return !cfg.hassip.isEmpty();
+}
+
 void hassInit() {
-    if (cfg.hassip.isEmpty()) return;
+    if(!isHassEnabled()) return;
      hassSensor
     .enableAttributesTopic()
     .addConfigVar("bri_stat_t", "~/br/state")
@@ -100,8 +104,10 @@ void mqttLoop () {
         mqttTimeStamp = millis();
         mqttPublish();
     }
-    hassMQTT.loop();
+
+    if(isHassEnabled()) hassMQTT.loop();
     anaireMQTT.loop();
+
 }
 
 /******************************************************************************

@@ -46,15 +46,13 @@ void onAnaireConnectionEstablished() {
     });
 }
 
-String getAnaireDeviceId() {  // Get TTGO T-Display info and fill up anaire_device_id with last 6 digits (in HEX) of WiFi mac address
+String getAnaireDeviceId() { 
     uint32_t chipId = 0;
-    for (int i = 0; i < 17; i = i + 8) {
-        chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
-    }
-    return String(chipId, HEX);  // HEX format for backwards compatibility to Anaire devices based on NodeMCU board
+    for (int i = 0; i < 17; i = i + 8) chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+    return String(chipId, HEX);
 }
 
-void mqttPublish() {
+void anaireMqttPublish() {
     char MQTT_message[256];
     sprintf(MQTT_message, "{id: %s,CO2: %d,humidity: %f,temperature: %f,VBat: %f}", 
         getAnaireDeviceId().c_str(),
@@ -66,22 +64,31 @@ void mqttPublish() {
     anaireMQTT.publish("measurement", MQTT_message);
 }
 
-void mqttInit() {
+void mqttPublish() {
+    anaireMqttPublish();
+}
 
+void hassInit() {
      hassSensor
     .enableAttributesTopic()
     .addConfigVar("bri_stat_t", "~/br/state")
     .addConfigVar("bri_cmd_t", "~/br/cmd")
     .addConfigVar("bri_scl", "100");
-
     
      hassMQTT.setOnConnectionEstablishedCallback(onConnectionEstablished);
      hassMQTT.enableHTTPWebUpdater();
      hassMQTT.enableDebuggingMessages();
+}
 
-     anaireMQTT.setOnConnectionEstablishedCallback(onAnaireConnectionEstablished);
-     anaireMQTT.enableHTTPWebUpdater();
-     anaireMQTT.enableDebuggingMessages();
+void anaireInit() { 
+    anaireMQTT.setOnConnectionEstablishedCallback(onAnaireConnectionEstablished);
+    anaireMQTT.enableHTTPWebUpdater();
+    anaireMQTT.enableDebuggingMessages();
+}
+
+void mqttInit() {
+    hassInit();
+    anaireInit();
 }
 
 void mqttLoop () {

@@ -24,7 +24,7 @@ class ConfigApp {
     String hassusr;
     String hasspsw;
     int16_t hasspt;
-
+    
     struct ifxdbValues {
         String db = "canairio";
         String ip = "influxdb.canair.io";

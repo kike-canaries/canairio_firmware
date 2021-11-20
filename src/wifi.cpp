@@ -78,7 +78,7 @@ void hassInit() {
 
     hassMQTT->setOnConnectionEstablishedCallback(onConnectionEstablished);
     hassMQTT->enableHTTPWebUpdater();
-     if(CORE_DEBUG_LEVEL > 0) hassMQTT.enableDebuggingMessages();
+     if(CORE_DEBUG_LEVEL > 0) hassMQTT->enableDebuggingMessages();
     // hassMQTT->enableDebuggingMessages();
 }
 

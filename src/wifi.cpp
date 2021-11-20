@@ -26,12 +26,6 @@ EspMQTTClient anaireMQTT(
   "HassMQTTClient"
 );
 
-String getAnaireDeviceId() { 
-    uint32_t chipId = 0;
-    for (int i = 0; i < 17; i = i + 8) chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
-    return String(chipId, HEX);
-}
-
 void onConnectionEstablished() {
     Serial.printf("-->[MQTT] Hass connected to %s\n",hassMQTT.getMqttServerIp());
     hassMQTT.subscribe(hassSensor.getCommandTopic(), [](const String& payload) {
@@ -47,7 +41,7 @@ void onConnectionEstablished() {
 
 void onAnaireConnectionEstablished() {
     Serial.printf("-->[MQTT] Anaire connected to %s\n", anaireMQTT.getMqttServerIp());
-    Serial.printf("-->[MQTT] Anaire deviceId: %s\n", getAnaireDeviceId().c_str());
+    Serial.printf("-->[MQTT] Anaire deviceId: %s\n", cfg.anaireId.c_str());
     // subscription for see all Anaire devices:
     // anaireMQTT.subscribe("measurement", [](const String& payload) {
     //     Serial.printf("-->[MQTT] Anaire measurement: %s\n", payload.c_str());
@@ -57,7 +51,7 @@ void onAnaireConnectionEstablished() {
 void anaireMqttPublish() {
     char MQTT_message[256];
     sprintf(MQTT_message, "{id: %s,CO2: %d,humidity: %f,temperature: %f,VBat: %f}", 
-        getAnaireDeviceId().c_str(),
+        cfg.anaireId.c_str(),
         sensors.getCO2(), 
         sensors.getCO2humi(),
         sensors.getCO2temp(),
@@ -324,7 +318,7 @@ void wifiLoop() {
         influxDbInit();
         cfg.setWifiConnected(WiFi.isConnected());
     }
-    mqttLoop();
+    if(cfg.isWifiEnable()) mqttLoop();
 }
 
 int getWifiRSSI() {

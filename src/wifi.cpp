@@ -10,7 +10,7 @@ String hostId = "";
 HAMqttDevice hassSensor("CanAirIO Device", HAMqttDevice::SENSOR);
 HAMqttDevice anaireSensor("CanAirIO Device", HAMqttDevice::SENSOR);
 
-EspMQTTClient* hassMQTT;
+EspMQTTClient hassMQTT;
 EspMQTTClient anaireMQTT(
   "mqtt.anaire.org",
   80,
@@ -20,21 +20,41 @@ EspMQTTClient anaireMQTT(
 );
 
 void onConnectionEstablished() {
-    Serial.printf("-->[MQTT] Hass connected to %s\n",hassMQTT->getMqttServerIp());
-    hassMQTT->subscribe(hassSensor.getCommandTopic(), [](const String& payload) {
+    Serial.printf("-->[MQTT] Hass connected to %s\n",hassMQTT.getMqttServerIp());
+    delay(100);
+    hassMQTT.subscribe(hassSensor.getCommandTopic(), [](const String& payload) {
         if (payload.equals("ON"))
             Serial.printf("-->[MQTT] Hass command: %d\n",true);
         else if (payload.equals("OFF"))
             Serial.printf("-->[MQTT] Hass command %d\n",false);
 
-        hassMQTT->publish(hassSensor.getStateTopic(), payload);
+        hassMQTT.publish(hassSensor.getStateTopic(), payload);
         // valueChangedMillis = millis();
+    });
+
+    hassMQTT.subscribe("ha/status", [](const String& payload) {
+        if (payload.equals("online")) {
+            Serial.println("-->[MQTT] Hass is online");
+            hassMQTT.publish(hassSensor.getConfigTopic(), hassSensor.getConfigPayload());
+
+            // hassMQTT.executeDelayed(send_states_delay, []() {
+            //     client.publish(dimmableLight.getStateTopic(), lightValues.lightOn ? "ON" : "OFF");
+            //     client.publish(dimmableLight.getTopic() + "/br/state", String(lightValues.brightness));
+
+            //     dimmableLight
+            //         .clearAttributes()
+            //         .addAttribute("IP", WiFi.localIP().toString());
+            //     client.publish(dimmableLight.getAttributesTopic(), dimmableLight.getAttributesPayload());
+            // });
+        }
     });
 }
 
 void onAnaireConnectionEstablished() {
-    Serial.printf("-->[MQTT] Anaire connected to %s\n", anaireMQTT.getMqttServerIp());
-    Serial.printf("-->[MQTT] Anaire deviceId: %s\n", cfg.anaireId.c_str());
+    if (cfg.devmode) {
+        Serial.printf("-->[MQTT] Anaire connected to %s\n", anaireMQTT.getMqttServerIp());
+        Serial.printf("-->[MQTT] Anaire deviceId: %s\n", cfg.anaireId.c_str());
+    }
     // subscription for see all Anaire devices:
     // anaireMQTT.subscribe("measurement", [](const String& payload) {
     //     Serial.printf("-->[MQTT] Anaire measurement: %s\n", payload.c_str());
@@ -62,46 +82,41 @@ bool isHassEnabled() {
 }
 
 void hassInit() {
-    if (!isHassEnabled()) return;
     hassSensor
         .enableAttributesTopic()
         .addConfigVar("bri_stat_t", "~/br/state")
         .addConfigVar("bri_cmd_t", "~/br/cmd")
         .addConfigVar("bri_scl", "100");
 
-    hassMQTT = new EspMQTTClient(
-        cfg.hassip.c_str(),
-        cfg.hasspt,
-        cfg.hassusr.c_str(),
-        cfg.hasspsw.c_str(),
-        "HassMQTTClient");
-
-    hassMQTT->setOnConnectionEstablishedCallback(onConnectionEstablished);
-    hassMQTT->enableHTTPWebUpdater();
-     if(CORE_DEBUG_LEVEL > 0) hassMQTT->enableDebuggingMessages();
-    // hassMQTT->enableDebuggingMessages();
+    if(CORE_DEBUG_LEVEL > 0) hassMQTT.enableDebuggingMessages();
+    hassMQTT.setMqttClientName(cfg.getDeviceId().c_str());
+    hassMQTT.setMqttServer(cfg.hassip.c_str(), cfg.hassusr.c_str(), cfg.hasspsw.c_str(), cfg.hasspt);
+    hassMQTT.setOnConnectionEstablishedCallback(onConnectionEstablished);
+    hassMQTT.setKeepAlive(60);
+    if(cfg.devmode) Serial.printf("-->[MQTT] connecting to %s\n", hassMQTT.getMqttServerIp());
 }
 
 void anaireInit() { 
-    anaireMQTT.setOnConnectionEstablishedCallback(onAnaireConnectionEstablished);
-    anaireMQTT.enableHTTPWebUpdater();
     if(CORE_DEBUG_LEVEL > 0) anaireMQTT.enableDebuggingMessages();
-    // anaireMQTT.enableDebuggingMessages();
+    anaireMQTT.setOnConnectionEstablishedCallback(onAnaireConnectionEstablished);
+    if(cfg.devmode) Serial.printf("-->[MQTT] connecting to %s\n", anaireMQTT.getMqttServerIp());
 }
 
 void mqttInit() {
+    Serial.println("-->[MQTT] mqttInit");
     hassInit();
     anaireInit();
 }
 
 void mqttLoop () {
+    if(!WiFi.isConnected()) return; 
     static uint_fast64_t mqttTimeStamp = 0;
     if (millis() - mqttTimeStamp > cfg.stime * 2 * 1000) {
         mqttTimeStamp = millis();
         mqttPublish();
     }
-    if(isHassEnabled() && WiFi.isConnected()) hassMQTT->loop();
-    if(WiFi.isConnected()) anaireMQTT.loop();
+    hassMQTT.loop();
+    anaireMQTT.loop();
 }
 
 /******************************************************************************

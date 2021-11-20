@@ -5,6 +5,7 @@ void ConfigApp::init(const char app_name[]) {
     strcpy(_app_name, app_name);
     chipid = ESP.getEfuseMac();
     deviceId = getDeviceId();
+    anaireId = getAnaireDeviceId();
     reload();
     // override with debug INFO level (>=3)
     #ifdef CORE_DEBUG_LEVEL
@@ -69,6 +70,7 @@ String ConfigApp::getCurrentConfig() {
     doc["hasspsw"] = preferences.getString("hasspsw", "");   // Home Assistant MQTT password
     doc["lskey"] = lastKeySaved;                             // last key saved
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
+    doc["anaireid"] =  anaireId;                             // deviceId for Anaire cloud
     doc["wsta"] = wifi_connected;                            // current wifi state 
     doc["vrev"] = REVISION;
     doc["vflv"] = FLAVOR;
@@ -384,6 +386,12 @@ String ConfigApp::getDeviceId() {
     char baseMacChr[18] = {0};
     sprintf(baseMacChr, "%02X:%02X:%02X:%02X:%02X:%02X", baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]+2);
     return String(baseMacChr);
+}
+
+String ConfigApp::getAnaireDeviceId() { 
+    uint32_t chipId = 0;
+    for (int i = 0; i < 17; i = i + 8) chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+    return String(chipId, HEX);
 }
 
 String ConfigApp::getDeviceIdShort() {

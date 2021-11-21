@@ -1,9 +1,12 @@
 #include <wifi.hpp>
 
+/******************************************************************************
+*   C O M M O N   C O D E
+******************************************************************************/
+
 int rssi = 0;
 String hostId = "";
 float humi, temp;
-
 
 void selectTempAndHumidity() {
     humi = sensors.getHumidity();
@@ -13,60 +16,14 @@ void selectTempAndHumidity() {
 }
 
 /******************************************************************************
-*   H A S S   M E T H O D S
+*   M Q T T   M E T H O D S
 ******************************************************************************/
 
-HAMqttDevice hassSensor("CanAirIO Device", HAMqttDevice::SENSOR);
-HAMqttDevice anaireSensor("CanAirIO Device", HAMqttDevice::SENSOR);
+#define ANAIRE_HOST "mqtt.anaire.org"
+#define ANAIRE_TOPIC "measurement"
 
-EspMQTTClient hassMQTT;
-EspMQTTClient anaireMQTT(
-  "mqtt.anaire.org",
-  80,
-  "", 
-  "",
-  "AnaireMQTTClient"
-);
-
-void onConnectionEstablished() {
-    hassMQTT.subscribe(hassSensor.getCommandTopic(), [](const String& payload) {
-        if (payload.equals("ON"))
-            Serial.printf("-->[MQTT] Hass command: %d\n",true);
-        else if (payload.equals("OFF"))
-            Serial.printf("-->[MQTT] Hass command %d\n",false);
-
-        hassMQTT.publish(hassSensor.getStateTopic(), payload);
-        // valueChangedMillis = millis();
-    });
-
-    hassMQTT.subscribe("#/status", [](const String& payload) {
-        if (payload.equals("online")) {
-            Serial.println("-->[MQTT] Hass is online");
-            hassMQTT.publish(hassSensor.getConfigTopic(), hassSensor.getConfigPayload());
-
-            // hassMQTT.executeDelayed(send_states_delay, []() {
-            //     client.publish(dimmableLight.getStateTopic(), lightValues.lightOn ? "ON" : "OFF");
-            //     client.publish(dimmableLight.getTopic() + "/br/state", String(lightValues.brightness));
-
-            //     dimmableLight
-            //         .clearAttributes()
-            //         .addAttribute("IP", WiFi.localIP().toString());
-            //     client.publish(dimmableLight.getAttributesTopic(), dimmableLight.getAttributesPayload());
-            // });
-        }
-    });
-}
-
-void onAnaireConnectionEstablished() {
-    if (cfg.devmode) {
-        Serial.printf("-->[MQTT] Anaire connected to %s\n", anaireMQTT.getMqttServerIp());
-        Serial.printf("-->[MQTT] Anaire deviceId: %s\n", cfg.getStationName().c_str());
-    }
-    // subscription for see all Anaire devices:
-    // anaireMQTT.subscribe("measurement", [](const String& payload) {
-    //     Serial.printf("-->[MQTT] Anaire measurement: %s\n", payload.c_str());
-    // });
-}
+WiFiClient net;
+MQTTClient client;
 
 void anaireMqttPublish() {
     char MQTT_message[256];
@@ -91,8 +48,7 @@ void anaireMqttPublish() {
                 temp,
                 0.0);
     }
-
-    anaireMQTT.publish("measurement", MQTT_message);
+    client.publish(ANAIRE_TOPIC, MQTT_message);
 }
 
 void mqttPublish() {
@@ -103,45 +59,49 @@ bool isHassEnabled() {
     return !cfg.hassip.isEmpty();
 }
 
-void hassInit() {
-    if(!isHassEnabled()) return;
-    hassSensor
-        .enableAttributesTopic()
-        .addConfigVar("bri_stat_t", "~/br/state")
-        .addConfigVar("bri_cmd_t", "~/br/cmd")
-        .addConfigVar("bri_scl", "100");
+void messageReceived(String &topic, String &payload) {
+    // subscription for see all Anaire devices:
+    if(cfg.devmode) Serial.println("-->[MQTT] incoming: " + topic + " - " + payload);
 
-    if(cfg.devmode) hassMQTT.enableDebuggingMessages();
-    hassMQTT.setMqttClientName(cfg.getDeviceId().c_str());
-    hassMQTT.setMqttServer(cfg.hassip.c_str(), cfg.hassusr.c_str(), cfg.hasspsw.c_str(), cfg.hasspt);
-    hassMQTT.setOnConnectionEstablishedCallback(onConnectionEstablished);
-    hassMQTT.setKeepAlive(60);
-    if(cfg.devmode) Serial.printf("-->[MQTT] connecting to %s\n", hassMQTT.getMqttServerIp());
+    // Note: Do not use the client in the callback to publish, subscribe or
+    // unsubscribe as it may cause deadlocks when other things arrive while
+    // sending and receiving acknowledgments. Instead, change a global variable,
+    // or push to a queue and handle it in the loop after calling `client.loop()`.
+}
+
+void connect() {
+    Serial.printf("-->[MQTT] Anaire connecting to %s ..", ANAIRE_HOST);
+    while (cfg.isWifiEnable() && WiFi.isConnected() && !client.connect(cfg.getStationName().c_str())) {
+        Serial.print(".");
+        delay(500);
+    }
+    Serial.println("connected!");
+    client.subscribe(ANAIRE_TOPIC);
 }
 
 void anaireInit() { 
-    if(cfg.devmode) anaireMQTT.enableDebuggingMessages();
-    anaireMQTT.setOnConnectionEstablishedCallback(onAnaireConnectionEstablished);
-    anaireMQTT.setKeepAlive(120);
-    anaireMQTT.setMaxPacketSize(512);
-    if(cfg.devmode) Serial.printf("-->[MQTT] connecting to %s\n", anaireMQTT.getMqttServerIp());
+    client.begin(ANAIRE_HOST, 80, net);
+    // client.onMessage(messageReceived);
+    connect();
 }
 
 void mqttInit() {
     Serial.println("-->[MQTT] mqttInit");
-    hassInit();
     anaireInit();
 }
 
 void mqttLoop () {
     if(!WiFi.isConnected()) return; 
+
+    client.loop();
+    delay(10);
+    if (!client.connected()) connect();
+
     static uint_fast64_t mqttTimeStamp = 0;
     if (millis() - mqttTimeStamp > cfg.stime * 1000) {
         mqttTimeStamp = millis();
         mqttPublish();
     }
-    hassMQTT.loop();
-    anaireMQTT.loop();
 }
 
 /******************************************************************************

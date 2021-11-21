@@ -20,8 +20,6 @@ EspMQTTClient anaireMQTT(
 );
 
 void onConnectionEstablished() {
-    Serial.printf("-->[MQTT] Hass connected to %s\n",hassMQTT.getMqttServerIp());
-    delay(100);
     hassMQTT.subscribe(hassSensor.getCommandTopic(), [](const String& payload) {
         if (payload.equals("ON"))
             Serial.printf("-->[MQTT] Hass command: %d\n",true);
@@ -32,7 +30,7 @@ void onConnectionEstablished() {
         // valueChangedMillis = millis();
     });
 
-    hassMQTT.subscribe("ha/status", [](const String& payload) {
+    hassMQTT.subscribe("#/status", [](const String& payload) {
         if (payload.equals("online")) {
             Serial.println("-->[MQTT] Hass is online");
             hassMQTT.publish(hassSensor.getConfigTopic(), hassSensor.getConfigPayload());
@@ -82,6 +80,7 @@ bool isHassEnabled() {
 }
 
 void hassInit() {
+    if(!isHassEnabled()) return;
     hassSensor
         .enableAttributesTopic()
         .addConfigVar("bri_stat_t", "~/br/state")

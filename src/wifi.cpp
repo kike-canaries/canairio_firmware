@@ -2,6 +2,15 @@
 
 int rssi = 0;
 String hostId = "";
+float humi, temp;
+
+
+void selectTempAndHumidity() {
+    humi = sensors.getHumidity();
+    if(humi == 0.0) humi = sensors.getCO2humi();
+    temp = sensors.getTemperature();
+    if(temp == 0.0) temp = sensors.getCO2temp();
+}
 
 /******************************************************************************
 *   H A S S   M E T H O D S
@@ -51,7 +60,7 @@ void onConnectionEstablished() {
 void onAnaireConnectionEstablished() {
     if (cfg.devmode) {
         Serial.printf("-->[MQTT] Anaire connected to %s\n", anaireMQTT.getMqttServerIp());
-        Serial.printf("-->[MQTT] Anaire deviceId: %s\n", cfg.anaireId.c_str());
+        Serial.printf("-->[MQTT] Anaire deviceId: %s\n", cfg.getStationName().c_str());
     }
     // subscription for see all Anaire devices:
     // anaireMQTT.subscribe("measurement", [](const String& payload) {
@@ -61,13 +70,28 @@ void onAnaireConnectionEstablished() {
 
 void anaireMqttPublish() {
     char MQTT_message[256];
-    sprintf(MQTT_message, "{id: %s,CO2: %d,humidity: %f,temperature: %f,VBat: %f}", 
-        cfg.anaireId.c_str(),
-        sensors.getCO2(), 
-        sensors.getCO2humi(),
-        sensors.getCO2temp(),
-        0.0
-    );
+
+    int deviceType = sensors.getPmDeviceTypeSelected();
+    selectTempAndHumidity();
+
+    if (deviceType <= 3) {
+        sprintf(MQTT_message, "{id: %s,pm1: %d,pm25: %d, pm10: %d, tmp: %f, hum: %f, geo: %s}",
+                cfg.getStationName().c_str(),
+                sensors.getPM1(),
+                sensors.getPM25(),
+                sensors.getPM10(),
+                temp,
+                humi,
+                cfg.geo.c_str());
+    } else {
+        sprintf(MQTT_message, "{id: %s,CO2: %d,humidity: %f,temperature: %f,VBat: %f}",
+                cfg.getStationName().c_str(),
+                sensors.getCO2(),
+                humi,
+                temp,
+                0.0);
+    }
+
     anaireMQTT.publish("measurement", MQTT_message);
 }
 
@@ -87,7 +111,7 @@ void hassInit() {
         .addConfigVar("bri_cmd_t", "~/br/cmd")
         .addConfigVar("bri_scl", "100");
 
-    if(CORE_DEBUG_LEVEL > 0) hassMQTT.enableDebuggingMessages();
+    if(cfg.devmode) hassMQTT.enableDebuggingMessages();
     hassMQTT.setMqttClientName(cfg.getDeviceId().c_str());
     hassMQTT.setMqttServer(cfg.hassip.c_str(), cfg.hassusr.c_str(), cfg.hasspsw.c_str(), cfg.hasspt);
     hassMQTT.setOnConnectionEstablishedCallback(onConnectionEstablished);
@@ -96,8 +120,10 @@ void hassInit() {
 }
 
 void anaireInit() { 
-    if(CORE_DEBUG_LEVEL > 0) anaireMQTT.enableDebuggingMessages();
+    if(cfg.devmode) anaireMQTT.enableDebuggingMessages();
     anaireMQTT.setOnConnectionEstablishedCallback(onAnaireConnectionEstablished);
+    anaireMQTT.setKeepAlive(120);
+    anaireMQTT.setMaxPacketSize(512);
     if(cfg.devmode) Serial.printf("-->[MQTT] connecting to %s\n", anaireMQTT.getMqttServerIp());
 }
 
@@ -110,7 +136,7 @@ void mqttInit() {
 void mqttLoop () {
     if(!WiFi.isConnected()) return; 
     static uint_fast64_t mqttTimeStamp = 0;
-    if (millis() - mqttTimeStamp > cfg.stime * 2 * 1000) {
+    if (millis() - mqttTimeStamp > cfg.stime * 1000) {
         mqttTimeStamp = millis();
         mqttPublish();
     }
@@ -133,21 +159,10 @@ bool influxDbIsConfigured() {
     return cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.geo.length() > 0;
 }
 
-String influxdbGetStationName() {
-    String name = ""+cfg.geo.substring(0,3);         // GeoHash ~70km https://en.wikipedia.org/wiki/Geohash
-    name = name + String(FLAVOR).substring(0,7);     // Flavor short, firmware name (board)
-    name = name + cfg.getDeviceId().substring(10);    // MAC address 4 digts
-    name.replace("_","");
-    name.replace(":","");
-    name.toUpperCase();
-
-    return name;
-}
-
 void influxDbAddTags() {
     sensor.addTag("mac",cfg.deviceId.c_str());
     sensor.addTag("geo3",cfg.geo.substring(0,3).c_str());
-    sensor.addTag("name",influxdbGetStationName().c_str());
+    sensor.addTag("name",cfg.getStationName().c_str());
 }
 
 void influxDbInit() {
@@ -172,14 +187,8 @@ void influxDbInit() {
  *
  */
 void influxDbParseFields() {
-    // select humi and temp for publish it
-    float humi = sensors.getHumidity();
-    if(humi == 0.0) humi = sensors.getCO2humi();
-    float temp = sensors.getTemperature();
-    if(temp == 0.0) temp = sensors.getCO2temp();
-
     sensor.clearFields();
-
+    selectTempAndHumidity();
     sensor.addField("pm1",sensors.getPM1());
     sensor.addField("pm25",sensors.getPM25());
     sensor.addField("pm10",sensors.getPM10());
@@ -192,7 +201,7 @@ void influxDbParseFields() {
     sensor.addField("prs",sensors.getPressure());
     sensor.addField("gas",sensors.getGas());
     sensor.addField("alt",sensors.getAltitude());
-    sensor.addField("name",influxdbGetStationName().c_str());
+    sensor.addField("name",cfg.getStationName().c_str());
 }
 
 bool influxDbWrite() {
@@ -349,6 +358,6 @@ String getDeviceInfo () {
     info = info + "(" + WiFi.localIP().toString() + ")\n";
     info = info + "OTA: " + String(TARGET) + " channel\n\n";
     info = info + "Fixed station:\n";
-    info = info + influxdbGetStationName();
+    info = info + cfg.getStationName();
     return info;
 }

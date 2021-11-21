@@ -32,7 +32,7 @@ void anaireMqttPublish() {
     selectTempAndHumidity();
 
     if (deviceType <= 3) {
-        sprintf(MQTT_message, "{id: %s,pm1: %d,pm25: %d, pm10: %d, tmp: %f, hum: %f, geo: %s}",
+        sprintf(MQTT_message, "{id: %s, pm1: %d, pm25: %d, pm10: %d, tmp: %f, hum: %f, geo: %s}",
                 cfg.getStationName().c_str(),
                 sensors.getPM1(),
                 sensors.getPM25(),
@@ -41,7 +41,7 @@ void anaireMqttPublish() {
                 humi,
                 cfg.geo.c_str());
     } else {
-        sprintf(MQTT_message, "{id: %s,CO2: %d,humidity: %f,temperature: %f,VBat: %f}",
+        sprintf(MQTT_message, "{id: %s,CO2: %d, humidity: %f, temperature: %f,VBat: %f}",
                 cfg.getStationName().c_str(),
                 sensors.getCO2(),
                 humi,

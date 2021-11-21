@@ -10,7 +10,7 @@ class ConfigApp {
     uint64_t chipid;
     String deviceId;
     String dname;
-    String anaireId;
+    
     int stime;
     int stype;
     double lat;
@@ -100,6 +100,8 @@ class ConfigApp {
     String getDeviceId();
 
     String getDeviceIdShort();
+
+    String getStationName();
 
     int getSensorType();
 

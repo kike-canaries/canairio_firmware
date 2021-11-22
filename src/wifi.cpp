@@ -21,6 +21,7 @@ void selectTempAndHumidity() {
 
 #define ANAIRE_HOST "mqtt.anaire.org"
 #define ANAIRE_TOPIC "measurement"
+#define ANAIRE_PORT 80
 
 WiFiClient net;
 MQTTClient client;
@@ -55,38 +56,32 @@ void mqttPublish() {
     anaireMqttPublish();
 }
 
-bool isHassEnabled() {
-    return !cfg.hassip.isEmpty();
-}
-
-void messageReceived(String &topic, String &payload) {
-    // subscription for see all Anaire devices:
-    if(cfg.devmode) Serial.println("-->[MQTT] incoming: " + topic + " - " + payload);
-
-    // Note: Do not use the client in the callback to publish, subscribe or
-    // unsubscribe as it may cause deadlocks when other things arrive while
-    // sending and receiving acknowledgments. Instead, change a global variable,
-    // or push to a queue and handle it in the loop after calling `client.loop()`.
-}
-
 void connect() {
+
+    if (!(cfg.isWifiEnable() && WiFi.isConnected())) return;
+
     Serial.printf("-->[MQTT] Anaire connecting to %s ..", ANAIRE_HOST);
-    while (cfg.isWifiEnable() && WiFi.isConnected() && !client.connect(cfg.getStationName().c_str())) {
+    int mqtt_try = 0;
+    while (mqtt_try++ < MQTT_RETRY_CONNECTION  && !client.connect(cfg.getStationName().c_str())) {
         Serial.print(".");
         delay(500);
     }
+    if (mqtt_try >= MQTT_RETRY_CONNECTION && !client.connected()) {
+        Serial.println("[E][MQTT] connection failed!");
+        return;
+    }
+
     Serial.println("connected!");
     client.subscribe(ANAIRE_TOPIC);
 }
 
 void anaireInit() { 
-    client.begin(ANAIRE_HOST, 80, net);
-    // client.onMessage(messageReceived);
+    Serial.println("-->[MQTT] Anaire init");
+    client.begin(ANAIRE_HOST, ANAIRE_PORT, net);
     connect();
 }
 
 void mqttInit() {
-    Serial.println("-->[MQTT] mqttInit");
     anaireInit();
 }
 
@@ -114,7 +109,7 @@ bool ifx_ready;
 
 bool influxDbIsConfigured() {
     if(cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.geo.length()==0) {
-        Serial.println("-->[W][IFDB] ifxdb is configured but Location (GeoHash) is missing!");
+        Serial.println("[W][IFDB] ifxdb is configured but Location (GeoHash) is missing!");
     }
     return cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.geo.length() > 0;
 }
@@ -137,7 +132,7 @@ void influxDbInit() {
             Serial.printf("-->[IFDB] connected to %s\n",influx.getServerUrl().c_str());
             ifx_ready = true;
         }
-        else Serial.println("-->[E][IFDB] connection error!");
+        else Serial.println("[E][IFDB] connection error!");
         delay(100);
     }
 }
@@ -168,7 +163,7 @@ bool influxDbWrite() {
     influxDbParseFields();
     log_d("[IFDB] %s",influx.pointToLineProtocol(sensor).c_str());
     if (!influx.writePoint(sensor)) {
-        Serial.print("-->[E][IFDB] Write Point failed: ");
+        Serial.print("[E][IFDB] Write Point failed: ");
         Serial.println(influx.getLastErrorMessage());
         return false;
     }
@@ -185,7 +180,7 @@ void influxDbLoop() {
                 gui.displayDataOnIcon();
             }
             else
-                Serial.printf("-->[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
+                Serial.printf("[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
         }
     }  
 }
@@ -268,7 +263,7 @@ void wifiConnect(const char* ssid, const char* pass) {
         mqttInit();
         wd.resume();
     } else {
-        Serial.println("fail!\n-->[E][WIFI] disconnected!");
+        Serial.println("fail!\n[E][WIFI] disconnected!");
     }
 }
 

@@ -55,7 +55,7 @@ void wifiConnect(const char* ssid, const char* pass) {
     if (wifiCheck()) {
         Serial.println("done\n-->[WIFI] connected!");
     } else {
-        Serial.println("fail!\n-->[E][WIFI] disconnected!");
+        Serial.println("fail!\n[E][WIFI] disconnected!");
     }
 }
 

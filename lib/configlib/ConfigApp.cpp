@@ -132,7 +132,7 @@ bool ConfigApp::saveDeviceName(String name) {
         Serial.println("-->[CONF] set device name to: " + name);
         return true;
     }
-    DEBUG("-->[E][CONF] device name is empty!");
+    DEBUG("[E][CONF] device name is empty!");
     return false;
 }
 
@@ -143,7 +143,7 @@ bool ConfigApp::saveSampleTime(int time) {
         Serial.println(time);
         return true;
     }
-    DEBUG("-->[W][CONF] warning: sample time is too low!");
+    DEBUG("[W][CONF] warning: sample time is too low!");
     return false;
 }
 
@@ -182,7 +182,7 @@ bool ConfigApp::saveSSID(String ssid){
         Serial.println("-->[CONF] WiFi SSID saved!");
         return true;
     }
-    DEBUG("-->[W][CONF] empty Wifi SSID");
+    DEBUG("[W][CONF] empty Wifi SSID");
     return false;
 }
 
@@ -200,7 +200,7 @@ bool ConfigApp::saveWifi(String ssid, String pass){
         log_i("[CONF] ssid:%s pass:%s",ssid,pass);
         return true;
     }
-    DEBUG("-->[W][CONF] empty Wifi SSID");
+    DEBUG("[W][CONF] empty Wifi SSID");
     return false;
 }
 
@@ -218,7 +218,7 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
         Serial.println("-->[CONF] influxdb config saved.");
         return true;
     }
-    DEBUG("-->[W][CONF] wrong InfluxDb params!");
+    DEBUG("[W][CONF] wrong InfluxDb params!");
     return false;
 }
 
@@ -235,7 +235,7 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
         Serial.println(geo);
         return true;
     }
-    DEBUG("-->[W][CONF] wrong GEO params!");
+    DEBUG("[W][CONF] wrong GEO params!");
     return false;
 }
 
@@ -314,7 +314,7 @@ bool ConfigApp::save(const char *json) {
     StaticJsonDocument<1000> doc;
     auto error = deserializeJson(doc, json);
     if (error) {
-        Serial.print(F("-->[E][CONF] deserialize Json failed with code "));
+        Serial.print(F("[E][CONF] deserialize Json failed with code "));
         Serial.println(error.c_str());
         return false;
     }
@@ -355,7 +355,7 @@ bool ConfigApp::save(const char *json) {
         if (act.equals("clb")) performCO2Calibration();
         return true;
     } else {
-        Serial.println("-->[E][CONF] invalid config file!");
+        Serial.println("[E][CONF] invalid config file!");
         return false;
     }
 }
@@ -364,7 +364,7 @@ bool ConfigApp::getTrackStatusValues(const char *json) {
     StaticJsonDocument<200> doc;
     auto error = deserializeJson(doc, json);
     if (error) {
-        Serial.print(F("-->[E][CONF] deserialize Json failed with code "));
+        Serial.print(F("[E][CONF] deserialize Json failed with code "));
         Serial.println(error.c_str());
         return false;
     }

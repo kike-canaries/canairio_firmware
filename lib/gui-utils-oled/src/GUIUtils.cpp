@@ -13,6 +13,7 @@ void guiTask(void* pvParameters) {
         gui.displayMainValues();
         gui.displayGUIStatusFlags();
         gui.pageEnd();
+        // batteryloop();   // battery charge status (deprecated)
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
@@ -53,6 +54,10 @@ void GUIUtils::displayInit() {
     this->u8g2 = u8g2;
     dw = u8g2.getDisplayWidth();
     dh = u8g2.getDisplayHeight();
+
+    // init battery (only for some boards)
+    // batteryInit();
+
     Serial.println("-->[OGUI] display config ready.");
 }
 
@@ -390,7 +395,7 @@ void GUIUtils::displayMainValues() {
 }
 
 // TODO: separate this function, format/display
-void GUIUtils::setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
+void GUIUtils::setSensorData(int mainValue, float humi, float temp, int rssi, int deviceType) {
     suspendTaskGUI();
     _deviceType = deviceType;
     _humi = humi;
@@ -485,6 +490,10 @@ void GUIUtils::setWifiMode(bool enable){
 
 }
 
+void GUIUtils::setPaxMode(bool enable){
+
+}
+
 void GUIUtils::setSampleTime(int time){
 
 }
@@ -494,6 +503,7 @@ void GUIUtils::setTrackValues(float speed, float distance){
 }
 
 void GUIUtils::setTrackTime(int h, int m, int s){
+
 }
 
 void GUIUtils::suspendTaskGUI(){

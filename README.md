@@ -185,6 +185,15 @@ We have some build guides with different alternatives, please visit our [CanAirI
 
 <a href="https://youtu.be/Oarq0K0Sz3c" target="_blank" style="padding-left: 20px" ><img src="images/canairio_bike_soldering_on_youtube.jpg" width="420" ></a>
 
+## Box STL files
+
+** ***************** **
+** W A R N N I N G **
+
+The full updated and last versions for all box versions, are in the [official repository](https://github.com/kike-canaries/canairio_firmware/tree/master/box) because it is more easy for handling the versions than Thingiverse. This page it is only a guide.
+
+** ***************** **
+
 # TODO
 
 - [X] Enable/Disable APIs from App

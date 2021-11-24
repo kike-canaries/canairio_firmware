@@ -60,6 +60,7 @@ void otaInit() {
 void wifiCloudsInit() {
     influxDbInit();    
     anaireInit();
+    hassInit();
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
@@ -69,7 +70,7 @@ void wifiConnect(const char* ssid, const char* pass) {
     WiFi.begin(ssid, pass);
     while (!WiFi.isConnected() && wifi_retry++ <= WIFI_RETRY_CONNECTION) {
         Serial.print(".");
-        delay(200);  // increment this delay on possible reconnect issues
+        delay(400);  // increment this delay on possible reconnect issues
     }
     delay(500);
     if (WiFi.isConnected()) {
@@ -118,6 +119,7 @@ void wifiLoop() {
         cfg.setWifiConnected(WiFi.isConnected());
     }
     anaireLoop();
+    hassLoop();
     influxDbLoop();  // influxDB publication
 }
 

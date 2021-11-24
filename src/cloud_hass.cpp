@@ -1,14 +1,14 @@
-#include <cloud_anaire.hpp>
+#include <cloud_hass.hpp>
 #include <wifi.hpp>
 
 /******************************************************************************
-*  A N A I R E   M Q T T   M E T H O D S
+*  H A S S   M Q T T   M E T H O D S
 ******************************************************************************/
 
-WiFiClient netAnaire;
-MQTTClient client;
+WiFiClient netHass;
+MQTTClient clientHass;
 
-void anairePublish() {
+void hassPublish() {
     static uint_fast64_t mqttTimeStamp = 0;
     if (millis() - mqttTimeStamp > cfg.stime * 1000) {
         mqttTimeStamp = millis();
@@ -38,44 +38,43 @@ void anairePublish() {
                     temp,
                     0.0);
         }
-        client.publish(ANAIRE_TOPIC, MQTT_message);
+        clientHass.publish(HASS_TOPIC, MQTT_message);
     }
 }
 
-static uint_fast64_t mqttDelayedStamp = 0;
+static uint_fast64_t mqttHassDelayedStamp = 0;
 
-void anaireConnect() {
+void hassConnect() {
     if (!(cfg.isWifiEnable() && WiFi.isConnected())) return;
-
-    if (millis() - mqttDelayedStamp > MQTT_DELAYED_TIME * 1000) {
-        Serial.printf("-->[MQTT] Anaire connecting to %s..", ANAIRE_HOST);
+    if (millis() - mqttHassDelayedStamp > MQTT_DELAYED_TIME * 1000) {
+        Serial.printf("-->[MQTT] Hass connecting to %s..", HASS_HOST);
         int mqtt_try = 0;
-        while (mqtt_try++ < MQTT_RETRY_CONNECTION && !client.connect(cfg.getStationName().c_str())) {
+        while (mqtt_try++ < MQTT_RETRY_CONNECTION && !clientHass.connect(cfg.getStationName().c_str())) {
             Serial.print(".");
             delay(100);
         }
-        if (mqtt_try >= MQTT_RETRY_CONNECTION && !client.connected()) {
-            mqttDelayedStamp = millis();
+        if (mqtt_try >= MQTT_RETRY_CONNECTION && !clientHass.connected()) {
+            mqttHassDelayedStamp = millis();
             Serial.println("connection failed!");
             return;
         }
-        mqttDelayedStamp = millis();
+        mqttHassDelayedStamp = millis();
         Serial.println("connected!");
-        client.subscribe(ANAIRE_TOPIC);
+        clientHass.subscribe(HASS_TOPIC);
     }
 }
 
-void anaireInit() { 
-    Serial.println("-->[MQTT] Anaire init");
-    client.begin(ANAIRE_HOST, ANAIRE_PORT, netAnaire);
-    mqttDelayedStamp = millis() - MQTT_DELAYED_TIME * 1000;
-    anaireConnect();
+void hassInit() { 
+    Serial.println("-->[MQTT] Hass init");
+    clientHass.begin(HASS_HOST, HASS_PORT, netHass);
+    mqttHassDelayedStamp = millis() - MQTT_DELAYED_TIME * 1000;
+    hassConnect();
 }
 
-void anaireLoop () {
+void hassLoop () {
     if(!WiFi.isConnected()) return; 
-    client.loop();
+    clientHass.loop();
     delay(10);
-    if (!client.connected()) anaireConnect();
-    anairePublish();
+    if (!clientHass.connected()) hassConnect();
+    hassPublish();
 }

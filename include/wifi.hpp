@@ -8,6 +8,7 @@
 #include <Watchdog.hpp>
 #include <Sensors.hpp>
 #include <cloud_anaire.hpp>
+#include <cloud_hass.hpp>
 #include <cloud_influxdb.hpp>
 
 #define PUBLISH_INTERVAL 30       // publish to cloud each 30 seconds

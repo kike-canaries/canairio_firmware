@@ -150,7 +150,6 @@ void setup() {
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();
 
-
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC: " + cfg.deviceId);
     Serial.println("-->[INFO] Revision: " + gui.getFirmwareVersionCode());

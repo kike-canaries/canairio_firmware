@@ -37,6 +37,10 @@ void ConfigApp::reload() {
     devmode = preferences.getBool("debugEnable", false);
     pax_enable = preferences.getBool("paxEnable", true);
     i2conly = preferences.getBool("i2conly", false);
+    hassip = preferences.getString("hassip", "");
+    hasspt = preferences.getUInt("hasspt", 1883);
+    hassusr = preferences.getString("hassusr", "");
+    hasspsw = preferences.getString("hasspsw", "");
 
     preferences.end();
 }
@@ -59,8 +63,13 @@ String ConfigApp::getCurrentConfig() {
     doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
     doc["toffset"] = preferences.getFloat("toffset", 0.0);   // temperature offset
     doc["altoffset"] = preferences.getFloat("altoffset",0.0);// altitude offset
+    doc["hassip"] = preferences.getString("hassip", "");     // Home Assistant MQTT server ip
+    doc["hasspt"] = preferences.getUInt("hasspt", 1883);     // Home Assistant MQTT server port
+    doc["hassusr"] = preferences.getString("hassusr", "");   // Home Assistant MQTT user
+    doc["hasspsw"] = preferences.getString("hasspsw", "");   // Home Assistant MQTT password
     doc["lskey"] = lastKeySaved;                             // last key saved
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
+    doc["anaireid"] =  getStationName();                     // deviceId for Anaire cloud
     doc["wsta"] = wifi_connected;                            // current wifi state 
     doc["vrev"] = REVISION;
     doc["vflv"] = FLAVOR;
@@ -123,7 +132,7 @@ bool ConfigApp::saveDeviceName(String name) {
         Serial.println("-->[CONF] set device name to: " + name);
         return true;
     }
-    DEBUG("-->[E][CONF] device name is empty!");
+    DEBUG("[E][CONF] device name is empty!");
     return false;
 }
 
@@ -134,7 +143,7 @@ bool ConfigApp::saveSampleTime(int time) {
         Serial.println(time);
         return true;
     }
-    DEBUG("-->[W][CONF] warning: sample time is too low!");
+    DEBUG("[W][CONF] warning: sample time is too low!");
     return false;
 }
 
@@ -173,7 +182,7 @@ bool ConfigApp::saveSSID(String ssid){
         Serial.println("-->[CONF] WiFi SSID saved!");
         return true;
     }
-    DEBUG("-->[W][CONF] empty Wifi SSID");
+    DEBUG("[W][CONF] empty Wifi SSID");
     return false;
 }
 
@@ -191,7 +200,7 @@ bool ConfigApp::saveWifi(String ssid, String pass){
         log_i("[CONF] ssid:%s pass:%s",ssid,pass);
         return true;
     }
-    DEBUG("-->[W][CONF] empty Wifi SSID");
+    DEBUG("[W][CONF] empty Wifi SSID");
     return false;
 }
 
@@ -209,7 +218,7 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
         Serial.println("-->[CONF] influxdb config saved.");
         return true;
     }
-    DEBUG("-->[W][CONF] wrong InfluxDb params!");
+    DEBUG("[W][CONF] wrong InfluxDb params!");
     return false;
 }
 
@@ -226,7 +235,7 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
         Serial.println(geo);
         return true;
     }
-    DEBUG("-->[W][CONF] wrong GEO params!");
+    DEBUG("[W][CONF] wrong GEO params!");
     return false;
 }
 
@@ -265,11 +274,47 @@ bool ConfigApp::saveI2COnly(bool enable) {
     return true;
 }
 
+bool ConfigApp::saveHassIP(String ip) {
+    preferences.begin(_app_name, false);
+    preferences.putString("hassip", ip);
+    preferences.end();
+    setLastKeySaved("hassip");
+    Serial.printf("-->[CONF] Hass IP: %s saved.\n",ip.c_str());
+    return true;
+}
+
+bool ConfigApp::saveHassPort(int port) {
+    preferences.begin(_app_name, false);
+    preferences.putInt("hasspt", port);
+    preferences.end();
+    setLastKeySaved("hasspt");
+    Serial.printf("-->[CONF] Hass Port: %i saved.\n", port);
+    return true;
+}
+
+bool ConfigApp::saveHassUser(String user) {
+    preferences.begin(_app_name, false);
+    preferences.putString("hassusr", user);
+    preferences.end();
+    setLastKeySaved("hassusr");
+    Serial.printf("-->[CONF] Hass User: %s saved.\n", user.c_str());
+    return true;
+}
+
+bool ConfigApp::saveHassPassword(String passw) {
+    preferences.begin(_app_name, false);
+    preferences.putString("hasspsw", passw);
+    preferences.end();
+    setLastKeySaved("hasspsw");
+    Serial.println("-->[CONF] Hass password saved.");
+    return true;
+}
+
 bool ConfigApp::save(const char *json) {
     StaticJsonDocument<1000> doc;
     auto error = deserializeJson(doc, json);
     if (error) {
-        Serial.print(F("-->[E][CONF] deserialize Json failed with code "));
+        Serial.print(F("[E][CONF] deserialize Json failed with code "));
         Serial.println(error.c_str());
         return false;
     }
@@ -293,8 +338,11 @@ bool ConfigApp::save(const char *json) {
     if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
     if (doc.containsKey("toffset")) return saveTempOffset(doc["toffset"].as<float>());
     if (doc.containsKey("altoffset")) return saveAltitudeOffset(doc["altoffset"].as<float>());
+    if (doc.containsKey("hassip")) return saveHassIP(doc["hassip"] | "");
+    if (doc.containsKey("hasspt")) return saveHassPort(doc["hasspt"] | 1883);
+    if (doc.containsKey("hassusr")) return saveHassUser(doc["hassusr"] | "");
+    if (doc.containsKey("hasspsw")) return saveHassPassword(doc["hasspsw"] | "");
     
-
     // some actions with chopid validation (for security reasons)
     if (cmd == ((uint16_t)(chipid >> 32)) && act.length() > 0) {
         if (act.equals("wst")) return wifiEnable(doc["wenb"].as<bool>());
@@ -307,7 +355,7 @@ bool ConfigApp::save(const char *json) {
         if (act.equals("clb")) performCO2Calibration();
         return true;
     } else {
-        Serial.println("-->[E][CONF] invalid config file!");
+        Serial.println("[E][CONF] invalid config file!");
         return false;
     }
 }
@@ -316,7 +364,7 @@ bool ConfigApp::getTrackStatusValues(const char *json) {
     StaticJsonDocument<200> doc;
     auto error = deserializeJson(doc, json);
     if (error) {
-        Serial.print(F("-->[E][CONF] deserialize Json failed with code "));
+        Serial.print(F("[E][CONF] deserialize Json failed with code "));
         Serial.println(error.c_str());
         return false;
     }
@@ -339,11 +387,28 @@ String ConfigApp::getDeviceId() {
     return String(baseMacChr);
 }
 
+String ConfigApp::getAnaireDeviceId() { 
+    uint32_t chipId = 0;
+    for (int i = 0; i < 17; i = i + 8) chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+    return String(chipId, HEX);
+}
+
 String ConfigApp::getDeviceIdShort() {
     String devId = getDeviceId();
     devId = devId.substring(13);
     devId.replace(":","");
     return devId;
+}
+
+String ConfigApp::getStationName() {
+    if (geo.isEmpty()) return getAnaireDeviceId();
+    String name = ""+geo.substring(0,3);         // GeoHash ~70km https://en.wikipedia.org/wiki/Geohash
+    name = name + String(FLAVOR).substring(0,7);     // Flavor short, firmware name (board)
+    name = name + getDeviceId().substring(10);    // MAC address 4 digts
+    name.replace("_","");
+    name.replace(":","");
+    name.toUpperCase();
+    return name;
 }
 
 bool ConfigApp::isWifiEnable() {

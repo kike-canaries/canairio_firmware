@@ -10,6 +10,7 @@ class ConfigApp {
     uint64_t chipid;
     String deviceId;
     String dname;
+    
     int stime;
     int stype;
     double lat;
@@ -19,6 +20,11 @@ class ConfigApp {
     String ssid;
     String pass;
 
+    String hassip;
+    String hassusr;
+    String hasspsw;
+    int16_t hasspt;
+    
     struct ifxdbValues {
         String db = "canairio";
         String ip = "influxdb.canair.io";
@@ -71,6 +77,14 @@ class ConfigApp {
     
     bool paxEnable(bool enable);
 
+    bool saveHassIP(String ip);
+
+    bool saveHassPort(int port);
+
+    bool saveHassPassword(String pass);
+
+    bool saveHassUser(String user);
+
     String getCurrentConfig();
 
     bool isWifiEnable();
@@ -86,6 +100,8 @@ class ConfigApp {
     String getDeviceId();
 
     String getDeviceIdShort();
+
+    String getStationName();
 
     int getSensorType();
 
@@ -140,6 +156,8 @@ class ConfigApp {
     bool saveI2COnly(bool enable);
 
     void performCO2Calibration();
+
+    String getAnaireDeviceId();
 
     void DEBUG(const char* text, const char* textb = "");
 

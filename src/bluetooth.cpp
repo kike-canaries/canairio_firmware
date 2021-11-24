@@ -91,7 +91,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
                 if(sensors.devmode != cfg.devmode) sensors.setDebugMode(cfg.devmode);
             }
             else{
-                Serial.println("-->[E][BTLE][CONFIG] saving error!");
+                Serial.println("[E][BTLE][CONFIG] saving error!");
             }
         }
     };
@@ -106,12 +106,12 @@ class MyStatusCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
         std::string value = pCharacteristic->getValue();
         if (value.length() > 0 && cfg.getTrackStatusValues(value.c_str())) {
-            log_v("-->[E][BTLE][STATUS] "+String(value.c_str()));
+            log_v("[E][BTLE][STATUS] "+String(value.c_str()));
             gui.setTrackValues(cfg.track.spd,cfg.track.kms);
             gui.setTrackTime(cfg.track.hrs,cfg.track.min,cfg.track.seg);
         }
         else {
-            Serial.println("-->[E][BTLE][STATUS] write error!");
+            Serial.println("[E][BTLE][STATUS] write error!");
         }
     }
 };

@@ -6,101 +6,6 @@
 
 int rssi = 0;
 String hostId = "";
-float humi, temp;
-
-void selectTempAndHumidity() {
-    humi = sensors.getHumidity();
-    if(humi == 0.0) humi = sensors.getCO2humi();
-    temp = sensors.getTemperature();
-    if(temp == 0.0) temp = sensors.getCO2temp();
-}
-
-/******************************************************************************
-*   M Q T T   M E T H O D S
-******************************************************************************/
-
-#define ANAIRE_HOST "mqtt.anaire.org"
-#define ANAIRE_TOPIC "measurement"
-#define ANAIRE_PORT 80
-
-WiFiClient net;
-MQTTClient client;
-
-void anaireMqttPublish() {
-    static uint_fast64_t mqttTimeStamp = 0;
-    if (millis() - mqttTimeStamp > cfg.stime * 1000) {
-        mqttTimeStamp = millis();
-        char MQTT_message[256];
-
-        int deviceType = sensors.getPmDeviceTypeSelected();
-        selectTempAndHumidity();
-
-        if (deviceType <= 3) {
-            sprintf(MQTT_message, "{id: %s, pm1: %d, pm25: %d, pm10: %d, tmp: %f, hum: %f, geo: %s}",
-                    cfg.getStationName().c_str(),
-                    sensors.getPM1(),
-                    sensors.getPM25(),
-                    sensors.getPM10(),
-                    temp,
-                    humi,
-                    cfg.geo.c_str());
-        } else {
-            sprintf(MQTT_message, "{id: %s,CO2: %d, humidity: %f, temperature: %f,VBat: %f}",
-                    cfg.getStationName().c_str(),
-                    sensors.getCO2(),
-                    humi,
-                    temp,
-                    0.0);
-        }
-        client.publish(ANAIRE_TOPIC, MQTT_message);
-    }
-}
-
-void mqttPublish() {
-    anaireMqttPublish();
-}
-
-static uint_fast64_t mqttDelayedStamp = 0;
-
-void connect() {
-    if (!(cfg.isWifiEnable() && WiFi.isConnected())) return;
-
-    if (millis() - mqttDelayedStamp > MQTT_DELAYED_TIME * 1000) {
-        Serial.printf("-->[MQTT] Anaire connecting to %s..", ANAIRE_HOST);
-        int mqtt_try = 0;
-        while (mqtt_try++ < MQTT_RETRY_CONNECTION && !client.connect(cfg.getStationName().c_str())) {
-            Serial.print(".");
-            delay(100);
-        }
-        if (mqtt_try >= MQTT_RETRY_CONNECTION && !client.connected()) {
-            mqttDelayedStamp = millis();
-            Serial.println("connection failed!");
-            return;
-        }
-        mqttDelayedStamp = millis();
-        Serial.println("connected!");
-        client.subscribe(ANAIRE_TOPIC);
-    }
-}
-
-void anaireInit() { 
-    Serial.println("-->[MQTT] Anaire init");
-    client.begin(ANAIRE_HOST, ANAIRE_PORT, net);
-    mqttDelayedStamp = millis() - MQTT_DELAYED_TIME * 1000;
-    connect();
-}
-
-void mqttInit() {
-    anaireInit();
-}
-
-void mqttLoop () {
-    if(!WiFi.isConnected()) return; 
-    client.loop();
-    delay(10);
-    if (!client.connected()) connect();
-    mqttPublish(); 
-}
 
 /******************************************************************************
 *   I N F L U X D B   M E T H O D S
@@ -146,7 +51,12 @@ void influxDbInit() {
  */
 void influxDbParseFields() {
     sensor.clearFields();
-    selectTempAndHumidity();
+
+    float humi = sensors.getHumidity();
+    if (humi == 0.0) humi = sensors.getCO2humi();
+    float temp = sensors.getTemperature();
+    if (temp == 0.0) temp = sensors.getCO2temp();
+
     sensor.addField("pm1",sensors.getPM1());
     sensor.addField("pm25",sensors.getPM25());
     sensor.addField("pm10",sensors.getPM10());
@@ -263,7 +173,7 @@ void wifiConnect(const char* ssid, const char* pass) {
         wd.pause();
         otaInit();
         ota.checkRemoteOTA();
-        mqttInit();
+        anaireInit();
         wd.resume();
     } else {
         Serial.println("fail!\n[E][WIFI] disconnected!");
@@ -299,7 +209,7 @@ void wifiLoop() {
         influxDbInit();
         cfg.setWifiConnected(WiFi.isConnected());
     }
-    mqttLoop();
+    anaireLoop();
 }
 
 int getWifiRSSI() {

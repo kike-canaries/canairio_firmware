@@ -73,17 +73,25 @@ void influxDbLoop() {
 
 void influxDbInit() {
     if (!ifx_ready && WiFi.isConnected() && cfg.isIfxEnable() && influxDbIsConfigured()) {
-        String url = "http://"+cfg.ifx.ip+":"+String(cfg.ifx.pt);
+        String url = "http://" + cfg.ifx.ip + ":" + String(cfg.ifx.pt);
         influx.setInsecure();
         // influx = InfluxDBClient(url.c_str(),cfg.ifx.db.c_str());
-        influx.setConnectionParamsV1(url.c_str(),cfg.ifx.db.c_str());
-        if(cfg.devmode) Serial.printf("-->[IFDB] config: %s@%s:%i\n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
+        influx.setConnectionParamsV1(url.c_str(), cfg.ifx.db.c_str());
+        if (cfg.devmode) Serial.printf("-->[IFDB] config: %s@%s:%i\n", cfg.ifx.db.c_str(), cfg.ifx.ip.c_str(), cfg.ifx.pt);
         influxDbAddTags();
-        if(influx.validateConnection()) {
-            Serial.printf("-->[IFDB] connected to %s\n",influx.getServerUrl().c_str());
-            ifx_ready = true;
+        Serial.printf("-->[IFDB] connecting to: %s..", cfg.ifx.ip.c_str());
+        int influx_retry = 0;
+        while (influx_retry++ < IFX_RETRY_CONNECTION && !influx.validateConnection()) {
+            Serial.print(".");
+            delay(100);
         }
-        else Serial.println("[E][IFDB] connection error!");
-        delay(100);
+        if (influx_retry >= IFX_RETRY_CONNECTION && !influx.validateConnection()) {
+            Serial.println("\tconnection failed!");
+            Serial.println("[E][IFDB] connection error!");
+            return;
+        }
+        ifx_ready = true;
+        Serial.println("\tconnected!");
+        delay(10);
     }
 }

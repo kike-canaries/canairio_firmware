@@ -167,18 +167,17 @@ void setup() {
 
     // init watchdog timer for reboot in any loop blocker
     wd.init();
+    
+    Serial.printf("-->[INFO] InfluxDb:\t %s\n", cfg.isIfxEnable() ? "enabled" : "disabled");
+    Serial.printf("-->[INFO] WiFi is :\t %s\n", cfg.isWifiEnable() ? "enabled" : "disabled");
+    gui.welcomeAddMessage("InfluxDb :"+String(cfg.isIfxEnable()));
 
     // WiFi and cloud communication
     wifiInit();
-
+     
     // Bluetooth low energy init (GATT server for device config)
     bleServerInit();
     gui.welcomeAddMessage("Bluetooth ready.");
-
-    Serial.println("-->[INFO] InfluxDb API:\t" + String(cfg.isIfxEnable()));
-    gui.welcomeAddMessage("InfluxDb :"+String(cfg.isIfxEnable()));
-
-    influxDbInit();     // Instance DB handler
 
     // wifi status 
     if (WiFi.isConnected())
@@ -205,7 +204,6 @@ void loop() {
     bleLoop();       // notify data to connected devices
     snifferLoop();   // pax counter calc (only when WiFi is Off)
     wifiLoop();      // check wifi and reconnect it
-    influxDbLoop();  // influxDB publication
     otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers
                      // update GUI flags:

@@ -8,23 +8,17 @@
 #include <Watchdog.hpp>
 #include <Sensors.hpp>
 #include <cloud_anaire.hpp>
+#include <cloud_influxdb.hpp>
 
 #define PUBLISH_INTERVAL 30       // publish to cloud each 30 seconds
 #define WIFI_RETRY_CONNECTION 30  // 30 seconds wait for wifi connection
-#define IFX_RETRY_CONNECTION 5    // influxdb publish retry 
 #define MQTT_RETRY_CONNECTION 1   // mqtt publish retry
 #define MQTT_DELAYED_TIME 30      // mqtt retry connection delayed time
 
 void otaLoop();
-void otaInit();
-bool wifiCheck();
 void wifiInit();
 void wifiStop();
 void wifiRestart();
 void wifiLoop();
 int  getWifiRSSI();
 String getDeviceInfo();
-
-void influxDbInit();
-void influxDbLoop();
-

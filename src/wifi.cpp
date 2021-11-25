@@ -47,12 +47,13 @@ void onUpdateMessage(const char *msg){
     gui.welcomeAddMessage("please wait..");
 }
 
-String hostId = "";
+String getHostId() {
+    return "CanAirIO"+cfg.getDeviceIdShort();
+}
 
 void otaInit() {
-    hostId = "CanAirIO"+cfg.getDeviceIdShort();
-    ota.setup(hostId.c_str(), "CanAirIO");
-    gui.displayBottomLine(hostId);
+    ota.setup(getHostId().c_str(), "CanAirIO");
+    gui.displayBottomLine(getHostId());
     ota.setCallbacks(new MyOTAHandlerCallbacks());
     ota.setOnUpdateMessageCb(&onUpdateMessage);
 }
@@ -133,7 +134,7 @@ String getDeviceInfo () {
     info = info + "Rev" + String(REVISION) +" v" + String(VERSION) + "\n";
     info = info + sensors.getPmDeviceSelected() + "\n\n";
 
-    info = info + "Host: " + hostId + "\n";
+    info = info + "Host: " + getHostId() + "\n";
     info = info + "(" + WiFi.localIP().toString() + ")\n";
     info = info + "OTA: " + String(TARGET) + " channel\n\n";
     info = info + "Fixed station:\n";

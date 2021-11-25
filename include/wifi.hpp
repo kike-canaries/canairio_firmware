@@ -15,6 +15,7 @@
 #define WIFI_RETRY_CONNECTION 30  // 30 seconds wait for wifi connection
 #define MQTT_RETRY_CONNECTION 1   // mqtt publish retry
 #define MQTT_DELAYED_TIME 30      // mqtt retry connection delayed time
+#define MQTT_BUFFER_SIZE 256      // mqtt buffer size
 
 void otaLoop();
 void wifiInit();
@@ -23,3 +24,4 @@ void wifiRestart();
 void wifiLoop();
 int  getWifiRSSI();
 String getDeviceInfo();
+String getHostId();

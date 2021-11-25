@@ -12,11 +12,7 @@ String getRootTopic() {
     return String(HPREFIX) + String(HCOMP) + getHostId();
 }
 
-String getHassTopic(const char topic[]) {
-    return getRootTopic() + "/" + String(topic);
-}
-
-void publishSensorPayload() {
+void hassPubSensorPayload() {
     char MQTT_message[MQTT_BUFFER_SIZE];
 
     int deviceType = sensors.getPmDeviceTypeSelected();
@@ -36,45 +32,53 @@ void publishSensorPayload() {
                 humi,
                 cfg.geo.c_str());
     } else {
-        sprintf(MQTT_message, "{id: %s,CO2: %d, humidity: %f, temperature: %f,VBat: %f}",
-                cfg.getStationName().c_str(),
+        sprintf(MQTT_message, "{ CO2: %d, humi: %f, temp: %f }",
                 sensors.getCO2(),
                 humi,
-                temp,
-                0.0);
+                temp
+        );
     }
-    if (clientHass.publish(getHassTopic(TOPIC_STATE).c_str(), MQTT_message)) return;
+    String sensor_state_topic = getRootTopic()+"/"+String(TOPIC_STATE);
+    if (clientHass.publish(sensor_state_topic.c_str(), MQTT_message)) return;
     Serial.printf("[E][MQTT] last error: %d\n",clientHass.lastError());
 }
 
-void publishDiscoveryConfigPayload() {
+void publishDiscoveryPayload(String name, String dclass, String unit, String tpl) {
     StaticJsonDocument<MQTT_BUFFER_SIZE> doc;
-    doc["name"] = "CanAirIO Device";
-    doc["stat_t"] = getHassTopic(TOPIC_STATE);
-    doc["uniq_id"] = getHostId()+"_temperature_sensor";
-    doc["dev_cla"] = "temperature";
-    doc["unit_of_meas"] = "°C";
-    // doc["val_tpl"] = "{{ value_json.temperature }}";
+    doc["name"] = getHostId()+name;
+    doc["stat_t"] = getRootTopic()+String(TOPIC_STATE);
+    doc["uniq_id"] = getHostId()+name;
+    doc["dev_cla"] = dclass;
+    doc["unit_of_meas"] = unit;
+    doc["val_tpl"] = tpl;
     char MQTT_message[MQTT_BUFFER_SIZE];
     size_t n = serializeJson(doc, MQTT_message);
-    if (clientHass.publish(getHassTopic(TOPIC_CONF).c_str(), MQTT_message, n)) return;
+    String hassDiscoveryTopic = getRootTopic()+name+"/"+String(TOPIC_CONF);
+    if (clientHass.publish(hassDiscoveryTopic.c_str(), MQTT_message, n)) return;
     Serial.printf("[E][MQTT] last error: %d\n",clientHass.lastError());
 }
 
-void hassDiscoverySubscribe() {
-    clientHass.subscribe(getHassTopic(TOPIC_CONF).c_str());
+void hassPubDiscoveryTemp() {
+    publishDiscoveryPayload("Temp", "temperature", "°C", "{{ value_json.temperature }}");
 }
 
-void hassStateSubscribe() {
-    clientHass.subscribe(getHassTopic(TOPIC_STATE).c_str());
+void hassPubDiscoveryHumi() {
+    publishDiscoveryPayload("Humi", "humidity", "%", "{{ value_json.humidity }}");
+}
+
+void hassPubDiscoveryCO2() {
+    publishDiscoveryPayload("CO2", "carbon_dioxide", "%", "{{ value_json.CO2 }}");
 }
 
 void hassPublish() {
     static uint_fast64_t mqttTimeStamp = 0;
     if (millis() - mqttTimeStamp > cfg.stime * 1000) {
         mqttTimeStamp = millis();
-        publishDiscoveryConfigPayload(); 
-        publishSensorPayload();
+        hassPubDiscoveryTemp();
+        delay(100);
+        hassPubDiscoveryHumi();
+        delay(100);
+        hassPubSensorPayload();
     }
 }
 

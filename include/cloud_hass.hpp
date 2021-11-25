@@ -2,5 +2,10 @@
 #define HASS_TOPIC "measurement"
 #define HASS_PORT 1883
 
+#define HPREFIX "homeassistant/"
+#define HCOMP "sensor/"
+#define TOPIC_CONF "config"
+#define TOPIC_STATE "state"
+
 void hassLoop ();
 void hassInit ();

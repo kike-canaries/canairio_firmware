@@ -12,6 +12,14 @@ String getRootTopic() {
     return String(HPREFIX) + String(HCOMP) + getHostId();
 }
 
+String getStateTopic() {
+    return getRootTopic()+"/"+String(TOPIC_STATE);
+}
+
+String getConfTopic(String name) {
+    return getRootTopic()+"/"+name+"/"+String(TOPIC_CONF);
+}
+
 void hassPubSensorPayload() {
     char MQTT_message[MQTT_BUFFER_SIZE];
 
@@ -22,62 +30,68 @@ void hassPubSensorPayload() {
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();
 
-    if (deviceType <= 3) {
-        sprintf(MQTT_message, "{id: %s, pm1: %d, pm25: %d, pm10: %d, tmp: %f, hum: %f, geo: %s}",
-                cfg.getStationName().c_str(),
-                sensors.getPM1(),
-                sensors.getPM25(),
-                sensors.getPM10(),
-                temp,
-                humi,
-                cfg.geo.c_str());
-    } else {
-        sprintf(MQTT_message, "{ CO2: %d, humi: %f, temp: %f }",
-                sensors.getCO2(),
-                humi,
-                temp
-        );
-    }
-    String sensor_state_topic = getRootTopic()+"/"+String(TOPIC_STATE);
-    if (clientHass.publish(sensor_state_topic.c_str(), MQTT_message)) return;
+    // if (deviceType <= 3) {
+    //     sprintf(MQTT_message, "{id: %s, pm1: %d, pm25: %d, pm10: %d, tmp: %f, hum: %f, geo: %s}",
+    //             cfg.getStationName().c_str(),
+    //             sensors.getPM1(),
+    //             sensors.getPM25(),
+    //             sensors.getPM10(),
+    //             temp,
+    //             humi,
+    //             cfg.geo.c_str());
+    // } else {
+    //     sprintf(MQTT_message, "{ CO2: %d, humidity: %f, temperature: %f }",
+    //             sensors.getCO2(),
+    //             humi,
+    //             temp
+    //     );
+    // }
+    if (clientHass.publish(getStateTopic().c_str(), String(humi))) return;
     Serial.printf("[E][MQTT] last error: %d\n",clientHass.lastError());
 }
 
 void publishDiscoveryPayload(String name, String dclass, String unit, String tpl) {
     StaticJsonDocument<MQTT_BUFFER_SIZE> doc;
     doc["name"] = getHostId()+name;
-    doc["stat_t"] = getRootTopic()+String(TOPIC_STATE);
+    JsonObject device = doc.createNestedObject("device");
+    device["manufacturer"] = "CanAirIO";
+    device["model"] = ""+String(FLAVOR);
+    device["name"] = getHostId()+name;
+    device["sw_version"] = "v"+String(VERSION)+" rev"+String(REVISION);
+    JsonArray identifiers = device.createNestedArray("identifiers");
+    identifiers.add(getHostId()+name);
+    doc["state_topic"] = getStateTopic();
+    // JsonArray attributes = doc.createNestedArray("json_attributes");
+    // attributes.add(dclass);
+    // doc["json_attributes_topic"] = getStateTopic();
     doc["uniq_id"] = getHostId()+name;
     doc["dev_cla"] = dclass;
     doc["unit_of_meas"] = unit;
-    doc["val_tpl"] = tpl;
+    // doc["frc_upd"] = true;
+    // doc["value_template"] = tpl;
     char MQTT_message[MQTT_BUFFER_SIZE];
     size_t n = serializeJson(doc, MQTT_message);
-    String hassDiscoveryTopic = getRootTopic()+name+"/"+String(TOPIC_CONF);
-    if (clientHass.publish(hassDiscoveryTopic.c_str(), MQTT_message, n)) return;
+     
+    if (clientHass.publish(getConfTopic(dclass).c_str(), MQTT_message, n)) return;
     Serial.printf("[E][MQTT] last error: %d\n",clientHass.lastError());
 }
 
 void hassPubDiscoveryTemp() {
-    publishDiscoveryPayload("Temp", "temperature", "°C", "{{ value_json.temperature }}");
+    publishDiscoveryPayload("temperature", "temperature", "°C", "{{ value_json.temparatue | default(0) }}");
 }
 
 void hassPubDiscoveryHumi() {
-    publishDiscoveryPayload("Humi", "humidity", "%", "{{ value_json.humidity }}");
+    publishDiscoveryPayload("humidity", "humidity", "%", "{{  humidity.humidity  }}");
 }
 
 void hassPubDiscoveryCO2() {
-    publishDiscoveryPayload("CO2", "carbon_dioxide", "%", "{{ value_json.CO2 }}");
+    publishDiscoveryPayload("carbon_dioxide", "carbon_dioxide", "ppm", "{{ value_json.CO2 |default(0)  }}");
 }
 
 void hassPublish() {
     static uint_fast64_t mqttTimeStamp = 0;
     if (millis() - mqttTimeStamp > cfg.stime * 1000) {
-        mqttTimeStamp = millis();
-        hassPubDiscoveryTemp();
-        delay(100);
-        hassPubDiscoveryHumi();
-        delay(100);
+        mqttTimeStamp = millis(); 
         hassPubSensorPayload();
     }
 }
@@ -99,7 +113,9 @@ void hassConnect() {
             return;
         }
         mqttHassDelayedStamp = millis();
-        // hassStateSubscribe();
+        // hassPubDiscoveryTemp();
+        hassPubDiscoveryHumi();
+        // hassPubDiscoveryCO2();
         Serial.println("\tconnected!");
     }
 }

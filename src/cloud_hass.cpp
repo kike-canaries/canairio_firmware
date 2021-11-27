@@ -55,14 +55,9 @@ void publishDiscoveryPayload(String name, String dclass, String unit) {
     JsonArray identifiers = device.createNestedArray("identifiers");
     identifiers.add(getHostId()+name);
     doc["state_topic"] = getStateTopic(dclass);
-    // JsonArray attributes = doc.createNestedArray("json_attributes");
-    // attributes.add(dclass);
-    // doc["json_attributes_topic"] = getStateTopic();
     doc["uniq_id"] = getHostId()+name;
     doc["dev_cla"] = dclass;
     doc["unit_of_meas"] = unit;
-    // doc["frc_upd"] = true;
-    // doc["value_template"] = tpl;
     char MQTT_message[MQTT_BUFFER_SIZE];
     size_t n = serializeJson(doc, MQTT_message);
      
@@ -71,39 +66,25 @@ void publishDiscoveryPayload(String name, String dclass, String unit) {
 
 }
 
-void hassPubDiscoveryTemp() {
-    publishDiscoveryPayload("temperature", "temperature", "°C");
-}
-
-void hassPubDiscoveryHumi() {
-    publishDiscoveryPayload("humidity", "humidity", "%");
-}
-
-void hassPubDiscoveryCO2() {
-    publishDiscoveryPayload("carbon_dioxide", "carbon_dioxide", "ppm");
-}
-
-void hassPubDiscoveryPM25() {
-    publishDiscoveryPayload("pm25", "pm25", "µg/m³");
-}
-
 void hassPubAllSensors() {
     hassPubSensorPayload("temperature");
     hassPubSensorPayload("humidity");
     hassPubSensorPayload("carbon_dioxide");
     hassPubSensorPayload("pm25");
+    hassPubSensorPayload("gas");
 }
 
 void hassRegisterSensors() {
-    hassPubDiscoveryTemp();
-    hassPubDiscoveryHumi();
-    hassPubDiscoveryCO2();
-    hassPubDiscoveryPM25();
+    publishDiscoveryPayload("temperature", "temperature", "°C");
+    publishDiscoveryPayload("humidity", "humidity", "%");
+    publishDiscoveryPayload("carbon_dioxide", "carbon_dioxide", "ppm");
+    publishDiscoveryPayload("pm25", "pm25", "µg/m³");
+    publishDiscoveryPayload("gas", "gas", "m³");
 }
 
 void hassPublish() {
     static uint_fast64_t mqttTimeStamp = 0;
-    if (millis() - mqttTimeStamp > cfg.stime * 1000) {
+    if (millis() - mqttTimeStamp > cfg.stime * 1000 * 2) {
         mqttTimeStamp = millis(); 
         hassPubAllSensors();
     }
@@ -111,12 +92,16 @@ void hassPublish() {
 
 static uint_fast64_t mqttHassDelayedStamp = 0;
 
+bool hassAuth() {
+    return clientHass.connect(cfg.getStationName().c_str(), cfg.hassusr.c_str(), cfg.hasspsw.c_str());
+}
+
 void hassConnect() {
     if (!(cfg.isWifiEnable() && WiFi.isConnected())) return;
     if (millis() - mqttHassDelayedStamp > MQTT_DELAYED_TIME * 1000) {
         Serial.printf("-->[MQTT] connecting to: %s..", HASS_HOST);
         int mqtt_try = 0;
-        while (mqtt_try++ < MQTT_RETRY_CONNECTION && !clientHass.connect(cfg.getStationName().c_str())) {
+        while (mqtt_try++ < MQTT_RETRY_CONNECTION && !hassAuth()) {
             Serial.print(".");
             delay(100);
         }

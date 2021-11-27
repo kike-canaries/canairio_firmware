@@ -37,7 +37,7 @@ void ConfigApp::reload() {
     devmode = preferences.getBool("debugEnable", false);
     pax_enable = preferences.getBool("paxEnable", true);
     i2conly = preferences.getBool("i2conly", false);
-    hassip = preferences.getString("hassip", "");
+    hassip = preferences.getString("hassip", "192.168.178.88");
     hasspt = preferences.getUInt("hasspt", 1883);
     hassusr = preferences.getString("hassusr", "");
     hasspsw = preferences.getString("hasspsw", "");

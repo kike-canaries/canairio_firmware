@@ -8,6 +8,8 @@
 WiFiClient netHass;
 MQTTClient clientHass(MQTT_BUFFER_SIZE);
 
+bool hassInited = false;
+
 String getRootTopic() {
     return String(HPREFIX) + String(HCOMP) + getHostId();
 }
@@ -99,7 +101,7 @@ bool hassAuth() {
 void hassConnect() {
     if (!(cfg.isWifiEnable() && WiFi.isConnected())) return;
     if (millis() - mqttHassDelayedStamp > MQTT_DELAYED_TIME * 1000) {
-        Serial.printf("-->[MQTT] connecting to: %s..", HASS_HOST);
+        Serial.printf("-->[MQTT] connecting to: %s:%i..", cfg.hassip.c_str(),cfg.hasspt);
         int mqtt_try = 0;
         while (mqtt_try++ < MQTT_RETRY_CONNECTION && !hassAuth()) {
             Serial.print(".");
@@ -112,25 +114,33 @@ void hassConnect() {
         }
         mqttHassDelayedStamp = millis();
         hassRegisterSensors();
+        // hassStatusSubscription();
 
         Serial.println("\tconnected!");
     }
 }
 
 bool isHassEnable() {
-    return !cfg.hassip.isEmpty();
+    if (cfg.hassip.isEmpty()) {
+        hassInited = false;
+        return false;
+    } else {
+        return true;
+    } 
 }
 
 void hassInit() { 
     if (!isHassEnable()) return;
     clientHass.begin(cfg.hassip.c_str(), cfg.hasspt, netHass);
     mqttHassDelayedStamp = millis() - MQTT_DELAYED_TIME * 1000;
+    hassInited = true;
     hassConnect();
 }
 
 void hassLoop () {
     if (!isHassEnable()) return;
     if(!WiFi.isConnected()) return; 
+    if (!hassInited) hassInit();
     clientHass.loop();
     delay(10);
     if (!clientHass.connected()) hassConnect();

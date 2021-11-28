@@ -22,6 +22,10 @@ String getConfTopic(String name) {
     return getRootTopic()+"/"+name+"/"+String(TOPIC_CONF);
 }
 
+String getServerStatusTopic() {
+    return String(HPREFIX) + "status";
+}
+
 void hassPubSensorPayload(String dclass) {
 
     float humi = sensors.getHumidity();
@@ -92,11 +96,21 @@ void hassPublish() {
     }
 }
 
-static uint_fast64_t mqttHassDelayedStamp = 0;
+void messageReceived(String &topic, String &payload) {
+  Serial.println("-->[MQTT] incoming msg: " + topic + " - " + payload); 
+  if (payload.equals("online")) hassRegisterSensors();
+}
+
+void hassStatusSubscription() {
+    if (clientHass.subscribe(getServerStatusTopic().c_str())) return;
+    Serial.printf("[E][MQTT] last error: %d\n",clientHass.lastError());
+}
 
 bool hassAuth() {
     return clientHass.connect(cfg.getStationName().c_str(), cfg.hassusr.c_str(), cfg.hasspsw.c_str());
 }
+
+static uint_fast64_t mqttHassDelayedStamp = 0;
 
 void hassConnect() {
     if (!(cfg.isWifiEnable() && WiFi.isConnected())) return;
@@ -114,7 +128,7 @@ void hassConnect() {
         }
         mqttHassDelayedStamp = millis();
         hassRegisterSensors();
-        // hassStatusSubscription();
+        hassStatusSubscription();
 
         Serial.println("\tconnected!");
     }
@@ -132,6 +146,7 @@ bool isHassEnable() {
 void hassInit() { 
     if (!isHassEnable()) return;
     clientHass.begin(cfg.hassip.c_str(), cfg.hasspt, netHass);
+    clientHass.onMessage(messageReceived);
     mqttHassDelayedStamp = millis() - MQTT_DELAYED_TIME * 1000;
     hassInited = true;
     hassConnect();

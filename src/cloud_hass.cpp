@@ -14,8 +14,8 @@ String getRootTopic() {
     return String(HPREFIX) + String(HCOMP) + getHostId();
 }
 
-String getStateTopic(String dclass) {
-    return getRootTopic()+"/"+dclass+"/"+String(TOPIC_STATE);
+String getStateTopic() {
+    return getRootTopic()+"/"+String(TOPIC_STATE);
 }
 
 String getConfTopic(String name) {
@@ -23,30 +23,33 @@ String getConfTopic(String name) {
 }
 
 String getServerStatusTopic() {
-    return String(HPREFIX) + "status";
+    return String(HPREFIX) + String(TOPIC_STATUS);
 }
 
-void hassPubSensorPayload(String dclass) {
-
+void hassPubSensorPayload() {
+    
     float humi = sensors.getHumidity();
     if (humi == 0.0) humi = sensors.getCO2humi();
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();
+    
+    StaticJsonDocument<MQTT_BUFFER_SIZE> doc;
+    char buffer[MQTT_BUFFER_SIZE];
 
-    String output = "";
+    doc["carbon_dioxide"] = String(sensors.getCO2());
+    doc["humidity"]    = String(humi);
+    doc["temperature"] = String(temp);
+    doc["pressure"] = String(sensors.getPressure());
+    doc["altitude"] = String(sensors.getAltitude());
+    doc["gas"]  = String(sensors.getGas());
+    doc["pm1"]  = String(sensors.getPM1());
+    doc["pm25"] = String(sensors.getPM25());
+    doc["pm4"]  = String(sensors.getPM4());
+    doc["pm10"] = String(sensors.getPM10());
 
-    if (dclass.equals("carbon_dioxide")) output = String(sensors.getCO2());
-    else if (dclass.equals("humidity")) output = String(humi);
-    else if (dclass.equals("temperature")) output = String(temp);
-    else if (dclass.equals("pressure")) output = String(sensors.getPressure());
-    else if (dclass.equals("altitude")) output = String(sensors.getAltitude());
-    else if (dclass.equals("gas")) output = String(sensors.getGas());
-    else if (dclass.equals("pm1")) output = String(sensors.getPM1());
-    else if (dclass.equals("pm25")) output = String(sensors.getPM25());
-    else if (dclass.equals("pm4")) output = String(sensors.getPM4());
-    else if (dclass.equals("pm10")) output = String(sensors.getPM10());
+    size_t n = serializeJson(doc, buffer);
  
-    if (clientHass.publish(getStateTopic(dclass).c_str(), output)) return;
+    if (clientHass.publish(getStateTopic().c_str(), buffer, n)) return;
     Serial.printf("[E][MQTT] last error: %d\n",clientHass.lastError());
 }
 
@@ -60,10 +63,13 @@ void publishDiscoveryPayload(String name, String dclass, String unit) {
     device["sw_version"] = "v"+String(VERSION)+" rev"+String(REVISION);
     JsonArray identifiers = device.createNestedArray("identifiers");
     identifiers.add(getHostId()+name);
-    doc["state_topic"] = getStateTopic(dclass);
+    doc["state_topic"] = getStateTopic();
+    doc["state_class"] = "measurement",
     doc["uniq_id"] = getHostId()+name;
     doc["dev_cla"] = dclass;
     doc["unit_of_meas"] = unit;
+    doc["value_template"] = "{{ value_json."+dclass+" }}";
+
     char MQTT_message[MQTT_BUFFER_SIZE];
     size_t n = serializeJson(doc, MQTT_message);
      
@@ -73,11 +79,7 @@ void publishDiscoveryPayload(String name, String dclass, String unit) {
 }
 
 void hassPubAllSensors() {
-    hassPubSensorPayload("temperature");
-    hassPubSensorPayload("humidity");
-    hassPubSensorPayload("carbon_dioxide");
-    hassPubSensorPayload("pm25");
-    hassPubSensorPayload("gas");
+    hassPubSensorPayload();
 }
 
 void hassRegisterSensors() {

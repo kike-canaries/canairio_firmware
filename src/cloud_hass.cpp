@@ -146,6 +146,10 @@ bool isHassEnable() {
     } 
 }
 
+bool hassIsConnected() {
+    return clientHass.connected();
+}
+
 void hassInit() { 
     if (!isHassEnable()) return;
     clientHass.begin(cfg.hassip.c_str(), cfg.hasspt, netHass);

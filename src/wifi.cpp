@@ -130,14 +130,14 @@ int getWifiRSSI() {
 }
 
 String getDeviceInfo () {
-    String info = String(FLAVOR) + "\n";
+    String info = getHostId() + "\n";
+    info = info + String(FLAVOR) + "\n";
     info = info + "Rev" + String(REVISION) +" v" + String(VERSION) + "\n";
-    info = info + sensors.getPmDeviceSelected() + "\n\n";
-
-    info = info + "Host: " + getHostId() + "\n";
-    info = info + "(" + WiFi.localIP().toString() + ")\n";
-    info = info + "OTA: " + String(TARGET) + " channel\n\n";
-    info = info + "Fixed station:\n";
-    info = info + cfg.getStationName();
+    info = info + "MS: "+sensors.getPmDeviceSelected() + "\n";
+    info = info + "" + cfg.getStationName() + "\n";
+    info = info + "IP: " + WiFi.localIP().toString() + "\n";
+    info = info + "OTA: " + String(TARGET) + " channel\n";
+    info = info + "Hass: "  + String(hassIsConnected() ? "connected" : "disconnected") + "\n";
+    info = info + "Anaire: "+ String(anaireIsConnected() ? "connected" : "disconnected") + "\n";
     return info;
 }

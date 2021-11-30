@@ -4,3 +4,4 @@
 
 void anaireLoop ();
 void anaireInit ();
+bool anaireIsConnected();

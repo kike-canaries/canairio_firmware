@@ -8,3 +8,5 @@
 
 void hassLoop ();
 void hassInit ();
+bool hassIsConnected ();
+

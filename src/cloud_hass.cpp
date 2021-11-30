@@ -27,7 +27,7 @@ String getServerStatusTopic() {
 }
 
 void hassPubSensorPayload() {
-    
+
     float humi = sensors.getHumidity();
     if (humi == 0.0) humi = sensors.getCO2humi();
     float temp = sensors.getTemperature();
@@ -55,14 +55,14 @@ void hassPubSensorPayload() {
 
 void publishDiscoveryPayload(String name, String dclass, String unit) {
     StaticJsonDocument<MQTT_BUFFER_SIZE> doc;
-    doc["name"] = getHostId()+name;
+    doc["name"] = getHostId()+name; // name of the entity
     JsonObject device = doc.createNestedObject("device");
     device["manufacturer"] = "CanAirIO";
     device["model"] = ""+String(FLAVOR);
-    device["name"] = getHostId()+name;
+    device["name"] = getHostId();  // name of the device
     device["sw_version"] = "v"+String(VERSION)+" rev"+String(REVISION);
     JsonArray identifiers = device.createNestedArray("identifiers");
-    identifiers.add(getHostId()+name);
+    identifiers.add(getHostId()); // name of the device
     doc["state_topic"] = getStateTopic();
     doc["state_class"] = "measurement",
     doc["uniq_id"] = getHostId()+name;
@@ -88,6 +88,7 @@ void hassRegisterSensors() {
     publishDiscoveryPayload("carbon_dioxide", "carbon_dioxide", "ppm");
     publishDiscoveryPayload("pm25", "pm25", "µg/m³");
     publishDiscoveryPayload("gas", "gas", "m³");
+    publishDiscoveryPayload("pressure", "pressure", "hPa");
 }
 
 void hassPublish() {

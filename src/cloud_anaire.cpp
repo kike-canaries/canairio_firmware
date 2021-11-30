@@ -65,6 +65,10 @@ void anaireConnect() {
     }
 }
 
+bool anaireIsConnected() {
+    return client.connected();
+}
+
 void anaireInit() { 
     client.begin(ANAIRE_HOST, ANAIRE_PORT, netAnaire);
     mqttDelayedStamp = millis() - MQTT_DELAYED_TIME * 1000;

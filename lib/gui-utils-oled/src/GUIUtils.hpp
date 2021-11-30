@@ -66,6 +66,8 @@ class GUIUtils {
 
     String getFirmwareVersionCode ();
 
+    uint8_t getBatteryLevel();
+
    private:
 
     int lastDrawedLine = 0;

@@ -91,6 +91,8 @@ class TFTUtils {
 
     String getFirmwareVersionCode ();
 
+    uint8_t getBatteryLevel();
+
    private:
 
     const int pwmFreq = 5000;

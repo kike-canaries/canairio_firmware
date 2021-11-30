@@ -268,6 +268,11 @@ void TFTUtils::updateBatteryValue(){
     }
 }
 
+uint8_t TFTUtils::getBatteryLevel(){
+    float volts = battGetVoltage();
+    return battCalcPercentage(volts); 
+}
+
 void TFTUtils::setWifiMode(bool enable){
     _wifi_enable = enable;
     updateWifiMode();

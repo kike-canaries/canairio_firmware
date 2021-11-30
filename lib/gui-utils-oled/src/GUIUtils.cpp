@@ -518,6 +518,10 @@ void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
 
 }
 
+uint8_t GUIUtils::getBatteryLevel(){
+    return 0;
+}
+
 /// Firmware version from platformio.ini
 String GUIUtils::getFirmwareVersionCode() {
     String VERSION_CODE = "r";

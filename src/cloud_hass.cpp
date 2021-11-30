@@ -46,6 +46,7 @@ void hassPubSensorPayload() {
     doc["pm25"] = String(sensors.getPM25());
     doc["pm4"]  = String(sensors.getPM4());
     doc["pm10"] = String(sensors.getPM10());
+    doc["battery"] = String(gui.getBatteryLevel());
 
     size_t n = serializeJson(doc, buffer);
  
@@ -89,6 +90,7 @@ void hassRegisterSensors() {
     publishDiscoveryPayload("pm25", "pm25", "µg/m³");
     publishDiscoveryPayload("gas", "gas", "m³");
     publishDiscoveryPayload("pressure", "pressure", "hPa");
+    publishDiscoveryPayload("battery", "battery", "%");
 }
 
 void hassPublish() {

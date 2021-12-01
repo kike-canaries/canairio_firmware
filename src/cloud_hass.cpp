@@ -52,8 +52,11 @@ void hassPubSensorPayload() {
 
     size_t n = serializeJson(doc, buffer);
  
-    if (clientHass.publish(getStateTopic().c_str(), buffer, n)) return;
-    Serial.printf("[E][MQTT] publish sensor state error: %d\n",clientHass.lastError());
+    if (clientHass.publish(getStateTopic().c_str(), buffer, n)) {
+        if(cfg.devmode) Serial.printf ("-->[MQTT] Hass sensor payload published. (size: %d)\n", n);
+    } else {
+        Serial.printf("[E][MQTT] Hass publish sensor state error: %d\n",clientHass.lastError());
+    }
 }
 
 bool publishDiscoveryPayload(String name, String dclass, String unit) {
@@ -79,11 +82,6 @@ bool publishDiscoveryPayload(String name, String dclass, String unit) {
     if (clientHass.publish(getConfTopic(dclass).c_str(), MQTT_message, n)) return true;
     Serial.printf("[E][MQTT] publish %s config error: %d\n", dclass.c_str(), clientHass.lastError());
     return false;
-}
-
-void hassPubAllSensors() {
-    hassPubSensorPayload();
-    if(cfg.devmode) Serial.println ("-->[MQTT] Hass entities payload published.");
 }
 
 bool hassRegisterSensors() {
@@ -119,7 +117,7 @@ void hassPublish() {
     if (millis() - mqttTimeStamp > cfg.stime * 1000 * 2) {
         mqttTimeStamp = millis(); 
         if (!hassConfigured) hassRegisterSensors();
-        hassPubAllSensors();
+        hassPubSensorPayload();
         if (!hassSubscribed) hassStatusSubscription();
     }
 }
@@ -133,8 +131,7 @@ static uint_fast64_t mqttHassDelayedStamp = 0;
 void hassConnect() {
     if (!(cfg.isWifiEnable() && WiFi.isConnected())) return;
     if (millis() - mqttHassDelayedStamp > MQTT_DELAYED_TIME * 1000) {
-        if (cfg.devmode) Serial.printf("-->[MQTT] Hass auth: %s@%s\n",cfg.hassusr.c_str(),cfg.hasspsw.c_str());
-        Serial.printf("-->[MQTT] connecting to: %s:%i..", cfg.hassip.c_str(),cfg.hasspt);
+        Serial.printf("-->[MQTT] connecting to %s.", cfg.hassip.c_str());
         int mqtt_try = 0;
         while (mqtt_try++ < MQTT_RETRY_CONNECTION && !hassAuth()) {
             Serial.print(".");
@@ -145,6 +142,7 @@ void hassConnect() {
             hassSubscribed = false;
             hassConfigured = false;
             Serial.println("\tconnection failed!");
+            if (cfg.devmode) Serial.printf("-->[MQTT] %s %s\n",cfg.hassusr.c_str(),cfg.hasspsw.c_str());
             return;
         }
         Serial.println("\tconnected!");

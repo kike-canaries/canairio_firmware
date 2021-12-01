@@ -10,7 +10,7 @@ MQTTClient client(MQTT_BUFFER_SIZE);
 
 void anairePublish() {
     static uint_fast64_t mqttTimeStamp = 0;
-    if (millis() - mqttTimeStamp > cfg.stime * 1000) {
+    if (millis() - mqttTimeStamp > cfg.stime * 1000 * 2) {
         mqttTimeStamp = millis();
 
         float humi = sensors.getHumidity();
@@ -37,8 +37,11 @@ void anairePublish() {
 
         size_t n = serializeJson(doc, buffer);
 
-        if (client.publish(ANAIRE_TOPIC, buffer, n)) return;
-        Serial.printf("[E][MQTT] publish sensor data error: %d\n",client.lastError());
+        if (client.publish(ANAIRE_TOPIC, buffer, n)) {
+            if (cfg.devmode) Serial.printf("-->[MQTT] Anaire sensor payload published. (size: %d)\n", n);
+        } else {
+            Serial.printf("[E][MQTT] Anaire publish sensor data error: %d\n",client.lastError());
+        }
     }
 }
 
@@ -48,7 +51,7 @@ void anaireConnect() {
     if (!(cfg.isWifiEnable() && WiFi.isConnected())) return;
 
     if (millis() - mqttDelayedStamp > MQTT_DELAYED_TIME * 1000) {
-        Serial.printf("-->[MQTT] connecting to: %s..", ANAIRE_HOST);
+        Serial.printf("-->[MQTT] connecting to %s..", ANAIRE_HOST);
         int mqtt_try = 0;
         while (mqtt_try++ < MQTT_RETRY_CONNECTION && !client.connect(cfg.getStationName().c_str())) {
             Serial.print(".");

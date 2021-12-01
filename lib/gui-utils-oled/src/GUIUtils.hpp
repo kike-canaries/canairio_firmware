@@ -68,6 +68,8 @@ class GUIUtils {
 
     uint8_t getBatteryLevel();
 
+    float getBatteryVoltage();
+
    private:
 
     int lastDrawedLine = 0;

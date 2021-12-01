@@ -522,6 +522,10 @@ uint8_t GUIUtils::getBatteryLevel(){
     return 0;
 }
 
+float GUIUtils::getBatteryVoltage(){
+    return 0.0;
+}
+
 /// Firmware version from platformio.ini
 String GUIUtils::getFirmwareVersionCode() {
     String VERSION_CODE = "r";

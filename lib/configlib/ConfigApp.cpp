@@ -306,7 +306,8 @@ bool ConfigApp::saveHassPassword(String passw) {
     preferences.putString("hasspsw", passw);
     preferences.end();
     setLastKeySaved("hasspsw");
-    Serial.println("-->[CONF] Hass password saved.");
+    if (devmode) Serial.printf("-->[CONF] Hass password %s saved.\n", passw.c_str());
+    else Serial.println("-->[CONF] Hass password saved.");
     return true;
 }
 

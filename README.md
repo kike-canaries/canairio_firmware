@@ -17,12 +17,11 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 - Fixed station, (using only your WiFi)
 - Fast WiFi credentials provisioning via Bluetooth
 - Automatic firmware OTA updates (stable/testing channels)
-- Share mobile tracks via mobile.canair.io or CanAirIO app
+- Share mobile tracks via [mobile.canair.io](https://mobile.canair.io) or CanAirIO app
 - [Home Assistant](https://www.home-assistant.io/) integration, discovery and multisensor support
 - Share your fixed station quickly via [Anaire Cloud](https://portal.anaire.org/d/detail/detalle?orgId=1&var-uid=U33TTGOTDA3D46&var-name=&refresh=1m)
-- Multiple boards and sensors support with only one firmware.
 - Separated [sensors layer](https://github.com/kike-canaries/canairio_sensorlib#readme) for improve support of new sensors
-
+- Multiple boards and sensors support with only one firmware
 
 ## Boards supported
 
@@ -222,6 +221,8 @@ The full updated and last versions for all box versions, are in the [official re
 - [x] New pax counter variable (People around the device)
 - [x] WiFi SSIDs scanner for have a choose list of it in the app
 - [x] Pax counter disable/enable
+- [x] Home Assistant integration (with zero-config)
+- [x] Anaire cloud integration (Automatic time series of your station)
 - [ ] Sensor community alternativa for fixed stations
 - [ ] Anonymous authentication
 

@@ -109,16 +109,18 @@ void messageReceived(String &topic, String &payload) {
 bool hassStatusSubscription() {
     if (clientHass.subscribe(getServerStatusTopic().c_str())) return true;
     Serial.printf("[E][MQTT] status subscription error: %d\n",clientHass.lastError());
+    hassSubscribed = false;
     return false;
 }
 
 void hassPublish() {
+    if (!clientHass.connected()) return;
     static uint_fast64_t mqttTimeStamp = 0;
     if (millis() - mqttTimeStamp > cfg.stime * 1000 * 2) {
         mqttTimeStamp = millis(); 
         if (!hassConfigured) hassRegisterSensors();
-        if (!hassSubscribed) hassStatusSubscription();
         hassPubAllSensors();
+        if (!hassSubscribed) hassStatusSubscription();
     }
 }
 
@@ -140,6 +142,8 @@ void hassConnect() {
         }
         if (mqtt_try >= MQTT_RETRY_CONNECTION && !clientHass.connected()) {
             mqttHassDelayedStamp = millis();
+            hassSubscribed = false;
+            hassConfigured = false;
             Serial.println("\tconnection failed!");
             return;
         }

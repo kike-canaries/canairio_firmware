@@ -42,6 +42,7 @@ void influxDbParseFields() {
     sensor.addField("prs",sensors.getPressure());
     sensor.addField("gas",sensors.getGas());
     sensor.addField("alt",sensors.getAltitude());
+    sensor.addField("bat",gui.getBatteryLevel());
     sensor.addField("name",cfg.getStationName().c_str());
 }
 

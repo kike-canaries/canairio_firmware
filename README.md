@@ -8,7 +8,21 @@
 
 <a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/android-hpma115s0/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>
 
-Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5) using low-cost sensors and smartphones. Built with a `ESP32` module board and a dust sensor, interfaced with an [CanAirIO Android client app](https://github.com/kike-canaries/canairio_android). The current firmware supports multiple boards and sensors, please review the **DIY guides** in our [documentation](https://canair.io/docs)
+Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5 or CO2) using low-cost sensors and smartphones. Built with a `ESP32` module board interfaced with an [CanAirIO Android client app](https://github.com/kike-canaries/canairio_android). 
+
+## Features
+
+- Super easy [web installer](https://canair.io/installer), via Chrome or Edge
+- Mobile station (via Bluetooth LE for tag GPS variables)
+- Fixed station, (using only your WiFi)
+- Fast WiFi credentials provisioning via Bluetooth
+- Automatic firmware OTA updates (stable/testing channels)
+- Share mobile tracks via mobile.canair.io or CanAirIO app
+- [Home Assistant](https://www.home-assistant.io/) integration, discovery and multisensor support
+- Share your fixed station quickly via [Anaire Cloud](https://portal.anaire.org/d/detail/detalle?orgId=1&var-uid=U33TTGOTDA3D46&var-name=&refresh=1m)
+- Multiple boards and sensors support with only one firmware.
+- Separated [sensors layer](https://github.com/kike-canaries/canairio_sensorlib#readme) for improve support of new sensors
+
 
 ## Boards supported
 

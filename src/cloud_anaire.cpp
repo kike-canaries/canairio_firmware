@@ -6,39 +6,39 @@
 ******************************************************************************/
 
 WiFiClient netAnaire;
-MQTTClient client;
+MQTTClient client(MQTT_BUFFER_SIZE);
 
 void anairePublish() {
     static uint_fast64_t mqttTimeStamp = 0;
     if (millis() - mqttTimeStamp > cfg.stime * 1000) {
         mqttTimeStamp = millis();
-        char MQTT_message[256];
-
-        int deviceType = sensors.getPmDeviceTypeSelected();
 
         float humi = sensors.getHumidity();
         if (humi == 0.0) humi = sensors.getCO2humi();
         float temp = sensors.getTemperature();
         if (temp == 0.0) temp = sensors.getCO2temp();
 
-        if (deviceType <= 3) {
-            sprintf(MQTT_message, "{id: %s, pm1: %d, pm25: %d, pm10: %d, tmp: %f, hum: %f, geo: %s}",
-                    cfg.getStationName().c_str(),
-                    sensors.getPM1(),
-                    sensors.getPM25(),
-                    sensors.getPM10(),
-                    temp,
-                    humi,
-                    cfg.geo.c_str());
-        } else {
-            sprintf(MQTT_message, "{id: %s,CO2: %d, humidity: %f, temperature: %f,VBat: %f}",
-                    cfg.getStationName().c_str(),
-                    sensors.getCO2(),
-                    humi,
-                    temp,
-                    0.0);
-        }
-        client.publish(ANAIRE_TOPIC, MQTT_message);
+        StaticJsonDocument<MQTT_BUFFER_SIZE> doc;
+        char buffer[MQTT_BUFFER_SIZE];
+
+        doc["id"] = cfg.getStationName();
+        doc["CO2"] = String(sensors.getCO2());
+        doc["humidity"] = String(humi);
+        doc["temperature"] = String(temp);
+        doc["pressure"] = String(sensors.getPressure());
+        doc["altitude"] = String(sensors.getAltitude());
+        doc["gas"] = String(sensors.getGas());
+        doc["pm1"] = sensors.getPM1();
+        doc["pm25"] = sensors.getPM25();
+        doc["pm10"] = sensors.getPM10();
+        doc["geo"] = cfg.geo;
+        doc["battery"] = String(gui.getBatteryLevel());
+        doc["VBat"] = String(gui.getBatteryVoltage());
+
+        size_t n = serializeJson(doc, buffer);
+
+        if (client.publish(ANAIRE_TOPIC, buffer, n)) return;
+        Serial.printf("[E][MQTT] publish sensor data error: %d\n",client.lastError());
     }
 }
 

@@ -80,7 +80,7 @@ void influxDbInit() {
         influx.setConnectionParamsV1(url.c_str(), cfg.ifx.db.c_str());
         if (cfg.devmode) Serial.printf("-->[IFDB] config: %s@%s:%i\n", cfg.ifx.db.c_str(), cfg.ifx.ip.c_str(), cfg.ifx.pt);
         influxDbAddTags();
-        Serial.printf("-->[IFDB] connecting to: %s..", cfg.ifx.ip.c_str());
+        Serial.printf("-->[IFDB] connecting to %s..", cfg.ifx.ip.c_str());
         int influx_retry = 0;
         while (influx_retry++ < IFX_RETRY_CONNECTION && !influx.validateConnection()) {
             Serial.print(".");

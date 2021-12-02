@@ -763,6 +763,10 @@ TFTUtils* TFTUtils::getInstance() {
 	return this;
 }
 
+void TFTUtils::loop(){
+    // OLED GUI compatibility
+}
+
 /// Firmware version from platformio.ini
 String TFTUtils::getFirmwareVersionCode() {
     String VERSION_CODE = "r";

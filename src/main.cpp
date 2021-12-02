@@ -152,6 +152,7 @@ void setup() {
 
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC: " + cfg.deviceId);
+    Serial.println("-->[INFO] Hostname: " + getHostId());
     Serial.println("-->[INFO] Revision: " + gui.getFirmwareVersionCode());
     Serial.println("-->[INFO] Firmware: " + String(VERSION));
     Serial.println("-->[INFO] Flavor  : " + String(FLAVOR));
@@ -167,18 +168,17 @@ void setup() {
 
     // init watchdog timer for reboot in any loop blocker
     wd.init();
-
-    // WiFi and cloud communication
+    
+        // WiFi and cloud communication
     wifiInit();
-
+    Serial.printf("-->[INFO] InfluxDb:\t %s\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
+    Serial.printf("-->[INFO] WiFi    :\t %s\n", cfg.isWifiEnable() ? "enabled" : "disabled");
+    gui.welcomeAddMessage("WiFi: "+String(cfg.isIfxEnable() ? "On" : "Off"));
+    gui.welcomeAddMessage("Influx: "+String(cfg.isIfxEnable() ? "On" : "Off"));
+ 
     // Bluetooth low energy init (GATT server for device config)
     bleServerInit();
     gui.welcomeAddMessage("Bluetooth ready.");
-
-    Serial.println("-->[INFO] InfluxDb API:\t" + String(cfg.isIfxEnable()));
-    gui.welcomeAddMessage("InfluxDb :"+String(cfg.isIfxEnable()));
-
-    influxDbInit();     // Instance DB handler
 
     // wifi status 
     if (WiFi.isConnected())
@@ -205,7 +205,6 @@ void loop() {
     bleLoop();       // notify data to connected devices
     snifferLoop();   // pax counter calc (only when WiFi is Off)
     wifiLoop();      // check wifi and reconnect it
-    influxDbLoop();  // influxDB publication
     otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers
                      // update GUI flags:

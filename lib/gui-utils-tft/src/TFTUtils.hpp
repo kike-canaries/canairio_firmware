@@ -95,7 +95,7 @@ class TFTUtils {
 
     float getBatteryVoltage();
 
-
+    void loop();
 
    private:
 

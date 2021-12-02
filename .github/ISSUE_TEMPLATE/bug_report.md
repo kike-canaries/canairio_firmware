@@ -6,15 +6,16 @@ labels: bug
 assignees: ''
 
 ---
-
-Thanks for help up and contribute to CanAirIO project. Please edit and fill this template.
+Thanks for help up and contribute to CanAirIO project. Please edit and fill this template. We recommend at less fill the description.
 
 ## Description
-A clear and concise description of what the bug is.
+
+
+## To reproduce
+
 
 ## Debug output
 
-If apply, please enable debugging from the CanAirIO app on `settings->mobile station->enable debug mode` and paste the output.
 
 ## Device config
 
@@ -22,19 +23,14 @@ If apply, please write the next information, you can have it on the settings sec
 
 ```
 board: please choose any TTGO T7, TTGO T-Display, ESP32DevKit, WemosOLED, etc
-firmware version: rev8xx
-mobile app version: rev5xx
-sensors: (sensors references and type connection (Serial/i2c for example))
+firmware version: revxxx
+mobile app version: revxxx
+sensors: (sensors references and type connection)
 OLED: yes/no
 TFT: yes/no
 Power: Battery/USB
 ```
 
-## To Reproduce
-
-Steps to reproduce the behavior:
-
 ## Additional context
 
-Any context to try to help us if apply
 

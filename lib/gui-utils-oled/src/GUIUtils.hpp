@@ -70,6 +70,8 @@ class GUIUtils {
 
     float getBatteryVoltage();
 
+    void loop();
+
    private:
 
     int lastDrawedLine = 0;

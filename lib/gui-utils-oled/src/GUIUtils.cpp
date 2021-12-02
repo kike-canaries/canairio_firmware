@@ -6,30 +6,6 @@
 *   D I S P L A Y  M E T H O D S
 ******************************************************************************/
 
-void guiTask(void* pvParameters) {
-    Serial.println("-->[OGUI] starting task loop");
-    while (1) {
-        gui.pageStart();
-        gui.displayMainValues();
-        gui.displayGUIStatusFlags();
-        gui.pageEnd();
-        // batteryloop();   // battery charge status (deprecated)
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-}
-
-void GUIUtils::setupGUITask() {
-    taskGUIrunning = true;
-    xTaskCreatePinnedToCore(
-        guiTask,     /* Function to implement the task */
-        "tempTask ", /* Name of the task */
-        10000,       /* Stack size in words */
-        NULL,        /* Task input parameter */
-        5,           /* Priority of the task */
-        &xHandle,    /* Task handle. */
-        1);          /* Core where the task should run */
-}
-
 void GUIUtils::displayInit() {
 #ifdef WEMOSOLED  // display via i2c for WeMOS OLED board & TTGO18650
     U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
@@ -77,7 +53,6 @@ void GUIUtils::showWelcome() {
 void GUIUtils::showMain() {
     u8g2.clearBuffer();
     u8g2.sendBuffer();
-    if(!taskGUIrunning) setupGUITask();           // init GUI thread
 }
 
 void GUIUtils::showProgress(unsigned int progress, unsigned int total) {
@@ -507,11 +482,9 @@ void GUIUtils::setTrackTime(int h, int m, int s){
 }
 
 void GUIUtils::suspendTaskGUI(){
-    if(taskGUIrunning) vTaskSuspend(xHandle);
 }
 
 void GUIUtils::resumeTaskGUI(){
-    if(taskGUIrunning) vTaskResume(xHandle);
 }
 
 void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
@@ -524,6 +497,17 @@ uint8_t GUIUtils::getBatteryLevel(){
 
 float GUIUtils::getBatteryVoltage(){
     return 0.0;
+}
+
+void GUIUtils::loop(){
+    static uint_least64_t guiTimeStamp = 0;
+    if (millis() - guiTimeStamp > 500) {
+        guiTimeStamp = millis();
+        gui.pageStart();
+        gui.displayMainValues();
+        gui.displayGUIStatusFlags();
+        gui.pageEnd();
+    }
 }
 
 /// Firmware version from platformio.ini

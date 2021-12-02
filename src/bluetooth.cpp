@@ -38,6 +38,7 @@ String getSensorData() {
     doc["hum"] = sensors.getHumidity();
     doc["alt"] = sensors.getAltitude();
     doc["pre"] = sensors.getPressure();
+    doc["bat"] = gui.getBatteryLevel();
     doc["PAX"] = getPaxCount();
     doc["dsl"] = sensors.getPmDeviceSelected();
     String json;

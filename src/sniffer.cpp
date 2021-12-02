@@ -87,7 +87,6 @@ void wifiScanChannels() {
 }
 
 void snifferInit() {
-    Serial.println("-->[WIFI] starting PAX counter sniffer..");
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     esp_wifi_init(&cfg);
     esp_wifi_set_storage(WIFI_STORAGE_RAM);
@@ -105,6 +104,7 @@ void snifferInit() {
     esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
     wifiScanChannels();    
     sniffer_start = true;
+    Serial.println("-->[WIFI] started PAX counter sniffer ;)");
 }
 
 void snifferStop () {

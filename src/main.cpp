@@ -200,7 +200,6 @@ void setup() {
 }
 
 void loop() {
-
     sensors.loop();  // read sensor data and showed it
     bleLoop();       // notify data to connected devices
     snifferLoop();   // pax counter calc (only when WiFi is Off)
@@ -209,4 +208,5 @@ void loop() {
     wd.loop();       // watchdog for check loop blockers
                      // update GUI flags:
     gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
+    gui.loop();
 }

@@ -137,6 +137,14 @@ void setup() {
     Serial.begin(115200);
     delay(400);
     Serial.println("\n== CanAirIO Setup ==\n");
+    
+    //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable Brownout Detector 
+
+    // set cpu speed low to save battery
+    setCpuFrequencyMhz(80);
+    Serial.print("CPU Speed: ");
+    Serial.print(getCpuFrequencyMhz());
+    Serial.println(" MHz");
 
     // init app preferences and load settings
     cfg.init("canairio");

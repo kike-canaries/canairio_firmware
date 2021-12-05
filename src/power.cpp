@@ -34,7 +34,11 @@ void powerDeepSleepButton(){
 void powerDeepSleepTimer(int seconds) {
     prepairShutdown();
     esp_sleep_enable_timer_wakeup(seconds * 1000000);
+    #ifdef TTGO_TDISPLAY
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
+    #else
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 1);
+    #endif
     completeShutdown(); 
 }
 

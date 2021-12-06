@@ -13,7 +13,7 @@ bool oldDeviceConnected = false;
 
 String getNotificationData() {
     StaticJsonDocument<40> doc;   // notification capacity is reduced, only main value
-    int deviceType = sensors.getPmDeviceTypeSelected();
+    int deviceType = sensors.getUARTDeviceTypeSelected();
     if (deviceType <= 3) {
         doc["P25"] = sensors.getPM25();  
     } else {
@@ -40,7 +40,7 @@ String getSensorData() {
     doc["pre"] = sensors.getPressure();
     doc["bat"] = gui.getBatteryLevel();
     doc["PAX"] = getPaxCount();
-    doc["dsl"] = sensors.getPmDeviceSelected();
+    doc["dsl"] = sensors.getUARTDeviceSelected();
     String json;
     serializeJson(doc, json);
     return json;

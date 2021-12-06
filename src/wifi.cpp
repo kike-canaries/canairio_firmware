@@ -133,7 +133,7 @@ String getDeviceInfo () {
     String info = getHostId() + "\n";
     info = info + String(FLAVOR) + "\n";
     info = info + "Rev" + String(REVISION) +" v" + String(VERSION) + "\n";
-    info = info + "MS: "+sensors.getPmDeviceSelected() + "\n";
+    info = info + "MS: "+sensors.getUARTDeviceSelected() + "\n";
     info = info + "" + cfg.getStationName() + "\n";
     info = info + "IP: " + WiFi.localIP().toString() + "\n";
     info = info + "OTA: " + String(TARGET) + " channel\n";

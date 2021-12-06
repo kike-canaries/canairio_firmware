@@ -10,7 +10,7 @@ void prepairShutdown() {
     delay(500); 
  
 #else
-   gui.PowerSave(); 
+   gui.setPowerSave(); 
 #endif
 
 }

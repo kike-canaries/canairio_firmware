@@ -16,15 +16,15 @@
 #include <wifi.hpp>
 
 void refreshGUIData() {
+    
     gui.displaySensorLiveIcon();  // all sensors read are ok
-    int deviceType = sensors.getUARTDeviceTypeSelected();
     uint16_t mainValue = 0;
 
-    if (deviceType == -1) {
+    if (sensors.getMainDeviceSelected().isEmpty()) {
         mainValue = getPaxCount();
-    } else if (deviceType <= 3) {
+    } else if (sensors.getMainSensorTypeSelected() == Sensors::SENSOR_PM) {
         mainValue = sensors.getPM25();
-    } else {
+    } else if (sensors.getMainSensorTypeSelected() == Sensors::SENSOR_CO2) {
         mainValue = sensors.getCO2();
     }
 
@@ -39,7 +39,7 @@ void refreshGUIData() {
         humi,
         temp,
         getWifiRSSI(),
-        deviceType);
+        sensors.getMainSensorTypeSelected());
 
     gui.setInfoData(getDeviceInfo());
 }
@@ -118,10 +118,10 @@ void startingSensors() {
                                                     // For more information about the supported sensors,
                                                     // please see the canairio_sensorlib documentation.
 
-    if(sensors.isUARTSensorConfigured()){
+    if(!sensors.getMainDeviceSelected().isEmpty()) {
         Serial.print("-->[INFO] PM/CO2 sensor detected: ");
-        Serial.println(sensors.getUARTDeviceSelected());
-        gui.welcomeAddMessage(sensors.getUARTDeviceSelected());
+        Serial.println(sensors.getMainDeviceSelected());
+        gui.welcomeAddMessage(sensors.getMainDeviceSelected());
     }
     else {
         Serial.println("-->[INFO] Detection sensors FAIL!");

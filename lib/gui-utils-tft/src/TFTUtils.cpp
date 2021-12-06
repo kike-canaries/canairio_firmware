@@ -522,9 +522,9 @@ void TFTUtils::displayMainValues(){
             displayCenterBig(output);
 
 
-            if (_deviceType == -1)
+            if (_deviceType == 0)
                 displayMainUnit("PAX");
-            else if (_deviceType <= 3)
+            else if (_deviceType == 1)
                 displayMainUnit("PM2.5");
             else
                 displayMainUnit("PPM");
@@ -606,7 +606,7 @@ void TFTUtils::displayGUIStatusFlags() {
 }
 
 uint32_t TFTUtils::getAQIColor(uint32_t value) {
-    if (_deviceType <= 3) {
+    if (_deviceType <= 1) {
 
         if (value <= 13)       return 0;
         else if (value <= 35)  return 1;

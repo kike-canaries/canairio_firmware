@@ -17,7 +17,7 @@
 
 void refreshGUIData() {
     gui.displaySensorLiveIcon();  // all sensors read are ok
-    int deviceType = sensors.getPmDeviceTypeSelected();
+    int deviceType = sensors.getUARTDeviceTypeSelected();
     uint16_t mainValue = 0;
 
     if (deviceType == -1) {
@@ -118,10 +118,10 @@ void startingSensors() {
                                                     // For more information about the supported sensors,
                                                     // please see the canairio_sensorlib documentation.
 
-    if(sensors.isPmSensorConfigured()){
+    if(sensors.isUARTSensorConfigured()){
         Serial.print("-->[INFO] PM/CO2 sensor detected: ");
-        Serial.println(sensors.getPmDeviceSelected());
-        gui.welcomeAddMessage(sensors.getPmDeviceSelected());
+        Serial.println(sensors.getUARTDeviceSelected());
+        gui.welcomeAddMessage(sensors.getUARTDeviceSelected());
     }
     else {
         Serial.println("-->[INFO] Detection sensors FAIL!");

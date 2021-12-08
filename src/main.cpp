@@ -15,11 +15,8 @@
 #include <bluetooth.hpp>
 #include <wifi.hpp>
 
-void refreshGUIData() {
-    
-    gui.displaySensorLiveIcon();  // all sensors read are ok
+uint16_t getMainValue() {
     uint16_t mainValue = 0;
-
     if (sensors.getMainDeviceSelected().isEmpty()) {
         mainValue = getPaxCount();
     } else if (sensors.getMainSensorTypeSelected() == Sensors::SENSOR_PM) {
@@ -27,15 +24,20 @@ void refreshGUIData() {
     } else if (sensors.getMainSensorTypeSelected() == Sensors::SENSOR_CO2) {
         mainValue = sensors.getCO2();
     }
+    return mainValue;
+}
 
+void refreshGUIData() {
+    gui.displaySensorLiveIcon();  // all sensors read are ok
+    
     float humi = sensors.getHumidity();
     if (humi == 0.0) humi = sensors.getCO2humi();
 
     float temp = sensors.getTemperature();
-    if (temp == 0.0) temp = sensors.getCO2temp();
-    
+    if (temp == 0.0) temp = sensors.getCO2temp();  // TODO: temp could be 0.0
+
     gui.setSensorData(
-        mainValue,
+        getMainValue(),
         humi,
         temp,
         getWifiRSSI(),

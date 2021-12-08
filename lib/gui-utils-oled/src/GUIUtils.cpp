@@ -69,7 +69,7 @@ void GUIUtils::showWelcome() {
     u8g2.sendBuffer();
 }
 
-void GUIUtils::PowerSave() {
+void GUIUtils::setPowerSave() {
     u8g2.setPowerSave(1);
 }
 void GUIUtils::showMain() {

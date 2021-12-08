@@ -6,6 +6,11 @@
 #include <esp_bt.h>
 #include <esp_wifi.h>
 #include "hal.hpp"
+#include "driver/rtc_io.h"
+
+#ifndef TTGO_TDISPLAY 
+#include <GUIUtils.hpp>
+#endif
 
 void powerDeepSleepButton();
 void powerDeepSleepTimer(int);

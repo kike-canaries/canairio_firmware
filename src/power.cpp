@@ -1,12 +1,16 @@
 #include <power.h>
-#include <GUIUtils.hpp>
 
 void prepairShutdown() {
 #ifdef TTGO_TDISPLAY
     digitalWrite(ADC_EN, LOW);
     delay(10);
+    rtc_gpio_init(GPIO_NUM_14);
+    rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
+	rtc_gpio_set_level(GPIO_NUM_14, 1);
+    delay(500); 
+ 
 #else
-   gui.PowerSave(); 
+   gui.setPowerSave(); 
 #endif
 
 }
@@ -30,6 +34,11 @@ void powerDeepSleepButton(){
 void powerDeepSleepTimer(int seconds) {
     prepairShutdown();
     esp_sleep_enable_timer_wakeup(seconds * 1000000);
+    #ifdef TTGO_TDISPLAY
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
+    #else
+    esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 1);
+    #endif
     completeShutdown(); 
 }
 

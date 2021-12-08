@@ -9,7 +9,6 @@
 #include "Orbitron_Medium_20.h"
 #include "icons.h"
 
-
 // Main windows
 #define RCOLSTART 80
 

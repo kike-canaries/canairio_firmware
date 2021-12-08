@@ -15,31 +15,33 @@
 #include <bluetooth.hpp>
 #include <wifi.hpp>
 
-void refreshGUIData() {
-    gui.displaySensorLiveIcon();  // all sensors read are ok
-    int deviceType = sensors.getPmDeviceTypeSelected();
+uint16_t getMainValue() {
     uint16_t mainValue = 0;
-
-    if (deviceType == -1) {
+    if (sensors.getMainDeviceSelected().isEmpty()) {
         mainValue = getPaxCount();
-    } else if (deviceType <= 3) {
+    } else if (sensors.getMainSensorTypeSelected() == Sensors::SENSOR_PM) {
         mainValue = sensors.getPM25();
-    } else {
+    } else if (sensors.getMainSensorTypeSelected() == Sensors::SENSOR_CO2) {
         mainValue = sensors.getCO2();
     }
+    return mainValue;
+}
 
+void refreshGUIData() {
+    gui.displaySensorLiveIcon();  // all sensors read are ok
+    
     float humi = sensors.getHumidity();
     if (humi == 0.0) humi = sensors.getCO2humi();
 
     float temp = sensors.getTemperature();
-    if (temp == 0.0) temp = sensors.getCO2temp();
-    
+    if (temp == 0.0) temp = sensors.getCO2temp();  // TODO: temp could be 0.0
+
     gui.setSensorData(
-        mainValue,
+        getMainValue(),
         humi,
         temp,
         getWifiRSSI(),
-        deviceType);
+        sensors.getMainSensorTypeSelected());
 
     gui.setInfoData(getDeviceInfo());
 }
@@ -118,10 +120,10 @@ void startingSensors() {
                                                     // For more information about the supported sensors,
                                                     // please see the canairio_sensorlib documentation.
 
-    if(sensors.isPmSensorConfigured()){
+    if(!sensors.getMainDeviceSelected().isEmpty()) {
         Serial.print("-->[INFO] PM/CO2 sensor detected: ");
-        Serial.println(sensors.getPmDeviceSelected());
-        gui.welcomeAddMessage(sensors.getPmDeviceSelected());
+        Serial.println(sensors.getMainDeviceSelected());
+        gui.welcomeAddMessage(sensors.getMainDeviceSelected());
     }
     else {
         Serial.println("-->[INFO] Detection sensors FAIL!");

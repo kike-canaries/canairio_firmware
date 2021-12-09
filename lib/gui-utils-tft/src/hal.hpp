@@ -1,3 +1,7 @@
+// TTGO_TDISPLAY HAL DEFINTIONS
+
+#ifdef TTGO_TDISPLAY
+
 #define I2C_SDA_PIN 21
 #define I2C_SCL_PIN 22
 
@@ -14,5 +18,6 @@
 #define BUTTON_R 35
 #define BUTTON_L 0
 
-#define PMS_EN 27   // step up board enable pin
+#endif
+
 

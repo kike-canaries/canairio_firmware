@@ -443,7 +443,7 @@ void ConfigApp::clear() {
 void ConfigApp::reboot() {
     Serial.println("-->[CONF] reboot..");
     delay(100);
-    ESP.restart();
+    wd.execute();  // ESP and WiFi reboot
 }
 
 void ConfigApp::performCO2Calibration() {

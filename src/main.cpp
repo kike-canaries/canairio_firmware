@@ -164,7 +164,7 @@ void setup() {
     Serial.println("-->[INFO] Detecting sensors..");
     pinMode(MAIN_HW_EN_PIN, OUTPUT);
     digitalWrite(MAIN_HW_EN_PIN, HIGH);
-    Serial.printf("-->[INFO] Enable sensor on GPIO:\t%i\n", MAIN_HW_EN_PIN);
+    Serial.printf("-->[INFO] enable sensor on GPIO:\t%i\n", MAIN_HW_EN_PIN);
     startingSensors();
     // Setting callback for remote commands via Bluetooth config
     cfg.setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());

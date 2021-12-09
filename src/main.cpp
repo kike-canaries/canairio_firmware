@@ -153,17 +153,18 @@ void setup() {
     gui.showWelcome();
 
     // device wifi mac addres and firmware version
-    Serial.println("-->[INFO] ESP32MAC: " + cfg.deviceId);
-    Serial.println("-->[INFO] Hostname: " + getHostId());
-    Serial.println("-->[INFO] Revision: " + gui.getFirmwareVersionCode());
-    Serial.println("-->[INFO] Firmware: " + String(VERSION));
-    Serial.println("-->[INFO] Flavor  : " + String(FLAVOR));
-    Serial.println("-->[INFO] Target  : " + String(TARGET));
+    Serial.println("-->[INFO] ESP32MAC:\t" + cfg.deviceId);
+    Serial.println("-->[INFO] Hostname:\t" + getHostId());
+    Serial.println("-->[INFO] Revision:\t" + gui.getFirmwareVersionCode());
+    Serial.println("-->[INFO] Firmware:\t" + String(VERSION));
+    Serial.println("-->[INFO] Flavor  :\t" + String(FLAVOR));
+    Serial.println("-->[INFO] Target  :\t" + String(TARGET));
 
     // init all sensors
     Serial.println("-->[INFO] Detecting sensors..");
-    pinMode(PMS_EN, OUTPUT);
-    digitalWrite(PMS_EN, HIGH);
+    pinMode(MAIN_HW_EN_PIN, OUTPUT);
+    digitalWrite(MAIN_HW_EN_PIN, HIGH);
+    Serial.printf("-->[INFO] Enable sensor on GPIO:\t%i\n", MAIN_HW_EN_PIN);
     startingSensors();
     // Setting callback for remote commands via Bluetooth config
     cfg.setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());

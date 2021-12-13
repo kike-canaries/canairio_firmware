@@ -1,6 +1,7 @@
 #include <wifi.hpp>
 #include <bluetooth.hpp>
 
+<<<<<<< HEAD
 uint32_t ifxdbwcount;
 int rssi = 0;
 String hostId = "";
@@ -125,10 +126,11 @@ void influxDbLoop() {
     }  
 }
 
+=======
+>>>>>>> master
 /******************************************************************************
 *   W I F I   M E T H O D S
 ******************************************************************************/
-
 
 class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
     void onStart() {
@@ -173,12 +175,21 @@ void onUpdateMessage(const char *msg){
     gui.welcomeAddMessage("please wait..");
 }
 
+String getHostId() {
+    return "CanAirIO"+cfg.getDeviceIdShort();
+}
+
 void otaInit() {
-    hostId = "CanAirIO"+cfg.getDeviceIdShort();
-    ota.setup(hostId.c_str(), "CanAirIO");
-    gui.displayBottomLine(hostId);
+    ota.setup(getHostId().c_str(), "CanAirIO");
+    gui.displayBottomLine(getHostId());
     ota.setCallbacks(new MyOTAHandlerCallbacks());
     ota.setOnUpdateMessageCb(&onUpdateMessage);
+}
+
+void wifiCloudsInit() {
+    influxDbInit();    
+    anaireInit();
+    hassInit();
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
@@ -188,7 +199,7 @@ void wifiConnect(const char* ssid, const char* pass) {
     WiFi.begin(ssid, pass);
     while (!WiFi.isConnected() && wifi_retry++ <= WIFI_RETRY_CONNECTION) {
         Serial.print(".");
-        delay(200);  // increment this delay on possible reconnect issues
+        delay(400);  // increment this delay on possible reconnect issues
     }
     delay(500);
     if (WiFi.isConnected()) {
@@ -199,10 +210,11 @@ void wifiConnect(const char* ssid, const char* pass) {
         Serial.println("-->[WIFI] publish interval: "+String(cfg.stime * 2)+" sec.");
         wd.pause();
         otaInit();
-        ota.checkRemoteOTA();
+        ota.checkRemoteOTA();  
         wd.resume();
+        wifiCloudsInit();
     } else {
-        Serial.println("fail!\n-->[E][WIFI] disconnected!");
+        Serial.println("fail!\n[E][WIFI] disconnected!");
     }
 }
 
@@ -235,6 +247,9 @@ void wifiLoop() {
         influxDbInit();
         cfg.setWifiConnected(WiFi.isConnected());
     }
+    anaireLoop();
+    hassLoop();
+    influxDbLoop();  // influxDB publication
 }
 
 int getWifiRSSI() {
@@ -243,14 +258,14 @@ int getWifiRSSI() {
 }
 
 String getDeviceInfo () {
-    String info = String(FLAVOR) + "\n";
+    String info = getHostId() + "\n";
+    info = info + String(FLAVOR) + "\n";
     info = info + "Rev" + String(REVISION) +" v" + String(VERSION) + "\n";
-    info = info + sensors.getPmDeviceSelected() + "\n\n";
-
-    info = info + "Host: " + hostId + "\n";
-    info = info + "(" + WiFi.localIP().toString() + ")\n";
-    info = info + "OTA: " + String(TARGET) + " channel\n\n";
-    info = info + "Fixed station:\n";
-    info = info + influxdbGetStationName();
+    info = info + "MS: "+sensors.getMainDeviceSelected() + "\n";
+    info = info + "" + cfg.getStationName() + "\n";
+    info = info + "IP: " + WiFi.localIP().toString() + "\n";
+    info = info + "OTA: " + String(TARGET) + " channel\n";
+    info = info + "Hass: "  + String(hassIsConnected() ? "connected" : "disconnected") + "\n";
+    info = info + "Anaire: "+ String(anaireIsConnected() ? "connected" : "disconnected") + "\n";
     return info;
 }

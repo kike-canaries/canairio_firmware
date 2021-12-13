@@ -10,6 +10,7 @@ class ConfigApp {
     uint64_t chipid;
     String deviceId;
     String dname;
+    
     int stime;
     int stype;
     double lat;
@@ -19,6 +20,11 @@ class ConfigApp {
     String ssid;
     String pass;
 
+    String hassip;
+    String hassusr;
+    String hasspsw;
+    int16_t hasspt;
+    
     struct ifxdbValues {
         String db = "canairio";
         String ip = "influxdb.canair.io";
@@ -55,6 +61,8 @@ class ConfigApp {
 
     bool saveSensorType(int type);
 
+    bool saveSSID(String ssid);
+
     bool saveWifi(String ssid, String pass);
 
     bool saveInfluxDb(String db, String ip, int pt);
@@ -66,10 +74,22 @@ class ConfigApp {
     bool ifxdbEnable(bool enable);
 
     bool debugEnable(bool enable);
+    
+    bool paxEnable(bool enable);
+
+    bool saveHassIP(String ip);
+
+    bool saveHassPort(int port);
+
+    bool saveHassPassword(String pass);
+
+    bool saveHassUser(String user);
 
     String getCurrentConfig();
 
     bool isWifiEnable();
+    
+    bool isPaxEnable();
 
     bool isIfxEnable();
 
@@ -80,6 +100,8 @@ class ConfigApp {
     String getDeviceId();
 
     String getDeviceIdShort();
+
+    String getStationName();
 
     int getSensorType();
 
@@ -112,6 +134,8 @@ class ConfigApp {
     bool wifi_enable;
     ///InfluxDB cloud publication on/off
     bool ifxdb_enable;
+    /// PaxCounter on/off
+    bool pax_enable = true;
     ///WiFi state
     bool wifi_connected;
 
@@ -132,6 +156,8 @@ class ConfigApp {
     bool saveI2COnly(bool enable);
 
     void performCO2Calibration();
+
+    String getAnaireDeviceId();
 
     void DEBUG(const char* text, const char* textb = "");
 

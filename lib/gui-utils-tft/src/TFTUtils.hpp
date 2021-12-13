@@ -51,7 +51,7 @@ class TFTUtils {
     
     void welcomeRepeatMessage(String msg);
 
-    void setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType);
+    void setSensorData(int mainValue, float humi, float temp, int rssi, int deviceType);
 
     void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 
@@ -76,6 +76,8 @@ class TFTUtils {
     void setBrightness(uint32_t value);
 
     void setWifiMode(bool enable);
+    
+    void setPaxMode(bool enable);
 
     void setSampleTime(int time);
 
@@ -88,6 +90,12 @@ class TFTUtils {
     void resumeTaskGUI();
 
     String getFirmwareVersionCode ();
+
+    uint8_t getBatteryLevel();
+
+    float getBatteryVoltage();
+
+    void loop();
 
    private:
 
@@ -154,6 +162,8 @@ class TFTUtils {
     int _average = 0;
 
     bool _wifi_enable;
+    
+    bool _pax_enable;
 
     int _sample_time = 5;
 
@@ -231,6 +241,8 @@ class TFTUtils {
 
     void drawDataIcon();
 
+    void drawPreferenceSaveIcon();
+
     void invertScreen();
 
     void updateInvertValue();
@@ -279,6 +291,7 @@ class GUIUserPreferencesCallbacks {
 public:
     virtual ~GUIUserPreferencesCallbacks () {};
     virtual void onWifiMode(bool enable);
+    virtual void onPaxMode(bool enable);
 	virtual void onBrightness(int value);
     virtual void onColorsInverted(bool enable);
     virtual void onSampleTime(int time);

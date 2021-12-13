@@ -12,36 +12,36 @@
 #include <ConfigApp.hpp>
 #include <GUILib.hpp>
 #include <Sensors.hpp>
-#include <battery.hpp>
 #include <bluetooth.hpp>
 #include <wifi.hpp>
 
-void refreshGUIData() {
-    gui.displaySensorLiveIcon();  // all sensors read are ok
-    int deviceType = sensors.getPmDeviceTypeSelected();
+uint16_t getMainValue() {
     uint16_t mainValue = 0;
-
-    if (deviceType == -1) {
+    if (sensors.getMainDeviceSelected().isEmpty()) {
         mainValue = getPaxCount();
-    } else if (deviceType <= 3) {
+    } else if (sensors.getMainSensorTypeSelected() == Sensors::SENSOR_PM) {
         mainValue = sensors.getPM25();
-    } else {
+    } else if (sensors.getMainSensorTypeSelected() == Sensors::SENSOR_CO2) {
         mainValue = sensors.getCO2();
     }
+    return mainValue;
+}
 
+void refreshGUIData() {
+    gui.displaySensorLiveIcon();  // all sensors read are ok
+    
     float humi = sensors.getHumidity();
     if (humi == 0.0) humi = sensors.getCO2humi();
 
     float temp = sensors.getTemperature();
-    if (temp == 0.0) temp = sensors.getCO2temp();
-    
+    if (temp == 0.0) temp = sensors.getCO2temp();  // TODO: temp could be 0.0
+
     gui.setSensorData(
-        mainValue,
-        getChargeLevel(),
+        getMainValue(),
         humi,
         temp,
         getWifiRSSI(),
-        deviceType);
+        sensors.getMainSensorTypeSelected());
 
     gui.setInfoData(getDeviceInfo());
 }
@@ -52,6 +52,11 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
         cfg.wifiEnable(enable);
         cfg.reload();
         if (!enable) wifiStop();
+    };
+    void onPaxMode(bool enable){
+        Serial.println("-->[MAIN] onPax changed: "+String(enable));
+        cfg.paxEnable(enable);
+        cfg.reload();
     };
     void onBrightness(int value){
         Serial.println("-->[MAIN] onBrightness changed: "+String(value));
@@ -118,10 +123,10 @@ void startingSensors() {
                                                     // For more information about the supported sensors,
                                                     // please see the canairio_sensorlib documentation.
 
-    if(sensors.isPmSensorConfigured()){
+    if(!sensors.getMainDeviceSelected().isEmpty()) {
         Serial.print("-->[INFO] PM/CO2 sensor detected: ");
-        Serial.println(sensors.getPmDeviceSelected());
-        gui.welcomeAddMessage(sensors.getPmDeviceSelected());
+        Serial.println(sensors.getMainDeviceSelected());
+        gui.welcomeAddMessage(sensors.getMainDeviceSelected());
     }
     else {
         Serial.println("-->[INFO] Detection sensors FAIL!");
@@ -152,14 +157,15 @@ void setup() {
     // init graphic user interface
     gui.setBrightness(cfg.getBrightness());
     gui.setWifiMode(cfg.isWifiEnable());
+    gui.setPaxMode(cfg.isPaxEnable());
     gui.setSampleTime(cfg.stime);
     gui.displayInit();
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();
 
-
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC: " + cfg.deviceId);
+    Serial.println("-->[INFO] Hostname: " + getHostId());
     Serial.println("-->[INFO] Revision: " + gui.getFirmwareVersionCode());
     Serial.println("-->[INFO] Firmware: " + String(VERSION));
     Serial.println("-->[INFO] Flavor  : " + String(FLAVOR));
@@ -173,23 +179,19 @@ void setup() {
     // Setting callback for remote commands via Bluetooth config
     cfg.setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());
 
-    // init battery (only for some boards)
-    batteryInit();
-
     // init watchdog timer for reboot in any loop blocker
     wd.init();
-
-    // WiFi and cloud communication
+    
+        // WiFi and cloud communication
     wifiInit();
-
+    Serial.printf("-->[INFO] InfluxDb:\t %s\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
+    Serial.printf("-->[INFO] WiFi    :\t %s\n", cfg.isWifiEnable() ? "enabled" : "disabled");
+    gui.welcomeAddMessage("WiFi: "+String(cfg.isIfxEnable() ? "On" : "Off"));
+    gui.welcomeAddMessage("Influx: "+String(cfg.isIfxEnable() ? "On" : "Off"));
+ 
     // Bluetooth low energy init (GATT server for device config)
     bleServerInit();
     gui.welcomeAddMessage("Bluetooth ready.");
-
-    Serial.println("-->[INFO] InfluxDb API:\t" + String(cfg.isIfxEnable()));
-    gui.welcomeAddMessage("InfluxDb :"+String(cfg.isIfxEnable()));
-
-    influxDbInit();     // Instance DB handler
 
     // wifi status 
     if (WiFi.isConnected())
@@ -211,15 +213,13 @@ void setup() {
 }
 
 void loop() {
-
     sensors.loop();  // read sensor data and showed it
-    batteryloop();   // battery charge status (deprecated)
     bleLoop();       // notify data to connected devices
     snifferLoop();   // pax counter calc (only when WiFi is Off)
     wifiLoop();      // check wifi and reconnect it
-    influxDbLoop();  // influxDB publication
     otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers
-                     
-    gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected()); // update GUI flags:
+                     // update GUI flags:
+    gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
+    gui.loop();
 }

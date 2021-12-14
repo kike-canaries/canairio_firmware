@@ -139,7 +139,7 @@ bool ConfigApp::saveDeviceName(String name) {
 bool ConfigApp::saveSampleTime(int time) {
     if (time >= 5) {
         saveInt("stime", time);
-        Serial.print("-->[CONF] sensor sample time set to: ");
+        Serial.print("-->[CONF] set sample time to  :\t");
         Serial.println(time);
         return true;
     }

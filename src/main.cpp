@@ -48,27 +48,27 @@ void refreshGUIData() {
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     void onWifiMode(bool enable){
-        Serial.println("-->[MAIN] onWifi changed: "+String(enable));
+        Serial.println("-->[MAIN] Wifi enable changed :\t"+String(enable));
         cfg.wifiEnable(enable);
         cfg.reload();
         if (!enable) wifiStop();
     };
     void onPaxMode(bool enable){
-        Serial.println("-->[MAIN] onPax changed: "+String(enable));
+        Serial.println("-->[MAIN] onPax enable changed:\t"+String(enable));
         cfg.paxEnable(enable);
         cfg.reload();
     };
     void onBrightness(int value){
-        Serial.println("-->[MAIN] onBrightness changed: "+String(value));
+        Serial.println("-->[MAIN] onBrightness changed:\t"+String(value));
         cfg.saveBrightness(value);
     };
     void onColorsInverted(bool enable){
-        Serial.println("-->[MAIN] onColorsInverted changed: "+String(enable));
+        Serial.println("-->[MAIN] onColors changed    :\t"+String(enable));
         cfg.colorsInvertedEnable(enable);
     };
     void onSampleTime(int time){
         if(sensors.sample_time != time) {
-            Serial.println("-->[MAIN] onSampleTime changed: "+String(time));
+            Serial.println("-->[MAIN] onSampleTime changed:\t" + String(time));
             cfg.saveSampleTime(time);
             cfg.reload();
             bleServerConfigRefresh();
@@ -106,7 +106,7 @@ void onSensorDataError(const char * msg){
 }
 
 void startingSensors() {
-    Serial.println("-->[INFO] PM sensor configured: "+String(cfg.stype));
+    Serial.println("-->[INFO] config UART sensor:\t"+String(cfg.stype));
     gui.welcomeAddMessage("Detected sensor:");
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
@@ -161,10 +161,10 @@ void setup() {
     Serial.println("-->[INFO] Target  :\t" + String(TARGET));
 
     // init all sensors
-    Serial.println("-->[INFO] Detecting sensors..");
+    Serial.println("-->[INFO] Detecting sensors:");
     pinMode(MAIN_HW_EN_PIN, OUTPUT);
     digitalWrite(MAIN_HW_EN_PIN, HIGH);
-    Serial.printf("-->[INFO] enable sensor on GPIO:\t%i\n", MAIN_HW_EN_PIN);
+    Serial.printf("-->[INFO] enable sensor GPIO:\t%i\n", MAIN_HW_EN_PIN);
     startingSensors();
     // Setting callback for remote commands via Bluetooth config
     cfg.setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());

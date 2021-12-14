@@ -25,6 +25,7 @@ void IRAM_ATTR resetModule() {
     delay(200);
     esp_wifi_deinit();
     delay(200);
+    digitalWrite(MAIN_HW_EN_PIN, LOW);
     ESP.restart();
 }
 
@@ -50,6 +51,10 @@ void Watchdog::pause() {
 
 void Watchdog::resume() {
     timerAlarmEnable(timer);  // enable interrupt
+}
+
+void Watchdog::execute() {
+    resetModule();
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_WATCHDOGHANDLER)

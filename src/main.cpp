@@ -106,7 +106,7 @@ void onSensorDataError(const char * msg){
 }
 
 void startingSensors() {
-    Serial.println("-->[INFO] config UART sensor:\t"+String(cfg.stype));
+    Serial.println("-->[INFO] config UART sensor\t: "+String(cfg.stype));
     gui.welcomeAddMessage("Detected sensor:");
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
@@ -121,7 +121,7 @@ void startingSensors() {
                                                     // please see the canairio_sensorlib documentation.
 
     if(!sensors.getMainDeviceSelected().isEmpty()) {
-        Serial.print("-->[INFO] PM/CO2 sensor detected: ");
+        Serial.print("-->[INFO] Main sensor selected\t: ");
         Serial.println(sensors.getMainDeviceSelected());
         gui.welcomeAddMessage(sensors.getMainDeviceSelected());
     }
@@ -161,10 +161,11 @@ void setup() {
     Serial.println("-->[INFO] Target  :\t" + String(TARGET));
 
     // init all sensors
-    Serial.println("-->[INFO] Detecting sensors:");
     pinMode(MAIN_HW_EN_PIN, OUTPUT);
-    digitalWrite(MAIN_HW_EN_PIN, HIGH);
-    Serial.printf("-->[INFO] enable sensor GPIO:\t%i\n", MAIN_HW_EN_PIN);
+    digitalWrite(MAIN_HW_EN_PIN, HIGH);  // not mandatory, but useful power saving
+    Serial.println("-->[INFO] Detecting sensors:");
+    Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
+    Serial.println("-->[INFO] enable sensor GPIO\t: " + String(MAIN_HW_EN_PIN));
     startingSensors();
     // Setting callback for remote commands via Bluetooth config
     cfg.setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());
@@ -174,8 +175,8 @@ void setup() {
     
         // WiFi and cloud communication
     wifiInit();
-    Serial.printf("-->[INFO] InfluxDb:\t %s\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
-    Serial.printf("-->[INFO] WiFi    :\t %s\n", cfg.isWifiEnable() ? "enabled" : "disabled");
+    Serial.printf("-->[INFO] InfluxDb\t: %s\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
+    Serial.printf("-->[INFO] WiFi    \t: %s\n", cfg.isWifiEnable() ? "enabled" : "disabled");
     gui.welcomeAddMessage("WiFi: "+String(cfg.isIfxEnable() ? "On" : "Off"));
     gui.welcomeAddMessage("Influx: "+String(cfg.isIfxEnable() ? "On" : "Off"));
  

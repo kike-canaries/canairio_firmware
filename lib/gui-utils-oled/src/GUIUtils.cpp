@@ -6,29 +6,6 @@
 *   D I S P L A Y  M E T H O D S
 ******************************************************************************/
 
-void guiTask(void* pvParameters) {
-    Serial.println("-->[OGUI] starting task loop");
-    while (1) {
-        gui.pageStart();
-        gui.displayMainValues();
-        gui.displayGUIStatusFlags();
-        gui.pageEnd();
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-}
-
-void GUIUtils::setupGUITask() {
-    taskGUIrunning = true;
-    xTaskCreatePinnedToCore(
-        guiTask,     /* Function to implement the task */
-        "tempTask ", /* Name of the task */
-        10000,       /* Stack size in words */
-        NULL,        /* Task input parameter */
-        5,           /* Priority of the task */
-        &xHandle,    /* Task handle. */
-        1);          /* Core where the task should run */
-}
-
 void GUIUtils::displayInit() {
 #ifdef WEMOSOLED  // display via i2c for WeMOS OLED board & TTGO18650
     U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
@@ -53,6 +30,10 @@ void GUIUtils::displayInit() {
     this->u8g2 = u8g2;
     dw = u8g2.getDisplayWidth();
     dh = u8g2.getDisplayHeight();
+
+    // init battery (only for some boards)
+    // batteryInit();
+
     Serial.println("-->[OGUI] display config ready.");
 }
 
@@ -75,7 +56,6 @@ void GUIUtils::setPowerSave() {
 void GUIUtils::showMain() {
     u8g2.clearBuffer();
     u8g2.sendBuffer();
-    if(!taskGUIrunning) setupGUITask();           // init GUI thread
 }
 
 void GUIUtils::showProgress(unsigned int progress, unsigned int total) {
@@ -135,7 +115,7 @@ void GUIUtils::displayCenterBig(String msg) {
     u8g2.print(msg.c_str());
 #else
     if (dw > 64) {
-        if (_deviceType <= 3) {  // PM
+        if (_deviceType <= 1) {  // PM
             u8g2.setCursor(dw - 64, 6);
             u8g2.setFont(u8g2_font_inb24_mn);
         } else {  // CO2
@@ -143,7 +123,7 @@ void GUIUtils::displayCenterBig(String msg) {
             u8g2.setFont(u8g2_font_inb19_mn);
         }
     } else {
-        if (_deviceType <= 3) {  // PM
+        if (_deviceType <= 1) {  // PM
             u8g2.setCursor(dw - 28, 7);
             u8g2.setFont(u8g2_font_9x18B_tf);
         } else {  // CO2
@@ -154,9 +134,9 @@ void GUIUtils::displayCenterBig(String msg) {
     u8g2.print(msg.c_str());
     u8g2.setCursor(94, 34);
     u8g2.setFont(u8g2_font_6x13_tf);
-    if (_deviceType == -1)
+    if (_deviceType == 0)
         u8g2.print("PAX");
-    else if (_deviceType == 3)
+    else if (_deviceType == 1)
         u8g2.print("ug/m3");
     else
         u8g2.print("ppm");
@@ -231,7 +211,7 @@ void GUIUtils::displaySensorAverage(int average) {
     }
 #endif
 #else
-    if (_deviceType <= 3) {  //PM sensors
+    if (_deviceType <= 1) {  //PM sensors and PAX
         if (average < 13) {
 #ifdef TTGO_TQ
             u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
@@ -358,10 +338,10 @@ void GUIUtils::displaySensorAverage(int average) {
 void GUIUtils::displayMainValues() {
     displaySensorAverage(_average);
     char output[50];
-    if (_deviceType <= 4)
-        sprintf(output, "%04d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
-    else
+    if (_deviceType <= 1) // PM sensors and PAX
         sprintf(output, "%03d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
+    else
+        sprintf(output, "%04d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
     displayBottomLine(String(output));
 
 #ifdef EMOTICONS
@@ -393,7 +373,7 @@ void GUIUtils::displayMainValues() {
 }
 
 // TODO: separate this function, format/display
-void GUIUtils::setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType) {
+void GUIUtils::setSensorData(int mainValue, float humi, float temp, int rssi, int deviceType) {
     suspendTaskGUI();
     _deviceType = deviceType;
     _humi = humi;
@@ -488,6 +468,10 @@ void GUIUtils::setWifiMode(bool enable){
 
 }
 
+void GUIUtils::setPaxMode(bool enable){
+
+}
+
 void GUIUtils::setSampleTime(int time){
 
 }
@@ -497,18 +481,39 @@ void GUIUtils::setTrackValues(float speed, float distance){
 }
 
 void GUIUtils::setTrackTime(int h, int m, int s){
+
 }
 
 void GUIUtils::suspendTaskGUI(){
-    if(taskGUIrunning) vTaskSuspend(xHandle);
 }
 
 void GUIUtils::resumeTaskGUI(){
-    if(taskGUIrunning) vTaskResume(xHandle);
 }
 
 void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
 
+}
+
+uint8_t GUIUtils::getBatteryLevel(){
+    float volts = battGetVoltage();
+    return battCalcPercentage(volts); 
+}
+
+float GUIUtils::getBatteryVoltage(){
+     return battGetVoltage();
+}
+
+void GUIUtils::loop(){
+    static uint_least64_t guiTimeStamp = 0;
+    if (millis() - guiTimeStamp > 500) {
+        guiTimeStamp = millis();
+        gui.pageStart();
+        gui.displayMainValues();
+        gui.displayGUIStatusFlags();
+        gui.pageEnd();
+        getBatteryVoltage();
+        getBatteryLevel();
+    }
 }
 
 /// Firmware version from platformio.ini

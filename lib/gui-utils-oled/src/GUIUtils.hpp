@@ -3,6 +3,7 @@
 
 #include <U8g2lib.h>
 #include "hal.hpp"
+#include "battery.hpp"
 
 class GUIUserPreferencesCallbacks; 
 class GUIUtils {
@@ -41,7 +42,7 @@ class GUIUtils {
 
     void clearScreen();
     
-    void setSensorData(int mainValue, int chargeLevel, float humi, float temp, int rssi, int deviceType);
+    void setSensorData(int mainValue, float humi, float temp, int rssi, int deviceType);
 
     void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 
@@ -50,6 +51,8 @@ class GUIUtils {
     void setBrightness(uint32_t value);
 
     void setWifiMode(bool enable);
+
+    void setPaxMode(bool enable);
 
     void setSampleTime(int time);
 
@@ -64,6 +67,12 @@ class GUIUtils {
     void setPowerSave();
 
     String getFirmwareVersionCode ();
+
+    uint8_t getBatteryLevel();
+
+    float getBatteryVoltage();
+
+    void loop();
 
    private:
 
@@ -125,7 +134,8 @@ class GUIUserPreferencesCallbacks {
 public:
     virtual ~GUIUserPreferencesCallbacks () {};
     virtual void onWifiMode(bool enable);
-	virtual void onBrightness(int value);
+    virtual void onPaxMode(bool enable);
+    virtual void onBrightness(int value);
     virtual void onColorsInverted(bool enable);
     virtual void onSampleTime(int time);
     virtual void onCalibrationReady();

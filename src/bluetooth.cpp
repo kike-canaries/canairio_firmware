@@ -13,7 +13,7 @@ bool oldDeviceConnected = false;
 
 String getNotificationData() {
     StaticJsonDocument<40> doc;   // notification capacity is reduced, only main value
-    int deviceType = sensors.getPmDeviceTypeSelected();
+    int deviceType = sensors.getUARTDeviceTypeSelected();
     if (deviceType <= 3) {
         doc["P25"] = sensors.getPM25();  
     } else {
@@ -38,8 +38,9 @@ String getSensorData() {
     doc["hum"] = sensors.getHumidity();
     doc["alt"] = sensors.getAltitude();
     doc["pre"] = sensors.getPressure();
+    doc["bat"] = gui.getBatteryLevel();
     doc["PAX"] = getPaxCount();
-    doc["dsl"] = sensors.getPmDeviceSelected();
+    doc["dsl"] = sensors.getMainDeviceSelected();
     String json;
     serializeJson(doc, json);
     return json;
@@ -79,19 +80,25 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
             if (cfg.save(value.c_str())) {
                 cfg.reload();
                 gui.displayPreferenceSaveIcon();
+                
+                gui.setWifiMode(cfg.isWifiEnable());
+                if (!cfg.isWifiEnable()) wifiStop();
+                
                 if(sensors.sample_time != cfg.stime) {
                     sensors.setSampleTime(cfg.stime);
                     gui.setSampleTime(cfg.stime);
                 }
                 if(sensors.toffset != cfg.toffset) sensors.setTempOffset(cfg.toffset);
                 if(sensors.devmode != cfg.devmode) sensors.setDebugMode(cfg.devmode);
-                if (!cfg.isWifiEnable()) wifiStop();
             }
             else{
-                Serial.println("-->[E][BTLE][CONFIG] saving error!");
+                Serial.println("[E][BTLE][CONFIG] saving error!");
             }
-            bleServerConfigRefresh();
         }
+    };
+
+    void onRead(BLECharacteristic* pCharacteristic) {
+        bleServerConfigRefresh();
     }
 };
 
@@ -100,12 +107,12 @@ class MyStatusCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
         std::string value = pCharacteristic->getValue();
         if (value.length() > 0 && cfg.getTrackStatusValues(value.c_str())) {
-            log_v("-->[E][BTLE][STATUS] "+String(value.c_str()));
+            log_v("[E][BTLE][STATUS] "+String(value.c_str()));
             gui.setTrackValues(cfg.track.spd,cfg.track.kms);
             gui.setTrackTime(cfg.track.hrs,cfg.track.min,cfg.track.seg);
         }
         else {
-            Serial.println("-->[E][BTLE][STATUS] write error!");
+            Serial.println("[E][BTLE][STATUS] write error!");
         }
     }
 };

@@ -29,7 +29,7 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
                 ota.getInstance()->m_pOTAHandlerCallbacks->onProgress(progress,total);
         })
         .onError([](ota_error_t error) {
-            Serial.printf("-->[E][OTA] Error[%u]: ", error);
+            Serial.printf("[E][OTA] Error[%u]: ", error);
             if (error == OTA_AUTH_ERROR)         Serial.println("Auth Failed");
             else if (error == OTA_BEGIN_ERROR)   Serial.println("Begin Failed");
             else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");

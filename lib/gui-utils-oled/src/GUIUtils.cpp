@@ -495,11 +495,12 @@ void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
 }
 
 uint8_t GUIUtils::getBatteryLevel(){
-    return 0;
+    float volts = battGetVoltage();
+    return battCalcPercentage(volts); 
 }
 
 float GUIUtils::getBatteryVoltage(){
-    return 0.0;
+     return battGetVoltage();
 }
 
 void GUIUtils::loop(){
@@ -510,6 +511,8 @@ void GUIUtils::loop(){
         gui.displayMainValues();
         gui.displayGUIStatusFlags();
         gui.pageEnd();
+        getBatteryVoltage();
+        getBatteryLevel();
     }
 }
 

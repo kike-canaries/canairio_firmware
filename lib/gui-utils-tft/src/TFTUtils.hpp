@@ -2,8 +2,7 @@
 #define TFTUtils_hpp
 
 #include <SPI.h>
-#include <TFT_eSPI.h>  // Hardware-specific library
-// #include "ani.h"
+#include <TFT_eSPI.h>
 #include "hal.hpp"
 #include "battery.hpp"
 #include "Orbitron_Medium_20.h"

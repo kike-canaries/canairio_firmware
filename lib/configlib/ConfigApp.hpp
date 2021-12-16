@@ -3,6 +3,7 @@
 
 #include <ArduinoJson.h>
 #include <Preferences.h>
+#include <Watchdog.hpp>
 
 class RemoteConfigCallbacks;
 class ConfigApp {

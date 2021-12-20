@@ -153,7 +153,6 @@ else
       ;;
 
     all)
-      clean
       build TTGO_T7
       build WEMOSOLED
       build HELTEC

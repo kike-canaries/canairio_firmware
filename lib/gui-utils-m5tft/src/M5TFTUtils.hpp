@@ -1,8 +1,8 @@
-#ifndef TFTUtils_hpp
-#define TFTUtils_hpp
+#ifndef M5TFTUtils_hpp
+#define M5TFTUtils_hpp
 
 #include <SPI.h>
-#include <TFT_eSPI.h>
+#include <M5StickCPlus.h>
 #include "hal.hpp"
 #include "battery.hpp"
 #include <Orbitron_Medium_20.h>
@@ -28,9 +28,9 @@
 
 
 class GUIUserPreferencesCallbacks; 
-class TFTUtils {
+class M5TFTUtils {
    public:
-    TFTUtils(void){};
+    M5TFTUtils(void){};
 
     TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 
@@ -192,7 +192,7 @@ class TFTUtils {
 
     bool taskGUIrunning;
 
-    int aqicolors[6] = {TFT_GREEN, TFT_YELLOW, TFT_ORANGE, TFT_RED, TFT_PURPLE, TFT_BROWN};
+    int aqicolors[6] = {TFT_GREEN, TFT_YELLOW, TFT_ORANGE, TFT_RED, TFT_PURPLE, TFT_MAROON};
 
     String aqilabels[6] = {"GOOD", "MODERATE", "UNH SEN G", "UNHEALTY", "VERY UNH", "VERY UNH"};
 
@@ -282,7 +282,7 @@ class TFTUtils {
 
     GUIUserPreferencesCallbacks* mGUICallBacks = nullptr;
 
-    TFTUtils* getInstance();
+    M5TFTUtils* getInstance();
 
 };
 
@@ -298,7 +298,7 @@ public:
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTHANDLER)
-extern TFTUtils gui;
+extern M5TFTUtils gui;
 #endif
 
 #endif

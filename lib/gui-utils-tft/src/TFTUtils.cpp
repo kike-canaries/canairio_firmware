@@ -449,7 +449,6 @@ void TFTUtils::suspend() {
     welcomeAddMessage("Suspending..");
     delay(2000);
     #ifdef M5STICKCPLUS
-    M5.Lcd.setBrightness(0);
     M5.Axp.PowerOff();
     #else
     int r = digitalRead(TFT_BL);

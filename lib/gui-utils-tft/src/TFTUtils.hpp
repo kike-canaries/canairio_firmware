@@ -2,7 +2,11 @@
 #define TFTUtils_hpp
 
 #include <SPI.h>
+#ifdef M5STICKCPLUS
+#include <M5StickCPlus.h>
+#else
 #include <TFT_eSPI.h>
+#endif
 #include "hal.hpp"
 #include "battery.hpp"
 #include <Orbitron_Medium_20.h>
@@ -192,7 +196,7 @@ class TFTUtils {
 
     bool taskGUIrunning;
 
-    int aqicolors[6] = {TFT_GREEN, TFT_YELLOW, TFT_ORANGE, TFT_RED, TFT_PURPLE, TFT_BROWN};
+    int aqicolors[6] = {TFT_GREEN, TFT_YELLOW, TFT_ORANGE, TFT_RED, TFT_PURPLE, TFT_MAROON};
 
     String aqilabels[6] = {"GOOD", "MODERATE", "UNH SEN G", "UNHEALTY", "VERY UNH", "VERY UNH"};
 

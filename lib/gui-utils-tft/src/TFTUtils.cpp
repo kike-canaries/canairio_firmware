@@ -721,6 +721,7 @@ void TFTUtils::pageStart() {
     if (state == 0 && (millis() - loopts > 5000)) {  
         loopts = millis();
         updateBatteryValue();
+        if(CORE_DEBUG_LEVEL > 0) battPrintValues();
     }
     updateCalibrationField();
     displayGUIStatusFlags();

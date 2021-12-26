@@ -29,14 +29,21 @@ void TFTUtils::setupGUITask() {
 void TFTUtils::displayInit() {
     pinMode(BUTTON_L, INPUT_PULLUP);
     pinMode(BUTTON_R, INPUT);
+    #ifdef M5STICKCPLUS
+    M5.begin();
+    M5.Beep.end();
+    #else
     tft.init();
+    #endif
     tft.setRotation(0);
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextSize(1);
 
+    #ifndef M5STICKCPLUS
     ledcSetup(pwmLedChannelTFT, pwmFreq, pwmResolution);
     ledcAttachPin(TFT_BL, pwmLedChannelTFT);
+    #endif
     notifyBrightness();
 
     setupBattery();           // init battery ADC.
@@ -441,6 +448,10 @@ void TFTUtils::suspend() {
     welcomeAddMessage("");
     welcomeAddMessage("Suspending..");
     delay(2000);
+    #ifdef M5STICKCPLUS
+    M5.Lcd.setBrightness(0);
+    M5.Axp.PowerOff();
+    #else
     int r = digitalRead(TFT_BL);
     digitalWrite(TFT_BL, !r);
     delay(10);
@@ -453,6 +464,7 @@ void TFTUtils::suspend() {
     // esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);  // <== Don't works help wanted!
     esp_deep_sleep_disable_rom_logging();
     esp_deep_sleep_start();  
+    #endif
 }
 
 void TFTUtils::displayCenterBig(String msg) {
@@ -729,7 +741,9 @@ void TFTUtils::setBrightness(uint32_t value) {
 }
 
 void TFTUtils::notifyBrightness() {
+    #ifndef M5STICKCPLUS
     ledcWrite(pwmLedChannelTFT, brightness);
+    #endif
 }
 
 void TFTUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){

@@ -6,7 +6,7 @@
 #endif
 
 #ifdef M5STICKCPLUS
-#include <M5TFTUtils.hpp>
+#include <TFTUtils.hpp>
 #endif
 
 #ifndef M5STICKCPLUS

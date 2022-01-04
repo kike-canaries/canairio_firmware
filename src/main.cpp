@@ -15,14 +15,12 @@
 #include <bluetooth.hpp>
 #include <wifi.hpp>
 
-
 uint16_t mainValue = 0;
 String uSymbol = "";
 String uName = "";
 UNIT nextUnit = UNIT::NUNIT;
 
 void getMainValue(UNIT mainUnit) {
-    Serial.println("-->[MAIN] select unit temperature");
     mainValue = (uint32_t)sensors.getUnitValue(mainUnit);
     uName = sensors.getUnitName(mainUnit);
     uSymbol = sensors.getUnitSymbol(mainUnit);
@@ -50,6 +48,16 @@ void getMainValueAuto() {
     }
 }
 
+uint32_t heap_size = 0;
+
+void logMemory(const char *msg) {
+    if (!cfg.devmode) return;
+    if (heap_size == 0) heap_size = ESP.getFreeHeap();
+    heap_size = heap_size - ESP.getFreeHeap();
+    Serial.printf("-->[HEAP] %s bytes used\t: %04db/%03dKb\n", msg, heap_size, ESP.getFreeHeap()/1024);
+    heap_size = ESP.getFreeHeap();
+}
+
 void refreshGUIData() {
     gui.displaySensorLiveIcon();  // all sensors read are ok
 
@@ -71,6 +79,7 @@ void refreshGUIData() {
         uSymbol);
 
     gui.setInfoData(getDeviceInfo());
+    logMemory ("LOOP");
 }
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
@@ -167,13 +176,17 @@ void startingSensors() {
 *  M A I N
 ******************************************************************************/
 
+
+
 void setup() {
     Serial.begin(115200);
     delay(400);
     Serial.println("\n== CanAirIO Setup ==\n");
+    logMemory("INIT");
 
     // init app preferences and load settings
     cfg.init("canairio");
+    logMemory("CONF");
 
     // init graphic user interface
     gui.setBrightness(cfg.getBrightness());
@@ -183,6 +196,7 @@ void setup() {
     gui.displayInit();
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();
+    logMemory("GUI ");
 
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC:\t" + cfg.deviceId);
@@ -198,7 +212,9 @@ void setup() {
     Serial.println("-->[INFO] Detecting sensors:");
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
     Serial.println("-->[INFO] enable sensor GPIO\t: " + String(MAIN_HW_EN_PIN));
+    logMemory("GPIO");
     startingSensors();
+    logMemory("SLIB");
     // Setting callback for remote commands via Bluetooth config
     cfg.setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());
 
@@ -206,7 +222,9 @@ void setup() {
     wd.init();
     
         // WiFi and cloud communication
+    logMemory("WDOG");
     wifiInit();
+    logMemory("WIFI");
     Serial.printf("-->[INFO] InfluxDb\t: %s\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
     Serial.printf("-->[INFO] WiFi    \t: %s\n", cfg.isWifiEnable() ? "enabled" : "disabled");
     gui.welcomeAddMessage("WiFi: "+String(cfg.isIfxEnable() ? "On" : "Off"));
@@ -214,6 +232,7 @@ void setup() {
  
     // Bluetooth low energy init (GATT server for device config)
     bleServerInit();
+    logMemory("BLE ");
     gui.welcomeAddMessage("Bluetooth ready.");
 
     // wifi status 
@@ -231,8 +250,14 @@ void setup() {
     gui.showMain();
     refreshGUIData();
     delay(600);
+    logMemory("RGUI");
     sensors.loop();
+    logMemory("SLIBL");
     sensors.setSampleTime(cfg.stime);        // config sensors sample time (first use)
+    Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\n", sizeof(sensors));
+    Serial.printf("-->[HEAP] sizeof config \t: %04ub\n", sizeof(cfg));
+    Serial.printf("-->[HEAP] sizeof GUI    \t: %04ub\n", sizeof(gui));
+    Serial.println("\n==>[INFO] Setup End ===\n");
 }
 
 void loop() {

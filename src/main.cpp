@@ -15,69 +15,101 @@
 #include <bluetooth.hpp>
 #include <wifi.hpp>
 
-uint16_t getMainValue() {
-    uint16_t mainValue = 0;
-    if (sensors.getMainDeviceSelected().isEmpty()) {
+
+uint16_t mainValue = 0;
+String uSymbol = "";
+String uName = "";
+UNIT nextUnit = UNIT::NUNIT;
+
+void getMainValue(UNIT mainUnit) {
+    Serial.println("-->[MAIN] select unit temperature");
+    mainValue = (uint32_t)sensors.getUnitValue(mainUnit);
+    uName = sensors.getUnitName(mainUnit);
+    uSymbol = sensors.getUnitSymbol(mainUnit);
+}
+
+void getMainValueAuto() {
+    if (nextUnit != 0) {
+        getMainValue(nextUnit);
+    } else if (sensors.getMainDeviceSelected().isEmpty() && cfg.isPaxEnable()) {
         mainValue = getPaxCount();
+        uName = "PAX";
+        uSymbol = "PAX";
+    } else if (sensors.getMainDeviceSelected().isEmpty() && sensors.isUnitRegistered(UNIT::TEMP)) {
+        mainValue = (uint32_t) sensors.getTemperature();
+        uName = sensors.getUnitName(UNIT::TEMP);
+        uSymbol = sensors.getUnitSymbol(UNIT::TEMP);
     } else if (sensors.getMainSensorTypeSelected() == Sensors::SENSOR_PM) {
         mainValue = sensors.getPM25();
+        uName = sensors.getUnitName(UNIT::PM25);
+        uSymbol = sensors.getUnitSymbol(UNIT::PM25);
     } else if (sensors.getMainSensorTypeSelected() == Sensors::SENSOR_CO2) {
         mainValue = sensors.getCO2();
+        uName = sensors.getUnitName(UNIT::CO2);
+        uSymbol = sensors.getUnitSymbol(UNIT::CO2);
     }
-    return mainValue;
 }
 
 void refreshGUIData() {
     gui.displaySensorLiveIcon();  // all sensors read are ok
-    
+
     float humi = sensors.getHumidity();
     if (humi == 0.0) humi = sensors.getCO2humi();
 
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();  // TODO: temp could be 0.0
 
+    getMainValueAuto();
+
     gui.setSensorData(
-        getMainValue(),
+        mainValue,
         humi,
         temp,
         getWifiRSSI(),
-        sensors.getMainSensorTypeSelected());
+        sensors.getMainSensorTypeSelected(),
+        uName,
+        uSymbol);
 
     gui.setInfoData(getDeviceInfo());
 }
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
-    void onWifiMode(bool enable){
-        Serial.println("-->[MAIN] Wifi enable changed :\t"+String(enable));
+    void onWifiMode(bool enable) {
+        Serial.println("-->[MAIN] Wifi enable changed :\t" + String(enable));
         cfg.wifiEnable(enable);
         cfg.reload();
         if (!enable) wifiStop();
     };
-    void onPaxMode(bool enable){
-        Serial.println("-->[MAIN] onPax enable changed:\t"+String(enable));
+    void onPaxMode(bool enable) {
+        Serial.println("-->[MAIN] onPax enable changed:\t" + String(enable));
         cfg.paxEnable(enable);
         cfg.reload();
     };
-    void onBrightness(int value){
-        Serial.println("-->[MAIN] onBrightness changed:\t"+String(value));
+    void onBrightness(int value) {
+        Serial.println("-->[MAIN] onBrightness changed:\t" + String(value));
         cfg.saveBrightness(value);
     };
-    void onColorsInverted(bool enable){
-        Serial.println("-->[MAIN] onColors changed    :\t"+String(enable));
+    void onColorsInverted(bool enable) {
+        Serial.println("-->[MAIN] onColors changed    :\t" + String(enable));
         cfg.colorsInvertedEnable(enable);
     };
-    void onSampleTime(int time){
-        if(sensors.sample_time != time) {
+    void onSampleTime(int time) {
+        if (sensors.sample_time != time) {
             Serial.println("-->[MAIN] onSampleTime changed:\t" + String(time));
             cfg.saveSampleTime(time);
             cfg.reload();
             bleServerConfigRefresh();
             sensors.setSampleTime(cfg.stime);
-        } 
+        }
     };
-    void onCalibrationReady(){
+    void onCalibrationReady() {
         Serial.println("-->[MAIN] onCalibrationReady");
-        sensors.setCO2RecalibrationFactor(400);   // ==> Calibration factor on outdoors
+        sensors.setCO2RecalibrationFactor(400);  // ==> Calibration factor on outdoors
+    };
+    void onMainButtonPress() {
+        Serial.println("-->[MAIN] onMainButtonPress");
+        nextUnit = (UNIT) sensors.getNextUnit();
+        refreshGUIData();
     };
 };
 

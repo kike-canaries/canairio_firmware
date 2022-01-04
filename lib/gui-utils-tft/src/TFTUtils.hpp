@@ -54,7 +54,7 @@ class TFTUtils {
     
     void welcomeRepeatMessage(String msg);
 
-    void setSensorData(int mainValue, float humi, float temp, int rssi, int deviceType);
+    void setSensorData(uint32_t mainValue, float humi, float temp, int rssi, int deviceType, String uName, String uSymbol);
 
     void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 
@@ -162,6 +162,10 @@ class TFTUtils {
 
     int _mainValue = 0;
 
+    String _unit_symbol = "";
+
+    String _unit_name = "";
+
     int _average = 0;
 
     bool _wifi_enable;
@@ -212,7 +216,7 @@ class TFTUtils {
     
     void displaySensorAverage(int average);
 
-    void displayMainUnit(String unit);
+    void displayMainUnit(String uName, String uSymbol);
 
     void displayCenterBig(String msg);
     
@@ -299,6 +303,7 @@ public:
     virtual void onColorsInverted(bool enable);
     virtual void onSampleTime(int time);
     virtual void onCalibrationReady();
+    virtual void onMainButtonPress();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTHANDLER)

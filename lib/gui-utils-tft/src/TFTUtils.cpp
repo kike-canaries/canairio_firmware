@@ -365,8 +365,9 @@ void TFTUtils::startCalibration(){
 }
 
 void TFTUtils::toggleMain(){
-    if(++wstate==2)wstate = 0;
-    restoreMain();
+    if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onMainButtonPress();
+    // if(++wstate==2)wstate = 0;
+    // restoreMain();
 }
 
 void TFTUtils::restoreMain(){
@@ -474,11 +475,13 @@ void TFTUtils::displayCenterBig(String msg) {
     tft.drawString(msg.c_str(), tft.width() / 2, 36);
 }
 
-void TFTUtils::displayMainUnit(String unit) {
+void TFTUtils::displayMainUnit(String uName, String uSymbol) {
     tft.setTextDatum(TR_DATUM);
     tft.setTextFont(1);
     tft.setTextSize(0);
-    tft.drawString(unit.c_str(),123,57);
+    tft.drawString(uSymbol.c_str(),128,57);
+    tft.setTextDatum(TL_DATUM);
+    tft.drawString(uName.c_str(),9,57);
 }
 
 void TFTUtils::displayBottomLine(String msg) {
@@ -522,7 +525,6 @@ void TFTUtils::displayMainValues(){
         tft.setFreeFont(&Orbitron_Medium_20);
 
         if (wstate == 0) {
-
             tft.setCursor(1, 187);
             tft.printf("%02.1f", _temp);
 
@@ -531,14 +533,7 @@ void TFTUtils::displayMainValues(){
 
             sprintf(output, "%04d", _mainValue);
             displayCenterBig(output);
-
-
-            if (_deviceType == 0)
-                displayMainUnit("PAX");
-            else if (_deviceType == 1)
-                displayMainUnit("PM2.5");
-            else
-                displayMainUnit("PPM");
+            displayMainUnit(_unit_name, _unit_symbol);
         } 
         else {
 
@@ -551,7 +546,7 @@ void TFTUtils::displayMainValues(){
             char output[20];
             sprintf(output, "%04.1f", _speed);
             displayCenterBig(output);
-            displayMainUnit("KM/h");
+            displayMainUnit("Speed","KM/h");
         }
 
         drawBarGraph();
@@ -561,12 +556,14 @@ void TFTUtils::displayMainValues(){
 }
 
 // TODO: separate this function, format/display
-void TFTUtils::setSensorData(int mainValue, float humi, float temp, int rssi, int deviceType) {
+void TFTUtils::setSensorData(uint32_t mainValue, float humi, float temp, int rssi, int deviceType, String uName, String uSymbol) {
     suspendTaskGUI();
     _deviceType = deviceType;
     _humi = humi;
     _temp = temp;
     _mainValue = mainValue;
+    _unit_symbol = uSymbol;
+    _unit_name = uName;
     _rssi = abs(rssi);
     pkts[MAX_X - 1] = mainValue;
     isNewData = true;

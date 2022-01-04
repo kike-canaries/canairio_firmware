@@ -378,8 +378,12 @@ void TFTUtils::restoreMain(){
 
 void TFTUtils::loadLastData(){
     isNewData = true;
-    drawBarGraph();
-    displaySensorAverage(_average);
+    if (_unit == 0) {
+        drawBarGraph();
+        displaySensorAverage(_average);
+    } else {
+        drawLineGraph();
+    }
     displayMainValues();
 }
 
@@ -531,7 +535,11 @@ void TFTUtils::displayMainValues(){
             tft.setCursor(1, 227);
             tft.printf("%02d%%", (int)_humi);
 
-            sprintf(output, "%04d", _mainValue);
+            if(_unit == 0) {
+                sprintf(output, "%04d", _mainValue);
+            } else {
+                sprintf(output, "%04d", _minorValue);
+            }
             displayCenterBig(output);
             displayMainUnit(_unit_name, _unit_symbol);
         } 
@@ -549,23 +557,31 @@ void TFTUtils::displayMainValues(){
             displayMainUnit("Speed","KM/h");
         }
 
-        drawBarGraph();
-        displaySensorAverage(_average);
+        if(_unit == 0) {
+            drawBarGraph();
+            displaySensorAverage(_average);
+        } else {
+            drawLineGraph();
+        }
         isNewData = false;
     }
 }
 
 // TODO: separate this function, format/display
-void TFTUtils::setSensorData(uint32_t mainValue, float humi, float temp, int rssi, int deviceType, String uName, String uSymbol) {
+void TFTUtils::setSensorData(uint32_t mainValue, uint32_t minorValue, float humi, float temp, int rssi, int deviceType, String uName, String uSymbol, int unit) {
     suspendTaskGUI();
     _deviceType = deviceType;
     _humi = humi;
     _temp = temp;
     _mainValue = mainValue;
+    _minorValue = minorValue;
     _unit_symbol = uSymbol;
     _unit_name = uName;
     _rssi = abs(rssi);
-    pkts[MAX_X - 1] = mainValue;
+    if (_unit != unit) resetBuffer(bufGraphMinor);
+    _unit = unit;
+    bufGraphMain[MAX_X - 1] = mainValue;
+    bufGraphMinor[MAX_X - 1] = minorValue;
     isNewData = true;
     resumeTaskGUI();
 }
@@ -634,26 +650,42 @@ uint32_t TFTUtils::getAQIColor(uint32_t value) {
 }
 
 void TFTUtils::drawBarGraph() {
-    double multiplicator = getMultiplicator();
+    double multiplicator = getMultiplicator(bufGraphMain);
     int len;
     tft.fillRect(0, 149 - MAX_Y, MAX_X, MAX_Y, TFT_BLACK);
     tft.drawLine(0, 150 - MAX_Y, MAX_X - 1, 150 - MAX_Y,TFT_GREY);
     _average = 0; 
     for (int i = 0; i < MAX_X; i++) {
-        len = pkts[i] * multiplicator;
-        _average = pkts[i] + _average;
-        int color = aqicolors[getAQIColor(pkts[i])];
+        len = bufGraphMain[i] * multiplicator;
+        _average = bufGraphMain[i] + _average;
+        int color = aqicolors[getAQIColor(bufGraphMain[i])];
         tft.drawLine(i, 150, i, 150 - (len > MAX_Y ? MAX_Y : len),color);
-        if (i < MAX_X - 1) pkts[i] = pkts[i + 1];
+        if (i < MAX_X - 1) bufGraphMain[i] = bufGraphMain[i + 1];
     }
 
     _average = _average / MAX_X;
 }
 
-double TFTUtils::getMultiplicator() {
+void TFTUtils::drawLineGraph() {
+    double multiplicator = getMultiplicator(bufGraphMinor);
+    int len;
+    tft.fillRect(0, 149 - MAX_Y, MAX_X, MAX_Y, TFT_BLACK);
+    tft.drawLine(0, 150 - MAX_Y, MAX_X - 1, 150 - MAX_Y,TFT_GREY);
+    for (int i = 0; i < MAX_X; i++) {
+        len = bufGraphMinor[i] * multiplicator;
+        tft.drawLine(i, 150, i, 150 - (len > MAX_Y ? MAX_Y : len),TFT_WHITE);
+        if (i < MAX_X - 1) bufGraphMinor[i] = bufGraphMinor[i + 1];
+    }
+}
+
+void TFTUtils::resetBuffer(uint32_t *buf) {
+    for (int i = 0; i < MAX_X; i++) buf[i] = 0;
+}
+
+double TFTUtils::getMultiplicator(uint32_t * buf) {
   uint32_t maxVal = 1;
   for (int i = 0; i < MAX_X; i++) {
-    if (pkts[i] > maxVal) maxVal = pkts[i];
+    if (buf[i] > maxVal) maxVal = buf[i];
   }
   if (maxVal > MAX_Y) return (double)MAX_Y / (double)maxVal;
   else if (maxVal < MAX_Y / 20) return 20;

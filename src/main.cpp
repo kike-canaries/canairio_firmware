@@ -16,12 +16,13 @@
 #include <wifi.hpp>
 
 uint16_t mainValue = 0;
+uint16_t minorValue = 0;
 String uSymbol = "";
 String uName = "";
 UNIT nextUnit = UNIT::NUNIT;
 
 void getMainValue(UNIT mainUnit) {
-    mainValue = (uint32_t)sensors.getUnitValue(mainUnit);
+    minorValue = (uint32_t)sensors.getUnitValue(mainUnit);
     uName = sensors.getUnitName(mainUnit);
     uSymbol = sensors.getUnitSymbol(mainUnit);
 }
@@ -71,12 +72,15 @@ void refreshGUIData() {
 
     gui.setSensorData(
         mainValue,
+        minorValue,
         humi,
         temp,
         getWifiRSSI(),
         sensors.getMainSensorTypeSelected(),
         uName,
-        uSymbol);
+        uSymbol,
+        nextUnit
+    );
 
     gui.setInfoData(getDeviceInfo());
     logMemory ("LOOP");

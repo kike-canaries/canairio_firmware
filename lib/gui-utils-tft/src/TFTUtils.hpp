@@ -54,7 +54,7 @@ class TFTUtils {
     
     void welcomeRepeatMessage(String msg);
 
-    void setSensorData(uint32_t mainValue, float humi, float temp, int rssi, int deviceType, String uName, String uSymbol);
+    void setSensorData(uint32_t mainValue, uint32_t minorValue, float humi, float temp, int rssi, int deviceType, String uName, String uSymbol, int unit);
 
     void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 
@@ -136,7 +136,9 @@ class TFTUtils {
 
     int dh = 0;  // display height
 
-    uint32_t pkts[MAX_X];  // here the packets per second will be saved
+    uint32_t bufGraphMain[MAX_X];  // Main graph buffer
+    
+    uint32_t bufGraphMinor[MAX_X];  // Secondary graph buffer
 
     int state = 0;
 
@@ -161,10 +163,14 @@ class TFTUtils {
     float _temp = 0.0;
 
     int _mainValue = 0;
+    
+    int _minorValue = 0;
 
     String _unit_symbol = "";
 
     String _unit_name = "";
+
+    int _unit = 0;
 
     int _average = 0;
 
@@ -230,11 +236,15 @@ class TFTUtils {
 
     void displayBigLabel(int cursor, String msg);
 
-    double getMultiplicator();
+    void resetBuffer(uint32_t * buf);
+
+    double getMultiplicator(uint32_t * buf);
 
     uint32_t getAQIColor(uint32_t value);
     
     void drawBarGraph();
+    
+    void drawLineGraph();
 
     void drawBluetoothIcon();
 

@@ -21,16 +21,14 @@ String uSymbol = "";
 String uName = "";
 UNIT nextUnit = UNIT::NUNIT;
 
-void getMainValue(UNIT mainUnit) {
+void getMinorValue(UNIT mainUnit) {
     minorValue = (uint32_t)sensors.getUnitValue(mainUnit);
     uName = sensors.getUnitName(mainUnit);
     uSymbol = sensors.getUnitSymbol(mainUnit);
 }
 
-void getMainValueAuto() {
-    if (nextUnit != 0) {
-        getMainValue(nextUnit);
-    } else if (sensors.getMainDeviceSelected().isEmpty() && cfg.isPaxEnable()) {
+void getMainValue() {
+    if (sensors.getMainDeviceSelected().isEmpty() && cfg.isPaxEnable()) {
         mainValue = getPaxCount();
         uName = "PAX";
         uSymbol = "PAX";
@@ -47,16 +45,9 @@ void getMainValueAuto() {
         uName = sensors.getUnitName(UNIT::CO2);
         uSymbol = sensors.getUnitSymbol(UNIT::CO2);
     }
-}
 
-uint32_t heap_size = 0;
-
-void logMemory(const char *msg) {
-    if (!cfg.devmode) return;
-    if (heap_size == 0) heap_size = ESP.getFreeHeap();
-    heap_size = heap_size - ESP.getFreeHeap();
-    Serial.printf("-->[HEAP] %s bytes used\t: %04db/%03dKb\n", msg, heap_size, ESP.getFreeHeap()/1024);
-    heap_size = ESP.getFreeHeap();
+    if (nextUnit != 0) getMinorValue(nextUnit);
+    
 }
 
 void refreshGUIData() {
@@ -68,7 +59,7 @@ void refreshGUIData() {
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();  // TODO: temp could be 0.0
 
-    getMainValueAuto();
+    getMainValue();
 
     gui.setSensorData(
         mainValue,
@@ -172,15 +163,13 @@ void startingSensors() {
     }
     else {
         Serial.println("-->[INFO] Detection sensors FAIL!");
-        gui.welcomeAddMessage("Detection !FAILED!");
+        gui.welcomeAddMessage("MainSensor: PAX");
     }
 }
 
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
-
-
 
 void setup() {
     Serial.begin(115200);

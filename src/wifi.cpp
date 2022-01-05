@@ -141,3 +141,15 @@ String getDeviceInfo () {
     info = info + "Anaire: "+ String(anaireIsConnected() ? "connected" : "disconnected") + "\n";
     return info;
 }
+
+uint32_t heap_size = 0;
+
+void logMemory(const char *msg) {
+    if (!cfg.devmode) return;
+    if (heap_size == 0) heap_size = ESP.getFreeHeap();
+    heap_size = heap_size - ESP.getFreeHeap();
+    Serial.printf("-->[HEAP] %s bytes used\t: %04db/%03dKb\n", msg, heap_size, ESP.getFreeHeap()/1024);
+    heap_size = ESP.getFreeHeap();
+}
+
+

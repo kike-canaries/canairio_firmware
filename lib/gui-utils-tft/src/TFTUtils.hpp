@@ -198,6 +198,8 @@ class TFTUtils {
 
     bool _blePair;
 
+    bool toggle1s;
+
     String _info = "";
 
     bool isNewData;
@@ -222,6 +224,8 @@ class TFTUtils {
     
     void displaySensorAverage(int average);
 
+    void displayMainHeader();
+    
     void displayMainUnit(String uName, String uSymbol);
 
     void displayCenterBig(String msg);

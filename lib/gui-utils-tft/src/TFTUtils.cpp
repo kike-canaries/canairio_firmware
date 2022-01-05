@@ -129,6 +129,8 @@ void TFTUtils::showMain() {
 }
 
 void TFTUtils::showWindowBike(){
+    holdR = 0;
+    delay(100);
     showStatus();
     tft.setCursor(80, 204, 1);
     tft.println("BATT:");
@@ -264,13 +266,13 @@ void TFTUtils::updateInvertValue(){
 
 void TFTUtils::updateBatteryValue(){
     float volts = battGetVoltage();
-    int state = (int)battCalcPercentage(volts)/20;
+    int batt_state = (int)battCalcPercentage(volts)/20;
     String voltage = "" + String(volts) + "v";
     displayBottomLine(voltage);
     tft.fillRect(RCOLSTART,216,40,10,TFT_BLACK);
     int color = battIsCharging() ? TFT_GREENYELLOW : blue;
 
-    for (int i = 0; i < state + 1 ; i++) {
+    for (int i = 0; i < batt_state + 1 ; i++) {
         tft.fillRect(RCOLSTART + (i * 7), 217, 3, 8, i == 0 ? TFT_GREY : color);
     }
 }
@@ -365,14 +367,16 @@ void TFTUtils::startCalibration(){
 }
 
 void TFTUtils::toggleMain(){
-    if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onMainButtonPress();
-    // if(++wstate==2)wstate = 0;
-    // restoreMain();
+    if(mGUICallBacks != nullptr && wstate==3) {
+        getInstance()->mGUICallBacks->onMainButtonPress(); // toggle secundary value
+    } else if(++wstate==2)wstate = 0;
+    restoreMain();
 }
 
 void TFTUtils::restoreMain(){
     if(wstate==0)showMain();
     if(wstate==1)showWindowBike();
+    if(wstate==3)showMain();
     if(_calibration_counter>=-1)_calibration_counter = -2;
 }
 
@@ -396,7 +400,8 @@ void TFTUtils::checkButtons() {
             if(state==5)startCalibration();
             if(state==6)showInfoWindow();
         }
-        if (holdR > 20) suspend();
+        if (holdR > 10) wstate = 3; // show secundary value for choose it
+        if (holdR > 30) suspend();
     } else {
         holdR = 0;
         pressR = 0;
@@ -406,11 +411,16 @@ void TFTUtils::checkButtons() {
         holdL++;
         if (pressL == 0) {
             pressL = 1;
-            if (state++ == 0) showSetup();
+            if (state++ == 0 && wstate != 3) showSetup();
+            else if (wstate == 3) { 
+                wstate = 0;
+                restoreMain();
+            }
             if (state >= 1) refreshSetup();
             if (state >= 7) restoreMain();
         }
         if(holdL > 10 && state >= 1) restoreMain();
+        // if(holdL > 10 && state == 0) showWindowBike();
     } else {
         holdL = 0;
         pressL = 0;
@@ -471,7 +481,6 @@ void TFTUtils::displayCenterBig(String msg) {
     tft.setFreeFont(&Orbitron_Light_32);
     tft.setTextDatum(MC_DATUM);
     tft.setTextColor(TFT_WHITE,TFT_BLACK);
-    tft.fillRect(2, 25, 130, 40, TFT_BLACK);
     tft.drawString(msg.c_str(), tft.width() / 2, 36);
 }
 
@@ -517,36 +526,35 @@ void TFTUtils::displaySensorAverage(int average) {
     displayEmoticonColor(aqicolors[color], aqilabels[color]);
 }
 
+void TFTUtils::displayMainHeader() {
+    tft.fillRect(2, 25, 130, 40, TFT_BLACK);
+    if (wstate == 3 && toggle1s) return;
+    char output[6];
+    if (_unit == 0) sprintf(output, "%04d", _mainValue);
+    else sprintf(output, "%04d", _minorValue);
+    displayCenterBig(output);
+    displayMainUnit(_unit_name, _unit_symbol);
+}
+
 void TFTUtils::displayMainValues(){
     if (state == 0 && isNewData) {
-        char output[6];
+        tft.fillRect(2, 25, 130, 40, TFT_BLACK);
         tft.fillRect(1, 170, 64, 20, TFT_BLACK);
         tft.fillRect(1, 210, 64, 20, TFT_BLACK);
         tft.setFreeFont(&Orbitron_Medium_20);
 
-        if (wstate == 0) {
+        if (wstate == 0 || wstate == 3) {
             tft.setCursor(1, 187);
             tft.printf("%02.1f", _temp);
-
             tft.setCursor(1, 227);
             tft.printf("%02d%%", (int)_humi);
-
-            if(_unit == 0) {
-                sprintf(output, "%04d", _mainValue);
-            } else {
-                sprintf(output, "%04d", _minorValue);
-            }
-            displayCenterBig(output);
-            displayMainUnit(_unit_name, _unit_symbol);
+            displayMainHeader();
         } 
         else {
-
             tft.setCursor(1, 187);
             tft.printf("%02.1f", _km);
-
             tft.setCursor(1, 227);
             tft.printf("%01d:%02d", _hours, _minutes);
-
             char output[20];
             sprintf(output, "%04.1f", _speed);
             displayCenterBig(output);
@@ -618,6 +626,7 @@ void TFTUtils::displayGUIStatusFlags() {
         if (dataOn) dataOn = false;                              // reset trigger for publish data ok.
         if (preferenceSave) preferenceSave = false;              // reset trigger for save preference ok.
         if (sensorLive && _live_ticks++>1) sensorLive = false;   // reset fan animation
+
     }
 }
 
@@ -755,6 +764,12 @@ void TFTUtils::pageStart() {
         loopts = millis();
         updateBatteryValue();
         if(CORE_DEBUG_LEVEL > 0) battPrintValues();
+    }
+    static uint_fast64_t loop500ms = 0; // timestamp for GUI refresh
+    if (state == 0 && (millis() - loop500ms > 500)) {  
+        loop500ms = millis();
+        toggle1s = !toggle1s;
+        if (wstate == 3) displayMainHeader();
     }
     updateCalibrationField();
     displayGUIStatusFlags();

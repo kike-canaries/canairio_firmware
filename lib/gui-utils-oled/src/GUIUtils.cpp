@@ -129,14 +129,16 @@ void GUIUtils::displayCenterBig(String msg) {
         }
     }
     u8g2.print(msg.c_str());
-    u8g2.setCursor(94, 34);
+    u8g2.setCursor(94, 36);
+    // u8g2.setFont(u8g2_font_4x6_tf);
     u8g2.setFont(u8g2_font_6x13_tf);
+    String unit = _unit_symbol;
     if (_deviceType == 0)
-        u8g2.print("PAX");
+        u8g2.print(unit);
     else if (_deviceType == 1)
-        u8g2.print("ug/m3");
+        u8g2.print(unit);
     else
-        u8g2.print("ppm");
+        u8g2.print(unit);
 #endif
 #endif
 }
@@ -370,12 +372,15 @@ void GUIUtils::displayMainValues() {
 }
 
 // TODO: separate this function, format/display
-void GUIUtils::setSensorData(int mainValue, float humi, float temp, int rssi, int deviceType) {
+void GUIUtils::setSensorData(uint32_t mainValue, uint32_t minorValue, float humi, float temp, int rssi, int deviceType, String uName, String uSymbol, int unit) {
     suspendTaskGUI();
     _deviceType = deviceType;
     _humi = humi;
     _temp = temp;
     _mainValue = mainValue;
+    _minorValue = minorValue;
+    _unit_symbol = uSymbol;
+    _unit_name = uName;
     _average = mainValue;
     _rssi = abs(rssi);
     isNewData = true;

@@ -64,9 +64,9 @@ String ConfigApp::getCurrentConfig() {
     doc["toffset"] = preferences.getFloat("toffset", 0.0);   // temperature offset
     doc["altoffset"] = preferences.getFloat("altoffset",0.0);// altitude offset
     doc["hassip"] = preferences.getString("hassip", "");     // Home Assistant MQTT server ip
-    doc["hasspt"] = preferences.getInt("hasspt", 1883);     // Home Assistant MQTT server port
+    doc["hasspt"] = preferences.getInt("hasspt", 1883);      // Home Assistant MQTT server port
     doc["hassusr"] = preferences.getString("hassusr", "");   // Home Assistant MQTT user
-    doc["hasspsw"] = preferences.getString("hasspsw", "");   // Home Assistant MQTT password
+    // doc["hasspsw"] = preferences.getString("hasspsw", "");   // Home Assistant MQTT password
     doc["lskey"] = lastKeySaved;                             // last key saved
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
     doc["anaireid"] =  getStationName();                     // deviceId for Anaire cloud
@@ -403,8 +403,10 @@ String ConfigApp::getDeviceIdShort() {
 
 String ConfigApp::getStationName() {
     if (geo.isEmpty()) return getAnaireDeviceId();
-    String name = ""+geo.substring(0,3);         // GeoHash ~70km https://en.wikipedia.org/wiki/Geohash
-    name = name + String(FLAVOR).substring(0,7);     // Flavor short, firmware name (board)
+    String name = ""+geo.substring(0,3);          // GeoHash ~70km https://en.wikipedia.org/wiki/Geohash
+    String flavor = String(FLAVOR);
+    if(flavor.length() > 6) flavor = flavor.substring(0,7); // validation possible issue with HELTEC
+    name = name + flavor;                         // Flavor short, firmware name (board)
     name = name + getDeviceId().substring(10);    // MAC address 4 digts
     name.replace("_","");
     name.replace(":","");

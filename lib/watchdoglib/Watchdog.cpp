@@ -36,7 +36,7 @@ void Watchdog::init() {
     timerAlarmWrite(timer, WATCHDOG_TIME * 1000000, false);  // set time in us
     timerAlarmEnable(timer);                                 // enable interrupt
 
-    Serial.print("-->[WDOG] watchdog config to check each ");
+    Serial.print("-->[WDOG] watchdog check each\t: ");
     Serial.print(WATCHDOG_TIME);
     Serial.println(" seconds.");
 #ifdef FORCE_WATCHDOG

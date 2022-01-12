@@ -9,7 +9,7 @@
 
 class Battery_TFT : public Battery {
   public:
-    void init();
+    void init(bool debug = false);
     float getVoltage();
     bool isCharging();
     void printValues();

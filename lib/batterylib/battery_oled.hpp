@@ -7,8 +7,8 @@ class Battery_OLED : public Battery {
   public:
     void init(bool debug = false);
     float getVoltage();
-    uint8 getCharge();
-    void isCharging();
+    bool isCharging();
+    void printValues();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_OLEDBATTERY)

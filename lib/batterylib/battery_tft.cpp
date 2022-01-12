@@ -17,7 +17,8 @@ void setupBattADC() {
     }
 }
 
-void Battery_TFT::init() {
+void Battery_TFT::init(bool debug) {
+    this->debug = debug;
     /*
     ADC_EN is the ADC detection enable port
     If the USB port is used for power supply, it is turned on by default.
@@ -44,7 +45,8 @@ bool Battery_TFT::isCharging() {
 }
 
 void Battery_TFT::printValues() {
-    Serial.printf("-->[BATT] AXP Bat Volts\t: %.3fv vref:%i charge:%i%\n", curv, vref, getCharge());  //Output voltage and current of Bat
+    if (!debug) return;
+    Serial.printf("-->[BATT] AXP Bat Volts   \t: %.3fv \tvref: %i \tC:%i\n", curv, vref, getCharge());  //Output voltage and current of Bat
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTBATTERY)

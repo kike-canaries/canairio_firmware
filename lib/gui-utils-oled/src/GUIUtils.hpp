@@ -47,6 +47,8 @@ class GUIUtils {
 
     void setInfoData(String info);
 
+    void setBatteryStatus(float volts, int charge, bool isCharging);
+
     void setBrightness(uint32_t value);
 
     void setWifiMode(bool enable);

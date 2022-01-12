@@ -164,9 +164,11 @@ void startingSensors() {
         gui.welcomeAddMessage(sensors.getMainDeviceSelected());
     }
     else {
-        Serial.println("-->[INFO] Detection sensors FAIL!");
+        Serial.println("-->[INFO] Main sensors detected\t: 0");
         gui.welcomeAddMessage("MainSensor: PAX");
     }
+
+
 }
 
 /******************************************************************************
@@ -178,11 +180,11 @@ void setup() {
     delay(400);
     Serial.println("\n== CanAirIO Setup ==\n");
     logMemory("INIT");
-    battery.init();
 
     // init app preferences and load settings
     cfg.init("canairio");
     logMemory("CONF");
+    battery.init(cfg.devmode);
 
     // init graphic user interface
     gui.setBrightness(cfg.getBrightness());
@@ -250,8 +252,10 @@ void setup() {
     sensors.loop();
     logMemory("SLIBL");
     sensors.setSampleTime(cfg.stime);        // config sensors sample time (first use)
+    Serial.printf("-->[INFO] sensors units detected\t: %d\n", sensors.getUnitsRegisteredCount());
     Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\n", sizeof(sensors));
     Serial.printf("-->[HEAP] sizeof config \t: %04ub\n", sizeof(cfg));
+    Serial.printf("-->[HEAP] sizeof battery\t: %04ub\n", sizeof(battery));
     Serial.printf("-->[HEAP] sizeof GUI    \t: %04ub\n", sizeof(gui));
     Serial.println("\n==>[INFO] Setup End ===\n");
 }

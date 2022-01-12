@@ -7,9 +7,12 @@
 
 class Battery {
    public:
+
     int vref = 1100;
     float curv = 0;
-    virtual void init() = 0;
+    bool debug;
+
+    virtual void init(bool debug = false) = 0;
     virtual float getVoltage() = 0;
     virtual bool isCharging() = 0;
     virtual void printValues() = 0;
@@ -27,13 +30,11 @@ class Battery {
         if ((millis() - pmLoopTimeStamp > 5000)) {  // sample time for each capture
             pmLoopTimeStamp = millis();
             curv = getVoltage();
+            printValues();
         }
     }
 
    private:
-
-    bool debug;
-
     int calcPercentage(float volts, float max, float min) {
         float percentage = (volts - min) * 100 / (max - min);
         if (percentage > 100) {

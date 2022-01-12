@@ -1,5 +1,6 @@
 #include <cloud_influxdb.hpp>
 #include <wifi.hpp>
+#include <Batterylib.hpp>
 
 /******************************************************************************
 *   I N F L U X D B   M E T H O D S
@@ -42,7 +43,7 @@ void influxDbParseFields() {
     sensor.addField("prs",sensors.getPressure());
     sensor.addField("gas",sensors.getGas());
     sensor.addField("alt",sensors.getAltitude());
-    sensor.addField("bat",gui.getBatteryLevel());
+    sensor.addField("bat",battery.getCharge());
     sensor.addField("name",cfg.getStationName().c_str());
 }
 

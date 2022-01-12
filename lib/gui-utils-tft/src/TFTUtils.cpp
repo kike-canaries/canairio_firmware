@@ -39,15 +39,11 @@ void TFTUtils::displayInit() {
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextSize(1);
-
     #ifndef M5STICKCPLUS
     ledcSetup(pwmLedChannelTFT, pwmFreq, pwmResolution);
     ledcAttachPin(TFT_BL, pwmLedChannelTFT);
     #endif
     notifyBrightness();
-
-    setupBattery();           // init battery ADC.
-
     Serial.println("-->[TGUI] display config ready.");
 }
 
@@ -265,25 +261,15 @@ void TFTUtils::updateInvertValue(){
 }
 
 void TFTUtils::updateBatteryValue(){
-    float volts = battGetVoltage();
-    int batt_state = (int)battCalcPercentage(volts)/20;
-    String voltage = "" + String(volts) + "v";
+    int batt_state = (int)_batteryCharge/20;
+    String voltage = "" + String(_batteryVolts) + "v";
     displayBottomLine(voltage);
     tft.fillRect(RCOLSTART,216,40,10,TFT_BLACK);
-    int color = battIsCharging() ? TFT_GREENYELLOW : blue;
+    int color = _isCharging ? TFT_GREENYELLOW : blue;
 
     for (int i = 0; i < batt_state + 1 ; i++) {
         tft.fillRect(RCOLSTART + (i * 7), 217, 3, 8, i == 0 ? TFT_GREY : color);
     }
-}
-
-uint8_t TFTUtils::getBatteryLevel(){
-    float volts = battGetVoltage();
-    return battCalcPercentage(volts); 
-}
-
-float TFTUtils::getBatteryVoltage(){
-    return battGetVoltage();
 }
 
 void TFTUtils::setWifiMode(bool enable){
@@ -604,6 +590,14 @@ void TFTUtils::setInfoData(String info) {
     resumeTaskGUI();
 }
 
+void TFTUtils::setBatteryStatus(float volts, int charge, bool isCharging) {
+    suspendTaskGUI();
+    _batteryVolts = volts;
+    _batteryCharge = charge;
+    _isCharging = isCharging;
+    resumeTaskGUI();
+}
+
 void TFTUtils::displayGUIStatusFlags() {
     static uint_fast64_t sensor_status_ts = 0;   // timestamp for GUI refresh
     if ((millis() - sensor_status_ts > 1000)) { 
@@ -758,12 +752,11 @@ void TFTUtils::pageStart() {
     // fast interactions (80ms)
     checkButtons();
     if(sensorLive) drawFanIcon();
-    // slow interactions
+    // slow interactions 
     static uint_fast64_t loopts = 0;   // timestamp for GUI refresh
     if (state == 0 && (millis() - loopts > 5000)) {  
         loopts = millis();
         updateBatteryValue();
-        if(CORE_DEBUG_LEVEL > 0) battPrintValues();
     }
     static uint_fast64_t loop500ms = 0; // timestamp for GUI refresh
     if (state == 0 && (millis() - loop500ms > 500)) {  

@@ -14,6 +14,7 @@
 #include <Sensors.hpp>
 #include <bluetooth.hpp>
 #include <wifi.hpp>
+#include <Batterylib.hpp>
 
 uint16_t mainValue = 0;
 uint16_t minorValue = 0;
@@ -22,7 +23,7 @@ String uName = "";
 UNIT nextUnit = UNIT::NUNIT;
 
 void getMinorValue(UNIT mainUnit) {
-    minorValue = (uint32_t)sensors.getUnitValue(mainUnit);
+    minorValue = sensors.getUnitValue(mainUnit);
     uName = sensors.getUnitName(mainUnit);
     uSymbol = sensors.getUnitSymbol(mainUnit);
 }
@@ -74,6 +75,7 @@ void refreshGUIData() {
     );
 
     gui.setInfoData(getDeviceInfo());
+    gui.setBatteryStatus(battery.getVoltage(), battery.getCharge(), battery.isCharging());
     logMemory ("LOOP");
 }
 
@@ -176,6 +178,7 @@ void setup() {
     delay(400);
     Serial.println("\n== CanAirIO Setup ==\n");
     logMemory("INIT");
+    battery.init();
 
     // init app preferences and load settings
     cfg.init("canairio");
@@ -263,4 +266,5 @@ void loop() {
                      // update GUI flags:
     gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
     gui.loop();
+    battery.loop();
 }

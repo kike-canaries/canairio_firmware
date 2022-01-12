@@ -8,7 +8,6 @@
 #include <TFT_eSPI.h>
 #endif
 #include "hal.hpp"
-#include "battery.hpp"
 #include <Orbitron_Medium_20.h>
 #include "icons.h"
 
@@ -88,15 +87,13 @@ class TFTUtils {
 
     void setTrackTime(int h, int m, int s);
 
+    void setBatteryStatus(float volts, int charge, bool isCharging);
+
     void suspendTaskGUI();
 
     void resumeTaskGUI();
 
     String getFirmwareVersionCode ();
-
-    uint8_t getBatteryLevel();
-
-    float getBatteryVoltage();
 
     void loop();
 
@@ -203,6 +200,12 @@ class TFTUtils {
     String _info = "";
 
     bool isNewData;
+
+    float _batteryVolts;
+
+    int _batteryCharge;
+
+    bool _isCharging;
 
     TaskHandle_t xHandle;
 

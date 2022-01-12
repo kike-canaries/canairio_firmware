@@ -1,5 +1,6 @@
 #include <cloud_anaire.hpp>
 #include <wifi.hpp>
+#include <Batterylib.hpp>
 
 /******************************************************************************
 *  A N A I R E   M Q T T   M E T H O D S
@@ -32,8 +33,8 @@ void anairePublish() {
         doc["pm25"] = sensors.getPM25();
         doc["pm10"] = sensors.getPM10();
         doc["geo"] = cfg.geo;
-        doc["battery"] = String(gui.getBatteryLevel());
-        doc["VBat"] = String(gui.getBatteryVoltage());
+        doc["battery"] = String(battery.getCharge());
+        doc["VBat"] = String(battery.getVoltage());
 
         size_t n = serializeJson(doc, buffer);
 

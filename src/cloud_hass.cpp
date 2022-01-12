@@ -1,5 +1,6 @@
 #include <cloud_hass.hpp>
 #include <wifi.hpp>
+#include <Batterylib.hpp>
 
 /******************************************************************************
 *  H A S S   M Q T T   M E T H O D S
@@ -48,7 +49,7 @@ void hassPubSensorPayload() {
     doc["pm25"] = String(sensors.getPM25());
     doc["pm4"]  = String(sensors.getPM4());
     doc["pm10"] = String(sensors.getPM10());
-    doc["battery"] = String(gui.getBatteryLevel());
+    doc["battery"] = String(battery.getCharge());
 
     size_t n = serializeJson(doc, buffer);
  

@@ -2,7 +2,6 @@
 #define GUIUtils_hpp
 
 #include <U8g2lib.h>
-#include "battery.hpp"
 #include "hal.hpp"
 
 class GUIUserPreferencesCallbacks; 

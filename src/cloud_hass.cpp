@@ -143,7 +143,7 @@ void hassConnect() {
             hassSubscribed = false;
             hassConfigured = false;
             Serial.println("\tconnection failed!");
-            if (cfg.devmode) Serial.printf("-->[MQTT] %s %s\n",cfg.hassusr.c_str(),cfg.hasspsw.c_str());
+            if (cfg.devmode) Serial.printf("-->[MQTT] %s\n",cfg.hassusr.c_str());
             return;
         }
         Serial.println("\tconnected!");

@@ -197,17 +197,17 @@ void setup() {
     logMemory("GUI ");
 
     // device wifi mac addres and firmware version
-    Serial.println("-->[INFO] ESP32MAC:\t" + cfg.deviceId);
-    Serial.println("-->[INFO] Hostname:\t" + getHostId());
-    Serial.println("-->[INFO] Revision:\t" + gui.getFirmwareVersionCode());
-    Serial.println("-->[INFO] Firmware:\t" + String(VERSION));
-    Serial.println("-->[INFO] Flavor  :\t" + String(FLAVOR));
-    Serial.println("-->[INFO] Target  :\t" + String(TARGET));
+    Serial.println("-->[INFO] ESP32MAC\t\t:" + cfg.deviceId);
+    Serial.println("-->[INFO] Hostname\t\t:" + getHostId());
+    Serial.println("-->[INFO] Revision\t\t:" + gui.getFirmwareVersionCode());
+    Serial.println("-->[INFO] Firmware\t\t:" + String(VERSION));
+    Serial.println("-->[INFO] Flavor  \t\t:" + String(FLAVOR));
+    Serial.println("-->[INFO] Target  \t\t:" + String(TARGET));
 
     // init all sensors
     pinMode(MAIN_HW_EN_PIN, OUTPUT);
     digitalWrite(MAIN_HW_EN_PIN, HIGH);  // not mandatory, but useful power saving
-    Serial.println("-->[INFO] Detecting sensors:");
+    Serial.println("-->[INFO] == Detecting Sensors ==");
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
     Serial.println("-->[INFO] enable sensor GPIO\t: " + String(MAIN_HW_EN_PIN));
     logMemory("GPIO");
@@ -223,8 +223,8 @@ void setup() {
     logMemory("WDOG");
     wifiInit();
     logMemory("WIFI");
-    Serial.printf("-->[INFO] InfluxDb\t: %s\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
-    Serial.printf("-->[INFO] WiFi    \t: %s\n", cfg.isWifiEnable() ? "enabled" : "disabled");
+    Serial.printf("-->[INFO] InfluxDb cloud \t: %s\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
+    Serial.printf("-->[INFO] WiFi current config\t: %s\n", cfg.isWifiEnable() ? "enabled" : "disabled");
     gui.welcomeAddMessage("WiFi: "+String(cfg.isIfxEnable() ? "On" : "Off"));
     gui.welcomeAddMessage("Influx: "+String(cfg.isIfxEnable() ? "On" : "Off"));
  

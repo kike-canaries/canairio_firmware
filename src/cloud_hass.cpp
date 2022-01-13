@@ -54,9 +54,9 @@ void hassPubSensorPayload() {
     size_t n = serializeJson(doc, buffer);
  
     if (clientHass.publish(getStateTopic().c_str(), buffer, n)) {
-        if(cfg.devmode) Serial.printf ("-->[MQTT] Hass sensor payload published. (size: %d)\n", n);
+        if(cfg.devmode) Serial.printf ("-->[MQTT] HASS local published\t: payload size: %d\n", n);
     } else {
-        Serial.printf("[E][MQTT] Hass publish sensor state error: %d\n",clientHass.lastError());
+        Serial.printf("[E][MQTT] Hass publish state error\t: %d\n",clientHass.lastError());
     }
 }
 
@@ -81,7 +81,7 @@ bool publishDiscoveryPayload(String name, String dclass, String unit) {
     size_t n = serializeJson(doc, MQTT_message);
      
     if (clientHass.publish(getConfTopic(dclass).c_str(), MQTT_message, n)) return true;
-    Serial.printf("[E][MQTT] publish %s config error: %d\n", dclass.c_str(), clientHass.lastError());
+    Serial.printf("[E][MQTT] publish config error\t: class %s (%d)\n", dclass.c_str(), clientHass.lastError());
     return false;
 }
 
@@ -94,8 +94,8 @@ bool hassRegisterSensors() {
     hassConfigured = publishDiscoveryPayload("pressure", "pressure", "hPa");
     hassConfigured = publishDiscoveryPayload("battery", "battery", "%");
 
-    if (hassConfigured) Serial.printf("-->[MQTT] Hass device %s and entities registered.\n",getHostId().c_str());
-    else Serial.printf("[E][MQTT] Hass device %s not configured yet...\n",getHostId().c_str());
+    if (hassConfigured) Serial.printf("-->[MQTT] Hass device registered\t: %s\n",getHostId().c_str());
+    else Serial.printf("[E][MQTT] Hass not configured yet\t: device: %s\n",getHostId().c_str());
 
     return hassConfigured;
 }
@@ -107,7 +107,7 @@ void messageReceived(String &topic, String &payload) {
 
 bool hassStatusSubscription() {
     if (clientHass.subscribe(getServerStatusTopic().c_str())) return true;
-    Serial.printf("[E][MQTT] status subscription error: %d\n",clientHass.lastError());
+    Serial.printf("[E][MQTT] status subscription error\t: %d\n",clientHass.lastError());
     hassSubscribed = false;
     return false;
 }

@@ -78,12 +78,12 @@ String ConfigApp::getCurrentConfig() {
     preferences.end();
     String output;
     serializeJson(doc, output);
-    if (devmode) {
-        char buf[1000];
-        serializeJsonPretty(doc, buf, 1000);
-        Serial.printf("-->[CONF] response: %s", buf);
-        Serial.println("");
-    }
+#if CORE_DEBUG_LEVEL > 0
+    char buf[1000];
+    serializeJsonPretty(doc, buf, 1000);
+    Serial.printf("-->[CONF] response: %s", buf);
+    Serial.println("");
+#endif
     return output;
 }
 

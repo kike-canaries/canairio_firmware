@@ -39,7 +39,7 @@ void anairePublish() {
         size_t n = serializeJson(doc, buffer);
 
         if (client.publish(ANAIRE_TOPIC, buffer, n)) {
-            if (cfg.devmode) Serial.printf("-->[MQTT] Anaire sensor payload published. (size: %d)\n", n);
+            if (cfg.devmode) Serial.printf("-->[MQTT] Anaire cloud published\t: payload size: %d\n", n);
         } else {
             Serial.printf("[E][MQTT] Anaire publish sensor data error: %d\n",client.lastError());
         }

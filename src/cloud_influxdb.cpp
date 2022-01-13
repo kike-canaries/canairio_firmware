@@ -64,7 +64,7 @@ void influxDbLoop() {
         timeStamp = millis();
         if (ifx_ready && sensors.isDataReady() && WiFi.isConnected() && cfg.isIfxEnable()) {
             if (influxDbWrite()){
-                if(cfg.devmode) Serial.println("-->[IFDB] write done.");
+                if(cfg.devmode) Serial.printf ("-->[IFDB] CanAirIO cloud write\t: payload size: %d\n", sizeof(sensor));
                 gui.displayDataOnIcon();
             }
             else
@@ -79,7 +79,7 @@ void influxDbInit() {
         influx.setInsecure();
         // influx = InfluxDBClient(url.c_str(),cfg.ifx.db.c_str());
         influx.setConnectionParamsV1(url.c_str(), cfg.ifx.db.c_str());
-        if (cfg.devmode) Serial.printf("-->[IFDB] config: %s@%s:%i\n", cfg.ifx.db.c_str(), cfg.ifx.ip.c_str(), cfg.ifx.pt);
+        if (cfg.devmode) Serial.printf("-->[IFDB] InfluxDB config  \t: %s:%i\n", cfg.ifx.ip.c_str(), cfg.ifx.pt);
         influxDbAddTags();
         Serial.printf("-->[IFDB] connecting to %s..", cfg.ifx.ip.c_str());
         int influx_retry = 0;

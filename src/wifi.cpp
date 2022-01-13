@@ -65,21 +65,21 @@ void wifiCloudsInit() {
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
-    Serial.print("-->[WIFI] connecting to ");
+    Serial.print("-->[WIFI] connecting to network\t: ");
     Serial.print(ssid);
     int wifi_retry = 0;
     WiFi.begin(ssid, pass);
     while (!WiFi.isConnected() && wifi_retry++ <= WIFI_RETRY_CONNECTION) {
         Serial.print(".");
-        delay(400);  // increment this delay on possible reconnect issues
+        delay(500);  // increment this delay on possible reconnect issues
     }
     delay(500);
     if (WiFi.isConnected()) {
         cfg.isNewWifi = false;  // flag for config via BLE
         Serial.println(" done.");
-        Serial.print("-->[WIFI] IP: ");
+        Serial.print("-->[WIFI] device network IP\t: ");
         Serial.println(WiFi.localIP());
-        Serial.println("-->[WIFI] publish interval: "+String(cfg.stime * 2)+" sec.");
+        Serial.println("-->[WIFI] cloud publish interval\t: "+String(cfg.stime * 2)+" sec.");
         wd.pause();
         otaInit();
         ota.checkRemoteOTA();  

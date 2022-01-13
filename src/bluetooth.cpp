@@ -150,7 +150,7 @@ void bleServerInit() {
     pService->start();
     // Start advertising
     pServer->getAdvertising()->start();
-    Serial.println("-->[BTLE] GATT server ready. (Waiting for client)");
+    Serial.println("-->[BTLE] Bluetooth GATT server\t: ready for config client!");
 }
 
 void bleLoop() {

@@ -7,9 +7,9 @@ void ConfigApp::init(const char app_name[]) {
     deviceId = getDeviceId();
     reload();
     // override with debug INFO level (>=3)
-    #ifdef CORE_DEBUG_LEVEL
-    if (CORE_DEBUG_LEVEL>=3) devmode = true;  
-    #endif
+#if CORE_DEBUG_LEVEL >= 3
+    devmode = true;
+#endif
     if (devmode) Serial.println("-->[CONF] debug is enable.");
 }
 
@@ -78,7 +78,7 @@ String ConfigApp::getCurrentConfig() {
     preferences.end();
     String output;
     serializeJson(doc, output);
-#if CORE_DEBUG_LEVEL > 0
+#if CORE_DEBUG_LEVEL >= 3
     char buf[1000];
     serializeJsonPretty(doc, buf, 1000);
     Serial.printf("-->[CONF] response: %s", buf);
@@ -139,8 +139,7 @@ bool ConfigApp::saveDeviceName(String name) {
 bool ConfigApp::saveSampleTime(int time) {
     if (time >= 5) {
         saveInt("stime", time);
-        Serial.print("-->[CONF] set sample time to  :\t");
-        Serial.println(time);
+        Serial.printf("-->[CONF] set sample time to\t: %d\n", time);
         return true;
     }
     DEBUG("[W][CONF] warning: sample time is too low!");
@@ -149,8 +148,7 @@ bool ConfigApp::saveSampleTime(int time) {
 
 bool ConfigApp::saveSensorType(int type) {
     saveInt("stype", type);
-    Serial.print("-->[CONF] sensor device type: ");
-    Serial.println(type);
+    Serial.printf("-->[CONF] sensor device type\t: %d\n", type);
     return true;
 }
 
@@ -160,15 +158,13 @@ int ConfigApp::getSensorType(){
 
 bool ConfigApp::saveTempOffset(float offset) {
     saveFloat("toffset", offset);
-    Serial.print("-->[CONF] sensor temperature offset: ");
-    Serial.println(offset);
+    Serial.printf("-->[CONF] sensor temp offset\t: %0.2f\n", offset);
     return true;
 }
 
 bool ConfigApp::saveAltitudeOffset(float offset) {
     saveFloat("altoffset", offset);
-    Serial.print("-->[CONF] sensor altitude offset: ");
-    Serial.println(offset);
+    Serial.printf("-->[CONF] sensor altitude offset\t: %0.2f\n", offset);
     if(mRemoteConfigCallBacks!=nullptr) this->mRemoteConfigCallBacks->onAltitudeOffset(offset);
     return true;
 }
@@ -231,8 +227,7 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
         preferences.end();
         setLastKeySaved("lat");
         log_i("-->[CONF] geo: %s (%d,%d)",geo,lat,lon);
-        Serial.print("-->[CONF] updated GeoHash to ");
-        Serial.println(geo);
+        Serial.printf("-->[CONF] updated GeoHash to\t: %s\n",geo.c_str());
         return true;
     }
     DEBUG("[W][CONF] wrong GEO params!");
@@ -242,35 +237,35 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
 bool ConfigApp::wifiEnable(bool enable) {
     saveBool("wifiEnable", enable);
     wifi_enable = enable;
-    Serial.println("-->[CONF] updating WiFi state: " + String(enable));
+    Serial.println("-->[CONF] updating WiFi state\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::ifxdbEnable(bool enable) {
     saveBool("ifxEnable", enable);
     ifxdb_enable = enable;
-    Serial.println("-->[CONF] updating InfluxDB state: " + String(enable));
+    Serial.println("-->[CONF] updating InfluxDB state\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::debugEnable(bool enable) {
     saveBool("debugEnable", enable);
     devmode = enable;
-    Serial.println("-->[CONF] updating debug mode: " + String(enable));
+    Serial.println("-->[CONF] updating debug mode\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::paxEnable(bool enable) {
     saveBool("paxEnable", enable);
     pax_enable = enable;
-    Serial.println("-->[CONF] updating PaxCounter mode: " + String(enable));
+    Serial.println("-->[CONF] updating PaxCounter mode\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::saveI2COnly(bool enable) {
     saveBool("i2conly", enable);
     i2conly = enable;
-    Serial.println("-->[CONF] forced only i2c sensors: " + String(enable));
+    Serial.println("-->[CONF] forced only i2c sensors\t: " + String(enable));
     return true;
 }
 
@@ -279,7 +274,7 @@ bool ConfigApp::saveHassIP(String ip) {
     preferences.putString("hassip", ip);
     preferences.end();
     setLastKeySaved("hassip");
-    Serial.printf("-->[CONF] Hass IP: %s saved.\n",ip.c_str());
+    Serial.printf("-->[CONF] Hass local IP \t: %s saved.\n",ip.c_str());
     return true;
 }
 
@@ -288,7 +283,7 @@ bool ConfigApp::saveHassPort(int port) {
     preferences.putInt("hasspt", port);
     preferences.end();
     setLastKeySaved("hasspt");
-    Serial.printf("-->[CONF] Hass Port: %i saved.\n", port);
+    Serial.printf("-->[CONF] Hass Port  \t: %i saved.\n", port);
     return true;
 }
 
@@ -297,7 +292,7 @@ bool ConfigApp::saveHassUser(String user) {
     preferences.putString("hassusr", user);
     preferences.end();
     setLastKeySaved("hassusr");
-    Serial.printf("-->[CONF] Hass User: %s saved.\n", user.c_str());
+    Serial.printf("-->[CONF] Hass User  \t: %s saved.\n", user.c_str());
     return true;
 }
 
@@ -320,13 +315,13 @@ bool ConfigApp::save(const char *json) {
         return false;
     }
 
-    if (devmode) {
-        char output[1000];
-        serializeJsonPretty(doc, output, 1000);
-        Serial.printf("-->[CONF] request: %s", output);
-        Serial.println("");
-    }
-    
+#if CORE_DEBUG_LEVEL >= 3
+    char output[1000];
+    serializeJsonPretty(doc, output, 1000);
+    Serial.printf("-->[CONF] request: %s", output);
+    Serial.println("");
+#endif
+
     uint16_t cmd = doc["cmd"].as<uint16_t>();
     String act = doc["act"] | "";
 

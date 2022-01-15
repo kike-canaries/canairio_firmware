@@ -47,6 +47,14 @@ bool Battery_TFT::isCharging() {
     return curv > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V ) / 2;
 }
 
+int Battery_TFT::getCharge() {
+    if (isCharging()) {
+        return calcPercentage(curv, BATTCHARG_MAX_V, BATTCHARG_MIN_V);
+    } else {
+        return calcPercentage(curv, BATTERY_MAX_V, BATTERY_MIN_V);
+    }
+}
+
 void Battery_TFT::printValues() {
     if (!debug) return;
     Serial.printf("-->[BATT] Battery voltage  \t: %.3fv vref: %i Charge:%i\n", curv, vref, getCharge());  //Output voltage and current of Bat

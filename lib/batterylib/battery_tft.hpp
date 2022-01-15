@@ -7,11 +7,17 @@
 #define ADC_EN 14
 #define ADC_PIN 34
 
+#define BATTERY_MIN_V 3.2
+#define BATTERY_MAX_V 4.1
+#define BATTCHARG_MIN_V 4.15
+#define BATTCHARG_MAX_V 4.75
+
 class Battery_TFT : public Battery {
   public:
     void init(bool debug = false);
     float getVoltage();
     bool isCharging();
+    int getCharge();
     void printValues();
     void update();
 };

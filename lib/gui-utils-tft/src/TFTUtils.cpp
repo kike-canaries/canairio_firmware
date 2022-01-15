@@ -755,7 +755,7 @@ void TFTUtils::pageStart() {
     if(sensorLive) drawFanIcon();
     // slow interactions 
     static uint_fast64_t loopts = 0;   // timestamp for GUI refresh
-    if (state == 0 && (millis() - loopts > 5000)) {  
+    if (state == 0 && (millis() - loopts > 2000)) {  
         loopts = millis();
         updateBatteryValue();
     }

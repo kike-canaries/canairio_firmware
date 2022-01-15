@@ -7,11 +7,11 @@ void Battery_M5STACK::init(bool debug) {
 }
 
 float Battery_M5STACK::getVoltage() {
-    if (isCharging())
-        curv = M5.Axp.GetBatVoltage();
-    else
-        curv = M5.Axp.GetBatVoltage();
-    return curv;
+   return curv; 
+}
+
+void Battery_M5STACK::update() {
+    curv = M5.Axp.GetBatVoltage();
 }
 
 bool Battery_M5STACK::isCharging() {

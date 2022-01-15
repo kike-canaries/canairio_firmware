@@ -13,6 +13,7 @@ class Battery_TFT : public Battery {
     float getVoltage();
     bool isCharging();
     void printValues();
+    void update();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTHANDLER)

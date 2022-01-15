@@ -75,7 +75,6 @@ void refreshGUIData() {
     );
 
     gui.setInfoData(getDeviceInfo());
-    gui.setBatteryStatus(battery.getVoltage(), battery.getCharge(), battery.isCharging());
     logMemory ("LOOP");
 }
 
@@ -136,6 +135,12 @@ class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
     };
 };
 
+class MyBatteryUpdateCallbacks : public BatteryUpdateCallbacks {
+    void onBatteryUpdate(float voltage, int charge, bool charging) {
+        gui.setBatteryStatus(voltage, charge, charging);
+    };
+};
+
 /// sensors data callback
 void onSensorDataOk() {
     log_i("[MAIN] onSensorDataOk");
@@ -189,6 +194,7 @@ void setup() {
     // init app preferences and load settings
     cfg.init("canairio");
     logMemory("CONF");
+    battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
     battery.init(cfg.devmode);
 
     // init graphic user interface
@@ -224,7 +230,7 @@ void setup() {
     // init watchdog timer for reboot in any loop blocker
     wd.init();
     
-        // WiFi and cloud communication
+    // WiFi and cloud communication
     logMemory("WDOG");
     wifiInit();
     logMemory("WIFI");

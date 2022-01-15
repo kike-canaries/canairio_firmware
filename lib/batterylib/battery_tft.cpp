@@ -32,12 +32,15 @@ void Battery_TFT::init(bool debug) {
 }
 
 float Battery_TFT::getVoltage () {
+    return curv;
+}
+
+void Battery_TFT::update() {
     digitalWrite(ADC_EN, HIGH);
-    delay(10);                         // suggested by @ygator user in issue #2
+    delay(10);  // suggested by @ygator user in issue #2
     uint16_t v = analogRead(ADC_PIN);
     curv = ((float)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
-    digitalWrite(ADC_EN, LOW);   // for possible issue: https://github.com/Xinyuan-LilyGO/TTGO-T-Display/issues/6
-    return curv;
+    digitalWrite(ADC_EN, LOW);  // for possible issue: https://github.com/Xinyuan-LilyGO/TTGO-T-Display/issues/6
 }
 
 bool Battery_TFT::isCharging() {
@@ -46,7 +49,7 @@ bool Battery_TFT::isCharging() {
 
 void Battery_TFT::printValues() {
     if (!debug) return;
-    Serial.printf("-->[BATT] AXP Bat Volts   \t: %.3fv \tvref: %i \tC:%i\n", curv, vref, getCharge());  //Output voltage and current of Bat
+    Serial.printf("-->[BATT] Battery voltage  \t: %.3fv vref: %i Charge:%i\n", curv, vref, getCharge());  //Output voltage and current of Bat
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTBATTERY)

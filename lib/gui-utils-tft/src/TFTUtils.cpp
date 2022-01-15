@@ -354,7 +354,7 @@ void TFTUtils::startCalibration(){
 
 void TFTUtils::toggleMain(){
     if(mGUICallBacks != nullptr && wstate==3) {
-        getInstance()->mGUICallBacks->onMainButtonPress(); // toggle secundary value
+        getInstance()->mGUICallBacks->onUnitSelectionToggle(); // toggle secundary unit
     } else if(++wstate==2)wstate = 0;
     restoreMain();
 }
@@ -398,7 +398,8 @@ void TFTUtils::checkButtons() {
         if (pressL == 0) {
             pressL = 1;
             if (state++ == 0 && wstate != 3) showSetup();
-            else if (wstate == 3) { 
+            else if(mGUICallBacks != nullptr && wstate==3) {
+                getInstance()->mGUICallBacks->onUnitSelectionConfirm(); // select secundary unit
                 wstate = 0;
                 restoreMain();
             }

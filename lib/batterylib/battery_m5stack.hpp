@@ -13,6 +13,7 @@ class Battery_M5STACK : public Battery {
     float getCurrent();
     bool isCharging();
     void printValues();
+    void update();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_M5STACKBATTERY)

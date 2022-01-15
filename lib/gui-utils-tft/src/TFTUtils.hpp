@@ -320,7 +320,8 @@ public:
     virtual void onColorsInverted(bool enable);
     virtual void onSampleTime(int time);
     virtual void onCalibrationReady();
-    virtual void onMainButtonPress();
+    virtual void onUnitSelectionToggle();
+    virtual void onUnitSelectionConfirm();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTHANDLER)

@@ -17,6 +17,11 @@ bool Battery_OLED::isCharging() {
 void Battery_OLED::printValues() {    
 }
 
+void Battery_OLED::update() {    
+}
+
+
+
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_OLEDBATTERY)
 Battery_OLED battery;
 #endif

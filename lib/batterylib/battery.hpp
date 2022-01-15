@@ -3,7 +3,7 @@
 #define BATTERY_MIN_V 3.2
 #define BATTERY_MAX_V 4.1
 #define BATTCHARG_MIN_V 4.65
-#define BATTCHARG_MAX_V 4.88
+#define BATTCHARG_MAX_V 4.8
 
 class Battery {
    public:
@@ -13,6 +13,7 @@ class Battery {
     bool debug;
 
     virtual void init(bool debug = false) = 0;
+    virtual void update() = 0;
     virtual float getVoltage() = 0;
     virtual bool isCharging() = 0;
     virtual void printValues() = 0;
@@ -29,7 +30,7 @@ class Battery {
         static uint32_t pmLoopTimeStamp = 0;                                // timestamp for sensor loop check data
         if ((millis() - pmLoopTimeStamp > 5000)) {  // sample time for each capture
             pmLoopTimeStamp = millis();
-            curv = getVoltage();
+            update();
             printValues();
         }
     }

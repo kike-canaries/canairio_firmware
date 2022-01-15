@@ -112,10 +112,15 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
         Serial.println("-->[MAIN] onCalibrationReady");
         sensors.setCO2RecalibrationFactor(400);  // ==> Calibration factor on outdoors
     };
-    void onMainButtonPress() {
-        Serial.println("-->[MAIN] onMainButtonPress");
-        nextUnit = (UNIT) sensors.getNextUnit();
+    void onUnitSelectionToggle() {
+        Serial.println("-->[MAIN] onUnitSelectionToggle");
+        nextUnit = sensors.getNextUnit();
         refreshGUIData();
+    };
+    void onUnitSelectionConfirm() {
+        Serial.println("-->[MAIN] onUnitSelectionConfirm");
+        Serial.printf("-->[MAIN] minor unit selected\t: %s\n", sensors.getUnitName(nextUnit).c_str());
+        sensors.resetNextUnit();
     };
 };
 
@@ -197,12 +202,12 @@ void setup() {
     logMemory("GUI ");
 
     // device wifi mac addres and firmware version
-    Serial.println("-->[INFO] ESP32MAC\t\t:" + cfg.deviceId);
-    Serial.println("-->[INFO] Hostname\t\t:" + getHostId());
-    Serial.println("-->[INFO] Revision\t\t:" + gui.getFirmwareVersionCode());
-    Serial.println("-->[INFO] Firmware\t\t:" + String(VERSION));
-    Serial.println("-->[INFO] Flavor  \t\t:" + String(FLAVOR));
-    Serial.println("-->[INFO] Target  \t\t:" + String(TARGET));
+    Serial.println("-->[INFO] ESP32MAC\t\t: " + cfg.deviceId);
+    Serial.println("-->[INFO] Hostname\t\t: " + getHostId());
+    Serial.println("-->[INFO] Revision\t\t: " + gui.getFirmwareVersionCode());
+    Serial.println("-->[INFO] Firmware\t\t: " + String(VERSION));
+    Serial.println("-->[INFO] Flavor  \t\t: " + String(FLAVOR));
+    Serial.println("-->[INFO] Target  \t\t: " + String(TARGET));
 
     // init all sensors
     pinMode(MAIN_HW_EN_PIN, OUTPUT);

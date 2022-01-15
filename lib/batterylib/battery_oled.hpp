@@ -9,6 +9,7 @@ class Battery_OLED : public Battery {
     float getVoltage();
     bool isCharging();
     void printValues();
+    void update();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_OLEDBATTERY)

@@ -6,11 +6,18 @@
 #include <M5StickCPlus.h>
 #endif
 
+#define BATTERY_MIN_V 3.1
+#define BATTERY_MAX_V 4.0
+#define BATTCHARG_MIN_V 3.69
+#define BATTCHARG_MAX_V 4.05
+
 class Battery_M5STACK : public Battery {
   public:
+    float vusb = 0.0;
     void init(bool debug = false);
     float getVoltage();
     float getCurrent();
+    int getCharge();
     bool isCharging();
     void printValues();
     void update();

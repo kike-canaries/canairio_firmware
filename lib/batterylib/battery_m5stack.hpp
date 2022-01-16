@@ -6,10 +6,10 @@
 #include <M5StickCPlus.h>
 #endif
 
-#define BATTERY_MIN_V 3.1
-#define BATTERY_MAX_V 4.0
+#define BATTERY_MIN_V 3.4
+#define BATTERY_MAX_V 4.04
 #define BATTCHARG_MIN_V 3.69
-#define BATTCHARG_MAX_V 4.05
+#define BATTCHARG_MAX_V 4.198
 
 class Battery_M5STACK : public Battery {
   public:

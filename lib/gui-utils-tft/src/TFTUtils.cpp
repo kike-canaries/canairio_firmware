@@ -783,7 +783,9 @@ void TFTUtils::setBrightness(uint32_t value) {
 }
 
 void TFTUtils::notifyBrightness() {
-    #ifndef M5STICKCPLUS
+    #ifdef M5STICKCPLUS
+    M5.Axp.ScreenBreath(brightness);
+    #else
     ledcWrite(pwmLedChannelTFT, brightness);
     #endif
 }

@@ -20,7 +20,9 @@ void Battery_OLED::printValues() {
 void Battery_OLED::update() {    
 }
 
-
+int Battery_OLED::getCharge() {
+    return 0;
+}
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_OLEDBATTERY)
 Battery_OLED battery;

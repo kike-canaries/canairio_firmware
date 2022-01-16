@@ -105,12 +105,16 @@ class TFTUtils {
 
     const int pwmLedChannelTFT = 0;
 
+#ifdef M5STICKCPLUS
+    int backlight[5] = {7, 8, 9, 10, 11};
+#else
     int backlight[5] = {10, 30, 60, 120, 220};
+#endif
 
     byte b = 1;  // backlight selector
 
     int brightness = 30;
-
+    
     int sampleTime[5] = {5, 15, 30, 60, 120};
 
     byte st = 0;  // sample time selector init

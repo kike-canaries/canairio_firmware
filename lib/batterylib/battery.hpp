@@ -43,7 +43,7 @@ class Battery {
     float pcurv = 0.0;
 
     bool isNewVoltage () {
-        return (abs(curv - pcurv) > 0.01);
+        return (abs(curv - pcurv) > 0.1);
     }
 
    protected:

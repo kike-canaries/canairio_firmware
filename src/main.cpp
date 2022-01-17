@@ -154,7 +154,7 @@ void onSensorDataError(const char * msg){
 }
 
 void startingSensors() {
-    Serial.println("-->[INFO] config UART sensor\t: "+String(cfg.stype));
+    Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)cfg.stype));
     gui.welcomeAddMessage("Detected sensor:");
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback

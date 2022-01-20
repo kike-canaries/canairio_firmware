@@ -555,20 +555,20 @@ void TFTUtils::displayMainValues(){
 }
 
 // TODO: separate this function, format/display
-void TFTUtils::setSensorData(uint32_t mainValue, uint32_t minorValue, float humi, float temp, int rssi, int deviceType, String uName, String uSymbol, int unit) {
+void TFTUtils::setSensorData(GUIData data) {
     suspendTaskGUI();
-    _deviceType = deviceType;
-    _humi = humi;
-    _temp = temp;
-    _mainValue = mainValue;
-    _minorValue = minorValue;
-    _unit_symbol = uSymbol;
-    _unit_name = uName;
-    _rssi = abs(rssi);
-    if (_unit != unit) resetBuffer(bufGraphMinor);
-    _unit = unit;
-    bufGraphMain[MAX_X - 1] = mainValue;
-    bufGraphMinor[MAX_X - 1] = minorValue;
+    _colorType = data.color;
+    _humi = data.humi;
+    _temp = data.temp;
+    _mainValue = data.mainValue;
+    _minorValue = data.minorValue;
+    _unit_symbol = data.unitSymbol;
+    _unit_name = data.unitName;
+    _rssi = abs(data.rssi);
+    if (_unit != data.id) resetBuffer(bufGraphMinor);
+    _unit = data.id;
+    bufGraphMain[MAX_X - 1] = _mainValue;
+    bufGraphMinor[MAX_X - 1] = _minorValue;
     isNewData = true;
     resumeTaskGUI();
 }
@@ -626,7 +626,7 @@ void TFTUtils::displayGUIStatusFlags() {
 }
 
 uint32_t TFTUtils::getAQIColor(uint32_t value) {
-    if (_deviceType <= 1) {
+    if (_colorType == AQI_COLOR::AQI_PM) {
 
         if (value <= 13)       return 0;
         else if (value <= 35)  return 1;
@@ -635,7 +635,8 @@ uint32_t TFTUtils::getAQIColor(uint32_t value) {
         else if (value <= 250) return 4;
         else                   return 5;
 
-    } else {
+    } 
+    else if (_colorType == AQI_COLOR::AQI_CO2) {
         if (value <= 600)       return 0;
         else if (value <= 800)  return 1;
         else if (value <= 1000) return 2;
@@ -643,6 +644,7 @@ uint32_t TFTUtils::getAQIColor(uint32_t value) {
         else if (value <= 2000) return 4;
         else                    return 5;
     }
+    else return 0;
 }
 
 void TFTUtils::drawBarGraph() {
@@ -657,12 +659,14 @@ void TFTUtils::drawBarGraph() {
         lenMinor = bufGraphMinor[i] * minorFactor; // secondary value
         _average = bufGraphMain[i] + _average;     // average value only for main value
 
+        int color = TFT_WHITE;
         if (_unit == 0 ) {
-            int color = aqicolors[getAQIColor(bufGraphMain[i])];
+            if (_colorType >= AQI_COLOR::AQI_NONE) color = aqicolors[getAQIColor(bufGraphMain[i])];
             tft.drawLine(i, 150, i, 150 - (lenMain > MAX_Y ? MAX_Y : lenMain),color);
         }
         else {
-            tft.drawLine(i, 150, i, 150 - (lenMinor > MAX_Y ? MAX_Y : lenMinor),TFT_WHITE);
+            if (_colorType >= AQI_COLOR::AQI_NONE) color = aqicolors[getAQIColor(bufGraphMinor[i])];
+            tft.drawLine(i, 150, i, 150 - (lenMinor > MAX_Y ? MAX_Y : lenMinor),color);
         }
         
         if (i < MAX_X - 1) {

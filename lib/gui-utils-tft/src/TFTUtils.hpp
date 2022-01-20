@@ -29,6 +29,19 @@
 #define blue 0x5D9B
 #define ligthgreen 0xF59F
 
+enum AQI_COLOR { AQI_NONE, AQI_PM, AQI_CO2 };
+
+typedef struct GUIData {
+    uint8_t id;
+    uint16_t mainValue;
+    uint16_t minorValue;
+    String unitName;
+    String unitSymbol;
+    float humi;
+    float temp;
+    int rssi;
+    AQI_COLOR color;
+} gdata;
 
 class GUIUserPreferencesCallbacks; 
 class TFTUtils {
@@ -53,7 +66,7 @@ class TFTUtils {
     
     void welcomeRepeatMessage(String msg);
 
-    void setSensorData(uint32_t mainValue, uint32_t minorValue, float humi, float temp, int rssi, int deviceType, String uName, String uSymbol, int unit);
+    void setSensorData(GUIData data);
 
     void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 
@@ -157,7 +170,7 @@ class TFTUtils {
 
     int _rssi = 0;
 
-    int _deviceType = 0;
+    int _colorType = 0;
 
     float _humi = 0.0;
 

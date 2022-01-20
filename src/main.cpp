@@ -16,43 +16,12 @@
 #include <wifi.hpp>
 #include <Batterylib.hpp>
 
-uint16_t mainValue = 0;
-uint16_t minorValue = 0;
-String uSymbol = "";
-String uName = "";
 UNIT nextUnit = UNIT::NUNIT;
+GUIData data;
 
-void getMinorValue(UNIT mainUnit) {
-    minorValue = sensors.getUnitValue(mainUnit);
-    uName = sensors.getUnitName(mainUnit);
-    uSymbol = sensors.getUnitSymbol(mainUnit);
-}
+void loadGUIData() {
 
-void getMainValue() {
-    if (sensors.getMainDeviceSelected().isEmpty() && cfg.isPaxEnable()) {
-        mainValue = getPaxCount();
-        uName = "PAX";
-        uSymbol = "PAX";
-    } else if (sensors.getMainDeviceSelected().isEmpty() && sensors.isUnitRegistered(UNIT::TEMP)) {
-        mainValue = (uint32_t) sensors.getTemperature();
-        uName = sensors.getUnitName(UNIT::TEMP);
-        uSymbol = sensors.getUnitSymbol(UNIT::TEMP);
-    } else if (sensors.getMainSensorTypeSelected() == Sensors::SENSOR_PM) {
-        mainValue = sensors.getPM25();
-        uName = sensors.getUnitName(UNIT::PM25);
-        uSymbol = sensors.getUnitSymbol(UNIT::PM25);
-    } else if (sensors.getMainSensorTypeSelected() == Sensors::SENSOR_CO2) {
-        mainValue = sensors.getCO2();
-        uName = sensors.getUnitName(UNIT::CO2);
-        uSymbol = sensors.getUnitSymbol(UNIT::CO2);
-    }
-
-    if (nextUnit != 0) getMinorValue(nextUnit);
-    
-}
-
-void refreshGUIData() {
-    gui.displaySensorLiveIcon();  // all sensors read are ok
+    data.id = nextUnit;
 
     float humi = sensors.getHumidity();
     if (humi == 0.0) humi = sensors.getCO2humi();
@@ -60,20 +29,45 @@ void refreshGUIData() {
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();  // TODO: temp could be 0.0
 
-    getMainValue();
+    data.temp = temp;
+    data.humi = humi;
 
-    gui.setSensorData(
-        mainValue,
-        minorValue,
-        humi,
-        temp,
-        getWifiRSSI(),
-        sensors.getMainSensorTypeSelected(),
-        uName,
-        uSymbol,
-        nextUnit
-    );
+    if (sensors.getMainDeviceSelected().isEmpty() && cfg.isPaxEnable()) {
+        data.mainValue = getPaxCount();
+        data.unitName = "PAX";
+        data.unitSymbol = "PAX";
+        data.color = AQI_COLOR::AQI_PM;
+    } else if (sensors.getMainDeviceSelected().isEmpty() && sensors.isUnitRegistered(UNIT::TEMP)) {
+        data.mainValue = sensors.getUnitValue(UNIT::TEMP);
+        data.unitName = sensors.getUnitName(UNIT::TEMP);
+        data.unitSymbol = sensors.getUnitSymbol(UNIT::TEMP);
+        data.color = AQI_COLOR::AQI_NONE;
+    } else if (sensors.getMainSensorTypeSelected() == MAIN_SENSOR_TYPE::SENSOR_PM) {
+        data.mainValue = sensors.getUnitValue(UNIT::PM25);
+        data.unitName = sensors.getUnitName(UNIT::PM25);
+        data.unitSymbol = sensors.getUnitSymbol(UNIT::PM25);
+        data.color = AQI_COLOR::AQI_PM;
+    } else if (sensors.getMainSensorTypeSelected() == MAIN_SENSOR_TYPE::SENSOR_CO2) {
+        data.mainValue = sensors.getUnitValue(UNIT::CO2);
+        data.unitName = sensors.getUnitName(UNIT::CO2);
+        data.unitSymbol = sensors.getUnitSymbol(UNIT::CO2);
+        data.color = AQI_COLOR::AQI_CO2;
+    }
+    if (nextUnit != 0) {
+        data.minorValue = sensors.getUnitValue(nextUnit);
+        data.unitName = sensors.getUnitName(nextUnit);
+        data.unitSymbol = sensors.getUnitSymbol(nextUnit);
+        if (nextUnit == UNIT::PM25 || nextUnit == UNIT::PM10 || nextUnit == UNIT::PM1) 
+            data.color = AQI_COLOR::AQI_PM;
+        else if (nextUnit == UNIT::CO2) data.color = AQI_COLOR::AQI_CO2;
+        else data.color = AQI_COLOR::AQI_NONE;
+    }
+}
 
+void refreshGUIData() {
+    loadGUIData();
+    gui.displaySensorLiveIcon();  // all sensors read are ok 
+    gui.setSensorData(data);
     gui.setInfoData(getDeviceInfo());
     logMemory ("LOOP");
 }

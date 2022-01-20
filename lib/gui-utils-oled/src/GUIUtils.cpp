@@ -112,7 +112,7 @@ void GUIUtils::displayCenterBig(String msg) {
     u8g2.print(msg.c_str());
 #else
     if (dw > 64) {
-        if (_deviceType <= 1) {  // PM
+        if (_deviceType <= AQI_COLOR::AQI_PM) {  // PM
             u8g2.setCursor(dw - 64, 6);
             u8g2.setFont(u8g2_font_inb24_mn);
         } else {  // CO2
@@ -120,7 +120,7 @@ void GUIUtils::displayCenterBig(String msg) {
             u8g2.setFont(u8g2_font_inb19_mn);
         }
     } else {
-        if (_deviceType <= 1) {  // PM
+        if (_deviceType <= AQI_COLOR::AQI_PM) {  // PM
             u8g2.setCursor(dw - 28, 7);
             u8g2.setFont(u8g2_font_9x18B_tf);
         } else {  // CO2
@@ -133,12 +133,7 @@ void GUIUtils::displayCenterBig(String msg) {
     // u8g2.setFont(u8g2_font_4x6_tf);
     u8g2.setFont(u8g2_font_6x13_tf);
     String unit = _unit_symbol;
-    if (_deviceType == 0)
-        u8g2.print(unit);
-    else if (_deviceType == 1)
-        u8g2.print(unit);
-    else
-        u8g2.print(unit);
+    u8g2.print(unit);
 #endif
 #endif
 }
@@ -210,7 +205,7 @@ void GUIUtils::displaySensorAverage(int average) {
     }
 #endif
 #else
-    if (_deviceType <= 1) {  //PM sensors and PAX
+    if (_deviceType <= AQI_COLOR::AQI_PM) {  //PM sensors and PAX
         if (average < 13) {
 #ifdef TTGO_TQ
             u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
@@ -337,7 +332,7 @@ void GUIUtils::displaySensorAverage(int average) {
 void GUIUtils::displayMainValues() {
     displaySensorAverage(_average);
     char output[50];
-    if (_deviceType <= 1) // PM sensors and PAX
+    if (_deviceType <= AQI_COLOR::AQI_PM) // PM sensors and PAX
         sprintf(output, "%03d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
     else
         sprintf(output, "%04d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
@@ -372,17 +367,17 @@ void GUIUtils::displayMainValues() {
 }
 
 // TODO: separate this function, format/display
-void GUIUtils::setSensorData(uint32_t mainValue, uint32_t minorValue, float humi, float temp, int rssi, int deviceType, String uName, String uSymbol, int unit) {
+void GUIUtils::setSensorData(GUIData data) {
     suspendTaskGUI();
-    _deviceType = deviceType;
-    _humi = humi;
-    _temp = temp;
-    _mainValue = mainValue;
-    _minorValue = minorValue;
-    _unit_symbol = uSymbol;
-    _unit_name = uName;
-    _average = mainValue;
-    _rssi = abs(rssi);
+    _deviceType = data.color;
+    _humi = data.humi;
+    _temp = data.temp;
+    _mainValue = data.mainValue;
+    _minorValue = data.minorValue;
+    _unit_symbol = data.unitSymbol;
+    _unit_name = data.unitName;
+    _average = _mainValue;
+    _rssi = abs(data.rssi);
     isNewData = true;
     resumeTaskGUI();
 }

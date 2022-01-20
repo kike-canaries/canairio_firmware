@@ -4,6 +4,20 @@
 #include <U8g2lib.h>
 #include "hal.hpp"
 
+enum AQI_COLOR { AQI_NONE, AQI_PM, AQI_CO2 };
+
+typedef struct GUIData {
+    uint8_t id;
+    uint16_t mainValue;
+    uint16_t minorValue;
+    String unitName;
+    String unitSymbol;
+    float humi;
+    float temp;
+    int rssi;
+    AQI_COLOR color;
+} gdata;
+
 class GUIUserPreferencesCallbacks; 
 class GUIUtils {
    public:
@@ -40,8 +54,8 @@ class GUIUtils {
     void pageEnd();
 
     void clearScreen();
-    
-    void setSensorData(uint32_t mainValue, uint32_t minorValue, float humi, float temp, int rssi, int deviceType, String uName, String uSymbol, int unit);
+
+    void setSensorData(GUIData data);
 
     void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 

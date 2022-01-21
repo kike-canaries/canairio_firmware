@@ -132,21 +132,20 @@ static uint_fast64_t mqttHassDelayedStamp = 0;
 void hassConnect() {
     if (!(cfg.isWifiEnable() && WiFi.isConnected())) return;
     if (millis() - mqttHassDelayedStamp > MQTT_DELAYED_TIME * 1000) {
-        Serial.printf("-->[MQTT] connecting to %s.", cfg.hassip.c_str());
+        Serial.printf("-->[MQTT] %s\t: ", cfg.hassip.c_str());
         int mqtt_try = 0;
         while (mqtt_try++ < MQTT_RETRY_CONNECTION && !hassAuth()) {
-            Serial.print(".");
             delay(100);
         }
         if (mqtt_try >= MQTT_RETRY_CONNECTION && !clientHass.connected()) {
             mqttHassDelayedStamp = millis();
             hassSubscribed = false;
             hassConfigured = false;
-            Serial.println("\tconnection failed!");
+            Serial.println("connection failed!");
             if (cfg.devmode) Serial.printf("-->[MQTT] %s\n",cfg.hassusr.c_str());
             return;
         }
-        Serial.println("\tconnected!");
+        Serial.println("connected!");
         mqttHassDelayedStamp = millis();
     }
 }

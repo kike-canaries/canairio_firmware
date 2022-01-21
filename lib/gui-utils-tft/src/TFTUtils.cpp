@@ -369,6 +369,7 @@ void TFTUtils::restoreMain(){
 void TFTUtils::loadLastData(){
     isNewData = true;
     drawBarGraph();
+    // drawDualLineGraph();
     displaySensorAverage(_average);
     displayMainValues();
 }
@@ -549,6 +550,7 @@ void TFTUtils::displayMainValues(){
         }
         
         drawBarGraph();
+        // drawDualLineGraph();
         displaySensorAverage(_average);
         isNewData = false;
     }
@@ -661,11 +663,11 @@ void TFTUtils::drawBarGraph() {
 
         int color = TFT_WHITE;
         if (_unit == 0 ) {
-            if (_colorType >= AQI_COLOR::AQI_NONE) color = aqicolors[getAQIColor(bufGraphMain[i])];
+            if (_colorType > AQI_COLOR::AQI_NONE) color = aqicolors[getAQIColor(bufGraphMain[i])];
             tft.drawLine(i, 150, i, 150 - (lenMain > MAX_Y ? MAX_Y : lenMain),color);
         }
         else {
-            if (_colorType >= AQI_COLOR::AQI_NONE) color = aqicolors[getAQIColor(bufGraphMinor[i])];
+            if (_colorType > AQI_COLOR::AQI_NONE) color = aqicolors[getAQIColor(bufGraphMinor[i])];
             tft.drawLine(i, 150, i, 150 - (lenMinor > MAX_Y ? MAX_Y : lenMinor),color);
         }
         
@@ -688,6 +690,40 @@ void TFTUtils::drawLineGraph() {
         tft.drawLine(i, 150, i, 150 - (len > MAX_Y ? MAX_Y : len),TFT_WHITE);
         if (i < MAX_X - 1) bufGraphMinor[i] = bufGraphMinor[i + 1];
     }
+}
+
+void TFTUtils::drawDualLineGraph() {
+    double mainFactor = getMultiplicator(bufGraphMain);
+    double minorFactor = getMultiplicator(bufGraphMinor);
+    int lenMain, lenMinor;
+    tft.fillRect(0, 149 - MAX_Y, MAX_X, MAX_Y, TFT_BLACK);
+    tft.drawLine(0, 150 - MAX_Y, MAX_X - 1, 150 - MAX_Y,TFT_GREY);
+    _average = 0; 
+    for (int i = 0; i < MAX_X; i++) {
+        lenMain = bufGraphMain[i] * mainFactor;    // main value
+        lenMinor = bufGraphMinor[i] * minorFactor; // secondary value
+        _average = bufGraphMain[i] + _average;     // average value only for main value
+
+        int color = TFT_WHITE;
+        int y = 0;
+        if (_unit == 0 ) {
+            if (_colorType > AQI_COLOR::AQI_NONE) color = aqicolors[getAQIColor(bufGraphMain[i])];
+            y = (lenMain > MAX_Y ? MAX_Y : lenMain);
+            tft.drawLine(i, 152 - y, i, 150 - y, color);
+        }
+        else {
+            if (_colorType > AQI_COLOR::AQI_NONE) color = aqicolors[getAQIColor(bufGraphMinor[i])];
+            y = (lenMinor > MAX_Y ? MAX_Y : lenMinor);
+            tft.drawLine(i, 152 - y, i, 150 - y, color);
+        }
+        
+        if (i < MAX_X - 1) {
+            bufGraphMain[i] = bufGraphMain[i + 1];
+            bufGraphMinor[i] = bufGraphMinor[i + 1];
+        }
+    }
+
+    _average = _average / MAX_X;
 }
 
 void TFTUtils::resetBuffer(uint32_t *buf) {

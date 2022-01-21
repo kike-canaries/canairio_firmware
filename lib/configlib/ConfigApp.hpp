@@ -62,6 +62,10 @@ class ConfigApp {
 
     bool saveSensorType(int type);
 
+    bool saveUnitSelected(int unit);
+
+    int getUnitSelected();
+
     bool saveSSID(String ssid);
 
     bool saveWifi(String ssid, String pass);

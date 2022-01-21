@@ -115,13 +115,16 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     void onUnitSelectionToggle() {
         Serial.println("-->[MAIN] onUnitSelectionToggle");
         nextUnit = sensors.getNextUnit();
+        if (nextUnit == UNIT::NUNIT ) {
+            nextUnit = sensors.getNextUnit();
+        }
         refreshGUIData();
     };
     void onUnitSelectionConfirm() {
         Serial.println("-->[MAIN] onUnitSelectionConfirm");
         Serial.printf("-->[MAIN] minor unit selected\t: %s\n", sensors.getUnitName(nextUnit).c_str());
-        selectUnit = nextUnit;
-        sensors.resetNextUnit();
+        if (nextUnit!=UNIT::NUNIT && nextUnit!=selectUnit)  selectUnit = nextUnit;
+        // sensors.resetNextUnit();
     };
 };
 

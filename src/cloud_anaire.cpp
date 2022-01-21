@@ -52,19 +52,18 @@ void anaireConnect() {
     if (!(cfg.isWifiEnable() && WiFi.isConnected())) return;
 
     if (millis() - mqttDelayedStamp > MQTT_DELAYED_TIME * 1000) {
-        Serial.printf("-->[MQTT] connecting to %s..", ANAIRE_HOST);
+        Serial.printf("-->[MQTT] %s\t: ", ANAIRE_HOST);
         int mqtt_try = 0;
         while (mqtt_try++ < MQTT_RETRY_CONNECTION && !client.connect(cfg.getStationName().c_str())) {
-            Serial.print(".");
             delay(100);
         }
         if (mqtt_try >= MQTT_RETRY_CONNECTION && !client.connected()) {
             mqttDelayedStamp = millis();
-            Serial.println("\tconnection failed!");
+            Serial.println("connection failed!");
             return;
         }
         mqttDelayedStamp = millis();
-        Serial.println("\tconnected!");
+        Serial.println("connected!");
         client.subscribe(ANAIRE_TOPIC);
     }
 }

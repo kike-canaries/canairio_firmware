@@ -7,7 +7,8 @@
 enum AQI_COLOR { AQI_NONE, AQI_PM, AQI_CO2 };
 
 typedef struct GUIData {
-    uint8_t id;
+    uint8_t mainUnitId;
+    uint8_t onSelectionUnit;
     uint16_t mainValue;
     uint16_t minorValue;
     String unitName;

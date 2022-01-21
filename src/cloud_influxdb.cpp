@@ -81,19 +81,18 @@ void influxDbInit() {
         influx.setConnectionParamsV1(url.c_str(), cfg.ifx.db.c_str());
         if (cfg.devmode) Serial.printf("-->[IFDB] InfluxDB config  \t: %s:%i\n", cfg.ifx.ip.c_str(), cfg.ifx.pt);
         influxDbAddTags();
-        Serial.printf("-->[IFDB] connecting to %s..", cfg.ifx.ip.c_str());
+        Serial.printf("-->[IFDB] %s\t: ", cfg.ifx.ip.c_str());
         int influx_retry = 0;
         while (influx_retry++ < IFX_RETRY_CONNECTION && !influx.validateConnection()) {
-            Serial.print(".");
             delay(100);
         }
         if (influx_retry >= IFX_RETRY_CONNECTION && !influx.validateConnection()) {
-            Serial.println("\tconnection failed!");
+            Serial.println("connection failed!");
             Serial.println("[E][IFDB] connection error!");
             return;
         }
         ifx_ready = true;
-        Serial.println("\tconnected!");
+        Serial.println("connected!");
         delay(10);
     }
 }

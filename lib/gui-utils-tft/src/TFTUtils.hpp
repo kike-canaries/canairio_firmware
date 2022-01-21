@@ -267,6 +267,8 @@ class TFTUtils {
     uint32_t getAQIColor(uint32_t value);
     
     void drawBarGraph();
+
+    void drawDualLineGraph();
     
     void drawLineGraph();
 

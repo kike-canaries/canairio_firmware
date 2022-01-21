@@ -16,12 +16,20 @@
 #include <wifi.hpp>
 #include <Batterylib.hpp>
 
+UNIT selectUnit = UNIT::NUNIT;
 UNIT nextUnit = UNIT::NUNIT;
 GUIData data;
 
-void loadGUIData() {
+void selectAQIColor() {
+    if (selectUnit == UNIT::PM25 || selectUnit == UNIT::PM10 || selectUnit == UNIT::PM1)
+        data.color = AQI_COLOR::AQI_PM;
+    else if (selectUnit == UNIT::CO2)
+        data.color = AQI_COLOR::AQI_CO2;
+    else
+        data.color = AQI_COLOR::AQI_NONE;
+}
 
-    data.id = nextUnit;
+void loadGUIData() {
 
     float humi = sensors.getHumidity();
     if (humi == 0.0) humi = sensors.getCO2humi();
@@ -31,37 +39,36 @@ void loadGUIData() {
 
     data.temp = temp;
     data.humi = humi;
+    data.rssi = getWifiRSSI();
 
-    if (sensors.getMainDeviceSelected().isEmpty() && cfg.isPaxEnable()) {
+    if (sensors.getUnitsRegisteredCount() == 0 && cfg.isPaxEnable()) {
         data.mainValue = getPaxCount();
         data.unitName = "PAX";
         data.unitSymbol = "PAX";
+        data.mainUnitId = UNIT::NUNIT;
         data.color = AQI_COLOR::AQI_PM;
-    } else if (sensors.getMainDeviceSelected().isEmpty() && sensors.isUnitRegistered(UNIT::TEMP)) {
-        data.mainValue = sensors.getUnitValue(UNIT::TEMP);
-        data.unitName = sensors.getUnitName(UNIT::TEMP);
-        data.unitSymbol = sensors.getUnitSymbol(UNIT::TEMP);
-        data.color = AQI_COLOR::AQI_NONE;
-    } else if (sensors.getMainSensorTypeSelected() == MAIN_SENSOR_TYPE::SENSOR_PM) {
-        data.mainValue = sensors.getUnitValue(UNIT::PM25);
-        data.unitName = sensors.getUnitName(UNIT::PM25);
-        data.unitSymbol = sensors.getUnitSymbol(UNIT::PM25);
-        data.color = AQI_COLOR::AQI_PM;
-    } else if (sensors.getMainSensorTypeSelected() == MAIN_SENSOR_TYPE::SENSOR_CO2) {
-        data.mainValue = sensors.getUnitValue(UNIT::CO2);
-        data.unitName = sensors.getUnitName(UNIT::CO2);
-        data.unitSymbol = sensors.getUnitSymbol(UNIT::CO2);
-        data.color = AQI_COLOR::AQI_CO2;
+    } else if (selectUnit != UNIT::NUNIT) {
+        data.mainValue = sensors.getUnitValue(selectUnit);
+        data.unitName = sensors.getUnitName(selectUnit);
+        data.unitSymbol = sensors.getUnitSymbol(selectUnit);
+        data.mainUnitId = selectUnit;
+        selectAQIColor();
+    } else {
+        Serial.println("-->[INFO] ????");
     }
-    if (nextUnit != 0) {
+    if (nextUnit != UNIT::NUNIT) {
         data.minorValue = sensors.getUnitValue(nextUnit);
         data.unitName = sensors.getUnitName(nextUnit);
         data.unitSymbol = sensors.getUnitSymbol(nextUnit);
-        if (nextUnit == UNIT::PM25 || nextUnit == UNIT::PM10 || nextUnit == UNIT::PM1) 
-            data.color = AQI_COLOR::AQI_PM;
-        else if (nextUnit == UNIT::CO2) data.color = AQI_COLOR::AQI_CO2;
-        else data.color = AQI_COLOR::AQI_NONE;
+        selectAQIColor();
     }
+
+    data.onSelectionUnit = nextUnit;
+
+    Serial.printf("-->[INFO] unit selected \t: %d\n",selectUnit);
+    Serial.printf("-->[INFO] next unit     \t: %d\n",nextUnit);
+    Serial.printf("-->[INFO] main value \t: %d\n",data.mainValue);
+    Serial.printf("-->[INFO] minor value \t: %d\n",data.minorValue);
 }
 
 void refreshGUIData() {
@@ -113,6 +120,7 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     void onUnitSelectionConfirm() {
         Serial.println("-->[MAIN] onUnitSelectionConfirm");
         Serial.printf("-->[MAIN] minor unit selected\t: %s\n", sensors.getUnitName(nextUnit).c_str());
+        selectUnit = nextUnit;
         sensors.resetNextUnit();
     };
 };
@@ -161,7 +169,6 @@ void startingSensors() {
                                                     // The UART sensor is choosed on Android app.
                                                     // For more information about the supported sensors,
                                                     // please see the canairio_sensorlib documentation.
-
     if(!sensors.getMainDeviceSelected().isEmpty()) {
         Serial.print("-->[INFO] Main sensor selected\t: ");
         Serial.println(sensors.getMainDeviceSelected());
@@ -257,7 +264,11 @@ void setup() {
     sensors.loop();
     logMemory("SLIBL");
     sensors.setSampleTime(cfg.stime);        // config sensors sample time (first use)
+    sensors.resetNextUnit();
+    selectUnit = sensors.getNextUnit();      // auto selection of sensor unit to show
     Serial.printf("-->[INFO] sensors units detected\t: %d\n", sensors.getUnitsRegisteredCount());
+    Serial.printf("-->[INFO] unit selected \t: %d\n",selectUnit);
+    Serial.printf("-->[INFO] next unit     \t: %d\n",nextUnit);
     Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\n", sizeof(sensors));
     Serial.printf("-->[HEAP] sizeof config \t: %04ub\n", sizeof(cfg));
     Serial.printf("-->[HEAP] sizeof battery\t: %04ub\n", sizeof(battery));

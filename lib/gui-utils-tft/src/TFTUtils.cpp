@@ -400,6 +400,7 @@ void TFTUtils::checkButtons() {
             pressL = 1;
             if (state++ == 0 && wstate != 3) showSetup();
             else if(mGUICallBacks != nullptr && wstate==3) {
+                if (_mainUnitId != _unit) resetBuffer(bufGraphMain);
                 getInstance()->mGUICallBacks->onUnitSelectionConfirm(); // select secundary unit
                 wstate = 0;
                 restoreMain();
@@ -563,12 +564,13 @@ void TFTUtils::setSensorData(GUIData data) {
     _humi = data.humi;
     _temp = data.temp;
     _mainValue = data.mainValue;
+    _mainUnitId = data.mainUnitId;
     _minorValue = data.minorValue;
     _unit_symbol = data.unitSymbol;
     _unit_name = data.unitName;
     _rssi = abs(data.rssi);
-    if (_unit != data.id) resetBuffer(bufGraphMinor);
-    _unit = data.id;
+    if (_unit != data.onSelectionUnit) resetBuffer(bufGraphMinor);
+    _unit = data.onSelectionUnit;
     bufGraphMain[MAX_X - 1] = _mainValue;
     bufGraphMinor[MAX_X - 1] = _minorValue;
     isNewData = true;
@@ -662,7 +664,7 @@ void TFTUtils::drawBarGraph() {
         _average = bufGraphMain[i] + _average;     // average value only for main value
 
         int color = TFT_WHITE;
-        if (_unit == 0 ) {
+        if (_unit == _mainUnitId || _unit == 0) {
             if (_colorType > AQI_COLOR::AQI_NONE) color = aqicolors[getAQIColor(bufGraphMain[i])];
             tft.drawLine(i, 150, i, 150 - (lenMain > MAX_Y ? MAX_Y : lenMain),color);
         }

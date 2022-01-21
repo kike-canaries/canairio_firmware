@@ -146,6 +146,11 @@ bool ConfigApp::saveSampleTime(int time) {
     return false;
 }
 
+/**
+ * @brief ConfigApp::saveSensorType
+ * @param type UART sensor type. Sync it with Android app
+ * @return true (compatibility)
+ */
 bool ConfigApp::saveSensorType(int type) {
     saveInt("stype", type);
     Serial.printf("-->[CONF] sensor device type\t: %d\n", type);
@@ -154,6 +159,25 @@ bool ConfigApp::saveSensorType(int type) {
 
 int ConfigApp::getSensorType(){
     return stype;
+}
+
+/**
+ * @brief ConfigApp::saveWifiEnable
+ * @param unit save the sensor UNIT selected
+ * @return 
+ */
+bool ConfigApp::saveUnitSelected(int unit){
+    saveInt("unit", unit);
+    Serial.printf("-->[CONF] default unit to \t: %d\n", unit);
+    return true;
+}
+
+/**
+ * @brief ConfigApp::getUnitSelected
+ * @return unit selected and saved by user (default PM2.5)
+ */
+int ConfigApp::getUnitSelected(){
+    return getInt("unit", 2); 
 }
 
 bool ConfigApp::saveTempOffset(float offset) {

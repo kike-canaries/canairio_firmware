@@ -20,17 +20,16 @@ UNIT selectUnit = UNIT::NUNIT;
 UNIT nextUnit = UNIT::NUNIT;
 GUIData data;
 
-void selectAQIColor() {
+AQI_COLOR selectAQIColor() {
     if (selectUnit == UNIT::PM25 || selectUnit == UNIT::PM10 || selectUnit == UNIT::PM1)
-        data.color = AQI_COLOR::AQI_PM;
+        return AQI_COLOR::AQI_PM;
     else if (selectUnit == UNIT::CO2)
-        data.color = AQI_COLOR::AQI_CO2;
+        return AQI_COLOR::AQI_CO2;
     else
-        data.color = AQI_COLOR::AQI_NONE;
+        return AQI_COLOR::AQI_NONE;
 }
 
 void loadGUIData() {
-
     float humi = sensors.getHumidity();
     if (humi == 0.0) humi = sensors.getCO2humi();
 
@@ -41,6 +40,8 @@ void loadGUIData() {
     data.humi = humi;
     data.rssi = getWifiRSSI();
 
+
+    // Main unit selection
     if (sensors.getUnitsRegisteredCount() == 0 && cfg.isPaxEnable()) {
         data.mainValue = getPaxCount();
         data.unitName = "PAX";
@@ -52,23 +53,16 @@ void loadGUIData() {
         data.unitName = sensors.getUnitName(selectUnit);
         data.unitSymbol = sensors.getUnitSymbol(selectUnit);
         data.mainUnitId = selectUnit;
-        selectAQIColor();
-    } else {
-        Serial.println("-->[INFO] ????");
+        data.color = selectAQIColor();
     }
+    // Minor unit selection
     if (nextUnit != UNIT::NUNIT) {
         data.minorValue = sensors.getUnitValue(nextUnit);
         data.unitName = sensors.getUnitName(nextUnit);
         data.unitSymbol = sensors.getUnitSymbol(nextUnit);
-        selectAQIColor();
+        data.color = selectAQIColor();
     }
-
     data.onSelectionUnit = nextUnit;
-
-    Serial.printf("-->[INFO] unit selected \t: %d\n",selectUnit);
-    Serial.printf("-->[INFO] next unit     \t: %d\n",nextUnit);
-    Serial.printf("-->[INFO] main value \t: %d\n",data.mainValue);
-    Serial.printf("-->[INFO] minor value \t: %d\n",data.minorValue);
 }
 
 void refreshGUIData() {
@@ -121,10 +115,14 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
         refreshGUIData();
     };
     void onUnitSelectionConfirm() {
-        Serial.println("-->[MAIN] onUnitSelectionConfirm");
-        Serial.printf("-->[MAIN] minor unit selected\t: %s\n", sensors.getUnitName(nextUnit).c_str());
-        if (nextUnit!=UNIT::NUNIT && nextUnit!=selectUnit)  selectUnit = nextUnit;
-        // sensors.resetNextUnit();
+        Serial.print("-->[MAIN] Unit selected  \t: ");
+        if (nextUnit!=UNIT::NUNIT && nextUnit!=selectUnit) {
+            Serial.println(sensors.getUnitName(nextUnit));
+            selectUnit = nextUnit;
+            cfg.saveUnitSelected(selectUnit);
+        } else {
+            Serial.println("NONE");
+        }
     };
 };
 
@@ -267,14 +265,17 @@ void setup() {
     sensors.loop();
     logMemory("SLIBL");
     sensors.setSampleTime(cfg.stime);        // config sensors sample time (first use)
-    sensors.resetNextUnit();
-    selectUnit = sensors.getNextUnit();      // auto selection of sensor unit to show
+    selectUnit = (UNIT) cfg.getUnitSelected();
+    Serial.printf("-->[INFO] restored saved unit \t: %s\n",sensors.getUnitName(selectUnit).c_str());
+    if (!sensors.isUnitRegistered(selectUnit)){
+        sensors.resetNextUnit();
+        selectUnit = sensors.getNextUnit();  // auto selection of sensor unit to show
+        Serial.printf("-->[INFO] unvalid unit, set to\t: %s\n",sensors.getUnitName(selectUnit).c_str());
+    }
     Serial.printf("-->[INFO] sensors units detected\t: %d\n", sensors.getUnitsRegisteredCount());
-    Serial.printf("-->[INFO] unit selected \t: %d\n",selectUnit);
-    Serial.printf("-->[INFO] next unit     \t: %d\n",nextUnit);
+    Serial.printf("-->[INFO] unit selected to show \t: %s\n",sensors.getUnitName(selectUnit).c_str());
     Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\n", sizeof(sensors));
     Serial.printf("-->[HEAP] sizeof config \t: %04ub\n", sizeof(cfg));
-    Serial.printf("-->[HEAP] sizeof battery\t: %04ub\n", sizeof(battery));
     Serial.printf("-->[HEAP] sizeof GUI    \t: %04ub\n", sizeof(gui));
     Serial.println("\n==>[INFO] Setup End ===\n");
 }

@@ -398,12 +398,9 @@ void GUIUtils::setInfoData(String info) {
     // TODO: 
 }
 
-
 void GUIUtils::setBatteryStatus(float volts, int charge, bool isCharging) {
     // TODO:    
 }
-
-
 
 void GUIUtils::displayGUIStatusFlags() {
 #ifdef TTGO_TQ

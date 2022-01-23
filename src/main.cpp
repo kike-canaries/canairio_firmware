@@ -40,6 +40,10 @@ void loadGUIData() {
     data.humi = humi;
     data.rssi = getWifiRSSI();
 
+    UNIT user_unit = (UNIT) cfg.getUnitSelected();
+    if (selectUnit != user_unit && sensors.isUnitRegistered(user_unit)) {
+        selectUnit = user_unit;
+    }
 
     // Main unit selection
     if (sensors.getUnitsRegisteredCount() == 0 && cfg.isPaxEnable()) {
@@ -167,10 +171,10 @@ void printSensorsDetected() {
 
 void startingSensors() {
     Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)cfg.stype));
-    gui.welcomeAddMessage("Detected sensor:");
+    gui.welcomeAddMessage("Enabling sensors:");
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
-    sensors.setSampleTime(1);                       // sample time only for first use
+    sensors.setSampleTime(cfg.stime);               // config sensors sample time (first use)
     sensors.setTempOffset(cfg.toffset);             // temperature compensation
     sensors.setCO2AltitudeOffset(cfg.altoffset);    // CO2 altitude compensation
     sensors.detectI2COnly(cfg.i2conly);             // force only i2c sensors
@@ -179,7 +183,6 @@ void startingSensors() {
                                                     // The UART sensor is choosed on Android app.
                                                     // For more information about the supported sensors,
                                                     // please see the canairio_sensorlib documentation.
-
     if(sensors.getSensorsRegisteredCount()==0){
         Serial.println("-->[INFO] Main sensors detected\t: 0");
         gui.welcomeAddMessage("Not sensors detected");
@@ -188,6 +191,21 @@ void startingSensors() {
     else{
         printSensorsDetected();    
     }
+
+    Serial.printf("-->[INFO] registered units\t:\n");
+    delay(1000);
+    sensors.readAllSensors();                       // only to force to register all sensors
+    gui.welcomeAddMessage("Units count: "+String(sensors.getUnitsRegisteredCount()));
+    selectUnit = (UNIT) cfg.getUnitSelected();
+    Serial.printf("-->[INFO] restored saved unit \t: %s\n",sensors.getUnitName(selectUnit).c_str());
+    if (!sensors.isUnitRegistered(selectUnit)){
+        sensors.resetNextUnit();
+        selectUnit = sensors.getNextUnit();  // auto selection of sensor unit to show
+        Serial.printf("-->[INFO] not found! set to\t: %s\n",sensors.getUnitName(selectUnit).c_str());
+    }
+    gui.welcomeAddMessage("Show unit: "+sensors.getUnitName(selectUnit));
+    sensors.printUnitsRegistered(true);
+    delay(300);
 }
 
 /******************************************************************************
@@ -214,7 +232,7 @@ void setup() {
     gui.displayInit();
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();
-    logMemory("GUI ");
+    logMemory("GLIB");
 
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC\t\t: " + cfg.deviceId);
@@ -235,12 +253,11 @@ void setup() {
     logMemory("SLIB");
     // Setting callback for remote commands via Bluetooth config
     cfg.setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());
-
     // init watchdog timer for reboot in any loop blocker
     wd.init();
-    
     // WiFi and cloud communication
     logMemory("WDOG");
+    gui.welcomeAddMessage("Connecting..");
     wifiInit();
     logMemory("WIFI");
     Serial.printf("-->[INFO] InfluxDb cloud \t: %s\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
@@ -262,23 +279,12 @@ void setup() {
     // sensor sample time and publish time (2x)
     gui.welcomeAddMessage("stime: "+String(cfg.stime)+ " sec.");
     gui.welcomeAddMessage(cfg.getDeviceId());   // mac address
-    gui.welcomeAddMessage("Watchdog:"+String(WATCHDOG_TIME));
+    gui.welcomeAddMessage("Watchdog:"+String(WATCHDOG_TIME)); 
     gui.welcomeAddMessage("==SETUP READY==");
-    delay(500);
+    delay(2000);
     gui.showMain();
     refreshGUIData();
-    delay(600);
-    logMemory("RGUI");
-    sensors.loop();
-    logMemory("SLIBL");
-    sensors.setSampleTime(cfg.stime);        // config sensors sample time (first use)
-    selectUnit = (UNIT) cfg.getUnitSelected();
-    Serial.printf("-->[INFO] restored saved unit \t: %s\n",sensors.getUnitName(selectUnit).c_str());
-    if (!sensors.isUnitRegistered(selectUnit)){
-        sensors.resetNextUnit();
-        selectUnit = sensors.getNextUnit();  // auto selection of sensor unit to show
-        Serial.printf("-->[INFO] unvalid unit, set to\t: %s\n",sensors.getUnitName(selectUnit).c_str());
-    }
+    logMemory("GLIB");
     Serial.printf("-->[INFO] sensors units detected\t: %d\n", sensors.getUnitsRegisteredCount());
     Serial.printf("-->[INFO] unit selected to show \t: %s\n",sensors.getUnitName(selectUnit).c_str());
     Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\n", sizeof(sensors));

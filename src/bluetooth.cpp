@@ -40,7 +40,7 @@ String getSensorData() {
     doc["pre"] = sensors.getPressure();
     doc["bat"] = battery.getCharge();
     doc["PAX"] = getPaxCount();
-    doc["dsl"] = sensors.getMainDeviceSelected();
+    doc["dsl"] = sensors.getSensorName((SENSORS) sensors.getUARTDeviceTypeSelected());
     String json;
     serializeJson(doc, json);
     return json;

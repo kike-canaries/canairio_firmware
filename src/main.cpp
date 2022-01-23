@@ -156,6 +156,15 @@ void onSensorDataError(const char * msg){
     refreshGUIData();
 }
 
+void printSensorsDetected() {
+    Serial.println("-->[INFO] Sensors detected\t: " + String(sensors.getSensorsRegisteredCount()));
+    gui.welcomeAddMessage("Sensors: " + String(sensors.getSensorsRegisteredCount()));
+    int i = 0;
+    while (sensors.getSensorsRegistered()[i++] != 0) {
+        gui.welcomeAddMessage(sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i - 1]));
+    }
+}
+
 void startingSensors() {
     Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)cfg.stype));
     gui.welcomeAddMessage("Detected sensor:");
@@ -170,17 +179,15 @@ void startingSensors() {
                                                     // The UART sensor is choosed on Android app.
                                                     // For more information about the supported sensors,
                                                     // please see the canairio_sensorlib documentation.
-    if(!sensors.getMainDeviceSelected().isEmpty()) {
-        Serial.print("-->[INFO] Main sensor selected\t: ");
-        Serial.println(sensors.getMainDeviceSelected());
-        gui.welcomeAddMessage(sensors.getMainDeviceSelected());
-    }
-    else {
+
+    if(sensors.getSensorsRegisteredCount()==0){
         Serial.println("-->[INFO] Main sensors detected\t: 0");
-        gui.welcomeAddMessage("MainSensor: PAX");
+        gui.welcomeAddMessage("Not sensors detected");
+        gui.welcomeAddMessage("Default: PAX");
     }
-
-
+    else{
+        printSensorsDetected();    
+    }
 }
 
 /******************************************************************************

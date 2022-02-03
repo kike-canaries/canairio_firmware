@@ -34,6 +34,7 @@ void ConfigApp::reload() {
     stype = preferences.getInt("stype", 0);
     toffset = preferences.getFloat("toffset", 0.0);
     altoffset = preferences.getFloat("altoffset", 0.0);
+    sealevel = preferences.getFloat("sealevel", 1036.25);
     devmode = preferences.getBool("debugEnable", false);
     pax_enable = preferences.getBool("paxEnable", true);
     i2conly = preferences.getBool("i2conly", false);
@@ -50,7 +51,7 @@ String ConfigApp::getCurrentConfig() {
     preferences.begin(_app_name, false);
     doc["dname"] = preferences.getString("dname", "");       // device or station name
     doc["stime"] = preferences.getInt("stime", 5);           // sensor measure time
-    doc["stype"] = preferences.getInt("stype", 0);           // sensor type { Honeywell, Panasonic, Sensirion };
+    doc["stype"] = preferences.getInt("stype", 0);           // sensor UART type;
     doc["wenb"] = preferences.getBool("wifiEnable", false);  // wifi on/off
     doc["ssid"] = preferences.getString("ssid", "");         // influxdb database name
     doc["ienb"] = preferences.getBool("ifxEnable", false);   // ifxdb on/off
@@ -66,7 +67,7 @@ String ConfigApp::getCurrentConfig() {
     doc["hassip"] = preferences.getString("hassip", "");     // Home Assistant MQTT server ip
     doc["hasspt"] = preferences.getInt("hasspt", 1883);      // Home Assistant MQTT server port
     doc["hassusr"] = preferences.getString("hassusr", "");   // Home Assistant MQTT user
-    // doc["hasspsw"] = preferences.getString("hasspsw", "");   // Home Assistant MQTT password
+    // doc["hasspsw"] = preferences.getString("hasspsw", "");// Home Assistant MQTT password
     doc["lskey"] = lastKeySaved;                             // last key saved
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
     doc["anaireid"] =  getStationName();                     // deviceId for Anaire cloud
@@ -190,6 +191,13 @@ bool ConfigApp::saveAltitudeOffset(float offset) {
     saveFloat("altoffset", offset);
     Serial.printf("-->[CONF] sensor altitude offset\t: %0.2f\n", offset);
     if(mRemoteConfigCallBacks!=nullptr) this->mRemoteConfigCallBacks->onAltitudeOffset(offset);
+    return true;
+}
+
+bool ConfigApp::saveSeaLevelPressure(float hpa) {
+    saveFloat("sealevelp", hpa);
+    Serial.printf("-->[CONF] sea level pressure\t: %0.2f\n", hpa);
+    if(mRemoteConfigCallBacks!=nullptr) this->mRemoteConfigCallBacks->onSeaLevelPressure(hpa);
     return true;
 }
 

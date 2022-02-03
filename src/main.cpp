@@ -140,6 +140,11 @@ class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
         Serial.println("-->[MAIN] onRemoteConfig new Altitude Offset");
         sensors.setCO2AltitudeOffset(altitude);
     };
+
+    void onSeaLevelPressure (float hpa) {
+        Serial.println("-->[MAIN] onRemoteConfig new Sea Level Pressure");
+        sensors.setSeaLevelPressure(hpa);
+    }
 };
 
 class MyBatteryUpdateCallbacks : public BatteryUpdateCallbacks {

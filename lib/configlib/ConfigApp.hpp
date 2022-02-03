@@ -50,7 +50,7 @@ class ConfigApp {
     
     float altoffset = 0.0;
 
-    float sealevel = 1036.25;
+    float sealevel = 1013.25;
 
     void init(const char app_name[]);
 

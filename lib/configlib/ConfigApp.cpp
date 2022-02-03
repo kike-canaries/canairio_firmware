@@ -34,7 +34,7 @@ void ConfigApp::reload() {
     stype = preferences.getInt("stype", 0);
     toffset = preferences.getFloat("toffset", 0.0);
     altoffset = preferences.getFloat("altoffset", 0.0);
-    sealevel = preferences.getFloat("sealevel", 1036.25);
+    sealevel = preferences.getFloat("sealevel", 1013.25);
     devmode = preferences.getBool("debugEnable", false);
     pax_enable = preferences.getBool("paxEnable", true);
     i2conly = preferences.getBool("i2conly", false);

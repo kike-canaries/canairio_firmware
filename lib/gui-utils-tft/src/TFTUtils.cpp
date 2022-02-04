@@ -166,6 +166,7 @@ void TFTUtils::showInfoWindow() {
 
 void TFTUtils::refreshInfoWindow() {
     if (state != 7) return;
+    tft.fillRect(0, 49, tft.width(), tft.height()-62, TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextFont(2);
     tft.setTextPadding(5);
@@ -175,7 +176,6 @@ void TFTUtils::refreshInfoWindow() {
 }
 
 void TFTUtils::showSetup() {
-    
     showStatus();
     tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
     tft.setFreeFont(&Orbitron_Medium_20);
@@ -261,6 +261,7 @@ void TFTUtils::updateInvertValue(){
 }
 
 void TFTUtils::updateBatteryValue(){
+    if (state != 0) return;
     int batt_state = (int)_batteryCharge/20;
     String voltage = "" + String(_batteryVolts) + "v";
     displayBottomLine(voltage);
@@ -516,6 +517,7 @@ void TFTUtils::displaySensorAverage(int average) {
 }
 
 void TFTUtils::displayMainHeader() {
+    if (state != 0) return;
     tft.fillRect(2, 25, 130, 40, TFT_BLACK);
     if (wstate == 3 && toggle1s) return;
     char output[6];
@@ -792,24 +794,24 @@ void TFTUtils::drawPreferenceSaveIcon () {
 }
 
 void TFTUtils::pageStart() {
-    // fast interactions (80ms)
-    checkButtons();
-    if(sensorLive) drawFanIcon();
     // slow interactions 
-    static uint_fast64_t loopts = 0;   // timestamp for GUI refresh
-    if (state == 0 && (millis() - loopts > 2000)) {  
+    static uint_fast64_t loopts = 0;   // slow GUI refresh
+    if (millis() - loopts > 2000) {  
         loopts = millis();
+        refreshInfoWindow();
         updateBatteryValue();
     }
-    static uint_fast64_t loop500ms = 0; // timestamp for GUI refresh
-    if (state == 0 && (millis() - loop500ms > 500)) {  
+    static uint_fast64_t loop500ms = 0; // 500ms refresh GUI
+    if (millis() - loop500ms > 500) { 
         loop500ms = millis();
         toggle1s = !toggle1s;
-        if (wstate == 3) displayMainHeader();
+        displayMainHeader();
     }
+    /// fast interactions (80ms)
+    checkButtons();
+    if(sensorLive) drawFanIcon();
     updateCalibrationField();
     displayGUIStatusFlags();
-    refreshInfoWindow();
 }
 
 void TFTUtils::pageEnd() {

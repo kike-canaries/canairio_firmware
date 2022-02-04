@@ -21,6 +21,7 @@ void influxDbAddTags() {
     sensor.addTag("mac",cfg.deviceId.c_str());
     sensor.addTag("geo3",cfg.geo.substring(0,3).c_str());
     sensor.addTag("name",cfg.getStationName().c_str());
+    sensor.addTag("rev","v"+String(VERSION)+"r"+String(REVISION));
 }
 
 void influxDbParseFields() {
@@ -44,6 +45,7 @@ void influxDbParseFields() {
     sensor.addField("gas",sensors.getGas());
     sensor.addField("alt",sensors.getAltitude());
     sensor.addField("bat",battery.getCharge());
+    sensor.addField("vbat",battery.getVoltage());
     sensor.addField("name",cfg.getStationName().c_str());
 }
 

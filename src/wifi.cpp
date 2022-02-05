@@ -129,15 +129,16 @@ int getWifiRSSI() {
     else return 0;
 }
 
-String getDeviceInfo () {
+String getDeviceInfo() {
     String info = getHostId() + "\n";
     info = info + String(FLAVOR) + "\n";
-    info = info + "Rev" + String(REVISION) +" v" + String(VERSION) + "\n";
+    info = info + "Rev" + String(REVISION) + " v" + String(VERSION) + "\n";
     info = info + "" + cfg.getStationName() + "\n";
     info = info + "IP: " + WiFi.localIP().toString() + "\n";
     info = info + "OTA: " + String(TARGET) + " channel\n";
-    info = info + "Hass: "  + String(hassIsConnected() ? "connected" : "disconnected") + "\n";
-    info = info + "Anaire: "+ String(anaireIsConnected() ? "connected" : "disconnected") + "\n";
+    info = info + "Hass: " + String(hassIsConnected() ? "connected" : "disconnected") + "\n";
+    info = info + "Anaire: " + String(anaireIsConnected() ? "connected" : "disconnected") + "\n";
+    if (cfg.devmode) Serial.println("-->[WIFI] AP RSSI signal \t: " + String(getWifiRSSI()) + " dBm");
     return info;
 }
 

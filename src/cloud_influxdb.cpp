@@ -46,6 +46,7 @@ void influxDbParseFields() {
     sensor.addField("alt",sensors.getAltitude());
     sensor.addField("bat",battery.getCharge());
     sensor.addField("vbat",battery.getVoltage());
+    sensor.addField("rssi",getWifiRSSI());
     sensor.addField("name",cfg.getStationName().c_str());
 }
 

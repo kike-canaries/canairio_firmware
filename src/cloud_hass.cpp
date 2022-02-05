@@ -49,7 +49,9 @@ void hassPubSensorPayload() {
     doc["pm25"] = String(sensors.getPM25());
     doc["pm4"]  = String(sensors.getPM4());
     doc["pm10"] = String(sensors.getPM10());
+    doc["signal_strength"] = String(getWifiRSSI());
     doc["battery"] = String(battery.getCharge());
+    doc["voltage"] = String(battery.getVoltage());
 
     size_t n = serializeJson(doc, buffer);
  

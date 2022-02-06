@@ -160,6 +160,7 @@ else
       build TTGO_TQ
       build ESP32DEVKIT
       build TTGO_TDISPLAY
+      build M5STICKCPLUS
       printOutput
       ;;
 

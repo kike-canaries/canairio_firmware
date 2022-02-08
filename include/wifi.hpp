@@ -25,3 +25,4 @@ void wifiLoop();
 int  getWifiRSSI();
 String getDeviceInfo();
 String getHostId();
+void logMemory(const char *msg);

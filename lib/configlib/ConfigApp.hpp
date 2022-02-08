@@ -50,6 +50,8 @@ class ConfigApp {
     
     float altoffset = 0.0;
 
+    float sealevel = 1013.25;
+
     void init(const char app_name[]);
 
     void reload();
@@ -61,6 +63,10 @@ class ConfigApp {
     bool saveSampleTime(int time);
 
     bool saveSensorType(int type);
+
+    bool saveUnitSelected(int unit);
+
+    int getUnitSelected();
 
     bool saveSSID(String ssid);
 
@@ -122,6 +128,8 @@ class ConfigApp {
 
     bool saveAltitudeOffset(float offset);
 
+    bool saveSeaLevelPressure(float hpa);
+
     void setRemoteConfigCallbacks(RemoteConfigCallbacks* pCallbacks);
 
    private:
@@ -175,6 +183,7 @@ public:
     virtual ~RemoteConfigCallbacks () {};
     virtual void onCO2Calibration();
     virtual void onAltitudeOffset(float altitude);
+    virtual void onSeaLevelPressure(float hpa);
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_CFGHANDLER)

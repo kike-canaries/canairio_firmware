@@ -2,8 +2,22 @@
 #define GUIUtils_hpp
 
 #include <U8g2lib.h>
-#include "battery.hpp"
 #include "hal.hpp"
+
+enum AQI_COLOR { AQI_NONE, AQI_PM, AQI_CO2 };
+
+typedef struct GUIData {
+    uint8_t mainUnitId;
+    uint8_t onSelectionUnit;
+    uint16_t mainValue;
+    uint16_t minorValue;
+    String unitName;
+    String unitSymbol;
+    float humi;
+    float temp;
+    int rssi;
+    AQI_COLOR color;
+} gdata;
 
 class GUIUserPreferencesCallbacks; 
 class GUIUtils {
@@ -41,12 +55,14 @@ class GUIUtils {
     void pageEnd();
 
     void clearScreen();
-    
-    void setSensorData(int mainValue, float humi, float temp, int rssi, int deviceType);
+
+    void setSensorData(GUIData data);
 
     void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 
     void setInfoData(String info);
+
+    void setBatteryStatus(float volts, int charge, bool isCharging);
 
     void setBrightness(uint32_t value);
 
@@ -97,6 +113,14 @@ class GUIUtils {
     float _temp = 0.0;
 
     int _mainValue = 0;
+
+    int _minorValue = 0;
+
+    String _unit_symbol = "";
+
+    String _unit_name = "";
+
+    int _unit = 0;
 
     int _average = 0;
 

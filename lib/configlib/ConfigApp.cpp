@@ -7,9 +7,9 @@ void ConfigApp::init(const char app_name[]) {
     deviceId = getDeviceId();
     reload();
     // override with debug INFO level (>=3)
-    #ifdef CORE_DEBUG_LEVEL
-    if (CORE_DEBUG_LEVEL>=3) devmode = true;  
-    #endif
+#if CORE_DEBUG_LEVEL >= 3
+    devmode = true;
+#endif
     if (devmode) Serial.println("-->[CONF] debug is enable.");
 }
 
@@ -34,6 +34,7 @@ void ConfigApp::reload() {
     stype = preferences.getInt("stype", 0);
     toffset = preferences.getFloat("toffset", 0.0);
     altoffset = preferences.getFloat("altoffset", 0.0);
+    sealevel = preferences.getFloat("sealevel", 1013.25);
     devmode = preferences.getBool("debugEnable", false);
     pax_enable = preferences.getBool("paxEnable", true);
     i2conly = preferences.getBool("i2conly", false);
@@ -50,7 +51,7 @@ String ConfigApp::getCurrentConfig() {
     preferences.begin(_app_name, false);
     doc["dname"] = preferences.getString("dname", "");       // device or station name
     doc["stime"] = preferences.getInt("stime", 5);           // sensor measure time
-    doc["stype"] = preferences.getInt("stype", 0);           // sensor type { Honeywell, Panasonic, Sensirion };
+    doc["stype"] = preferences.getInt("stype", 0);           // sensor UART type;
     doc["wenb"] = preferences.getBool("wifiEnable", false);  // wifi on/off
     doc["ssid"] = preferences.getString("ssid", "");         // influxdb database name
     doc["ienb"] = preferences.getBool("ifxEnable", false);   // ifxdb on/off
@@ -64,9 +65,9 @@ String ConfigApp::getCurrentConfig() {
     doc["toffset"] = preferences.getFloat("toffset", 0.0);   // temperature offset
     doc["altoffset"] = preferences.getFloat("altoffset",0.0);// altitude offset
     doc["hassip"] = preferences.getString("hassip", "");     // Home Assistant MQTT server ip
-    doc["hasspt"] = preferences.getInt("hasspt", 1883);     // Home Assistant MQTT server port
+    doc["hasspt"] = preferences.getInt("hasspt", 1883);      // Home Assistant MQTT server port
     doc["hassusr"] = preferences.getString("hassusr", "");   // Home Assistant MQTT user
-    doc["hasspsw"] = preferences.getString("hasspsw", "");   // Home Assistant MQTT password
+    // doc["hasspsw"] = preferences.getString("hasspsw", "");// Home Assistant MQTT password
     doc["lskey"] = lastKeySaved;                             // last key saved
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
     doc["anaireid"] =  getStationName();                     // deviceId for Anaire cloud
@@ -78,12 +79,12 @@ String ConfigApp::getCurrentConfig() {
     preferences.end();
     String output;
     serializeJson(doc, output);
-    if (devmode) {
-        char buf[1000];
-        serializeJsonPretty(doc, buf, 1000);
-        Serial.printf("-->[CONF] response: %s", buf);
-        Serial.println("");
-    }
+#if CORE_DEBUG_LEVEL >= 3
+    char buf[1000];
+    serializeJsonPretty(doc, buf, 1000);
+    Serial.printf("-->[CONF] response: %s", buf);
+    Serial.println("");
+#endif
     return output;
 }
 
@@ -139,18 +140,21 @@ bool ConfigApp::saveDeviceName(String name) {
 bool ConfigApp::saveSampleTime(int time) {
     if (time >= 5) {
         saveInt("stime", time);
-        Serial.print("-->[CONF] set sample time to  :\t");
-        Serial.println(time);
+        Serial.printf("-->[CONF] set sample time to\t: %d\n", time);
         return true;
     }
     DEBUG("[W][CONF] warning: sample time is too low!");
     return false;
 }
 
+/**
+ * @brief ConfigApp::saveSensorType
+ * @param type UART sensor type. Sync it with Android app
+ * @return true (compatibility)
+ */
 bool ConfigApp::saveSensorType(int type) {
     saveInt("stype", type);
-    Serial.print("-->[CONF] sensor device type: ");
-    Serial.println(type);
+    Serial.printf("-->[CONF] sensor device type\t: %d\n", type);
     return true;
 }
 
@@ -158,18 +162,42 @@ int ConfigApp::getSensorType(){
     return stype;
 }
 
+/**
+ * @brief ConfigApp::saveWifiEnable
+ * @param unit save the sensor UNIT selected
+ * @return 
+ */
+bool ConfigApp::saveUnitSelected(int unit){
+    saveInt("unit", unit);
+    Serial.printf("-->[CONF] default unit to \t: %d\n", unit);
+    return true;
+}
+
+/**
+ * @brief ConfigApp::getUnitSelected
+ * @return unit selected and saved by user (default PM2.5)
+ */
+int ConfigApp::getUnitSelected(){
+    return getInt("unit", 2); 
+}
+
 bool ConfigApp::saveTempOffset(float offset) {
     saveFloat("toffset", offset);
-    Serial.print("-->[CONF] sensor temperature offset: ");
-    Serial.println(offset);
+    Serial.printf("-->[CONF] sensor temp offset\t: %0.2f\n", offset);
     return true;
 }
 
 bool ConfigApp::saveAltitudeOffset(float offset) {
     saveFloat("altoffset", offset);
-    Serial.print("-->[CONF] sensor altitude offset: ");
-    Serial.println(offset);
+    Serial.printf("-->[CONF] sensor altitude offset\t: %0.2f\n", offset);
     if(mRemoteConfigCallBacks!=nullptr) this->mRemoteConfigCallBacks->onAltitudeOffset(offset);
+    return true;
+}
+
+bool ConfigApp::saveSeaLevelPressure(float hpa) {
+    saveFloat("sealevelp", hpa);
+    Serial.printf("-->[CONF] sea level pressure\t: %0.2f\n", hpa);
+    if(mRemoteConfigCallBacks!=nullptr) this->mRemoteConfigCallBacks->onSeaLevelPressure(hpa);
     return true;
 }
 
@@ -231,8 +259,7 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
         preferences.end();
         setLastKeySaved("lat");
         log_i("-->[CONF] geo: %s (%d,%d)",geo,lat,lon);
-        Serial.print("-->[CONF] updated GeoHash to ");
-        Serial.println(geo);
+        Serial.printf("-->[CONF] updated GeoHash to\t: %s\n",geo.c_str());
         return true;
     }
     DEBUG("[W][CONF] wrong GEO params!");
@@ -242,35 +269,35 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
 bool ConfigApp::wifiEnable(bool enable) {
     saveBool("wifiEnable", enable);
     wifi_enable = enable;
-    Serial.println("-->[CONF] updating WiFi state: " + String(enable));
+    Serial.println("-->[CONF] updating WiFi state\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::ifxdbEnable(bool enable) {
     saveBool("ifxEnable", enable);
     ifxdb_enable = enable;
-    Serial.println("-->[CONF] updating InfluxDB state: " + String(enable));
+    Serial.println("-->[CONF] updating InfluxDB state\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::debugEnable(bool enable) {
     saveBool("debugEnable", enable);
     devmode = enable;
-    Serial.println("-->[CONF] updating debug mode: " + String(enable));
+    Serial.println("-->[CONF] updating debug mode\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::paxEnable(bool enable) {
     saveBool("paxEnable", enable);
     pax_enable = enable;
-    Serial.println("-->[CONF] updating PaxCounter mode: " + String(enable));
+    Serial.println("-->[CONF] updating PaxCounter mode\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::saveI2COnly(bool enable) {
     saveBool("i2conly", enable);
     i2conly = enable;
-    Serial.println("-->[CONF] forced only i2c sensors: " + String(enable));
+    Serial.println("-->[CONF] forced only i2c sensors\t: " + String(enable));
     return true;
 }
 
@@ -279,7 +306,7 @@ bool ConfigApp::saveHassIP(String ip) {
     preferences.putString("hassip", ip);
     preferences.end();
     setLastKeySaved("hassip");
-    Serial.printf("-->[CONF] Hass IP: %s saved.\n",ip.c_str());
+    Serial.printf("-->[CONF] Hass local IP \t: %s saved.\n",ip.c_str());
     return true;
 }
 
@@ -288,7 +315,7 @@ bool ConfigApp::saveHassPort(int port) {
     preferences.putInt("hasspt", port);
     preferences.end();
     setLastKeySaved("hasspt");
-    Serial.printf("-->[CONF] Hass Port: %i saved.\n", port);
+    Serial.printf("-->[CONF] Hass Port  \t: %i saved.\n", port);
     return true;
 }
 
@@ -297,7 +324,7 @@ bool ConfigApp::saveHassUser(String user) {
     preferences.putString("hassusr", user);
     preferences.end();
     setLastKeySaved("hassusr");
-    Serial.printf("-->[CONF] Hass User: %s saved.\n", user.c_str());
+    Serial.printf("-->[CONF] Hass User  \t: %s saved.\n", user.c_str());
     return true;
 }
 
@@ -320,13 +347,13 @@ bool ConfigApp::save(const char *json) {
         return false;
     }
 
-    if (devmode) {
-        char output[1000];
-        serializeJsonPretty(doc, output, 1000);
-        Serial.printf("-->[CONF] request: %s", output);
-        Serial.println("");
-    }
-    
+#if CORE_DEBUG_LEVEL >= 3
+    char output[1000];
+    serializeJsonPretty(doc, output, 1000);
+    Serial.printf("-->[CONF] request: %s", output);
+    Serial.println("");
+#endif
+
     uint16_t cmd = doc["cmd"].as<uint16_t>();
     String act = doc["act"] | "";
 
@@ -403,8 +430,10 @@ String ConfigApp::getDeviceIdShort() {
 
 String ConfigApp::getStationName() {
     if (geo.isEmpty()) return getAnaireDeviceId();
-    String name = ""+geo.substring(0,3);         // GeoHash ~70km https://en.wikipedia.org/wiki/Geohash
-    name = name + String(FLAVOR).substring(0,7);     // Flavor short, firmware name (board)
+    String name = ""+geo.substring(0,3);          // GeoHash ~70km https://en.wikipedia.org/wiki/Geohash
+    String flavor = String(FLAVOR);
+    if(flavor.length() > 6) flavor = flavor.substring(0,7); // validation possible issue with HELTEC
+    name = name + flavor;                         // Flavor short, firmware name (board)
     name = name + getDeviceId().substring(10);    // MAC address 4 digts
     name.replace("_","");
     name.replace(":","");

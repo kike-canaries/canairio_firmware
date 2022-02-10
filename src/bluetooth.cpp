@@ -38,9 +38,9 @@ String getSensorData() {
     doc["hum"] = sensors.getHumidity();
     doc["alt"] = sensors.getAltitude();
     doc["pre"] = sensors.getPressure();
-    doc["bat"] = gui.getBatteryLevel();
+    doc["bat"] = battery.getCharge();
     doc["PAX"] = getPaxCount();
-    doc["dsl"] = sensors.getMainDeviceSelected();
+    doc["dsl"] = sensors.getSensorName((SENSORS) sensors.getUARTDeviceTypeSelected());
     String json;
     serializeJson(doc, json);
     return json;
@@ -90,6 +90,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
                 }
                 if(sensors.toffset != cfg.toffset) sensors.setTempOffset(cfg.toffset);
                 if(sensors.devmode != cfg.devmode) sensors.setDebugMode(cfg.devmode);
+                if(sensors.sealevel != cfg.sealevel) sensors.setSeaLevelPressure(cfg.sealevel);
             }
             else{
                 Serial.println("[E][BTLE][CONFIG] saving error!");
@@ -150,7 +151,7 @@ void bleServerInit() {
     pService->start();
     // Start advertising
     pServer->getAdvertising()->start();
-    Serial.println("-->[BTLE] GATT server ready. (Waiting for client)");
+    Serial.println("-->[BTLE] Bluetooth GATT server\t: ready for config client!");
 }
 
 void bleLoop() {

@@ -46,9 +46,9 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
     
     fota.checkURL = "http://influxdb.canair.io:8080/releases/" + String(TARGET) + "/firmware_" + String(FLAVOR) + ".json";
     
-    Serial.print("-->[INFO] OTA on: ");
+    Serial.print("-->[INFO] local OTA updates on\t: ");
     Serial.print(ESP_ID);
-    Serial.print(".local with passw: ");
+    Serial.print(".local passw: ");
     Serial.println(ESP_PASS);
 }
 
@@ -62,7 +62,7 @@ void OTAHandler::checkRemoteOTA(bool notify) {
         esp_task_wdt_init(120,0); 
         fota.execOTA();
     } else if (notify)
-        Serial.println("-->[FOTA] not need update");
+        Serial.println("-->[FOTA] remote OTA update \t: not need update");
 }
 
 void OTAHandler::remoteOTAcheckloop() {

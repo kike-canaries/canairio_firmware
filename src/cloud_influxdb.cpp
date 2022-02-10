@@ -1,6 +1,6 @@
 #include <cloud_influxdb.hpp>
 #include <wifi.hpp>
-#include <bluetooth.hpp>
+#include <Batterylib.hpp>
 
 /******************************************************************************
 *   I N F L U X D B   M E T H O D S
@@ -21,6 +21,7 @@ void influxDbAddTags() {
     sensor.addTag("mac",cfg.deviceId.c_str());
     sensor.addTag("geo3",cfg.geo.substring(0,3).c_str());
     sensor.addTag("name",cfg.getStationName().c_str());
+    sensor.addTag("rev","v"+String(VERSION)+"r"+String(REVISION));
 }
 
 void influxDbParseFields() {
@@ -43,7 +44,9 @@ void influxDbParseFields() {
     sensor.addField("prs",sensors.getPressure());
     sensor.addField("gas",sensors.getGas());
     sensor.addField("alt",sensors.getAltitude());
-    sensor.addField("bat",gui.getBatteryLevel());
+    sensor.addField("bat",battery.getCharge());
+    sensor.addField("vbat",battery.getVoltage());
+    sensor.addField("rssi",getWifiRSSI());
     sensor.addField("name",cfg.getStationName().c_str());
 }
 
@@ -74,7 +77,7 @@ void influxDbLoop() {
         timeStamp = millis();
         if (ifx_ready && sensors.isDataReady() && WiFi.isConnected() && cfg.isIfxEnable()) {
             if (influxDbWrite()){
-                if(cfg.devmode) Serial.println("-->[IFDB] write done.");
+                if(cfg.devmode) Serial.printf ("-->[IFDB] CanAirIO cloud write\t: payload size: %d\n", sizeof(sensor));
                 gui.displayDataOnIcon();
                 suspendDevice();
             }
@@ -90,21 +93,20 @@ void influxDbInit() {
         influx.setInsecure();
         // influx = InfluxDBClient(url.c_str(),cfg.ifx.db.c_str());
         influx.setConnectionParamsV1(url.c_str(), cfg.ifx.db.c_str());
-        if (cfg.devmode) Serial.printf("-->[IFDB] config: %s@%s:%i\n", cfg.ifx.db.c_str(), cfg.ifx.ip.c_str(), cfg.ifx.pt);
+        if (cfg.devmode) Serial.printf("-->[IFDB] InfluxDB config  \t: %s:%i\n", cfg.ifx.ip.c_str(), cfg.ifx.pt);
         influxDbAddTags();
-        Serial.printf("-->[IFDB] connecting to %s..", cfg.ifx.ip.c_str());
+        Serial.printf("-->[IFDB] %s\t: ", cfg.ifx.ip.c_str());
         int influx_retry = 0;
         while (influx_retry++ < IFX_RETRY_CONNECTION && !influx.validateConnection()) {
-            Serial.print(".");
             delay(100);
         }
         if (influx_retry >= IFX_RETRY_CONNECTION && !influx.validateConnection()) {
-            Serial.println("\tconnection failed!");
+            Serial.println("connection failed!");
             Serial.println("[E][IFDB] connection error!");
             return;
         }
         ifx_ready = true;
-        Serial.println("\tconnected!");
+        Serial.println("connected!");
         delay(10);
     }
 }

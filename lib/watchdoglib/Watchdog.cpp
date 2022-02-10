@@ -19,11 +19,13 @@ void Watchdog::loop() {
 
 void IRAM_ATTR resetModule() {
     Serial.println("-->[WDOG] Watchdog reached, rebooting..");
+    digitalWrite(MAIN_HW_EN_PIN, LOW);
     esp_wifi_disconnect();
     delay(200);
     esp_wifi_stop();
     delay(200);
     esp_wifi_deinit();
+    digitalWrite(MAIN_HW_EN_PIN, HIGH);
     delay(200);
     ESP.restart();
 }
@@ -34,7 +36,7 @@ void Watchdog::init() {
     timerAlarmWrite(timer, WATCHDOG_TIME * 1000000, false);  // set time in us
     timerAlarmEnable(timer);                                 // enable interrupt
 
-    Serial.print("-->[WDOG] watchdog config to check each ");
+    Serial.print("-->[WDOG] watchdog check each\t: ");
     Serial.print(WATCHDOG_TIME);
     Serial.println(" seconds.");
 #ifdef FORCE_WATCHDOG
@@ -50,6 +52,10 @@ void Watchdog::pause() {
 
 void Watchdog::resume() {
     timerAlarmEnable(timer);  // enable interrupt
+}
+
+void Watchdog::execute() {
+    resetModule();
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_WATCHDOGHANDLER)

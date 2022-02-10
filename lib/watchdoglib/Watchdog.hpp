@@ -27,6 +27,8 @@ class Watchdog
 
    void resume();
 
+   void execute();
+
    void loop();
 
   private:

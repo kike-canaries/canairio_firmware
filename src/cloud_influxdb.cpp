@@ -1,6 +1,7 @@
 #include <cloud_influxdb.hpp>
 #include <wifi.hpp>
 #include <Batterylib.hpp>
+#include <bluetooth.hpp>
 
 /******************************************************************************
 *   I N F L U X D B   M E T H O D S

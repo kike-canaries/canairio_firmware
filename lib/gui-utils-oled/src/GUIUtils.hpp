@@ -2,7 +2,8 @@
 #define GUIUtils_hpp
 
 #include <U8g2lib.h>
-#include "hal.hpp"
+//#include "hal.hpp"
+#include <Batterylib.hpp>
 
 enum AQI_COLOR { AQI_NONE, AQI_PM, AQI_CO2 };
 

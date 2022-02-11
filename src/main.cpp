@@ -225,7 +225,7 @@ void setup() {
     delay(400);
     Serial.println("\n== CanAirIO Setup ==\n");
     
-    //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable Brownout Detector 
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable Brownout Detector 
 
     // set cpu speed low to save battery
     setCpuFrequencyMhz(80);

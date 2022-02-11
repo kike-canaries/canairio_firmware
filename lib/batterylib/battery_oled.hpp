@@ -7,6 +7,8 @@
 #define BATTERY_MAX_V 4.1
 #define BATTCHARG_MIN_V 4.65
 #define BATTCHARG_MAX_V 4.8
+#define ADC_PIN 34
+#define ADC_EN 14
 
 class Battery_OLED : public Battery {
   public:

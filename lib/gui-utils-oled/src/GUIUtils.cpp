@@ -371,9 +371,11 @@ void GUIUtils::displayMainValues() {
     if (_batteryCharge == 0) {
         u8g2.print("   ");
     } else {
+        u8g2.print(" Bat:");
         _batteryCharge = abs(_batteryCharge);
         sprintf(output, "%02d", _batteryCharge);
         u8g2.print(_batteryCharge);
+        u8g2.print("%");
     }
     isNewData = false;
 

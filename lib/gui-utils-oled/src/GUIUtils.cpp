@@ -2,6 +2,8 @@
 
 #include "GUIIcons.h"
 
+#//include <battery.hpp>
+
 /******************************************************************************
 *   D I S P L A Y  M E T H O D S
 ******************************************************************************/
@@ -366,7 +368,17 @@ void GUIUtils::displayMainValues() {
         sprintf(output, "%02d", _rssi);
         u8g2.print(_rssi);
     }
+    if (_batteryCharge == 0) {
+        u8g2.print("   ");
+    } else {
+        _batteryCharge = abs(_batteryCharge);
+        sprintf(output, "%02d", _batteryCharge);
+        u8g2.print(_batteryCharge);
+    }
     isNewData = false;
+
+
+
 }
 
 // TODO: separate this function, format/display
@@ -402,7 +414,12 @@ void GUIUtils::setInfoData(String info) {
 }
 
 void GUIUtils::setBatteryStatus(float volts, int charge, bool isCharging) {
-    // TODO:    
+    // TODO: 
+     suspendTaskGUI();
+    _batteryVolts = volts;
+    _batteryCharge = charge;
+    _isCharging = isCharging;
+    resumeTaskGUI();
 }
 
 void GUIUtils::displayGUIStatusFlags() {

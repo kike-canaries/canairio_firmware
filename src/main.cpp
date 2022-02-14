@@ -227,6 +227,12 @@ void setup() {
     
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable Brownout Detector 
 
+    if ( battery.getVoltage() < 3.3)
+    {
+        Serial.println("-->[Bat] Goto DeepSleep (curv to low)");
+        powerDeepSleepTimer(DEEP_SLEEP_TIME);
+    }
+
     // set cpu speed low to save battery
     setCpuFrequencyMhz(80);
     Serial.print("CPU Speed: ");

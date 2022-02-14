@@ -26,3 +26,12 @@ extern Battery_OLED battery;
 
 #endif
 
+void setupBattADC();
+void setupBattery();
+float battGetVoltage();
+uint8_t battCalcPercentage(float volts);
+void battUpdateChargeStatus();
+bool battIsCharging();
+void adcPowerOff();
+
+uint8_t _calcPercentage(float volts, float max, float min);

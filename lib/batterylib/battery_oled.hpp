@@ -4,9 +4,9 @@
 #include <battery.hpp>
 
 #define BATTERY_MIN_V 3.4
-#define BATTERY_MAX_V 4.1
-#define BATTCHARG_MIN_V 4.65
-#define BATTCHARG_MAX_V 4.8
+#define BATTERY_MAX_V 4.04
+#define BATTCHARG_MIN_V 3.69
+#define BATTCHARG_MAX_V 4.198
 #define ADC_PIN 34
 #define ADC_EN 14
 

@@ -3,7 +3,6 @@
 
 #include <U8g2lib.h>
 //#include "hal.hpp"
-#include <Batterylib.hpp>
 
 enum AQI_COLOR { AQI_NONE, AQI_PM, AQI_CO2 };
 
@@ -130,6 +129,12 @@ class GUIUtils {
     bool _bleOn;
 
     bool _blePair;
+
+    float _batteryVolts;
+
+    int _batteryCharge;
+
+    bool _isCharging;
 
     bool isNewData;
 

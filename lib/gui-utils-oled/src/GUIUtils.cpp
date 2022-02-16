@@ -498,17 +498,6 @@ void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
 
 }
 
-uint8_t GUIUtils::getBatteryLevel(){
-    //float volts = battGetVoltage();
-    //float volts = getVoltage();
-    //return battCalcPercentage(volts); 
-}
-
-float GUIUtils::getBatteryVoltage(){
-    // return battGetVoltage();
-     //return getVoltage();
-}
-
 void GUIUtils::loop(){
     static uint_least64_t guiTimeStamp = 0;
     if (millis() - guiTimeStamp > 500) {

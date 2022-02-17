@@ -235,6 +235,8 @@ void setup() {
     logMemory("CONF");
     battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
     battery.init(cfg.devmode);
+    battery.update();
+    powerInit();
 
     // init graphic user interface
     gui.setBrightness(cfg.getBrightness());

@@ -418,7 +418,6 @@ void GUIUtils::setInfoData(String info) {
 }
 
 void GUIUtils::setBatteryStatus(float volts, int charge, bool isCharging) {
-    // TODO: 
      suspendTaskGUI();
     _batteryVolts = volts;
     _batteryCharge = charge;
@@ -519,17 +518,6 @@ void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
 
 }
 
-uint8_t GUIUtils::getBatteryLevel(){
-    //float volts = battGetVoltage();
-    //float volts = getVoltage();
-    //return battCalcPercentage(volts); 
-}
-
-float GUIUtils::getBatteryVoltage(){
-    // return battGetVoltage();
-     //return getVoltage();
-}
-
 void GUIUtils::loop(){
     static uint_least64_t guiTimeStamp = 0;
     if (millis() - guiTimeStamp > 500) {
@@ -538,8 +526,6 @@ void GUIUtils::loop(){
         gui.displayMainValues();
         gui.displayGUIStatusFlags();
         gui.pageEnd();
-        getBatteryVoltage();
-        getBatteryLevel();
     }
 }
 

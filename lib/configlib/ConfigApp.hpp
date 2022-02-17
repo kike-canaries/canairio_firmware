@@ -83,6 +83,8 @@ class ConfigApp {
     bool debugEnable(bool enable);
     
     bool paxEnable(bool enable);
+    
+    bool solarEnable(bool enable);
 
     bool saveHassIP(String ip);
 
@@ -128,7 +130,7 @@ class ConfigApp {
 
     bool saveAltitudeOffset(float offset);
 
-    bool saveSeaLevelPressure(float hpa);
+    bool saveSeaLevel(float hpa);
 
     void setRemoteConfigCallbacks(RemoteConfigCallbacks* pCallbacks);
 
@@ -145,6 +147,8 @@ class ConfigApp {
     bool ifxdb_enable;
     /// PaxCounter on/off
     bool pax_enable = true;
+    /// PaxCounter on/off
+    bool solarmode = true;
     ///WiFi state
     bool wifi_connected;
 
@@ -182,6 +186,7 @@ class RemoteConfigCallbacks {
 public:
     virtual ~RemoteConfigCallbacks () {};
     virtual void onCO2Calibration();
+    virtual void onSolarEnable(bool enable);
     virtual void onAltitudeOffset(float altitude);
     virtual void onSeaLevelPressure(float hpa);
 };

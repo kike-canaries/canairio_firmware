@@ -602,6 +602,10 @@ void TFTUtils::setBatteryStatus(float volts, int charge, bool isCharging) {
     resumeTaskGUI();
 }
 
+void TFTUtils::setPowerSave() {
+    // TODO: compatibility with OLED code
+}
+
 void TFTUtils::displayGUIStatusFlags() {
     static uint_fast64_t sensor_status_ts = 0;   // timestamp for GUI refresh
     if ((millis() - sensor_status_ts > 1000)) { 

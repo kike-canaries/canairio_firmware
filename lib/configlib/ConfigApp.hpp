@@ -46,6 +46,10 @@ class ConfigApp {
 
     bool i2conly;
 
+    bool pax_enable = true;
+
+    bool solarmode = false;
+
     float toffset = 0.0;
     
     float altoffset = 0.0;
@@ -144,11 +148,7 @@ class ConfigApp {
     ///device wifi on/off
     bool wifi_enable;
     ///InfluxDB cloud publication on/off
-    bool ifxdb_enable;
-    /// PaxCounter on/off
-    bool pax_enable = true;
-    /// PaxCounter on/off
-    bool solarmode = true;
+    bool ifxdb_enable; 
     ///WiFi state
     bool wifi_connected;
 

@@ -20,6 +20,10 @@ class Battery_TFT : public Battery {
     int getCharge();
     void printValues();
     void update();
+  private:
+    int vref = 1100;
+    float curv = 0;
+    void setupBattADC();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTHANDLER)

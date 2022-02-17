@@ -7,14 +7,13 @@
  */
 
 #include <Arduino.h>
-
 #include <Watchdog.hpp>
 #include <ConfigApp.hpp>
 #include <GUILib.hpp>
 #include <Sensors.hpp>
 #include <bluetooth.hpp>
+#include <power.hpp>
 #include <wifi.hpp>
-#include <Batterylib.hpp>
 
 UNIT selectUnit = UNIT::NUNIT;
 UNIT nextUnit = UNIT::NUNIT;
@@ -128,6 +127,9 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
             Serial.println("NONE");
         }
     };
+    void onPowerOff(){
+        powerDeepSleepButton();
+    };
 };
 
 class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
@@ -145,6 +147,11 @@ class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
         Serial.println("-->[MAIN] onRemoteConfig new Sea Level Pressure");
         sensors.setSeaLevelPressure(hpa);
     }
+
+    void onSolarEnable(bool enable) {
+        Serial.println("-->[MAIN] onRemoteConfig Solar Mode");
+        sensors.solarmode = enable;
+    };
 };
 
 class MyBatteryUpdateCallbacks : public BatteryUpdateCallbacks {
@@ -228,6 +235,8 @@ void setup() {
     logMemory("CONF");
     battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
     battery.init(cfg.devmode);
+    battery.update();
+    powerInit();
 
     // init graphic user interface
     gui.setBrightness(cfg.getBrightness());

@@ -90,7 +90,6 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
                 }
                 if(sensors.toffset != cfg.toffset) sensors.setTempOffset(cfg.toffset);
                 if(sensors.devmode != cfg.devmode) sensors.setDebugMode(cfg.devmode);
-                if(sensors.sealevel != cfg.sealevel) sensors.setSeaLevelPressure(cfg.sealevel);
             }
             else{
                 Serial.println("[E][BTLE][CONFIG] saving error!");

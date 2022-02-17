@@ -1,6 +1,7 @@
 #include <cloud_influxdb.hpp>
 #include <wifi.hpp>
 #include <Batterylib.hpp>
+#include <bluetooth.hpp>
 
 /******************************************************************************
 *   I N F L U X D B   M E T H O D S
@@ -61,6 +62,16 @@ bool influxDbWrite() {
     return true;
 }
 
+void suspendDevice() {
+    if (!bleIsConnected()) {
+        Serial.println(F("-->[IFDB] == shutdown =="));
+        Serial.flush();
+        powerDeepSleepTimer(DEEP_SLEEP_TIME);
+    } else {
+        if(cfg.devmode) Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));
+    }
+}
+
 void influxDbLoop() {
     static uint_fast64_t timeStamp = 0;
     if (millis() - timeStamp > cfg.stime * 2 * 1000) {
@@ -69,6 +80,7 @@ void influxDbLoop() {
             if (influxDbWrite()){
                 if(cfg.devmode) Serial.printf ("-->[IFDB] CanAirIO cloud write\t: payload size: %d\n", sizeof(sensor));
                 gui.displayDataOnIcon();
+                if (cfg.solarmode) suspendDevice();
             }
             else
                 Serial.printf("[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);

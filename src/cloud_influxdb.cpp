@@ -80,7 +80,7 @@ void influxDbLoop() {
             if (influxDbWrite()){
                 if(cfg.devmode) Serial.printf ("-->[IFDB] CanAirIO cloud write\t: payload size: %d\n", sizeof(sensor));
                 gui.displayDataOnIcon();
-                if (cfg.solarEnable) suspendDevice;
+                if (cfg.solarmode) suspendDevice();
             }
             else
                 Serial.printf("[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);

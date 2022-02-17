@@ -2,6 +2,8 @@
 
 #include "GUIIcons.h"
 
+#//include <battery.hpp>
+
 /******************************************************************************
 *   D I S P L A Y  M E T H O D S
 ******************************************************************************/
@@ -50,6 +52,9 @@ void GUIUtils::showWelcome() {
     u8g2.sendBuffer();
 }
 
+void GUIUtils::setPowerSave() {
+    u8g2.setPowerSave(1);
+}
 void GUIUtils::showMain() {
     u8g2.clearBuffer();
     u8g2.sendBuffer();
@@ -348,7 +353,8 @@ void GUIUtils::displayMainValues() {
 #endif
     u8g2.setFont(u8g2_font_6x12_tf);
 #ifndef TTGO_TQ
-    u8g2.setCursor(20, 39);
+    //u8g2.setCursor(20, 39);
+    u8g2.setCursor(2, 39);
 #else
 #ifdef EMOTICONS
     u8g2.setCursor(40, 23);  // valor RSSI
@@ -363,7 +369,20 @@ void GUIUtils::displayMainValues() {
         sprintf(output, "%02d", _rssi);
         u8g2.print(_rssi);
     }
+    if (_batteryCharge == 0) {
+        u8g2.print(" ");
+    } else {
+        u8g2.setFont(u8g2_font_6x12_tf);
+        u8g2.print(" ");
+        _batteryCharge = abs(_batteryCharge);
+        sprintf(output, "%02d", _batteryCharge);
+        u8g2.print(_batteryCharge);
+        u8g2.print("%");
+    }
     isNewData = false;
+
+
+
 }
 
 // TODO: separate this function, format/display
@@ -399,7 +418,11 @@ void GUIUtils::setInfoData(String info) {
 }
 
 void GUIUtils::setBatteryStatus(float volts, int charge, bool isCharging) {
-    // TODO:    
+     suspendTaskGUI();
+    _batteryVolts = volts;
+    _batteryCharge = charge;
+    _isCharging = isCharging;
+    resumeTaskGUI();
 }
 
 void GUIUtils::displayGUIStatusFlags() {
@@ -493,14 +516,6 @@ void GUIUtils::resumeTaskGUI(){
 
 void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
 
-}
-
-uint8_t GUIUtils::getBatteryLevel(){
-    return 0;
-}
-
-float GUIUtils::getBatteryVoltage(){
-    return 0.0;
 }
 
 void GUIUtils::loop(){

@@ -390,8 +390,8 @@ bool ConfigApp::save(const char *json) {
         if (act.equals("i2c")) return saveI2COnly(doc["i2conly"].as<bool>());
         if (act.equals("pst")) return paxEnable(doc["penb"].as<bool>());
         if (act.equals("sse")) return solarEnable(doc["sse"].as<bool>());
-        if (act.equals("rbt")) reboot();
         if (act.equals("cls")) clear();
+        if (act.equals("rbt")) reboot();
         if (act.equals("clb")) performCO2Calibration();
         return true;
     } else {

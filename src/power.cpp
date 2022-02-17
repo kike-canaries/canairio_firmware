@@ -1,4 +1,5 @@
 #include <power.hpp>
+#include <GUILib.hpp>
 
 void prepairShutdown() {
 #ifdef TTGO_TDISPLAY
@@ -8,11 +9,9 @@ void prepairShutdown() {
     rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
 	rtc_gpio_set_level(GPIO_NUM_14, 1);
     delay(500); 
- 
 #else
    gui.setPowerSave(); 
 #endif
-
 }
 
 void completeShutdown(){

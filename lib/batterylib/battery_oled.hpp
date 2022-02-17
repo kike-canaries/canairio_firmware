@@ -2,6 +2,7 @@
 #define battery_oled_hpp
 
 #include <battery.hpp>
+#include <esp_adc_cal.h>
 
 #define BATTERY_MIN_V 3.4
 #define BATTERY_MAX_V 4.04
@@ -18,6 +19,10 @@ class Battery_OLED : public Battery {
     int getCharge();
     void printValues();
     void update();
+  private:
+    int vref = 1086;
+    float curv = 0;
+    void setupBattADC();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_OLEDBATTERY)
@@ -26,12 +31,3 @@ extern Battery_OLED battery;
 
 #endif
 
-void setupBattADC();
-void setupBattery();
-float battGetVoltage();
-uint8_t battCalcPercentage(float volts);
-void battUpdateChargeStatus();
-bool battIsCharging();
-void adcPowerOff();
-
-uint8_t _calcPercentage(float volts, float max, float min);

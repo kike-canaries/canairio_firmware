@@ -103,6 +103,8 @@ class TFTUtils {
 
     void setBatteryStatus(float volts, int charge, bool isCharging);
 
+    void setPowerSave();
+
     void suspendTaskGUI();
 
     void resumeTaskGUI();

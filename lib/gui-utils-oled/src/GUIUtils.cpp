@@ -418,7 +418,6 @@ void GUIUtils::setInfoData(String info) {
 }
 
 void GUIUtils::setBatteryStatus(float volts, int charge, bool isCharging) {
-    // TODO: 
      suspendTaskGUI();
     _batteryVolts = volts;
     _batteryCharge = charge;
@@ -527,8 +526,6 @@ void GUIUtils::loop(){
         gui.displayMainValues();
         gui.displayGUIStatusFlags();
         gui.pageEnd();
-        getBatteryVoltage();
-        getBatteryLevel();
     }
 }
 

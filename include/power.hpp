@@ -10,3 +10,4 @@
 void powerDeepSleepButton();
 void powerDeepSleepTimer(int);
 void powerLightSleepTimer(int);
+void powerInit();

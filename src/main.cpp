@@ -148,6 +148,11 @@ class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
         Serial.println("-->[MAIN] onRemoteConfig new Sea Level Pressure");
         sensors.setSeaLevelPressure(hpa);
     }
+
+    void onSolarEnable(bool enable) {
+        Serial.println("-->[MAIN] onRemoteConfig Solar Mode");
+        sensors.solarmode = enable;
+    };
 };
 
 class MyBatteryUpdateCallbacks : public BatteryUpdateCallbacks {

@@ -68,7 +68,7 @@ void suspendDevice() {
         Serial.flush();
         powerDeepSleepTimer(DEEP_SLEEP_TIME);
     } else {
-        Serial.println(F("-->[IFDB] BLE client connected, skip shutdown"));
+        if(cfg.devmode) Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));
     }
 }
 
@@ -80,7 +80,7 @@ void influxDbLoop() {
             if (influxDbWrite()){
                 if(cfg.devmode) Serial.printf ("-->[IFDB] CanAirIO cloud write\t: payload size: %d\n", sizeof(sensor));
                 gui.displayDataOnIcon();
-                suspendDevice();
+                if (cfg.solarmode) suspendDevice();
             }
             else
                 Serial.printf("[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);

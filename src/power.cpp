@@ -1,4 +1,5 @@
-#include <power.h>
+#include <power.hpp>
+#include <GUILib.hpp>
 
 void prepairShutdown() {
 #ifdef TTGO_TDISPLAY
@@ -8,11 +9,9 @@ void prepairShutdown() {
     rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
 	rtc_gpio_set_level(GPIO_NUM_14, 1);
     delay(500); 
- 
 #else
    gui.setPowerSave(); 
 #endif
-
 }
 
 void completeShutdown(){
@@ -48,4 +47,17 @@ void powerDeepSleepTimer(int seconds) {
 void powerLightSleepTimer(int seconds) {
     esp_sleep_enable_timer_wakeup(seconds * 1000000);
     esp_light_sleep_start();
+}
+
+void powerInit() {
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable Brownout Detector
+    if (battery.getVoltage() < 3.3) {
+        Serial.println("-->[POWR] Goto DeepSleep (curv to low)");
+        powerDeepSleepTimer(DEEP_SLEEP_TIME);
+    }
+    // set cpu speed low to save battery
+    setCpuFrequencyMhz(80);
+    Serial.print("-->[POWR] CPU Speed: ");
+    Serial.print(getCpuFrequencyMhz());
+    Serial.println(" MHz");
 }

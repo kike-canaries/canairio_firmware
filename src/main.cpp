@@ -236,7 +236,10 @@ void setup() {
     battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
     battery.init(cfg.devmode);
     battery.update();
-    // powerInit();
+     if (battery.getVoltage() > 2.2) {
+        Serial.println("-->[POWR] Battery ADC actived");
+        powerInit();
+    }
 
     // init graphic user interface
     gui.setBrightness(cfg.getBrightness());

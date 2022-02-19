@@ -64,9 +64,16 @@ bool influxDbWrite() {
 
 void suspendDevice() {
     if (!bleIsConnected()) {
-        Serial.println(F("-->[IFDB] == shutdown =="));
-        Serial.flush();
-        powerDeepSleepTimer(cfg.deepSleep);
+        if (cfg.solarmode) {
+            Serial.println(F("-->[IFDB] == shutdown =="));
+            Serial.flush();
+            powerDeepSleepTimer(cfg.deepSleep);
+        }
+        else if (cfg.deepSleep > 0) {
+            Serial.println(F("-->[IFDB] == light sleep =="));
+            Serial.flush();
+            powerLightSleepTimer(cfg.deepSleep);
+        }
     } else {
         if(cfg.devmode) Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));
     }
@@ -80,7 +87,7 @@ void influxDbLoop() {
             if (influxDbWrite()){
                 if(cfg.devmode) Serial.printf ("-->[IFDB] CanAirIO cloud write\t: payload size: %d\n", sizeof(sensor));
                 gui.displayDataOnIcon();
-                if (cfg.solarmode) suspendDevice();
+                suspendDevice();
             }
             else
                 Serial.printf("[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);

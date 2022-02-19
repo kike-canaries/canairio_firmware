@@ -312,5 +312,7 @@ void loop() {
                      // update GUI flags:
     gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
     gui.loop();
-    battery.loop();
+
+    battery.loop();  // refresh battery level and voltage
+    powerLoop();     // check power status and manage power saving
 }

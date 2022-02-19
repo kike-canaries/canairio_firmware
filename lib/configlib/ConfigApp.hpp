@@ -50,6 +50,8 @@ class ConfigApp {
 
     bool solarmode = false;
 
+    uint32_t deepSleep = 0;
+
     float toffset = 0.0;
     
     float altoffset = 0.0;
@@ -89,6 +91,8 @@ class ConfigApp {
     bool paxEnable(bool enable);
     
     bool solarEnable(bool enable);
+
+    bool saveDeepSleep(uint32_t seconds);
 
     bool saveHassIP(String ip);
 
@@ -186,7 +190,6 @@ class RemoteConfigCallbacks {
 public:
     virtual ~RemoteConfigCallbacks () {};
     virtual void onCO2Calibration();
-    virtual void onSolarEnable(bool enable);
     virtual void onAltitudeOffset(float altitude);
     virtual void onSeaLevelPressure(float hpa);
 };

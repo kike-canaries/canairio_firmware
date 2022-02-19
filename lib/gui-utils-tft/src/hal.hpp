@@ -1,5 +1,4 @@
 // TTGO_TDISPLAY HAL DEFINTIONS
-
 #ifdef TTGO_TDISPLAY
 
 #define I2C_SDA_PIN 21
@@ -20,4 +19,16 @@
 
 #endif
 
+#ifdef M5STICKCPLUS
+
+#define BUTTON_R 37
+#define BUTTON_L 39
+
+#endif
+
+#ifndef M5STICKCPLUS
+  #ifndef TTGO_TDISPLAY
+  // put here for other boards like OLED
+  #endif
+#endif
 

@@ -39,6 +39,7 @@ void ConfigApp::reload() {
     pax_enable = preferences.getBool("paxEnable", true);
     i2conly = preferences.getBool("i2conly", false);
     solarmode = preferences.getBool("solarEnable", false);
+    deepSleep = preferences.getUInt("deepSleep", 0);
     hassip = preferences.getString("hassip", "");
     hasspt = preferences.getInt("hasspt", 1883);
     hassusr = preferences.getString("hassusr", "");
@@ -63,7 +64,8 @@ String ConfigApp::getCurrentConfig() {
     doc["denb"] = preferences.getBool("debugEnable", false); // debug mode enable
     doc["penb"] = preferences.getBool("paxEnable", true);    // PaxCounter enable
     doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
-    doc["solar"] = preferences.getBool("solarEnable", false);// Enable solar station
+    doc["sse"] = preferences.getBool("solarEnable", false);  // Enable solar station
+    doc["deepSleep"] = preferences.getUInt("deepSleep", 0);  // deep sleep time in seconds
     doc["toffset"] = preferences.getFloat("toffset", 0.0);   // temperature offset
     doc["altoffset"] = preferences.getFloat("altoffset",0.0);// altitude offset
     doc["sealevel"] = preferences.getFloat("sealevel",1013.25);// altitude offset
@@ -304,6 +306,13 @@ bool ConfigApp::solarEnable(bool enable) {
     return true;
 }
 
+bool ConfigApp::saveDeepSleep(uint32_t seconds){
+    saveInt("deepSleep", seconds);
+    deepSleep = seconds;
+    Serial.printf("-->[CONF] deep sleep time to\t: %d\n", seconds);
+    return true;
+}
+
 bool ConfigApp::saveI2COnly(bool enable) {
     saveBool("i2conly", enable);
     i2conly = enable;
@@ -381,6 +390,7 @@ bool ConfigApp::save(const char *json) {
     if (doc.containsKey("hasspt")) return saveHassPort(doc["hasspt"] | 1883);
     if (doc.containsKey("hassusr")) return saveHassUser(doc["hassusr"] | "");
     if (doc.containsKey("hasspsw")) return saveHassPassword(doc["hasspsw"] | "");
+    if (doc.containsKey("deepSleep")) return saveDeepSleep(doc["deepSleep"] | 0);
     
     // some actions with chopid validation (for security reasons)
     if (cmd == ((uint16_t)(chipid >> 32)) && act.length() > 0) {

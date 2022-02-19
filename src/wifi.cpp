@@ -1,4 +1,5 @@
 #include <wifi.hpp>
+#include <bluetooth.hpp>
 
 /******************************************************************************
 *   W I F I   M E T H O D S
@@ -65,21 +66,21 @@ void wifiCloudsInit() {
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
-    Serial.print("-->[WIFI] connecting to ");
+    Serial.print("-->[WIFI] connecting to network\t: ");
     Serial.print(ssid);
     int wifi_retry = 0;
     WiFi.begin(ssid, pass);
     while (!WiFi.isConnected() && wifi_retry++ <= WIFI_RETRY_CONNECTION) {
         Serial.print(".");
-        delay(400);  // increment this delay on possible reconnect issues
+        delay(500);  // increment this delay on possible reconnect issues
     }
     delay(500);
     if (WiFi.isConnected()) {
         cfg.isNewWifi = false;  // flag for config via BLE
         Serial.println(" done.");
-        Serial.print("-->[WIFI] IP: ");
+        Serial.print("-->[WIFI] device network IP\t: ");
         Serial.println(WiFi.localIP());
-        Serial.println("-->[WIFI] publish interval: "+String(cfg.stime * 2)+" sec.");
+        Serial.println("-->[WIFI] cloud publish interval\t: "+String(cfg.stime * 2)+" sec.");
         wd.pause();
         otaInit();
         ota.checkRemoteOTA();  
@@ -129,15 +130,27 @@ int getWifiRSSI() {
     else return 0;
 }
 
-String getDeviceInfo () {
+String getDeviceInfo() {
     String info = getHostId() + "\n";
     info = info + String(FLAVOR) + "\n";
-    info = info + "Rev" + String(REVISION) +" v" + String(VERSION) + "\n";
-    info = info + "MS: "+sensors.getMainDeviceSelected() + "\n";
+    info = info + "Rev" + String(REVISION) + " v" + String(VERSION) + "\n";
     info = info + "" + cfg.getStationName() + "\n";
     info = info + "IP: " + WiFi.localIP().toString() + "\n";
     info = info + "OTA: " + String(TARGET) + " channel\n";
-    info = info + "Hass: "  + String(hassIsConnected() ? "connected" : "disconnected") + "\n";
-    info = info + "Anaire: "+ String(anaireIsConnected() ? "connected" : "disconnected") + "\n";
+    info = info + "Hass: " + String(hassIsConnected() ? "connected" : "disconnected") + "\n";
+    info = info + "Anaire: " + String(anaireIsConnected() ? "connected" : "disconnected") + "\n";
+    if (cfg.devmode) Serial.println("-->[WIFI] AP RSSI signal \t: " + String(getWifiRSSI()) + " dBm");
     return info;
 }
+
+uint32_t heap_size = 0;
+
+void logMemory(const char *msg) {
+    if (!cfg.devmode) return;
+    if (heap_size == 0) heap_size = ESP.getFreeHeap();
+    heap_size = heap_size - ESP.getFreeHeap();
+    Serial.printf("-->[HEAP] %s bytes used\t: %04db/%03dKb\n", msg, heap_size, ESP.getFreeHeap()/1024);
+    heap_size = ESP.getFreeHeap();
+}
+
+

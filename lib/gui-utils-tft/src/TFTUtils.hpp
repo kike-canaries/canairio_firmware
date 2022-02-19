@@ -2,10 +2,13 @@
 #define TFTUtils_hpp
 
 #include <SPI.h>
+#ifdef M5STICKCPLUS
+#include <M5StickCPlus.h>
+#else
 #include <TFT_eSPI.h>
+#endif
 #include "hal.hpp"
-#include "battery.hpp"
-#include "Orbitron_Medium_20.h"
+#include <Orbitron_Medium_20.h>
 #include "icons.h"
 
 // Main windows
@@ -26,6 +29,20 @@
 #define blue 0x5D9B
 #define ligthgreen 0xF59F
 
+enum AQI_COLOR { AQI_NONE, AQI_PM, AQI_CO2 };
+
+typedef struct GUIData {
+    uint8_t mainUnitId;
+    uint8_t onSelectionUnit;
+    uint16_t mainValue;
+    uint16_t minorValue;
+    String unitName;
+    String unitSymbol;
+    float humi;
+    float temp;
+    int rssi;
+    AQI_COLOR color;
+} gdata;
 
 class GUIUserPreferencesCallbacks; 
 class TFTUtils {
@@ -50,7 +67,7 @@ class TFTUtils {
     
     void welcomeRepeatMessage(String msg);
 
-    void setSensorData(int mainValue, float humi, float temp, int rssi, int deviceType);
+    void setSensorData(GUIData data);
 
     void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 
@@ -84,15 +101,15 @@ class TFTUtils {
 
     void setTrackTime(int h, int m, int s);
 
+    void setBatteryStatus(float volts, int charge, bool isCharging);
+
+    void setPowerSave();
+
     void suspendTaskGUI();
 
     void resumeTaskGUI();
 
     String getFirmwareVersionCode ();
-
-    uint8_t getBatteryLevel();
-
-    float getBatteryVoltage();
 
     void loop();
 
@@ -104,12 +121,16 @@ class TFTUtils {
 
     const int pwmLedChannelTFT = 0;
 
+#ifdef M5STICKCPLUS
+    int backlight[5] = {7, 8, 9, 10, 11};
+#else
     int backlight[5] = {10, 30, 60, 120, 220};
+#endif
 
     byte b = 1;  // backlight selector
 
     int brightness = 30;
-
+    
     int sampleTime[5] = {5, 15, 30, 60, 120};
 
     byte st = 0;  // sample time selector init
@@ -132,7 +153,9 @@ class TFTUtils {
 
     int dh = 0;  // display height
 
-    uint32_t pkts[MAX_X];  // here the packets per second will be saved
+    uint32_t bufGraphMain[MAX_X];  // Main graph buffer
+    
+    uint32_t bufGraphMinor[MAX_X];  // Secondary graph buffer
 
     int state = 0;
 
@@ -150,13 +173,23 @@ class TFTUtils {
 
     int _rssi = 0;
 
-    int _deviceType = 0;
+    int _colorType = 0;
 
     float _humi = 0.0;
 
     float _temp = 0.0;
 
     int _mainValue = 0;
+
+    int _mainUnitId = 0;
+    
+    int _minorValue = 0;
+
+    String _unit_symbol = "";
+
+    String _unit_name = "";
+
+    int _unit = 0;
 
     int _average = 0;
 
@@ -184,15 +217,23 @@ class TFTUtils {
 
     bool _blePair;
 
+    bool toggle1s;
+
     String _info = "";
 
     bool isNewData;
+
+    float _batteryVolts;
+
+    int _batteryCharge;
+
+    bool _isCharging;
 
     TaskHandle_t xHandle;
 
     bool taskGUIrunning;
 
-    int aqicolors[6] = {TFT_GREEN, TFT_YELLOW, TFT_ORANGE, TFT_RED, TFT_PURPLE, TFT_BROWN};
+    int aqicolors[6] = {TFT_GREEN, TFT_YELLOW, TFT_ORANGE, TFT_RED, TFT_PURPLE, TFT_MAROON};
 
     String aqilabels[6] = {"GOOD", "MODERATE", "UNH SEN G", "UNHEALTY", "VERY UNH", "VERY UNH"};
 
@@ -208,7 +249,9 @@ class TFTUtils {
     
     void displaySensorAverage(int average);
 
-    void displayMainUnit(String unit);
+    void displayMainHeader();
+    
+    void displayMainUnit(String uName, String uSymbol);
 
     void displayCenterBig(String msg);
     
@@ -222,11 +265,17 @@ class TFTUtils {
 
     void displayBigLabel(int cursor, String msg);
 
-    double getMultiplicator();
+    void resetBuffer(uint32_t * buf);
+
+    double getMultiplicator(uint32_t * buf);
 
     uint32_t getAQIColor(uint32_t value);
     
     void drawBarGraph();
+
+    void drawDualLineGraph();
+    
+    void drawLineGraph();
 
     void drawBluetoothIcon();
 
@@ -295,6 +344,9 @@ public:
     virtual void onColorsInverted(bool enable);
     virtual void onSampleTime(int time);
     virtual void onCalibrationReady();
+    virtual void onPowerOff();
+    virtual void onUnitSelectionToggle();
+    virtual void onUnitSelectionConfirm();
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTHANDLER)

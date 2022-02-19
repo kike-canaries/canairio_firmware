@@ -46,9 +46,15 @@ class ConfigApp {
 
     bool i2conly;
 
+    bool pax_enable = true;
+
+    bool solarmode = false;
+
     float toffset = 0.0;
     
     float altoffset = 0.0;
+
+    float sealevel = 1013.25;
 
     void init(const char app_name[]);
 
@@ -61,6 +67,10 @@ class ConfigApp {
     bool saveSampleTime(int time);
 
     bool saveSensorType(int type);
+
+    bool saveUnitSelected(int unit);
+
+    int getUnitSelected();
 
     bool saveSSID(String ssid);
 
@@ -77,6 +87,8 @@ class ConfigApp {
     bool debugEnable(bool enable);
     
     bool paxEnable(bool enable);
+    
+    bool solarEnable(bool enable);
 
     bool saveHassIP(String ip);
 
@@ -122,6 +134,8 @@ class ConfigApp {
 
     bool saveAltitudeOffset(float offset);
 
+    bool saveSeaLevel(float hpa);
+
     void setRemoteConfigCallbacks(RemoteConfigCallbacks* pCallbacks);
 
    private:
@@ -134,9 +148,7 @@ class ConfigApp {
     ///device wifi on/off
     bool wifi_enable;
     ///InfluxDB cloud publication on/off
-    bool ifxdb_enable;
-    /// PaxCounter on/off
-    bool pax_enable = true;
+    bool ifxdb_enable; 
     ///WiFi state
     bool wifi_connected;
 
@@ -174,7 +186,9 @@ class RemoteConfigCallbacks {
 public:
     virtual ~RemoteConfigCallbacks () {};
     virtual void onCO2Calibration();
+    virtual void onSolarEnable(bool enable);
     virtual void onAltitudeOffset(float altitude);
+    virtual void onSeaLevelPressure(float hpa);
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_CFGHANDLER)

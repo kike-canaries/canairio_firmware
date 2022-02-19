@@ -39,7 +39,7 @@ void ConfigApp::reload() {
     pax_enable = preferences.getBool("paxEnable", true);
     i2conly = preferences.getBool("i2conly", false);
     solarmode = preferences.getBool("solarEnable", false);
-    deepSleep = preferences.getUInt("deepSleep", 0);
+    deepSleep = preferences.getInt("deepSleep", 0);
     hassip = preferences.getString("hassip", "");
     hasspt = preferences.getInt("hasspt", 1883);
     hassusr = preferences.getString("hassusr", "");
@@ -65,7 +65,7 @@ String ConfigApp::getCurrentConfig() {
     doc["penb"] = preferences.getBool("paxEnable", true);    // PaxCounter enable
     doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
     doc["sse"] = preferences.getBool("solarEnable", false);  // Enable solar station
-    doc["deepSleep"] = preferences.getUInt("deepSleep", 0);  // deep sleep time in seconds
+    doc["deepSleep"] = preferences.getInt("deepSleep", 0);  // deep sleep time in seconds
     doc["toffset"] = preferences.getFloat("toffset", 0.0);   // temperature offset
     doc["altoffset"] = preferences.getFloat("altoffset",0.0);// altitude offset
     doc["sealevel"] = preferences.getFloat("sealevel",1013.25);// altitude offset
@@ -306,7 +306,7 @@ bool ConfigApp::solarEnable(bool enable) {
     return true;
 }
 
-bool ConfigApp::saveDeepSleep(uint32_t seconds){
+bool ConfigApp::saveDeepSleep(int seconds){
     saveInt("deepSleep", seconds);
     deepSleep = seconds;
     Serial.printf("-->[CONF] deep sleep time to\t: %d\n", seconds);

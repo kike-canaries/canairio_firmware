@@ -92,7 +92,7 @@ class ConfigApp {
     
     bool solarEnable(bool enable);
 
-    bool saveDeepSleep(uint32_t seconds);
+    bool saveDeepSleep(int seconds);
 
     bool saveHassIP(String ip);
 

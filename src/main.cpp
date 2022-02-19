@@ -7,77 +7,128 @@
  */
 
 #include <Arduino.h>
-
 #include <Watchdog.hpp>
 #include <ConfigApp.hpp>
 #include <GUILib.hpp>
 #include <Sensors.hpp>
 #include <bluetooth.hpp>
+#include <power.hpp>
 #include <wifi.hpp>
 
-uint16_t getMainValue() {
-    uint16_t mainValue = 0;
-    if (sensors.getMainDeviceSelected().isEmpty()) {
-        mainValue = getPaxCount();
-    } else if (sensors.getMainSensorTypeSelected() == Sensors::SENSOR_PM) {
-        mainValue = sensors.getPM25();
-    } else if (sensors.getMainSensorTypeSelected() == Sensors::SENSOR_CO2) {
-        mainValue = sensors.getCO2();
-    }
-    return mainValue;
+UNIT selectUnit = UNIT::NUNIT;
+UNIT nextUnit = UNIT::NUNIT;
+GUIData data;
+
+AQI_COLOR selectAQIColor() {
+    if (selectUnit == UNIT::PM25 || selectUnit == UNIT::PM10 || selectUnit == UNIT::PM1)
+        return AQI_COLOR::AQI_PM;
+    else if (selectUnit == UNIT::CO2)
+        return AQI_COLOR::AQI_CO2;
+    else
+        return AQI_COLOR::AQI_NONE;
 }
 
-void refreshGUIData() {
-    gui.displaySensorLiveIcon();  // all sensors read are ok
-    
+void loadGUIData() {
     float humi = sensors.getHumidity();
     if (humi == 0.0) humi = sensors.getCO2humi();
 
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();  // TODO: temp could be 0.0
 
-    gui.setSensorData(
-        getMainValue(),
-        humi,
-        temp,
-        getWifiRSSI(),
-        sensors.getMainSensorTypeSelected());
+    data.temp = temp;
+    data.humi = humi;
+    data.rssi = getWifiRSSI();
 
+    UNIT user_unit = (UNIT) cfg.getUnitSelected();
+    if (selectUnit != user_unit && sensors.isUnitRegistered(user_unit)) {
+        selectUnit = user_unit;
+    }
+
+    // Main unit selection
+    if (sensors.getUnitsRegisteredCount() == 0 && cfg.isPaxEnable()) {
+        data.mainValue = getPaxCount();
+        data.unitName = "PAX";
+        data.unitSymbol = "PAX";
+        data.mainUnitId = UNIT::NUNIT;
+        data.color = AQI_COLOR::AQI_PM;
+    } else if (selectUnit != UNIT::NUNIT) {
+        data.mainValue = sensors.getUnitValue(selectUnit);
+        data.unitName = sensors.getUnitName(selectUnit);
+        data.unitSymbol = sensors.getUnitSymbol(selectUnit);
+        data.mainUnitId = selectUnit;
+        data.color = selectAQIColor();
+    }
+    // Minor unit selection
+    if (nextUnit != UNIT::NUNIT) {
+        data.minorValue = sensors.getUnitValue(nextUnit);
+        data.unitName = sensors.getUnitName(nextUnit);
+        data.unitSymbol = sensors.getUnitSymbol(nextUnit);
+        data.color = selectAQIColor();
+    }
+    data.onSelectionUnit = nextUnit;
+}
+
+void refreshGUIData() {
+    loadGUIData();
+    gui.displaySensorLiveIcon();  // all sensors read are ok 
+    gui.setSensorData(data);
     gui.setInfoData(getDeviceInfo());
+    logMemory ("LOOP");
 }
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
-    void onWifiMode(bool enable){
-        Serial.println("-->[MAIN] Wifi enable changed :\t"+String(enable));
+    void onWifiMode(bool enable) {
+        Serial.println("-->[MAIN] Wifi enable changed :\t" + String(enable));
         cfg.wifiEnable(enable);
         cfg.reload();
         if (!enable) wifiStop();
     };
-    void onPaxMode(bool enable){
-        Serial.println("-->[MAIN] onPax enable changed:\t"+String(enable));
+    void onPaxMode(bool enable) {
+        Serial.println("-->[MAIN] onPax enable changed:\t" + String(enable));
         cfg.paxEnable(enable);
         cfg.reload();
     };
-    void onBrightness(int value){
-        Serial.println("-->[MAIN] onBrightness changed:\t"+String(value));
+    void onBrightness(int value) {
+        Serial.println("-->[MAIN] onBrightness changed:\t" + String(value));
         cfg.saveBrightness(value);
     };
-    void onColorsInverted(bool enable){
-        Serial.println("-->[MAIN] onColors changed    :\t"+String(enable));
+    void onColorsInverted(bool enable) {
+        Serial.println("-->[MAIN] onColors changed    :\t" + String(enable));
         cfg.colorsInvertedEnable(enable);
     };
-    void onSampleTime(int time){
-        if(sensors.sample_time != time) {
+    void onSampleTime(int time) {
+        if (sensors.sample_time != time) {
             Serial.println("-->[MAIN] onSampleTime changed:\t" + String(time));
             cfg.saveSampleTime(time);
             cfg.reload();
             bleServerConfigRefresh();
             sensors.setSampleTime(cfg.stime);
-        } 
+        }
     };
-    void onCalibrationReady(){
+    void onCalibrationReady() {
         Serial.println("-->[MAIN] onCalibrationReady");
-        sensors.setCO2RecalibrationFactor(400);   // ==> Calibration factor on outdoors
+        sensors.setCO2RecalibrationFactor(400);  // ==> Calibration factor on outdoors
+    };
+    void onUnitSelectionToggle() {
+        Serial.println("-->[MAIN] onUnitSelectionToggle");
+        nextUnit = sensors.getNextUnit();
+        if (nextUnit == UNIT::NUNIT ) {
+            nextUnit = sensors.getNextUnit();
+        }
+        refreshGUIData();
+    };
+    void onUnitSelectionConfirm() {
+        Serial.print("-->[MAIN] Unit selected  \t: ");
+        if (nextUnit!=UNIT::NUNIT && nextUnit!=selectUnit) {
+            Serial.println(sensors.getUnitName(nextUnit));
+            selectUnit = nextUnit;
+            cfg.saveUnitSelected(selectUnit);
+        } else {
+            Serial.println("NONE");
+        }
+    };
+    void onPowerOff(){
+        powerDeepSleepButton();
     };
 };
 
@@ -90,6 +141,17 @@ class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
     void onAltitudeOffset (float altitude) {
         Serial.println("-->[MAIN] onRemoteConfig new Altitude Offset");
         sensors.setCO2AltitudeOffset(altitude);
+    };
+
+    void onSeaLevelPressure (float hpa) {
+        Serial.println("-->[MAIN] onRemoteConfig new Sea Level Pressure");
+        sensors.setSeaLevelPressure(hpa);
+    }
+};
+
+class MyBatteryUpdateCallbacks : public BatteryUpdateCallbacks {
+    void onBatteryUpdate(float voltage, int charge, bool charging) {
+        gui.setBatteryStatus(voltage, charge, charging);
     };
 };
 
@@ -105,12 +167,21 @@ void onSensorDataError(const char * msg){
     refreshGUIData();
 }
 
+void printSensorsDetected() {
+    Serial.println("-->[INFO] Sensors detected\t: " + String(sensors.getSensorsRegisteredCount()));
+    gui.welcomeAddMessage("Sensors: " + String(sensors.getSensorsRegisteredCount()));
+    int i = 0;
+    while (sensors.getSensorsRegistered()[i++] != 0) {
+        gui.welcomeAddMessage(sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i - 1]));
+    }
+}
+
 void startingSensors() {
-    Serial.println("-->[INFO] config UART sensor\t: "+String(cfg.stype));
-    gui.welcomeAddMessage("Detected sensor:");
+    Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)cfg.stype));
+    gui.welcomeAddMessage("Enabling sensors:");
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
-    sensors.setSampleTime(1);                       // sample time only for first use
+    sensors.setSampleTime(cfg.stime);               // config sensors sample time (first use)
     sensors.setTempOffset(cfg.toffset);             // temperature compensation
     sensors.setCO2AltitudeOffset(cfg.altoffset);    // CO2 altitude compensation
     sensors.detectI2COnly(cfg.i2conly);             // force only i2c sensors
@@ -119,16 +190,29 @@ void startingSensors() {
                                                     // The UART sensor is choosed on Android app.
                                                     // For more information about the supported sensors,
                                                     // please see the canairio_sensorlib documentation.
+    if(sensors.getSensorsRegisteredCount()==0){
+        Serial.println("-->[INFO] Main sensors detected\t: 0");
+        gui.welcomeAddMessage("Not sensors detected");
+        gui.welcomeAddMessage("Default: PAX");
+    }
+    else{
+        printSensorsDetected();    
+    }
 
-    if(!sensors.getMainDeviceSelected().isEmpty()) {
-        Serial.print("-->[INFO] Main sensor selected\t: ");
-        Serial.println(sensors.getMainDeviceSelected());
-        gui.welcomeAddMessage(sensors.getMainDeviceSelected());
+    Serial.printf("-->[INFO] registered units\t:\n");
+    delay(1000);
+    sensors.readAllSensors();                       // only to force to register all sensors
+    gui.welcomeAddMessage("Units count: "+String(sensors.getUnitsRegisteredCount()));
+    selectUnit = (UNIT) cfg.getUnitSelected();
+    Serial.printf("-->[INFO] restored saved unit \t: %s\n",sensors.getUnitName(selectUnit).c_str());
+    if (!sensors.isUnitRegistered(selectUnit)){
+        sensors.resetNextUnit();
+        selectUnit = sensors.getNextUnit();  // auto selection of sensor unit to show
+        Serial.printf("-->[INFO] not found! set to\t: %s\n",sensors.getUnitName(selectUnit).c_str());
     }
-    else {
-        Serial.println("-->[INFO] Detection sensors FAIL!");
-        gui.welcomeAddMessage("Detection !FAILED!");
-    }
+    gui.welcomeAddMessage("Show unit: "+sensors.getUnitName(selectUnit));
+    sensors.printUnitsRegistered(true);
+    delay(300);
 }
 
 /******************************************************************************
@@ -139,9 +223,15 @@ void setup() {
     Serial.begin(115200);
     delay(400);
     Serial.println("\n== CanAirIO Setup ==\n");
+    logMemory("INIT");
 
     // init app preferences and load settings
     cfg.init("canairio");
+    logMemory("CONF");
+    battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
+    battery.init(cfg.devmode);
+    battery.update();
+    powerInit();
 
     // init graphic user interface
     gui.setBrightness(cfg.getBrightness());
@@ -151,37 +241,42 @@ void setup() {
     gui.displayInit();
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();
+    logMemory("GLIB");
 
     // device wifi mac addres and firmware version
-    Serial.println("-->[INFO] ESP32MAC:\t" + cfg.deviceId);
-    Serial.println("-->[INFO] Hostname:\t" + getHostId());
-    Serial.println("-->[INFO] Revision:\t" + gui.getFirmwareVersionCode());
-    Serial.println("-->[INFO] Firmware:\t" + String(VERSION));
-    Serial.println("-->[INFO] Flavor  :\t" + String(FLAVOR));
-    Serial.println("-->[INFO] Target  :\t" + String(TARGET));
+    Serial.println("-->[INFO] ESP32MAC\t\t: " + cfg.deviceId);
+    Serial.println("-->[INFO] Hostname\t\t: " + getHostId());
+    Serial.println("-->[INFO] Revision\t\t: " + gui.getFirmwareVersionCode());
+    Serial.println("-->[INFO] Firmware\t\t: " + String(VERSION));
+    Serial.println("-->[INFO] Flavor  \t\t: " + String(FLAVOR));
+    Serial.println("-->[INFO] Target  \t\t: " + String(TARGET));
 
     // init all sensors
     pinMode(MAIN_HW_EN_PIN, OUTPUT);
     digitalWrite(MAIN_HW_EN_PIN, HIGH);  // not mandatory, but useful power saving
-    Serial.println("-->[INFO] Detecting sensors:");
+    Serial.println("-->[INFO] == Detecting Sensors ==");
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
     Serial.println("-->[INFO] enable sensor GPIO\t: " + String(MAIN_HW_EN_PIN));
+    logMemory("GPIO");
     startingSensors();
+    logMemory("SLIB");
     // Setting callback for remote commands via Bluetooth config
     cfg.setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());
-
     // init watchdog timer for reboot in any loop blocker
     wd.init();
-    
-        // WiFi and cloud communication
+    // WiFi and cloud communication
+    logMemory("WDOG");
+    gui.welcomeAddMessage("Connecting..");
     wifiInit();
-    Serial.printf("-->[INFO] InfluxDb\t: %s\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
-    Serial.printf("-->[INFO] WiFi    \t: %s\n", cfg.isWifiEnable() ? "enabled" : "disabled");
+    logMemory("WIFI");
+    Serial.printf("-->[INFO] InfluxDb cloud \t: %s\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
+    Serial.printf("-->[INFO] WiFi current config\t: %s\n", cfg.isWifiEnable() ? "enabled" : "disabled");
     gui.welcomeAddMessage("WiFi: "+String(cfg.isIfxEnable() ? "On" : "Off"));
     gui.welcomeAddMessage("Influx: "+String(cfg.isIfxEnable() ? "On" : "Off"));
  
     // Bluetooth low energy init (GATT server for device config)
     bleServerInit();
+    logMemory("BLE ");
     gui.welcomeAddMessage("Bluetooth ready.");
 
     // wifi status 
@@ -193,14 +288,18 @@ void setup() {
     // sensor sample time and publish time (2x)
     gui.welcomeAddMessage("stime: "+String(cfg.stime)+ " sec.");
     gui.welcomeAddMessage(cfg.getDeviceId());   // mac address
-    gui.welcomeAddMessage("Watchdog:"+String(WATCHDOG_TIME));
+    gui.welcomeAddMessage("Watchdog:"+String(WATCHDOG_TIME)); 
     gui.welcomeAddMessage("==SETUP READY==");
-    delay(500);
+    delay(2000);
     gui.showMain();
     refreshGUIData();
-    delay(600);
-    sensors.loop();
-    sensors.setSampleTime(cfg.stime);        // config sensors sample time (first use)
+    logMemory("GLIB");
+    Serial.printf("-->[INFO] sensors units detected\t: %d\n", sensors.getUnitsRegisteredCount());
+    Serial.printf("-->[INFO] unit selected to show \t: %s\n",sensors.getUnitName(selectUnit).c_str());
+    Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\n", sizeof(sensors));
+    Serial.printf("-->[HEAP] sizeof config \t: %04ub\n", sizeof(cfg));
+    Serial.printf("-->[HEAP] sizeof GUI    \t: %04ub\n", sizeof(gui));
+    Serial.println("\n==>[INFO] Setup End ===\n");
 }
 
 void loop() {
@@ -213,4 +312,7 @@ void loop() {
                      // update GUI flags:
     gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
     gui.loop();
+
+    battery.loop();  // refresh battery level and voltage
+    powerLoop();     // check power status and manage power saving
 }

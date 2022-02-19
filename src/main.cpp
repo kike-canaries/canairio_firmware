@@ -147,11 +147,6 @@ class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
         Serial.println("-->[MAIN] onRemoteConfig new Sea Level Pressure");
         sensors.setSeaLevelPressure(hpa);
     }
-
-    void onSolarEnable(bool enable) {
-        Serial.println("-->[MAIN] onRemoteConfig Solar Mode");
-        sensors.solarmode = enable;
-    };
 };
 
 class MyBatteryUpdateCallbacks : public BatteryUpdateCallbacks {
@@ -236,7 +231,7 @@ void setup() {
     battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
     battery.init(cfg.devmode);
     battery.update();
-    // powerInit();
+    powerInit();
 
     // init graphic user interface
     gui.setBrightness(cfg.getBrightness());
@@ -317,5 +312,7 @@ void loop() {
                      // update GUI flags:
     gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
     gui.loop();
-    battery.loop();
+
+    battery.loop();  // refresh battery level and voltage
+    powerLoop();     // check power status and manage power saving
 }

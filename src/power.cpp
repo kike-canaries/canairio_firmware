@@ -10,6 +10,7 @@ void prepairShutdown() {
     rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
 	rtc_gpio_set_level(GPIO_NUM_14, 1);
     delay(500);
+    Serial.println("-->[POWR] debug check ok");
     #endif
     gui.setPowerSave(); 
 }
@@ -73,9 +74,15 @@ void powerInit() {
     Serial.println(" MHz");
 }
 
-// void powerLoop(){
-//     if (battery.getVoltage() < 3.3) {
-//         Serial.println("-->[POWR] Goto DeepSleep (curv to low)");
-//         powerDeepSleepTimer(cfg.deepSleep);
-//     }
-// }
+void powerLoop(){
+    static uint32_t powerTimeStamp = 0;         // timestamp for check low power
+    if ((millis() - powerTimeStamp > 5*1000)) {  // check it every 5 seconds
+        powerTimeStamp = millis();
+        float vbat = battery.getVoltage();
+        if (vbat > 0.0 && vbat < BATTERY_MIN_V) {
+            Serial.println("-->[POWR] Goto DeepSleep (curv to low)");
+            if(cfg.solarmode)powerDeepSleepTimer(cfg.deepSleep);
+            else completeShutdown();
+        }
+    }
+}

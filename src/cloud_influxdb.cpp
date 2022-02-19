@@ -64,15 +64,15 @@ bool influxDbWrite() {
 
 void suspendDevice() {
     if (!bleIsConnected()) {
-        if (cfg.solarmode) {
+        if (cfg.solarmode && cfg.deepSleep > 0) {
             Serial.println(F("-->[IFDB] == shutdown =="));
             Serial.flush();
             powerDeepSleepTimer(cfg.deepSleep);
         }
         else if (cfg.deepSleep > 0) {
-            Serial.println(F("-->[IFDB] == light sleep =="));
-            Serial.flush();
-            powerLightSleepTimer(cfg.deepSleep);
+            // Serial.println(F("-->[IFDB] == light sleep =="));
+            // Serial.flush();
+            // powerLightSleepTimer(cfg.deepSleep);
         }
     } else {
         if(cfg.devmode) Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));

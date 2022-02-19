@@ -66,7 +66,7 @@ void suspendDevice() {
     if (!bleIsConnected()) {
         Serial.println(F("-->[IFDB] == shutdown =="));
         Serial.flush();
-        powerDeepSleepTimer(DEEP_SLEEP_TIME);
+        powerDeepSleepTimer(cfg.deepSleep);
     } else {
         if(cfg.devmode) Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));
     }

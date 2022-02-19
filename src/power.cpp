@@ -1,5 +1,6 @@
 #include <power.hpp>
 #include <GUILib.hpp>
+#include <ConfigApp.hpp>
 
 void prepairShutdown() {
     #ifndef M5STICKCPLUS
@@ -64,14 +65,17 @@ void powerLightSleepTimer(int seconds) {
 }
 
 void powerInit() {
-    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable Brownout Detector
-    if (battery.getVoltage() < 3.3) {
-        Serial.println("-->[POWR] Goto DeepSleep (curv to low)");
-        powerDeepSleepTimer(DEEP_SLEEP_TIME);
-    }
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable Brownout Detector 
     // set cpu speed low to save battery
     setCpuFrequencyMhz(80);
     Serial.print("-->[POWR] CPU Speed: ");
     Serial.print(getCpuFrequencyMhz());
     Serial.println(" MHz");
 }
+
+// void powerLoop(){
+//     if (battery.getVoltage() < 3.3) {
+//         Serial.println("-->[POWR] Goto DeepSleep (curv to low)");
+//         powerDeepSleepTimer(cfg.deepSleep);
+//     }
+// }

@@ -22,7 +22,6 @@ class Battery_TFT : public Battery {
     void update();
   private:
     int vref = 1100;
-    float curv = 0;
     void setupBattADC();
 };
 

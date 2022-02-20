@@ -1,7 +1,5 @@
 #include <battery_tft.hpp>
 
-float curv = 0;
-
 void Battery_TFT::setupBattADC() {
     esp_adc_cal_characteristics_t adc_chars;
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize((adc_unit_t)ADC_UNIT_1, (adc_atten_t)ADC1_CHANNEL_6, (adc_bits_width_t)ADC_WIDTH_BIT_12, 1100, &adc_chars);

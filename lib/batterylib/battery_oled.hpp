@@ -21,7 +21,6 @@ class Battery_OLED : public Battery {
     void update();
   private:
     int vref = 1086;
-    float curv = 0;
     void setupBattADC();
 };
 

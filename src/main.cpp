@@ -250,10 +250,6 @@ void setup() {
     Serial.println("-->[INFO] Firmware\t\t: " + String(VERSION));
     Serial.println("-->[INFO] Flavor  \t\t: " + String(FLAVOR));
     Serial.println("-->[INFO] Target  \t\t: " + String(TARGET));
-
-    // init all sensors
-    pinMode(MAIN_HW_EN_PIN, OUTPUT);
-    digitalWrite(MAIN_HW_EN_PIN, HIGH);  // not mandatory, but useful power saving
     Serial.println("-->[INFO] == Detecting Sensors ==");
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
     Serial.println("-->[INFO] enable sensor GPIO\t: " + String(MAIN_HW_EN_PIN));

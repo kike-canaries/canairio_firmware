@@ -41,6 +41,8 @@ void powerDeepSleepButton(){
 }
 
 void powerDeepSleepTimer(int seconds) {
+    Serial.println(F("-->[POWR] == shutdown =="));
+    Serial.flush();
     prepairShutdown();
     #ifdef M5STICKCPLUS
     M5.Axp.DeepSleep(seconds*1000000);
@@ -64,13 +66,25 @@ void powerLightSleepTimer(int seconds) {
     #endif
 }
 
+void powerEnableSensors() {
+    digitalWrite(MAIN_HW_EN_PIN, HIGH);  // step-up on
+}
+
+void powerDisableSensors() {
+    if(cfg.devmode) Serial.println("-->[POWR] disable sensors");
+    digitalWrite(MAIN_HW_EN_PIN, LOW);  // step-up off
+}
+
 void powerInit() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable Brownout Detector 
     // set cpu speed low to save battery
     setCpuFrequencyMhz(80);
     Serial.print("-->[POWR] CPU Speed: ");
     Serial.print(getCpuFrequencyMhz());
-    Serial.println(" MHz");
+    Serial.println(" MHz"); 
+    // init all sensors (step-up to 5V with enable pin)
+    pinMode(MAIN_HW_EN_PIN, OUTPUT);
+    powerEnableSensors();
 }
 
 void powerLoop(){

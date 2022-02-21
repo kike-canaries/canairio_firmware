@@ -10,6 +10,7 @@
 InfluxDBClient influx;
 Point sensor ("fixed_stations_01");
 bool ifx_ready;
+int ifx_error_count;
 
 bool influxDbIsConfigured() {
     if(cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.geo.length()==0) {
@@ -64,15 +65,11 @@ bool influxDbWrite() {
 
 void suspendDevice() {
     if (!bleIsConnected()) {
-        if (cfg.solarmode && cfg.deepSleep > 0) {
-            Serial.println(F("-->[IFDB] == shutdown =="));
-            Serial.flush();
+        if (cfg.solarmode && cfg.deepSleep > 0) { 
             powerDeepSleepTimer(cfg.deepSleep);
         }
         else if (cfg.deepSleep > 0) {
-            // Serial.println(F("-->[IFDB] == light sleep =="));
-            // Serial.flush();
-            // powerLightSleepTimer(cfg.deepSleep);
+            powerDisableSensors();
         }
     } else {
         if(cfg.devmode) Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));
@@ -81,7 +78,15 @@ void suspendDevice() {
 
 void influxDbLoop() {
     static uint_fast64_t timeStamp = 0;
-    if (millis() - timeStamp > cfg.stime * 2 * 1000) {
+    uint32_t ptime = cfg.stime;
+    if (ptime<IFX_MIN_PUBLISH_INTERVAL) ptime = IFX_MIN_PUBLISH_INTERVAL;
+    if(!cfg.solarmode && cfg.deepSleep > 0) {
+        ptime = cfg.deepSleep;
+        if (millis() - timeStamp > ((ptime - WAIT_FOR_SENSOR) * 1000)) {
+            powerEnableSensors();
+        }
+    }
+    if (millis() - timeStamp > ptime * 1000) {
         timeStamp = millis();
         if (ifx_ready && sensors.isDataReady() && WiFi.isConnected() && cfg.isIfxEnable()) {
             if (influxDbWrite()){
@@ -89,8 +94,12 @@ void influxDbLoop() {
                 gui.displayDataOnIcon();
                 suspendDevice();
             }
-            else
+            else {
                 Serial.printf("[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
+                if (cfg.solarmode && ifx_error_count++ > IFX_ERROR_COUNT_MAX) {
+                    powerDeepSleepTimer(cfg.deepSleep);
+                }
+            }
         }
     }  
 }

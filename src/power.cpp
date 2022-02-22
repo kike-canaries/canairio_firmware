@@ -67,11 +67,12 @@ void powerLightSleepTimer(int seconds) {
 }
 
 void powerEnableSensors() {
+    if(cfg.devmode) Serial.println("-->[POWR] == enable sensors ==");
     digitalWrite(MAIN_HW_EN_PIN, HIGH);  // step-up on
 }
 
 void powerDisableSensors() {
-    if(cfg.devmode) Serial.println("-->[POWR] disable sensors");
+    if(cfg.devmode) Serial.println("-->[POWR] == disable sensors ==");
     digitalWrite(MAIN_HW_EN_PIN, LOW);  // step-up off
 }
 

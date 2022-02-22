@@ -8,5 +8,7 @@
 void powerDeepSleepButton();
 void powerDeepSleepTimer(int);
 void powerLightSleepTimer(int);
+void powerEnableSensors();
+void powerDisableSensors();
 void powerLoop();
 void powerInit();

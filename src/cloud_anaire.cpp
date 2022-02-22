@@ -11,7 +11,10 @@ MQTTClient client(MQTT_BUFFER_SIZE);
 
 void anairePublish() {
     static uint_fast64_t mqttTimeStamp = 0;
-    if (millis() - mqttTimeStamp > cfg.stime * 1000 * 2) {
+    uint32_t ptime = cfg.stime;
+    if (ptime<MIN_PUBLISH_INTERVAL) ptime = MIN_PUBLISH_INTERVAL;
+    if(!cfg.solarmode && cfg.deepSleep > 0) ptime = cfg.deepSleep;
+    if (millis() - mqttTimeStamp > ptime * 1000) {
         mqttTimeStamp = millis();
 
         float humi = sensors.getHumidity();

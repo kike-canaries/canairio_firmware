@@ -88,10 +88,10 @@ void suspendDevice() {
 void influxDbLoop() {
     static uint_fast64_t timeStamp = 0;
     uint32_t ptime = cfg.stime;
-    if (ptime<IFX_MIN_PUBLISH_INTERVAL) ptime = IFX_MIN_PUBLISH_INTERVAL;
+    if (ptime<MIN_PUBLISH_INTERVAL) ptime = MIN_PUBLISH_INTERVAL;
     if(!cfg.solarmode && cfg.deepSleep > 0) {
         ptime = cfg.deepSleep;
-        if (millis() - timeStamp > (ptime - WAIT_FOR_SENSOR) * 1000) {
+        if (millis() - timeStamp > (ptime - WAIT_FOR_PM_SENSOR) * 1000) { // enable sensors before publish
             if (!enable_sensors) {
                 powerEnableSensors();
                 sensors.setSampleTime(cfg.deepSleep);
@@ -99,7 +99,7 @@ void influxDbLoop() {
                 enable_sensors = true;
             }
         }
-        if (millis() - timeStamp > (ptime - WAIT_FOR_SENSOR/2) * 1000) {
+        if (millis() - timeStamp > (ptime - WAIT_FOR_PM_SENSOR/3) * 1000) { // read sensors after stabilization
             sensors.readAllSensors();
             delay(500);
         }

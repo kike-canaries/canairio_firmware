@@ -10,7 +10,10 @@
 InfluxDBClient influx;
 Point sensor ("fixed_stations_01");
 bool ifx_ready;
+bool enable_sensors;
 int ifx_error_count;
+
+
 
 bool influxDbIsConfigured() {
     if(cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.geo.length()==0) {
@@ -70,6 +73,7 @@ void suspendDevice() {
         }
         else if (cfg.deepSleep > 0) {
             powerDisableSensors();
+            enable_sensors = false;
         }
     } else {
         if(cfg.devmode) Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));
@@ -82,8 +86,10 @@ void influxDbLoop() {
     if (ptime<IFX_MIN_PUBLISH_INTERVAL) ptime = IFX_MIN_PUBLISH_INTERVAL;
     if(!cfg.solarmode && cfg.deepSleep > 0) {
         ptime = cfg.deepSleep;
-        if (millis() - timeStamp > ((ptime - WAIT_FOR_SENSOR) * 1000)) {
+        if (!enable_sensors && ((millis() - timeStamp) > ((ptime - WAIT_FOR_SENSOR) * 1000))) {
             powerEnableSensors();
+            sensors.init();
+            enable_sensors = true;
         }
     }
     if (millis() - timeStamp > ptime * 1000) {

@@ -68,15 +68,20 @@ bool influxDbWrite() {
 
 void suspendDevice() {
     if (!bleIsConnected()) {
-        if (cfg.solarmode && cfg.deepSleep > 0) { 
+        if (cfg.solarmode && cfg.deepSleep > 0) { // sleep mode and ECO mode on
             powerDeepSleepTimer(cfg.deepSleep);
         }
-        else if (cfg.deepSleep > 0) {
+        else if (cfg.deepSleep > 0) {  // sleep mode, ECO mode off
             powerDisableSensors();
             enable_sensors = false;
         }
     } else {
-        if(cfg.devmode) Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));
+        if (!enable_sensors && !cfg.solarmode && cfg.deepSleep == 0) { // restore to normal mode
+            powerEnableSensors();
+            enable_sensors = true;
+            sensors.setSampleTime(cfg.stime);
+        }
+        if (cfg.devmode) Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));
     }
 }
 
@@ -86,10 +91,17 @@ void influxDbLoop() {
     if (ptime<IFX_MIN_PUBLISH_INTERVAL) ptime = IFX_MIN_PUBLISH_INTERVAL;
     if(!cfg.solarmode && cfg.deepSleep > 0) {
         ptime = cfg.deepSleep;
-        if (!enable_sensors && ((millis() - timeStamp) > ((ptime - WAIT_FOR_SENSOR) * 1000))) {
-            powerEnableSensors();
-            sensors.init();
-            enable_sensors = true;
+        if (millis() - timeStamp > (ptime - WAIT_FOR_SENSOR) * 1000) {
+            if (!enable_sensors) {
+                powerEnableSensors();
+                sensors.setSampleTime(cfg.deepSleep);
+                sensors.init();
+                enable_sensors = true;
+            }
+        }
+        if (millis() - timeStamp > (ptime - WAIT_FOR_SENSOR/2) * 1000) {
+            sensors.readAllSensors();
+            delay(500);
         }
     }
     if (millis() - timeStamp > ptime * 1000) {

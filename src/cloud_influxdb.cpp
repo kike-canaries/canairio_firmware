@@ -88,7 +88,7 @@ void suspendDevice() {
 void influxDbLoop() {
     static uint_fast64_t timeStamp = 0;
     uint32_t ptime = cfg.stime;
-    if (ptime<MIN_PUBLISH_INTERVAL) ptime = MIN_PUBLISH_INTERVAL;
+    if (ptime<MIN_PUBLISH_INTERVAL) ptime = MIN_PUBLISH_INTERVAL;   // minimum publish interval validation
     if(!cfg.solarmode && cfg.deepSleep > 0) {
         ptime = cfg.deepSleep;
         if (millis() - timeStamp > (ptime - WAIT_FOR_PM_SENSOR) * 1000) { // enable sensors before publish

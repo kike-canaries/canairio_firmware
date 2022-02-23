@@ -13,8 +13,6 @@ bool ifx_ready;
 bool enable_sensors;
 int ifx_error_count;
 
-
-
 bool influxDbIsConfigured() {
     if(cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.geo.length()==0) {
         Serial.println("[W][IFDB] ifxdb is configured but Location (GeoHash) is missing!");
@@ -52,6 +50,7 @@ void influxDbParseFields() {
     sensor.addField("bat",battery.getCharge());
     sensor.addField("vbat",battery.getVoltage());
     sensor.addField("rssi",getWifiRSSI());
+    sensor.addField("heap",ESP32.getFreeHeap());
     sensor.addField("name",cfg.getStationName().c_str());
 }
 
@@ -111,6 +110,7 @@ void influxDbLoop() {
                 if(cfg.devmode) Serial.printf ("-->[IFDB] CanAirIO cloud write\t: payload size: %d\n", sizeof(sensor));
                 gui.displayDataOnIcon();
                 suspendDevice();
+                ifx_error_count = 0;
             }
             else {
                 Serial.printf("[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
@@ -126,7 +126,6 @@ void influxDbInit() {
     if (!ifx_ready && WiFi.isConnected() && cfg.isIfxEnable() && influxDbIsConfigured()) {
         String url = "http://" + cfg.ifx.ip + ":" + String(cfg.ifx.pt);
         influx.setInsecure();
-        // influx = InfluxDBClient(url.c_str(),cfg.ifx.db.c_str());
         influx.setConnectionParamsV1(url.c_str(), cfg.ifx.db.c_str());
         if (cfg.devmode) Serial.printf("-->[IFDB] InfluxDB config  \t: %s:%i\n", cfg.ifx.ip.c_str(), cfg.ifx.pt);
         influxDbAddTags();

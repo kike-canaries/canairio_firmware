@@ -301,9 +301,9 @@ void setup() {
 void loop() {
     sensors.loop();  // read sensor data and showed it
     bleLoop();       // notify data to connected devices
+    otaLoop();       // check for firmware updates
     snifferLoop();   // pax counter calc (only when WiFi is Off)
     wifiLoop();      // check wifi and reconnect it
-    otaLoop();       // check for firmware updates
     wd.loop();       // watchdog for check loop blockers
                      // update GUI flags:
     gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());

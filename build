@@ -161,6 +161,7 @@ else
       build TTGO_TDISPLAY
       build ESP32PICOD4
       build M5STICKCPLUS
+      build M5ATOM
       printOutput
       ;;
 

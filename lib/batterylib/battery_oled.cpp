@@ -47,7 +47,8 @@ void Battery_OLED::update() {
     digitalWrite(ADC_EN, HIGH);
     delay(10);  // suggested by @ygator user in issue #2
     uint16_t v = analogRead(ADC_PIN);
-    curv = ((float)v / 4095.0) * 16;
+    // curv = ((float)v / 4095.0) * 16;
+    curv = ((float)v * 1.1) / (4095);
     digitalWrite(ADC_EN, LOW);  // for possible issue: https://github.com/Xinyuan-LilyGO/TTGO-T-Display/issues/6
     // return curv;
 }

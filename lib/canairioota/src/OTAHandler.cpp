@@ -7,6 +7,7 @@ OTAHandler::OTAHandler(){
 }
 
 void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
+    #ifdef ENABLE_OTA
     _ESP_ID = ESP_ID;
     _ESP_PASS = ESP_PASS;
     _baud = 1500000;
@@ -40,16 +41,15 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
         });
 
     ArduinoOTA.begin();
-    
-    // Remote OTA config
-    // TODO: pass host and target via bluetooth
-    
-    fota.checkURL = "http://influxdb.canair.io:8080/releases/" + String(TARGET) + "/firmware_" + String(FLAVOR) + ".json";
-    
+
     Serial.print("-->[INFO] local OTA updates on\t: ");
     Serial.print(ESP_ID);
     Serial.print(".local passw: ");
     Serial.println(ESP_PASS);
+    #endif
+    // Remote OTA config
+    // TODO: pass host and target via bluetooth
+    fota.checkURL = "http://influxdb.canair.io:8080/releases/" + String(TARGET) + "/firmware_" + String(FLAVOR) + ".json";
 }
 
 void OTAHandler::checkRemoteOTA(bool notify) {
@@ -74,7 +74,9 @@ void OTAHandler::remoteOTAcheckloop() {
 }
 
 void OTAHandler::loop() {
+    #ifdef ENABLE_OTA
     ArduinoOTA.handle();
+    #endif
     remoteOTAcheckloop();
 }
 

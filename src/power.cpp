@@ -53,7 +53,9 @@ void powerDeepSleepTimer(int seconds) {
     #else
     // esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 1);
     #endif
+    #ifndef M5STICKCPLUS
     completeShutdown(); 
+    #endif
 }
 
 void powerLightSleepTimer(int seconds) {
@@ -90,7 +92,7 @@ void powerInit() {
 
 void powerLoop(){
     static uint32_t powerTimeStamp = 0;         // timestamp for check low power
-    if ((millis() - powerTimeStamp > 5*1000)) {  // check it every 5 seconds
+    if ((millis() - powerTimeStamp > 30*1000)) {  // check it every 5 seconds
         powerTimeStamp = millis();
         float vbat = battery.getVoltage();
         if (vbat > 0.0 && vbat < BATTERY_MIN_V) {
@@ -98,5 +100,6 @@ void powerLoop(){
             if(cfg.solarmode)powerDeepSleepTimer(cfg.deepSleep);
             else completeShutdown();
         }
+        if(cfg.devmode) Serial.printf("-->[HEAP] Min: %d Max: %d\t: %d\n", ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), ESP.getFreeHeap());
     }
 }

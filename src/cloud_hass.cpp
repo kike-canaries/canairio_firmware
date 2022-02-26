@@ -118,7 +118,7 @@ void hassPublish() {
     if (!clientHass.connected()) return;
     static uint_fast64_t mqttTimeStamp = 0;
     uint32_t ptime = cfg.stime;
-    if (ptime<MIN_PUBLISH_INTERVAL) ptime = MIN_PUBLISH_INTERVAL;
+    if (ptime<MIN_PUBLISH_INTERVAL) ptime = MIN_PUBLISH_INTERVAL-1; // publish before to the last cloud
     if(!cfg.solarmode && cfg.deepSleep > 0) ptime = cfg.deepSleep;
     if (millis() - mqttTimeStamp > ptime) {
         mqttTimeStamp = millis(); 

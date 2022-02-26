@@ -29,28 +29,25 @@ void Battery_OLED::init(bool debug) {
 }
 
 float Battery_OLED::getVoltage() {
-    // return 0;
     return curv;
 }
 
 bool Battery_OLED::isCharging() {
-    // return false;
     return curv > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V) / 2;
 }
 
 void Battery_OLED::printValues() {
     if (!debug) return;
-    Serial.printf("-->[BATT] Battery voltage  \t: %.3fv vref: %i Charge:%i\n", curv, vref, getCharge());  // Output voltage and current of Bat
+        Serial.printf("-->[BATT] Battery voltage  \t: %.3fv vref: %i Charge:%i\n", curv, vref, getCharge());  // Output voltage and current of Bat
 }
 
 void Battery_OLED::update() {
     digitalWrite(ADC_EN, HIGH);
     delay(10);  // suggested by @ygator user in issue #2
     uint16_t v = analogRead(ADC_PIN);
-    // curv = ((float)v / 4095.0) * 16;
-    curv = ((float)v * 1.1) / (4095);
+    curv = ((float)v / 4095.0) * 15.83;
     digitalWrite(ADC_EN, LOW);  // for possible issue: https://github.com/Xinyuan-LilyGO/TTGO-T-Display/issues/6
-    // return curv;
+    
 }
 
 int Battery_OLED::getCharge() {

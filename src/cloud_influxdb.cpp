@@ -13,8 +13,6 @@ bool ifx_ready;
 bool enable_sensors;
 int ifx_error_count;
 
-
-
 bool influxDbIsConfigured() {
     if(cfg.ifx.db.length() > 0 && cfg.ifx.ip.length() > 0 && cfg.geo.length()==0) {
         Serial.println("[W][IFDB] ifxdb is configured but Location (GeoHash) is missing!");
@@ -52,6 +50,7 @@ void influxDbParseFields() {
     sensor.addField("bat",battery.getCharge());
     sensor.addField("vbat",battery.getVoltage());
     sensor.addField("rssi",getWifiRSSI());
+    sensor.addField("heap",ESP.getFreeHeap());
     sensor.addField("name",cfg.getStationName().c_str());
 }
 
@@ -85,24 +84,30 @@ void suspendDevice() {
     }
 }
 
+void enableSensors() {
+    if (!enable_sensors) {
+        powerEnableSensors();
+        sensors.setSampleTime(cfg.deepSleep);
+        sensors.init();
+        enable_sensors = true;
+        Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\n", sizeof(sensors));
+    }
+}
+
 void influxDbLoop() {
     static uint_fast64_t timeStamp = 0;
     uint32_t ptime = cfg.stime;
     if (ptime<MIN_PUBLISH_INTERVAL) ptime = MIN_PUBLISH_INTERVAL;   // minimum publish interval validation
+    if (cfg.solarmode) ptime = MIN_PUBLISH_INTERVAL;
     if(!cfg.solarmode && cfg.deepSleep > 0) {
         ptime = cfg.deepSleep;
-        if (millis() - timeStamp > (ptime - WAIT_FOR_PM_SENSOR) * 1000) { // enable sensors before publish
-            if (!enable_sensors) {
-                powerEnableSensors();
-                sensors.setSampleTime(cfg.deepSleep);
-                sensors.init();
-                enable_sensors = true;
-            }
-        }
-        if (millis() - timeStamp > (ptime - WAIT_FOR_PM_SENSOR/3) * 1000) { // read sensors after stabilization
-            sensors.readAllSensors();
-            delay(500);
-        }
+        if (millis() - timeStamp > (ptime - WAIT_FOR_PM_SENSOR) * 1000) { 
+            enableSensors(); // enable sensors before publish
+        } 
+    }
+    if ((cfg.solarmode || cfg.deepSleep > 0 ) && millis() - timeStamp > (ptime - 2) * 1000) {  
+        sensors.readAllSensors(); // read sensors after stabilization
+        delay(500);
     }
     if (millis() - timeStamp > ptime * 1000) {
         timeStamp = millis();
@@ -111,6 +116,7 @@ void influxDbLoop() {
                 if(cfg.devmode) Serial.printf ("-->[IFDB] CanAirIO cloud write\t: payload size: %d\n", sizeof(sensor));
                 gui.displayDataOnIcon();
                 suspendDevice();
+                ifx_error_count = 0;
             }
             else {
                 Serial.printf("[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
@@ -126,7 +132,6 @@ void influxDbInit() {
     if (!ifx_ready && WiFi.isConnected() && cfg.isIfxEnable() && influxDbIsConfigured()) {
         String url = "http://" + cfg.ifx.ip + ":" + String(cfg.ifx.pt);
         influx.setInsecure();
-        // influx = InfluxDBClient(url.c_str(),cfg.ifx.db.c_str());
         influx.setConnectionParamsV1(url.c_str(), cfg.ifx.db.c_str());
         if (cfg.devmode) Serial.printf("-->[IFDB] InfluxDB config  \t: %s:%i\n", cfg.ifx.ip.c_str(), cfg.ifx.pt);
         influxDbAddTags();

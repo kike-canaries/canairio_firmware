@@ -1,9 +1,13 @@
 #ifndef OTA_Handler_H
 #define OTA_Handler_H
 
+#ifdef ENABLE_OTA
+#include <ArduinoOTA.h>
+#endif
+
 #include <ESPmDNS.h>
 #include <WiFiUdp.h>
-#include <ArduinoOTA.h>
+
 #include <esp_system.h>
 #include <esp32fota.h>
 #include <esp_task_wdt.h>

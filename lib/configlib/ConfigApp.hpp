@@ -46,6 +46,12 @@ class ConfigApp {
 
     bool i2conly;
 
+    bool pax_enable = true;
+
+    bool solarmode = false;
+
+    uint32_t deepSleep = 0;
+
     float toffset = 0.0;
     
     float altoffset = 0.0;
@@ -83,6 +89,10 @@ class ConfigApp {
     bool debugEnable(bool enable);
     
     bool paxEnable(bool enable);
+    
+    bool solarEnable(bool enable);
+
+    bool saveDeepSleep(int seconds);
 
     bool saveHassIP(String ip);
 
@@ -128,7 +138,7 @@ class ConfigApp {
 
     bool saveAltitudeOffset(float offset);
 
-    bool saveSeaLevelPressure(float hpa);
+    bool saveSeaLevel(float hpa);
 
     void setRemoteConfigCallbacks(RemoteConfigCallbacks* pCallbacks);
 
@@ -142,9 +152,7 @@ class ConfigApp {
     ///device wifi on/off
     bool wifi_enable;
     ///InfluxDB cloud publication on/off
-    bool ifxdb_enable;
-    /// PaxCounter on/off
-    bool pax_enable = true;
+    bool ifxdb_enable; 
     ///WiFi state
     bool wifi_connected;
 

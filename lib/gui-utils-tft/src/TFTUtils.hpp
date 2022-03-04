@@ -103,6 +103,8 @@ class TFTUtils {
 
     void setBatteryStatus(float volts, int charge, bool isCharging);
 
+    void setPowerSave();
+
     void suspendTaskGUI();
 
     void resumeTaskGUI();
@@ -342,6 +344,7 @@ public:
     virtual void onColorsInverted(bool enable);
     virtual void onSampleTime(int time);
     virtual void onCalibrationReady();
+    virtual void onPowerOff();
     virtual void onUnitSelectionToggle();
     virtual void onUnitSelectionConfirm();
 };

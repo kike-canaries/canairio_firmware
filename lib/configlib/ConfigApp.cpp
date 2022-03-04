@@ -38,6 +38,8 @@ void ConfigApp::reload() {
     devmode = preferences.getBool("debugEnable", false);
     pax_enable = preferences.getBool("paxEnable", true);
     i2conly = preferences.getBool("i2conly", false);
+    solarmode = preferences.getBool("solarEnable", false);
+    deepSleep = preferences.getInt("deepSleep", 0);
     hassip = preferences.getString("hassip", "");
     hasspt = preferences.getInt("hasspt", 1883);
     hassusr = preferences.getString("hassusr", "");
@@ -62,8 +64,11 @@ String ConfigApp::getCurrentConfig() {
     doc["denb"] = preferences.getBool("debugEnable", false); // debug mode enable
     doc["penb"] = preferences.getBool("paxEnable", true);    // PaxCounter enable
     doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
+    doc["sse"] = preferences.getBool("solarEnable", false);  // Enable solar station
+    doc["deepSleep"] = preferences.getInt("deepSleep", 0);  // deep sleep time in seconds
     doc["toffset"] = preferences.getFloat("toffset", 0.0);   // temperature offset
     doc["altoffset"] = preferences.getFloat("altoffset",0.0);// altitude offset
+    doc["sealevel"] = preferences.getFloat("sealevel",1013.25);// altitude offset
     doc["hassip"] = preferences.getString("hassip", "");     // Home Assistant MQTT server ip
     doc["hasspt"] = preferences.getInt("hasspt", 1883);      // Home Assistant MQTT server port
     doc["hassusr"] = preferences.getString("hassusr", "");   // Home Assistant MQTT user
@@ -194,8 +199,8 @@ bool ConfigApp::saveAltitudeOffset(float offset) {
     return true;
 }
 
-bool ConfigApp::saveSeaLevelPressure(float hpa) {
-    saveFloat("sealevelp", hpa);
+bool ConfigApp::saveSeaLevel(float hpa) {
+    saveFloat("sealevel", hpa);
     Serial.printf("-->[CONF] sea level pressure\t: %0.2f\n", hpa);
     if(mRemoteConfigCallBacks!=nullptr) this->mRemoteConfigCallBacks->onSeaLevelPressure(hpa);
     return true;
@@ -294,6 +299,20 @@ bool ConfigApp::paxEnable(bool enable) {
     return true;
 }
 
+bool ConfigApp::solarEnable(bool enable) {
+    saveBool("solarEnable", enable);
+    solarmode = enable;
+    Serial.println("-->[CONF] Solar Station mode\t: " + String(enable));
+    return true;
+}
+
+bool ConfigApp::saveDeepSleep(int seconds){
+    saveInt("deepSleep", seconds);
+    deepSleep = seconds;
+    Serial.printf("-->[CONF] deep sleep time to\t: %d\n", seconds);
+    return true;
+}
+
 bool ConfigApp::saveI2COnly(bool enable) {
     saveBool("i2conly", enable);
     i2conly = enable;
@@ -366,10 +385,12 @@ bool ConfigApp::save(const char *json) {
     if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
     if (doc.containsKey("toffset")) return saveTempOffset(doc["toffset"].as<float>());
     if (doc.containsKey("altoffset")) return saveAltitudeOffset(doc["altoffset"].as<float>());
+    if (doc.containsKey("sealevel")) return saveSeaLevel(doc["sealevel"].as<float>());
     if (doc.containsKey("hassip")) return saveHassIP(doc["hassip"] | "");
     if (doc.containsKey("hasspt")) return saveHassPort(doc["hasspt"] | 1883);
     if (doc.containsKey("hassusr")) return saveHassUser(doc["hassusr"] | "");
     if (doc.containsKey("hasspsw")) return saveHassPassword(doc["hasspsw"] | "");
+    if (doc.containsKey("deepSleep")) return saveDeepSleep(doc["deepSleep"] | 0);
     
     // some actions with chopid validation (for security reasons)
     if (cmd == ((uint16_t)(chipid >> 32)) && act.length() > 0) {
@@ -378,8 +399,9 @@ bool ConfigApp::save(const char *json) {
         if (act.equals("dst")) return debugEnable(doc["denb"].as<bool>());
         if (act.equals("i2c")) return saveI2COnly(doc["i2conly"].as<bool>());
         if (act.equals("pst")) return paxEnable(doc["penb"].as<bool>());
-        if (act.equals("rbt")) reboot();
+        if (act.equals("sse")) return solarEnable(doc["sse"].as<bool>());
         if (act.equals("cls")) clear();
+        if (act.equals("rbt")) reboot();
         if (act.equals("clb")) performCO2Calibration();
         return true;
     } else {

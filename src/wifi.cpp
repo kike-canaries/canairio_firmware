@@ -1,4 +1,5 @@
 #include <wifi.hpp>
+#include <bluetooth.hpp>
 
 /******************************************************************************
 *   W I F I   M E T H O D S

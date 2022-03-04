@@ -8,8 +8,6 @@ public:
 
 class Battery {
    public:
-
-    int vref = 1100;
     float curv = 0.0;
     bool debug;
 

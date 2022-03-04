@@ -2,6 +2,8 @@
 
 #include "GUIIcons.h"
 
+#//include <battery.hpp>
+
 /******************************************************************************
 *   D I S P L A Y  M E T H O D S
 ******************************************************************************/
@@ -12,8 +14,12 @@ void GUIUtils::displayInit() {
 #elif HELTEC   // display via i2c for Heltec board
     U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #elif TTGO_TQ  // display via i2c for TTGO_TQ
-    U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, 4, 5);
+    U8G2_SSD1306_128X32_UNIVISION_F_SW_I2C u8g2(U8G2_R0, 4, 5, U8X8_PIN_NONE);
 #elif ESP32DEVKIT
+    U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
+#elif ESP32PICOD4
+    U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
+#elif M5PICOD4
     U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
 #else  // display via i2c for TTGO_T7 (old D1MINI) board
     U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
@@ -50,6 +56,9 @@ void GUIUtils::showWelcome() {
     u8g2.sendBuffer();
 }
 
+void GUIUtils::setPowerSave() {
+    u8g2.setPowerSave(1);
+}
 void GUIUtils::showMain() {
     u8g2.clearBuffer();
     u8g2.sendBuffer();
@@ -348,7 +357,8 @@ void GUIUtils::displayMainValues() {
 #endif
     u8g2.setFont(u8g2_font_6x12_tf);
 #ifndef TTGO_TQ
-    u8g2.setCursor(20, 39);
+    //u8g2.setCursor(20, 39);
+    u8g2.setCursor(2, 39);
 #else
 #ifdef EMOTICONS
     u8g2.setCursor(40, 23);  // valor RSSI
@@ -363,7 +373,20 @@ void GUIUtils::displayMainValues() {
         sprintf(output, "%02d", _rssi);
         u8g2.print(_rssi);
     }
+    if (_batteryCharge == 0) {
+        u8g2.print(" ");
+    } else {
+        u8g2.setFont(u8g2_font_6x12_tf);
+        u8g2.print(" ");
+        _batteryCharge = abs(_batteryCharge);
+        sprintf(output, "%02d", _batteryCharge);
+        u8g2.print(_batteryCharge);
+        u8g2.print("%");
+    }
     isNewData = false;
+
+
+
 }
 
 // TODO: separate this function, format/display
@@ -399,7 +422,11 @@ void GUIUtils::setInfoData(String info) {
 }
 
 void GUIUtils::setBatteryStatus(float volts, int charge, bool isCharging) {
-    // TODO:    
+     suspendTaskGUI();
+    _batteryVolts = volts;
+    _batteryCharge = charge;
+    _isCharging = isCharging;
+    resumeTaskGUI();
 }
 
 void GUIUtils::displayGUIStatusFlags() {
@@ -493,14 +520,6 @@ void GUIUtils::resumeTaskGUI(){
 
 void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
 
-}
-
-uint8_t GUIUtils::getBatteryLevel(){
-    return 0;
-}
-
-float GUIUtils::getBatteryVoltage(){
-    return 0.0;
 }
 
 void GUIUtils::loop(){

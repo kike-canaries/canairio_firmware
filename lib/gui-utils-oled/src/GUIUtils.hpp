@@ -2,7 +2,7 @@
 #define GUIUtils_hpp
 
 #include <U8g2lib.h>
-#include "hal.hpp"
+//#include "hal.hpp"
 
 enum AQI_COLOR { AQI_NONE, AQI_PM, AQI_CO2 };
 
@@ -80,11 +80,9 @@ class GUIUtils {
 
     void resumeTaskGUI();
 
+    void setPowerSave();
+
     String getFirmwareVersionCode ();
-
-    uint8_t getBatteryLevel();
-
-    float getBatteryVoltage();
 
     void loop();
 
@@ -131,6 +129,12 @@ class GUIUtils {
     bool _bleOn;
 
     bool _blePair;
+
+    float _batteryVolts;
+
+    int _batteryCharge;
+
+    bool _isCharging;
 
     bool isNewData;
 

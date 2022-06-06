@@ -1,5 +1,6 @@
 #include <cloud_anaire.hpp>
 #include <wifi.hpp>
+#include <Batterylib.hpp>
 
 /******************************************************************************
 *  A N A I R E   M Q T T   M E T H O D S
@@ -32,13 +33,13 @@ void anairePublish() {
         doc["pm25"] = sensors.getPM25();
         doc["pm10"] = sensors.getPM10();
         doc["geo"] = cfg.geo;
-        doc["battery"] = String(gui.getBatteryLevel());
-        doc["VBat"] = String(gui.getBatteryVoltage());
+        doc["battery"] = String(battery.getCharge());
+        doc["VBat"] = String(battery.getVoltage());
 
         size_t n = serializeJson(doc, buffer);
 
         if (client.publish(ANAIRE_TOPIC, buffer, n)) {
-            if (cfg.devmode) Serial.printf("-->[MQTT] Anaire sensor payload published. (size: %d)\n", n);
+            if (cfg.devmode) Serial.printf("-->[MQTT] Anaire cloud published\t: payload size: %d\n", n);
         } else {
             Serial.printf("[E][MQTT] Anaire publish sensor data error: %d\n",client.lastError());
         }
@@ -51,19 +52,18 @@ void anaireConnect() {
     if (!(cfg.isWifiEnable() && WiFi.isConnected())) return;
 
     if (millis() - mqttDelayedStamp > MQTT_DELAYED_TIME * 1000) {
-        Serial.printf("-->[MQTT] connecting to %s..", ANAIRE_HOST);
+        Serial.printf("-->[MQTT] %s\t: ", ANAIRE_HOST);
         int mqtt_try = 0;
         while (mqtt_try++ < MQTT_RETRY_CONNECTION && !client.connect(cfg.getStationName().c_str())) {
-            Serial.print(".");
             delay(100);
         }
         if (mqtt_try >= MQTT_RETRY_CONNECTION && !client.connected()) {
             mqttDelayedStamp = millis();
-            Serial.println("\tconnection failed!");
+            Serial.println("connection failed!");
             return;
         }
         mqttDelayedStamp = millis();
-        Serial.println("\tconnected!");
+        Serial.println("connected!");
         client.subscribe(ANAIRE_TOPIC);
     }
 }

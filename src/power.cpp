@@ -6,9 +6,9 @@ void prepairShutdown() {
     #ifndef M5STICKCPLUS
     digitalWrite(ADC_EN, LOW);
     delay(10);
-    rtc_gpio_init(GPIO_NUM_14);
-    rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
-	rtc_gpio_set_level(GPIO_NUM_14, 1);
+    //rtc_gpio_init(GPIO_NUM_14);
+    //rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
+    //rtc_gpio_set_level(GPIO_NUM_14, 1);
     delay(500);
     #endif
     gui.setPowerSave(); 

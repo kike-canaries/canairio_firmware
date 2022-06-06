@@ -38,9 +38,9 @@ String getSensorData() {
     doc["hum"] = sensors.getHumidity();
     doc["alt"] = sensors.getAltitude();
     doc["pre"] = sensors.getPressure();
-    doc["bat"] = gui.getBatteryLevel();
+    doc["bat"] = battery.getCharge();
     doc["PAX"] = getPaxCount();
-    doc["dsl"] = sensors.getMainDeviceSelected();
+    doc["dsl"] = sensors.getSensorName((SENSORS) sensors.getUARTDeviceTypeSelected());
     String json;
     serializeJson(doc, json);
     return json;
@@ -150,7 +150,7 @@ void bleServerInit() {
     pService->start();
     // Start advertising
     pServer->getAdvertising()->start();
-    Serial.println("-->[BTLE] GATT server ready. (Waiting for client)");
+    Serial.println("-->[BTLE] Bluetooth GATT server\t: ready for config client!");
 }
 
 void bleLoop() {

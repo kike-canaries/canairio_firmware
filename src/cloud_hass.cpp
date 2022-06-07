@@ -53,6 +53,11 @@ void hassPubSensorPayload() {
     doc["battery"] = String(battery.getCharge());
     doc["voltage"] = String(battery.getVoltage());
 
+#ifdef CAJOE_GEIGER
+    doc["geiger_cpm"] = String(sensors.getGeigerCPM());
+    doc["geiger_usvh"] = String(sensors.getGeigerMicroSievertHour());
+#endif
+
     size_t n = serializeJson(doc, buffer);
  
     if (clientHass.publish(getStateTopic().c_str(), buffer, n)) {
@@ -95,6 +100,11 @@ bool hassRegisterSensors() {
     hassConfigured = publishDiscoveryPayload("gas", "gas", "m³");
     hassConfigured = publishDiscoveryPayload("pressure", "pressure", "hPa");
     hassConfigured = publishDiscoveryPayload("battery", "battery", "%");
+
+#ifdef CAJOE_GEIGER // WARNING! I'm not sure about this fields!
+    hassConfigured = publishDiscoveryPayload("geiger_cpm", "geiger_cpm", "cpm");
+    hassConfigured = publishDiscoveryPayload("geiger_usvh", "geiger_usvh", "uSv/h");
+#endif
 
     if (hassConfigured) Serial.printf("-->[MQTT] Hass device registered\t: %s\n",getHostId().c_str());
     else Serial.printf("[E][MQTT] Hass not configured yet\t: device: %s\n",getHostId().c_str());

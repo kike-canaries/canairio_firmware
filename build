@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SRC_REV=`cat platformio.ini | grep revision | awk '{print $3}'`
-SRC_VER=`cat platformio.ini | grep version | awk '{print $3}'`
+SRC_VER=`cat platformio.ini | grep 'version =' | awk '{print $3}'`
 TARGET=`cat platformio.ini | grep target | awk '{print $3}'`
 DATE=`date +%Y%m%d`
 OUTDIR=".pio/build"
@@ -39,7 +39,7 @@ updateInstallerBinaries () {
   echo ""
   cp $OUTDIR/$DEFAULT/partitions.bin $INSDIR/system/
   cp ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin $INSDIR/system/
-  cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin $INSDIR/system/
+  cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/bin/bootloader_dio_40m.bin $INSDIR/system/
   cp ~/.platformio/packages/tool-esptoolpy/esptool.py $INSDIR/system/
   cp ~/.platformio/packages/framework-arduinoespressif32/tools/espota.py $INSDIR/system/
   chmod 755 $INSDIR/install.sh
@@ -156,13 +156,13 @@ else
       build TTGO_T7
       build WEMOSOLED
       build HELTEC
-      build TTGO_TQ
+      #build TTGO_TQ
       build ESP32DEVKIT
       build TTGO_TDISPLAY
       build ESP32PICOD4
-      build M5STICKCPLUS
-      build M5ATOM
-      build M5PICOD4
+      #build M5STICKCPLUS
+      #build M5ATOM
+      #build M5PICOD4
       printOutput
       ;;
 

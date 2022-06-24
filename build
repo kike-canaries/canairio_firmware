@@ -156,13 +156,13 @@ else
       build TTGO_T7
       build WEMOSOLED
       build HELTEC
-      #build TTGO_TQ
+      build TTGO_TQ
       build ESP32DEVKIT
       build TTGO_TDISPLAY
       build ESP32PICOD4
-      #build M5STICKCPLUS
-      #build M5ATOM
-      #build M5PICOD4
+      build M5STICKCPLUS
+      build M5ATOM
+      build M5PICOD4
       printOutput
       ;;
 

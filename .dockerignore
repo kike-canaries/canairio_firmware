@@ -1,0 +1,12 @@
+venv
+.venv
+.git
+*.py[cod]
+__pycache__
+binaries
+credentials
+.env
+.pio
+releases
+tests
+

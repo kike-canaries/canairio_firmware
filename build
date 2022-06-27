@@ -1,8 +1,8 @@
 #!/bin/bash
 
-SRC_REV=`cat platformio.ini | grep revision | awk '{print $3}'`
+SRC_REV=`cat platformio.ini | grep 'revision =' | awk '{print $3}'`
 SRC_VER=`cat platformio.ini | grep 'version =' | awk '{print $3}'`
-TARGET=`cat platformio.ini | grep target | awk '{print $3}'`
+TARGET=`cat platformio.ini | grep 'target =' | awk '{print $3}'`
 DATE=`date +%Y%m%d`
 OUTDIR=".pio/build"
 RELDIR="releases"
@@ -34,11 +34,7 @@ showHelp () {
 }
 
 updateInstallerBinaries () {
-  echo ""
-  echo "***********************************************"
-  echo "** Update installer binaries.."
-  echo "***********************************************"
-  echo ""
+  echo "Update installer binaries.."
   cp $OUTDIR/$DEFAULT/partitions.bin $INSDIR/system/
   cp ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin $INSDIR/system/
   cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/bin/bootloader_dio_40m.bin $INSDIR/system/
@@ -48,17 +44,20 @@ updateInstallerBinaries () {
 }
 
 updateFlavorBinaries() {
+  echo "Update installer flavors.."
   rm -f $INSDIR/*.bin
   rm -f $INSDIR/*.py   # old installer
   cp $RELDIR/$BINDIR/*/*${SRC_REV}.bin $INSDIR/
 }
 
 clean () {
+  echo "Clean installer directory.."
   rm -rf $RELDIR/$BINDIR
   rm -rf $RELDIR/$MANIFEST
   rm -f $INSDIR/*.bin
   rm -f $INSDIR/*.py   # old installer
   for flavor in $flavors; do
+    echo "Clean flavor $flavor.."
     pio run -s -e $flavor -t clean
   done
 }
@@ -85,6 +84,9 @@ build () {
 }
 
 buildInstaller () {
+  echo "***********************************************"
+  echo "** Building installer with target: $TARGET"
+  echo "***********************************************"
   echo ""
   mkdir -p $INSDIR/system
   updateInstallerBinaries
@@ -177,7 +179,15 @@ else
       ;;
 
     *)
-      build $1
+      if [[ $flavors == *"$1"* ]]; then
+        build $1
+      else
+        echo ""
+        echo "ERROR: Flavor not found!"
+        echo ""
+        echo "Please check flavor parameter with 'list' command"
+        echo ""
+      fi
       ;;
   esac
 fi

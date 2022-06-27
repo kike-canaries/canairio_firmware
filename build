@@ -19,8 +19,9 @@ showHelp () {
   echo "** Build release flavor or installer package **"
   echo "************************************************"
   echo ""
-  echo "Usage: ./build [board|all|installer|publish|help|print|list]"
+  echo "Usage: ./build [flavor|list|all|installer|publish|help|print|list|clean]"
   echo ""
+  echo "example: ./build clean"
   echo "example: ./build all"
   echo "example: ./build TTGO_T7"
   echo "example: ./build installer"
@@ -114,8 +115,13 @@ publish_release_ota () {
 
 printOutput () {
   echo ""
-  mkdir -p $INSDIR
   FIRMDIR=$RELDIR/$BINDIR
+  if [ ! -d "$FIRMDIR" ]; then
+    echo "Please first build any flavor!"
+    echo ""
+    exit 1
+  fi
+  mkdir -p $INSDIR
   rm -f $INSDIR/md5output.txt
   touch $INSDIR/md5output.txt
   cd $FIRMDIR

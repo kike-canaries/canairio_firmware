@@ -288,14 +288,14 @@ bool ConfigApp::ifxdbEnable(bool enable) {
 bool ConfigApp::debugEnable(bool enable) {
     saveBool("debugEnable", enable);
     devmode = enable;
-    Serial.println("-->[CONF] updating debug mode\t: " + String(enable));
+    Serial.println("-->[CONF] new debug mode\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::paxEnable(bool enable) {
     saveBool("paxEnable", enable);
     pax_enable = enable;
-    Serial.println("-->[CONF] updating PaxCounter mode\t: " + String(enable));
+    Serial.println("-->[CONF] new PaxCounter mode\t: " + String(enable));
     return true;
 }
 

@@ -5,7 +5,7 @@
 ******************************************************************************/
 
 bool sniffer_start;
-uint_fast16_t pax_count;
+uint_fast16_t pax_count, last_pax_count;
 unsigned int channel;
 
 vector<MACPool> listOfMAC;
@@ -75,7 +75,10 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
       }
 
       pax_count = listOfMAC.size();
-    //   if(cfg.devmode) Serial.printf("-->[WIFI] new PAX count: %d\n",pax_count);
+      if (pax_count != last_pax_count) {
+          if(cfg.devmode) Serial.printf("-->[WIFI] new PAX count found\t: %d\n",pax_count);
+          last_pax_count = pax_count;
+      }
       delay(10);
     }
 }

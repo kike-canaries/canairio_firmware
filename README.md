@@ -118,6 +118,20 @@ For a specific firmware for example for a TTGO-T7 board, only change the last li
 pio run -e TTGO_T7 --target upload
 ```
 
+## Via Docker
+
+First build the Docker image using the following command line:
+
+```bash
+docker build -t canairio_pio:master .
+```
+
+This build a basic compiler image with all PlatformIO stuff. For build the project you only needs now run:
+
+```bash
+./docker_build run
+```
+
 ### Building Installer
 
 You can build `CanAirIO Installer` zip package with all binaries of all board flavors running the next command:

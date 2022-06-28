@@ -90,27 +90,27 @@ void refreshGUIData() {
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     void onWifiMode(bool enable) {
-        Serial.println("-->[MAIN] Wifi enable changed :\t" + String(enable));
+        Serial.println("-->[MAIN] Wifi enable changed\t: " + String(enable));
         cfg.wifiEnable(enable);
         cfg.reload();
         if (!enable) wifiStop();
     };
     void onPaxMode(bool enable) {
-        Serial.println("-->[MAIN] onPax enable changed:\t" + String(enable));
+        Serial.println("-->[MAIN] onPax enable changed\t: " + String(enable));
         cfg.paxEnable(enable);
         cfg.reload();
     };
     void onBrightness(int value) {
-        Serial.println("-->[MAIN] onBrightness changed:\t" + String(value));
+        Serial.println("-->[MAIN] onBrightness changed\t: " + String(value));
         cfg.saveBrightness(value);
     };
     void onColorsInverted(bool enable) {
-        Serial.println("-->[MAIN] onColors changed    :\t" + String(enable));
+        Serial.println("-->[MAIN] onColors changed    \t: " + String(enable));
         cfg.colorsInvertedEnable(enable);
     };
     void onSampleTime(int time) {
         if (sensors.sample_time != time) {
-            Serial.println("-->[MAIN] onSampleTime changed:\t" + String(time));
+            Serial.println("-->[MAIN] onSampleTime changed\t: " + String(time));
             cfg.saveSampleTime(time);
             cfg.reload();
             bleServerConfigRefresh();

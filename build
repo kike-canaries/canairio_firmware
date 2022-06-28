@@ -1,8 +1,8 @@
 #!/bin/bash
 
-SRC_REV=`cat platformio.ini | grep revision | awk '{print $3}'`
+SRC_REV=`cat platformio.ini | grep 'revision =' | awk '{print $3}'`
 SRC_VER=`cat platformio.ini | grep 'version =' | awk '{print $3}'`
-TARGET=`cat platformio.ini | grep target | awk '{print $3}'`
+TARGET=`cat platformio.ini | grep 'target =' | awk '{print $3}'`
 DATE=`date +%Y%m%d`
 OUTDIR=".pio/build"
 RELDIR="releases"
@@ -11,32 +11,31 @@ MANIFEST="manifest"
 DEFAULT="TTGO_T7"
 INSDIR=$RELDIR/installer/canairio_installer
 
+flavors="TTGO_T7 WEMOSOLED HELTEC TTGO_TQ ESP32DEVKIT TTGO_TDISPLAY ESP32PICOD4 M5STICKCPLUS M5ATOM M5PICOD4"
+
 showHelp () {
   echo ""
   echo "************************************************"
   echo "** Build release flavor or installer package **"
   echo "************************************************"
   echo ""
-  echo "Usage: ./build [board|all|installer|publish|help|print]"
+  echo "Usage: ./build [flavor|list|all|installer|publish|help|print|list|clean]"
   echo ""
+  echo "example: ./build clean"
   echo "example: ./build all"
   echo "example: ./build TTGO_T7"
   echo "example: ./build installer"
   echo ""
   echo "Supported boards: "
-  echo "TTGO_T7, WEMOSOLED, HELTEC, TTGO_TQ, ESP32DEVKIT, ESP32PICOD4, M5PICOD4"
+  echo "./build list"
   echo ""
-  echo "Build installer option will make a installer package for Linux"
+  echo "Build installer option will build a installer package for Linux"
   echo "with OTA support and USB support"
   echo ""
 }
 
 updateInstallerBinaries () {
-  echo ""
-  echo "***********************************************"
-  echo "** Update installer binaries.."
-  echo "***********************************************"
-  echo ""
+  echo "Update installer binaries.."
   cp $OUTDIR/$DEFAULT/partitions.bin $INSDIR/system/
   cp ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin $INSDIR/system/
   cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/bin/bootloader_dio_40m.bin $INSDIR/system/
@@ -46,21 +45,25 @@ updateInstallerBinaries () {
 }
 
 updateFlavorBinaries() {
+  echo "Update installer flavors.."
   rm -f $INSDIR/*.bin
   rm -f $INSDIR/*.py   # old installer
   cp $RELDIR/$BINDIR/*/*${SRC_REV}.bin $INSDIR/
 }
 
 clean () {
+  echo "Clean installer directory.."
   rm -rf $RELDIR/$BINDIR
   rm -rf $RELDIR/$MANIFEST
   rm -f $INSDIR/*.bin
   rm -f $INSDIR/*.py   # old installer
+  for flavor in $flavors; do
+    echo "Clean flavor $flavor.."
+    pio run -s -e $flavor -t clean
+  done
 }
 
 build () {
-  pio run -s -e $1 -t clean
-
   echo ""
   echo "***********************************************"
   echo "** Building $1"
@@ -82,6 +85,9 @@ build () {
 }
 
 buildInstaller () {
+  echo "***********************************************"
+  echo "** Building installer with target: $TARGET"
+  echo "***********************************************"
   echo ""
   mkdir -p $INSDIR/system
   updateInstallerBinaries
@@ -109,8 +115,13 @@ publish_release_ota () {
 
 printOutput () {
   echo ""
-  mkdir -p $INSDIR
   FIRMDIR=$RELDIR/$BINDIR
+  if [ ! -d "$FIRMDIR" ]; then
+    echo "Please first build any flavor!"
+    echo ""
+    exit 1
+  fi
+  mkdir -p $INSDIR
   rm -f $INSDIR/md5output.txt
   touch $INSDIR/md5output.txt
   cd $FIRMDIR
@@ -153,16 +164,9 @@ else
       ;;
 
     all)
-      build TTGO_T7
-      build WEMOSOLED
-      build HELTEC
-      build TTGO_TQ
-      build ESP32DEVKIT
-      build TTGO_TDISPLAY
-      build ESP32PICOD4
-      build M5STICKCPLUS
-      build M5ATOM
-      build M5PICOD4
+      for flavor in $flavors; do
+          build $flavor
+      done     
       printOutput
       ;;
 
@@ -174,8 +178,22 @@ else
       publish_release_ota
       ;;
 
+    list)
+      for flavor in $flavors; do
+          echo $flavor
+      done
+      ;;
+
     *)
-      build $1
+      if [[ $flavors == *"$1"* ]]; then
+        build $1
+      else
+        echo ""
+        echo "ERROR: Flavor not found!"
+        echo ""
+        echo "Please check flavor parameter with 'list' command"
+        echo ""
+      fi
       ;;
   esac
 fi

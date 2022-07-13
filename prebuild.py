@@ -48,6 +48,10 @@ data = {
     "bin":"/releases/" + target + "/canairio_" + flavor + "_rev" + revision + ".bin"
 }
 
+# build_flags = env.get("BUILD_FLAGS")
+# print("NEW BUILD_FLAGS")
+# print(build_flags)
+
 output_path =  "releases/manifest/" + target
 
 os.makedirs(output_path, 0o755, True)

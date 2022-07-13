@@ -1,4 +1,16 @@
 #!/bin/bash
+################################################################
+# CanAirIO Deploy Util
+# ====================
+# 
+# (C) @hpsaturn 2022
+#
+# Original tool for deploy flavors of CanAirIO firmware.
+#
+# REVISIONS
+# +++++++++
+# 20220713 General changes for try to hava a better generic tool 
+################################################################
 
 SRC_REV=`cat platformio.ini | grep 'revision =' | awk '{print $3}'`
 SRC_VER=`cat platformio.ini | grep 'version =' | awk '{print $3}'`
@@ -8,8 +20,11 @@ OUTDIR=".pio/build"
 RELDIR="releases"
 BINDIR="binaries"
 MANIFEST="manifest"
+NAME="canairio"
 DEFAULT="TTGO_T7"
-INSDIR=$RELDIR/installer/canairio_installer
+OWNER="kike-canaries"
+REPO="canairio_firmware"
+INSDIR=$RELDIR/installer/${NAME}_installer
 
 flavors="TTGO_T7 WEMOSOLED HELTEC TTGO_TQ ESP32DEVKIT TTGO_TDISPLAY ESP32PICOD4 M5STICKCPLUS M5ATOM M5PICOD4"
 
@@ -23,7 +38,7 @@ showHelp () {
   echo ""
   echo "example: ./build clean"
   echo "example: ./build all"
-  echo "example: ./build TTGO_T7"
+  echo -n "example: ./build "; echo ${flavors} | awk '{print $1}'
   echo "example: ./build installer"
   echo ""
   echo "Supported boards: "
@@ -41,6 +56,7 @@ updateInstallerBinaries () {
   cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/bin/bootloader_dio_40m.bin $INSDIR/system/
   cp ~/.platformio/packages/tool-esptoolpy/esptool.py $INSDIR/system/
   cp ~/.platformio/packages/framework-arduinoespressif32/tools/espota.py $INSDIR/system/
+  curl https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/releases/installer/canairio_installer/install.sh -o $INSDIR/install.sh
   chmod 755 $INSDIR/install.sh
 }
 
@@ -78,8 +94,8 @@ build () {
   echo -n "** MD5:"
   FIRMDIR=$RELDIR/$BINDIR/$1
   mkdir -p $FIRMDIR 
-  cp $OUTDIR/$1/firmware.bin $FIRMDIR/canairio_${1}_rev${SRC_REV}.bin
-  md5sum $FIRMDIR/canairio_${1}_rev${SRC_REV}.bin
+  cp $OUTDIR/$1/firmware.bin $FIRMDIR/${NAME}_${1}_rev${SRC_REV}.bin
+  md5sum $FIRMDIR/${NAME}_${1}_rev${SRC_REV}.bin
   echo "***********************************************"
   echo ""
 }
@@ -94,17 +110,17 @@ buildInstaller () {
   updateFlavorBinaries
   printOutput
   cd $INSDIR/..
-  rm -f canairio_${TARGET}_rev${SRC_REV}_${DATE}.zip
-  zip -r canairio_${TARGET}_rev${SRC_REV}_${DATE}.zip canairio_installer
+  rm -f ${NAME}_${TARGET}_rev${SRC_REV}_${DATE}.zip
+  zip -r ${NAME}_${TARGET}_rev${SRC_REV}_${DATE}.zip ${NAME}_installer
   echo ""
-  du -hs canairio_${TARGET}_rev${SRC_REV}_${DATE}.zip
+  du -hs ${NAME}_${TARGET}_rev${SRC_REV}_${DATE}.zip
   echo ""
 }
 
 publish_release () {
   cd $INSDIR/..
   COMMIT_LOG=`git log -1 --format='%ci %H %s'`
-  github-release upload --owner kike-canaries --repo canairio_firmware --tag "rev${SRC_REV}" --release-name "rev${SRC_REV} v${SRC_VER}" --body "${COMMIT_LOG}" canairio_${TARGET}_rev${SRC_REV}_${DATE}.zip
+  github-release upload --owner ${OWNER} --repo ${REPO} --tag "rev${SRC_REV}" --release-name "rev${SRC_REV} v${SRC_VER}" --body "${COMMIT_LOG}" ${NAME}_${TARGET}_rev${SRC_REV}_${DATE}.zip
 }
 
 publish_release_ota () {
@@ -126,7 +142,7 @@ printOutput () {
   touch $INSDIR/md5output.txt
   cd $FIRMDIR
   for flavor in *; do
-    MD5FLAVOR=`md5sum $flavor/canairio_${flavor}_rev${SRC_REV}.bin`
+    MD5FLAVOR=`md5sum $flavor/${NAME}_${flavor}_rev${SRC_REV}.bin`
     echo $MD5FLAVOR >> ../../$INSDIR/md5output.txt
   done
   cat ../../$INSDIR/md5output.txt

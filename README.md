@@ -1,6 +1,6 @@
 
 
-[![Build Status](https://travis-ci.com/kike-canaries/canairio_firmware.svg?branch=master)](https://travis-ci.com/kike-canaries/canairio_firmware) [![PlatformIO](https://github.com/kike-canaries/canairio_firmware/workflows/PlatformIO/badge.svg)](https://github.com/kike-canaries/canairio_firmware/actions/) ![ViewCount](https://views.whatilearened.today/views/github/kike-canaries/canairio_firmware.svg) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO) [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fcanairio)](https://t.me/canairio)
+[![PlatformIO](https://github.com/kike-canaries/canairio_firmware/workflows/PlatformIO/badge.svg)](https://github.com/kike-canaries/canairio_firmware/actions/) ![ViewCount](https://views.whatilearened.today/views/github/kike-canaries/canairio_firmware.svg) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO) [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fcanairio)](https://t.me/canairio)
 
 # CanAirIO firmware
 
@@ -116,6 +116,20 @@ For a specific firmware for example for a TTGO-T7 board, only change the last li
 
 ``` bash
 pio run -e TTGO_T7 --target upload
+```
+
+## Via Docker
+
+First build the Docker image using the following command line:
+
+```bash
+docker build -t canairio_pio:master .
+```
+
+This build a basic compiler image with all PlatformIO stuff. For build the project you only needs now run:
+
+```bash
+./docker_build run
 ```
 
 ### Building Installer

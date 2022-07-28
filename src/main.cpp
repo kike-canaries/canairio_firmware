@@ -78,27 +78,27 @@ void refreshGUIData() {
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     void onWifiMode(bool enable) {
-        Serial.println("-->[MAIN] Wifi enable changed :\t" + String(enable));
+        Serial.println("-->[MAIN] Wifi enable changed\t: " + String(enable));
         cfg.wifiEnable(enable);
         cfg.reload();
         if (!enable) wifiStop();
     };
     void onPaxMode(bool enable) {
-        Serial.println("-->[MAIN] onPax enable changed:\t" + String(enable));
+        Serial.println("-->[MAIN] onPax enable changed\t: " + String(enable));
         cfg.paxEnable(enable);
         cfg.reload();
     };
     void onBrightness(int value) {
-        Serial.println("-->[MAIN] onBrightness changed:\t" + String(value));
+        Serial.println("-->[MAIN] onBrightness changed\t: " + String(value));
         cfg.saveBrightness(value);
     };
     void onColorsInverted(bool enable) {
-        Serial.println("-->[MAIN] onColors changed    :\t" + String(enable));
+        Serial.println("-->[MAIN] onColors changed    \t: " + String(enable));
         cfg.colorsInvertedEnable(enable);
     };
     void onSampleTime(int time) {
         if (sensors.sample_time != time) {
-            Serial.println("-->[MAIN] onSampleTime changed:\t" + String(time));
+            Serial.println("-->[MAIN] onSampleTime changed\t: " + String(time));
             cfg.saveSampleTime(time);
             cfg.reload();
             bleServerConfigRefresh();
@@ -228,11 +228,6 @@ void setup() {
     // init app preferences and load settings
     cfg.init("canairio");
     logMemory("CONF");
-    battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
-    battery.init(cfg.devmode);
-    battery.update();
-    powerInit();
-
     // init graphic user interface
     gui.setBrightness(cfg.getBrightness());
     gui.setWifiMode(cfg.isWifiEnable());
@@ -242,7 +237,11 @@ void setup() {
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();
     logMemory("GLIB");
-
+    // init battery monitor
+    battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
+    battery.init(cfg.devmode);
+    battery.update();
+    powerInit();
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC\t\t: " + cfg.deviceId);
     Serial.println("-->[INFO] Hostname\t\t: " + getHostId());

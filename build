@@ -1,15 +1,32 @@
 #!/bin/bash
+################################################################
+# CanAirIO Deploy Util
+# ====================
+# 
+# (C) @hpsaturn 2022
+#
+# Original tool for deploy flavors of CanAirIO firmware.
+#
+# REVISIONS
+# +++++++++
+# 20220713 General changes for try to hava a better generic tool 
+################################################################
 
-SRC_REV=`cat platformio.ini | grep revision | awk '{print $3}'`
+SRC_REV=`cat platformio.ini | grep 'revision =' | awk '{print $3}'`
 SRC_VER=`cat platformio.ini | grep 'version =' | awk '{print $3}'`
-TARGET=`cat platformio.ini | grep target | awk '{print $3}'`
+TARGET=`cat platformio.ini | grep 'target =' | awk '{print $3}'`
 DATE=`date +%Y%m%d`
 OUTDIR=".pio/build"
 RELDIR="releases"
 BINDIR="binaries"
 MANIFEST="manifest"
+NAME="canairio"
 DEFAULT="TTGO_T7"
-INSDIR=$RELDIR/installer/canairio_installer
+OWNER="kike-canaries"
+REPO="canairio_firmware"
+INSDIR=$RELDIR/installer/${NAME}_installer
+
+flavors="TTGO_T7 WEMOSOLED HELTEC TTGO_TQ ESP32DEVKIT TTGO_TDISPLAY ESP32PICOD4 M5STICKCPLUS M5ATOM M5PICOD4"
 
 showHelp () {
   echo ""
@@ -17,50 +34,52 @@ showHelp () {
   echo "** Build release flavor or installer package **"
   echo "************************************************"
   echo ""
-  echo "Usage: ./build [board|all|installer|publish|help|print]"
+  echo "Usage: ./build [flavor|list|all|installer|publish|help|print|list|clean]"
   echo ""
+  echo "example: ./build clean"
   echo "example: ./build all"
-  echo "example: ./build TTGO_T7"
+  echo -n "example: ./build "; echo ${flavors} | awk '{print $1}'
   echo "example: ./build installer"
   echo ""
   echo "Supported boards: "
-  echo "TTGO_T7, WEMOSOLED, HELTEC, TTGO_TQ, ESP32DEVKIT, ESP32PICOD4, M5PICOD4"
+  echo "./build list"
   echo ""
-  echo "Build installer option will make a installer package for Linux"
+  echo "Build installer option will build a installer package for Linux"
   echo "with OTA support and USB support"
   echo ""
 }
 
 updateInstallerBinaries () {
-  echo ""
-  echo "***********************************************"
-  echo "** Update installer binaries.."
-  echo "***********************************************"
-  echo ""
+  echo "Update installer binaries.."
   cp $OUTDIR/$DEFAULT/partitions.bin $INSDIR/system/
   cp ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin $INSDIR/system/
   cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/bin/bootloader_dio_40m.bin $INSDIR/system/
   cp ~/.platformio/packages/tool-esptoolpy/esptool.py $INSDIR/system/
   cp ~/.platformio/packages/framework-arduinoespressif32/tools/espota.py $INSDIR/system/
+  curl https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/releases/installer/canairio_installer/install.sh -o $INSDIR/install.sh
   chmod 755 $INSDIR/install.sh
 }
 
 updateFlavorBinaries() {
+  echo "Update installer flavors.."
   rm -f $INSDIR/*.bin
   rm -f $INSDIR/*.py   # old installer
   cp $RELDIR/$BINDIR/*/*${SRC_REV}.bin $INSDIR/
 }
 
 clean () {
+  echo "Clean installer directory.."
   rm -rf $RELDIR/$BINDIR
   rm -rf $RELDIR/$MANIFEST
   rm -f $INSDIR/*.bin
   rm -f $INSDIR/*.py   # old installer
+  for flavor in $flavors; do
+    echo "Clean flavor $flavor.."
+    pio run -s -e $flavor -t clean
+  done
 }
 
 build () {
-  pio run -s -e $1 -t clean
-
   echo ""
   echo "***********************************************"
   echo "** Building $1"
@@ -75,30 +94,33 @@ build () {
   echo -n "** MD5:"
   FIRMDIR=$RELDIR/$BINDIR/$1
   mkdir -p $FIRMDIR 
-  cp $OUTDIR/$1/firmware.bin $FIRMDIR/canairio_${1}_rev${SRC_REV}.bin
-  md5sum $FIRMDIR/canairio_${1}_rev${SRC_REV}.bin
+  cp $OUTDIR/$1/firmware.bin $FIRMDIR/${NAME}_${1}_rev${SRC_REV}.bin
+  md5sum $FIRMDIR/${NAME}_${1}_rev${SRC_REV}.bin
   echo "***********************************************"
   echo ""
 }
 
 buildInstaller () {
+  echo "***********************************************"
+  echo "** Building installer with target: $TARGET"
+  echo "***********************************************"
   echo ""
   mkdir -p $INSDIR/system
   updateInstallerBinaries
   updateFlavorBinaries
   printOutput
   cd $INSDIR/..
-  rm -f canairio_${TARGET}_rev${SRC_REV}_${DATE}.zip
-  zip -r canairio_${TARGET}_rev${SRC_REV}_${DATE}.zip canairio_installer
+  rm -f ${NAME}_${TARGET}_rev${SRC_REV}_${DATE}.zip
+  zip -r ${NAME}_${TARGET}_rev${SRC_REV}_${DATE}.zip ${NAME}_installer
   echo ""
-  du -hs canairio_${TARGET}_rev${SRC_REV}_${DATE}.zip
+  du -hs ${NAME}_${TARGET}_rev${SRC_REV}_${DATE}.zip
   echo ""
 }
 
 publish_release () {
   cd $INSDIR/..
   COMMIT_LOG=`git log -1 --format='%ci %H %s'`
-  github-release upload --owner kike-canaries --repo canairio_firmware --tag "rev${SRC_REV}" --release-name "rev${SRC_REV} v${SRC_VER}" --body "${COMMIT_LOG}" canairio_${TARGET}_rev${SRC_REV}_${DATE}.zip
+  github-release upload --owner ${OWNER} --repo ${REPO} --tag "rev${SRC_REV}" --release-name "rev${SRC_REV} v${SRC_VER}" --body "${COMMIT_LOG}" ${NAME}_${TARGET}_rev${SRC_REV}_${DATE}.zip
 }
 
 publish_release_ota () {
@@ -109,13 +131,18 @@ publish_release_ota () {
 
 printOutput () {
   echo ""
-  mkdir -p $INSDIR
   FIRMDIR=$RELDIR/$BINDIR
+  if [ ! -d "$FIRMDIR" ]; then
+    echo "Please first build any flavor!"
+    echo ""
+    exit 1
+  fi
+  mkdir -p $INSDIR
   rm -f $INSDIR/md5output.txt
   touch $INSDIR/md5output.txt
   cd $FIRMDIR
   for flavor in *; do
-    MD5FLAVOR=`md5sum $flavor/canairio_${flavor}_rev${SRC_REV}.bin`
+    MD5FLAVOR=`md5sum $flavor/${NAME}_${flavor}_rev${SRC_REV}.bin`
     echo $MD5FLAVOR >> ../../$INSDIR/md5output.txt
   done
   cat ../../$INSDIR/md5output.txt
@@ -153,16 +180,9 @@ else
       ;;
 
     all)
-      build TTGO_T7
-      build WEMOSOLED
-      build HELTEC
-      #build TTGO_TQ
-      build ESP32DEVKIT
-      build TTGO_TDISPLAY
-      build ESP32PICOD4
-      #build M5STICKCPLUS
-      #build M5ATOM
-      #build M5PICOD4
+      for flavor in $flavors; do
+          build $flavor
+      done     
       printOutput
       ;;
 
@@ -174,8 +194,22 @@ else
       publish_release_ota
       ;;
 
+    list)
+      for flavor in $flavors; do
+          echo $flavor
+      done
+      ;;
+
     *)
-      build $1
+      if [[ $flavors == *"$1"* ]]; then
+        build $1
+      else
+        echo ""
+        echo "ERROR: Flavor not found!"
+        echo ""
+        echo "Please check flavor parameter with 'list' command"
+        echo ""
+      fi
       ;;
   esac
 fi

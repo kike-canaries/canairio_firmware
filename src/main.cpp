@@ -228,11 +228,6 @@ void setup() {
     // init app preferences and load settings
     cfg.init("canairio");
     logMemory("CONF");
-    battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
-    battery.init(cfg.devmode);
-    battery.update();
-    powerInit();
-
     // init graphic user interface
     gui.setBrightness(cfg.getBrightness());
     gui.setWifiMode(cfg.isWifiEnable());
@@ -242,7 +237,11 @@ void setup() {
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();
     logMemory("GLIB");
-
+    // init battery monitor
+    battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
+    battery.init(cfg.devmode);
+    battery.update();
+    powerInit();
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC\t\t: " + cfg.deviceId);
     Serial.println("-->[INFO] Hostname\t\t: " + getHostId());

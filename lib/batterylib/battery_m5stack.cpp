@@ -4,6 +4,7 @@
 
 void Battery_M5STACK::init(bool debug) {
     this->debug = debug;
+    M5.Axp.EnableCoulombcounter();  // Enable Coulomb counter.
 }
 
 float Battery_M5STACK::getVoltage() {

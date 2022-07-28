@@ -122,7 +122,8 @@ class TFTUtils {
     const int pwmLedChannelTFT = 0;
 
 #ifdef M5STICKCPLUS
-    int backlight[5] = {7, 8, 9, 10, 11};
+    int backlight[5] = {5, 20, 30, 50, 80};
+
 #else
     int backlight[5] = {10, 30, 60, 120, 220};
 #endif

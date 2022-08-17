@@ -24,7 +24,7 @@ void influxDbAddTags() {
     sensor.addTag("mac",cfg.deviceId.c_str());
     sensor.addTag("geo3",cfg.geo.substring(0,3).c_str());
     sensor.addTag("name",cfg.getStationName().c_str());
-    sensor.addTag("rev","v"+String(VERSION)+"r"+String(REVISION));
+    sensor.addTag("rev","v"+String(VERSION)+"r"+String(REVISION)+String(TARGET));
 }
 
 void influxDbParseFields() {

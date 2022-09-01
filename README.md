@@ -10,6 +10,14 @@
 
 Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5 or CO2) using low-cost sensors and smartphones. Built with a `ESP32` module board interfaced with an [CanAirIO Android client app](https://github.com/kike-canaries/canairio_android). 
 
+<table>
+	<tr>
+		<td>
+			Don't forget to star ⭐ this repository
+		</td>
+	</tr>
+</table>
+
 ## Features
 
 - Super easy [web installer](https://canair.io/installer), via Chrome or Edge
@@ -17,7 +25,7 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 - Fixed station, (using only your WiFi)
 - Fast WiFi credentials provisioning via Bluetooth
 - Automatic firmware OTA updates (stable/testing channels)
-- Share mobile tracks via [mobile.canair.io](https://mobile.canair.io) or CanAirIO app
+- Share mobile tracks via [mobile.canair.io](https://mobile.canair.io) or [CanAirIO app](https://github.com/kike-canaries/canairio_android)
 - [Home Assistant](https://www.home-assistant.io/) integration, discovery and multisensor support
 - Share your fixed station quickly via [Anaire Cloud](https://portal.anaire.org/d/detail/detalle?orgId=1&var-uid=U33TTGOTDA3D46&var-name=&refresh=1m)
 - Separated [sensors layer](https://github.com/kike-canaries/canairio_sensorlib#readme) for improve support of new sensors

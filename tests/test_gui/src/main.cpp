@@ -7,6 +7,7 @@
 #include <GUILib.hpp>
 
 bool toggle;
+GUIData data;
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     void onWifiMode(bool enable){
@@ -26,6 +27,13 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     };
     void onPaxMode(bool enable){
         Serial.println("-->[SETUP] onPaxMode changed: "+String(enable));
+    };
+    void onUnitSelectionToggle() {
+        Serial.println("-->[SETUP] onUnitSelectionToggle");
+    };
+    void onUnitSelectionConfirm() {
+    };
+    void onPowerOff(){
     };
 };
 
@@ -100,7 +108,14 @@ void loop(void) {
 
     if (count % 30 == 0 ) max_value = random (5,random(4,35));
 
-    if (count % 5 == 0) gui.setSensorData(random(1,max_value),random(0, 99), random(0, 800)/25.0, random(50, 90), 4);
+    data.mainValue = random(1, max_value);
+    data.minorValue = random(0, 99);
+    data.unitName = "PAX";
+    data.unitSymbol = "PAX";
+    data.mainUnitId = 0;
+    data.color = AQI_COLOR::AQI_PM;
+
+    if (count % 5 == 0) gui.setSensorData(data);
 
     gui.setGUIStatusFlags(true, true, true);
 

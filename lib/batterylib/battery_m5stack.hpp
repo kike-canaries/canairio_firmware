@@ -8,8 +8,8 @@
 
 #define BATTERY_MIN_V 3.4
 #define BATTERY_MAX_V 4.04
-#define BATTCHARG_MIN_V 4.06
-#define BATTCHARG_MAX_V 4.198
+#define BATTCHARG_MIN_V 3.5
+#define BATTCHARG_MAX_V 4.2
 
 class Battery_M5STACK : public Battery {
   public:

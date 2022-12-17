@@ -30,7 +30,7 @@ void TFTUtils::displayInit() {
     pinMode(BUTTON_L, INPUT_PULLUP);
     pinMode(BUTTON_R, INPUT);
     #ifdef M5STICKCPLUS
-    M5.begin(true,false,false);       // Initialize M5Stack without serial messages
+    M5.begin(true,true,false);       // Initialize M5Stack without serial messages
     M5.Beep.end();
     pinMode(36, INPUT);              // UART port alternative for this board
     gpio_pulldown_dis(GPIO_NUM_25);  // 36 and 25 pins share the same port

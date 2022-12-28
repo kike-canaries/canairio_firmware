@@ -35,6 +35,7 @@ void TFTUtils::displayInit() {
     pinMode(36, INPUT);              // UART port alternative for this board
     gpio_pulldown_dis(GPIO_NUM_25);  // 36 and 25 pins share the same port
     gpio_pullup_dis(GPIO_NUM_25);    // https://docs.m5stack.com/en/core/m5stickc_plus
+
     #else
     tft.init();
     #endif

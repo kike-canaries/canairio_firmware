@@ -45,9 +45,9 @@ void powerDeepSleepTimer(int seconds) {
     Serial.flush();
     prepairShutdown();
     #ifdef M5STICKCPLUS
-    M5.Axp.DeepSleep(seconds*1000000ull);
+    M5.Axp.DeepSleep(seconds*1000000);
     #endif
-    esp_sleep_enable_timer_wakeup(seconds * 1000000ull);
+    esp_sleep_enable_timer_wakeup(seconds * 1000000ULL);
     #ifdef TTGO_TDISPLAY
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
     #endif
@@ -58,7 +58,7 @@ void powerDeepSleepTimer(int seconds) {
 
 void powerLightSleepTimer(int seconds) {
     #ifndef M5STICKCPLUS
-    esp_sleep_enable_timer_wakeup(seconds * 1000000ull);
+    esp_sleep_enable_timer_wakeup(seconds * 1000000);
     esp_light_sleep_start();
     #endif
     #ifdef M5STICKCPLUS

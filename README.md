@@ -29,6 +29,7 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 - [Home Assistant](https://www.home-assistant.io/) integration, discovery and multisensor support
 - Share your fixed station quickly via [Anaire Cloud](https://portal.anaire.org/d/detail/detalle?orgId=1&var-uid=U33TTGOTDA3D46&var-name=&refresh=1m)
 - Separated [sensors layer](https://github.com/kike-canaries/canairio_sensorlib#readme) for improve support of new sensors
+- PAX Counter feature (default wifi sniffer sensor to count people)
 - Multiple boards and sensors support with only one firmware
 
 ## Boards supported

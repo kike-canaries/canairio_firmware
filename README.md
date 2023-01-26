@@ -4,11 +4,19 @@
 
 # CanAirIO firmware
 
-![CanAirIO Community](https://canair.io/docs/images/canairio_collage_community.jpg)
+![CanAirIO Community](/images/canairio_collage_community.jpg)
 
 <a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/android-hpma115s0/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>
 
 Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5 or CO2) using low-cost sensors and smartphones. Built with a `ESP32` module board interfaced with an [CanAirIO Android client app](https://github.com/kike-canaries/canairio_android). 
+
+<table>
+	<tr>
+		<td>
+			Don't forget to star ⭐ this repository
+		</td>
+	</tr>
+</table>
 
 ## Features
 
@@ -17,7 +25,7 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 - Fixed station, (using only your WiFi)
 - Fast WiFi credentials provisioning via Bluetooth
 - Automatic firmware OTA updates (stable/testing channels)
-- Share mobile tracks via [mobile.canair.io](https://mobile.canair.io) or CanAirIO app
+- Share mobile tracks via [mobile.canair.io](https://mobile.canair.io) or [CanAirIO app](https://github.com/kike-canaries/canairio_android)
 - [Home Assistant](https://www.home-assistant.io/) integration, discovery and multisensor support
 - Share your fixed station quickly via [Anaire Cloud](https://portal.anaire.org/d/detail/detalle?orgId=1&var-uid=U33TTGOTDA3D46&var-name=&refresh=1m)
 - Separated [sensors layer](https://github.com/kike-canaries/canairio_sensorlib#readme) for improve support of new sensors
@@ -30,9 +38,9 @@ The [last release](https://github.com/kike-canaries/canairio_firmware/releases) 
 | Firmware Name | Boards supported |   Display  |  Guide and schematics  |
 | ------------- |:-------------:| :-------------:| :----------------------:|
 | **TTGO_TDISPLAY**     | TTGO T-Display | eTFT | [CanAirIO Bike](https://canair.io/docs/canairio_bike.html) |
-| **TTGO_T7**     | TTGO T7, D1Mini, ** | OLED 64x48 | [CanAirIO v2.1](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647) |
+| **TTGO_T7**     | TTGO T7, D1Mini, ** | OLED 64x48 | [CanAirIO v2.1](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647) [CanAirIO IKEA](https://canair.io/docs/canairio_ikea.html) |
 | **M5STICKCPLUS** | M5StickC Plus | eTFT | [CanAirIO in M5StickC Plus](https://www.youtube.com/watch?v=TdX1AZ4PzBA) |
-| **M5ATOM** | M5Atom Lite | OLED I2C |  |
+| **M5ATOM** | M5Atom Lite | OLED I2C | [M5Atom Lite sample](https://canair.io/docs/canairio_m5stack.html#m5atom-lite)|
 | **ESP32DevKit** | ESP32DevKit, NodeMCU V3, ** | OLED 128x64 | [HacksterIO](https://www.hackster.io/canairio/build-low-cost-air-quality-sensor-canairio-without-soldering-d87494) |
 | **TTGO_TQ** | TTGO TQ | Builtin OLED  | [TTGO_TQ board](https://de.aliexpress.com/item/10000291636371.html) |
 | **WEMOSOLED** | WemosOLED and similar boards | OLED 128x64 | [ESP32 OLED board](https://de.aliexpress.com/item/33047481007.html) |

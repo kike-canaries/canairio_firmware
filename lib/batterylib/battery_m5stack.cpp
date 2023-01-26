@@ -17,7 +17,7 @@ void Battery_M5STACK::update() {
 }
 
 bool Battery_M5STACK::isCharging() {
-    return vusb > curv;
+    return M5.axp.GetVBusVoltage() > BATTCHARG_MAX_V;
 }
 
 int Battery_M5STACK::getCharge() {

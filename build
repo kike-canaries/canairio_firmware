@@ -125,8 +125,8 @@ publish_release () {
 
 publish_release_ota () {
   cd $INSDIR
-  scp -P $canairio_port *.bin $canairio_host:$canairio_target/$TARGET
-  scp -P $canairio_port ../../$MANIFEST/$TARGET/*.json $canairio_host:$canairio_target/$TARGET
+  scp *.bin canairio:$canairio_target/$TARGET
+  scp  ../../$MANIFEST/$TARGET/*.json canairio:$canairio_target/$TARGET
 }
 
 printOutput () {

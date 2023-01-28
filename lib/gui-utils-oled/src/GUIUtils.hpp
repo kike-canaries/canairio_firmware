@@ -1,8 +1,8 @@
 #ifndef GUIUtils_hpp
 #define GUIUtils_hpp
 
+#include <FS.h>
 #include <U8g2lib.h>
-//#include "hal.hpp"
 
 enum AQI_COLOR { AQI_NONE, AQI_PM, AQI_CO2 };
 

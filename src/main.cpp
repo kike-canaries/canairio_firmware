@@ -101,7 +101,11 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
             Serial.println("-->[MAIN] onSampleTime changed\t: " + String(time));
             cfg.saveSampleTime(time);
             cfg.reload();
+
+            #if !defined(ESP32C3)
             bleServerConfigRefresh();
+            #endif
+
             sensors.setSampleTime(cfg.stime);
         }
     };

@@ -54,23 +54,11 @@ void bleServerDataRefresh(){
     pCharactData->setValue(getSensorData().c_str());
 }
 
+#if !defined(ESP32C3)
 void bleServerConfigRefresh(){
     cfg.setWifiConnected(WiFi.isConnected());  // for notify on each write
     pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
 }
-
-class MyServerCallbacks : public BLEServerCallbacks {
-    void onConnect(BLEServer* pServer) {
-        deviceConnected = true;
-        Serial.println("-->[BTLE] device client is connected.");
-    };
-
-    void onDisconnect(BLEServer* pServer) {
-        deviceConnected = false;
-        Serial.println("-->[BTLE] device client is disconnected.");
-    };
-};  // BLEServerCallbacks
-
 
 // Config BLE callbacks
 class MyConfigCallbacks : public BLECharacteristicCallbacks {
@@ -116,6 +104,21 @@ class MyStatusCallbacks : public BLECharacteristicCallbacks {
         }
     }
 };
+#endif
+
+class MyServerCallbacks : public BLEServerCallbacks {
+    void onConnect(BLEServer* pServer) {
+        deviceConnected = true;
+        Serial.println("-->[BTLE] device client is connected.");
+    };
+
+    void onDisconnect(BLEServer* pServer) {
+        deviceConnected = false;
+        Serial.println("-->[BTLE] device client is disconnected.");
+    };
+};  // BLEServerCallbacks
+
+
 
 void bleServerInit() {
     // Create the BLE Device
@@ -129,6 +132,7 @@ void bleServerInit() {
     pCharactData = pService->createCharacteristic(
         CHARAC_DATA_UUID,
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+    #if !defined(ESP32C3)
     // Create a BLE Characteristic for Sensor mode: STATIC/MOVIL
     pCharactConfig = pService->createCharacteristic(
         CHARAC_CONFIG_UUID,
@@ -137,15 +141,16 @@ void bleServerInit() {
     pCharactStatus = pService->createCharacteristic(
         CHARAC_STATUS_UUID,
         BLECharacteristic::PROPERTY_WRITE);
-    // Create a Data Descriptor (for notifications)
-    pCharactData->addDescriptor(new BLE2902());
     // Config callback
     pCharactConfig->setCallbacks(new MyConfigCallbacks());
     // Status callback
     pCharactStatus->setCallbacks(new MyStatusCallbacks());
     // Set callback data:
     bleServerConfigRefresh();
+    #endif
     bleServerDataRefresh();
+    // Create a Data Descriptor (for notifications)
+    pCharactData->addDescriptor(new BLE2902());
     // Start the service
     pService->start();
     // Start advertising
@@ -159,8 +164,6 @@ void bleLoop() {
     if (deviceConnected && (millis() - bleTimeStamp > cfg.stime * 1000)) {  // each 5 secs
         log_i("[BTLE] sending notification..");
         log_d("[BTLE] %s",getNotificationData().c_str());
-        log_d("[BTLE] sending config data..");
-        log_d("[BTLE] %s",getSensorData().c_str());
         bleTimeStamp = millis();
         pCharactData->setValue(getNotificationData().c_str());  // small payload for notification
         pCharactData->notify();

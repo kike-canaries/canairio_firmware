@@ -62,8 +62,8 @@ void otaInit() {
 
 void wifiCloudsInit() {
   influxDbInit();
-  anaireInit();
-  hassInit();
+  // anaireInit();
+  // hassInit();
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
@@ -121,8 +121,8 @@ void wifiLoop() {
     influxDbInit();
     cfg.setWifiConnected(WiFi.isConnected());
   }
-  anaireLoop();
-  hassLoop();
+  // anaireLoop();
+  // hassLoop();
   influxDbLoop();  // influxDB publication
 }
 

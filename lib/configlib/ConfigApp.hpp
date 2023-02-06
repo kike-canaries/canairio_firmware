@@ -14,6 +14,8 @@ class ConfigApp {
     
     int stime;
     int stype;
+    int sTX;
+    int sRX;
     double lat;
     double lon;
     String geo;
@@ -69,6 +71,8 @@ class ConfigApp {
     bool saveSampleTime(int time);
 
     bool saveSensorType(int type);
+
+    bool saveSensorPins(int tx, int rx);
 
     bool saveUnitSelected(int unit);
 

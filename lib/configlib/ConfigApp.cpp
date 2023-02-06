@@ -32,6 +32,8 @@ void ConfigApp::reload() {
     geo = preferences.getString("geo", "");
     stime = preferences.getInt("stime", 5);
     stype = preferences.getInt("stype", 0);
+    sTX = preferences.getInt("sTX", -1);
+    sRX = preferences.getInt("sRX", -1);
     toffset = preferences.getFloat("toffset", 0.0);
     altoffset = preferences.getFloat("altoffset", 0.0);
     sealevel = preferences.getFloat("sealevel", 1013.25);
@@ -54,6 +56,8 @@ String ConfigApp::getCurrentConfig() {
     doc["dname"] = preferences.getString("dname", "");       // device or station name
     doc["stime"] = preferences.getInt("stime", 5);           // sensor measure time
     doc["stype"] = preferences.getInt("stype", 0);           // sensor UART type;
+    doc["sRX"] = preferences.getInt("sRX", -1);           // sensor UART type;
+    doc["sTX"] = preferences.getInt("sTX", -1);           // sensor UART type;
     doc["wenb"] = preferences.getBool("wifiEnable", false);  // wifi on/off
     doc["ssid"] = preferences.getString("ssid", "");         // influxdb database name
     doc["ienb"] = preferences.getBool("ifxEnable", false);   // ifxdb on/off
@@ -160,6 +164,19 @@ bool ConfigApp::saveSampleTime(int time) {
 bool ConfigApp::saveSensorType(int type) {
     saveInt("stype", type);
     Serial.printf("-->[CONF] sensor device type\t: %d\n", type);
+    return true;
+}
+
+/**
+ * @brief ConfigApp::saveSensorPins
+ * @param tx UART sensor TX
+ * @param rx UART sensor RX
+ * @return true (compatibility)
+ */
+bool ConfigApp::saveSensorPins(int tx, int rx) {
+    saveInt("sTX", tx);
+    saveInt("sRX", rx);
+    Serial.printf("-->[CONF] sensor UART TX/RX\t: %d/%d\r\n", tx, rx);
     return true;
 }
 

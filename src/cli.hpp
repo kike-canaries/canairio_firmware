@@ -67,8 +67,8 @@ void wcli_setup(String opts) {
   Serial.printf("WiFi current status\t: %s\r\n", WiFi.status() == WL_CONNECTED ? "connected" : "disconnected");
   Serial.printf("Sensor sample time \t: %d\r\n", cfg.stime);
   Serial.printf("UART sensor type \t: %d\r\n", cfg.getSensorType());
-  Serial.printf("UART sensor RX   \t: %d\r\n", cfg.sRX);
   Serial.printf("UART sensor TX   \t: %d\r\n", cfg.sTX);
+  Serial.printf("UART sensor RX   \t: %d\r\n", cfg.sRX);
   Serial.printf("Sensor sample time\t: %d\r\n", cfg.stime);
   Serial.printf("Current debug mode\t: %s\r\n", cfg.devmode == true ? "enabled" : "disabled");
 }

@@ -249,9 +249,11 @@ void setup() {
     gui.showWelcome();
     logMemory("GLIB");
     // init battery monitor
-    // battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
-    // battery.init(cfg.devmode);
-    // battery.update();
+    #if !defined(ESP32C3)
+    battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
+    battery.init(cfg.devmode);
+    battery.update();
+    #endif
     powerInit();
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC\t\t: " + cfg.deviceId);

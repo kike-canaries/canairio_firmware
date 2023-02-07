@@ -149,7 +149,7 @@ bool ConfigApp::saveDeviceName(String name) {
 bool ConfigApp::saveSampleTime(int time) {
     if (time >= 5) {
         saveInt("stime", time);
-        Serial.printf("-->[CONF] set sample time to\t: %d\n", time);
+        Serial.printf("-->[CONF] set sample time to\t: %d\r\n", time);
         return true;
     }
     DEBUG("[W][CONF] warning: sample time is too low!");
@@ -163,7 +163,7 @@ bool ConfigApp::saveSampleTime(int time) {
  */
 bool ConfigApp::saveSensorType(int type) {
     saveInt("stype", type);
-    Serial.printf("-->[CONF] sensor device type\t: %d\n", type);
+    Serial.printf("-->[CONF] sensor device type\t: %d\r\n", type);
     return true;
 }
 
@@ -191,7 +191,7 @@ int ConfigApp::getSensorType(){
  */
 bool ConfigApp::saveUnitSelected(int unit){
     saveInt("unit", unit);
-    Serial.printf("-->[CONF] default unit to \t: %d\n", unit);
+    Serial.printf("-->[CONF] default unit to \t: %d\r\n", unit);
     return true;
 }
 
@@ -205,20 +205,20 @@ int ConfigApp::getUnitSelected(){
 
 bool ConfigApp::saveTempOffset(float offset) {
     saveFloat("toffset", offset);
-    Serial.printf("-->[CONF] sensor temp offset\t: %0.2f\n", offset);
+    Serial.printf("-->[CONF] sensor temp offset\t: %0.2f\r\n", offset);
     return true;
 }
 
 bool ConfigApp::saveAltitudeOffset(float offset) {
     saveFloat("altoffset", offset);
-    Serial.printf("-->[CONF] sensor altitude offset\t: %0.2f\n", offset);
+    Serial.printf("-->[CONF] sensor altitude offset\t: %0.2f\r\n", offset);
     if(mRemoteConfigCallBacks!=nullptr) this->mRemoteConfigCallBacks->onAltitudeOffset(offset);
     return true;
 }
 
 bool ConfigApp::saveSeaLevel(float hpa) {
     saveFloat("sealevel", hpa);
-    Serial.printf("-->[CONF] sea level pressure\t: %0.2f\n", hpa);
+    Serial.printf("-->[CONF] sea level pressure\t: %0.2f\r\n", hpa);
     if(mRemoteConfigCallBacks!=nullptr) this->mRemoteConfigCallBacks->onSeaLevelPressure(hpa);
     return true;
 }
@@ -264,7 +264,7 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
         preferences.end();
         setLastKeySaved("ifxdb");
         ifxdb_enable = true;
-        Serial.printf("-->[CONF] influxdb: %s@%s:%i\n",db.c_str(),ip.c_str(),pt);
+        Serial.printf("-->[CONF] influxdb: %s@%s:%i\r\n",db.c_str(),ip.c_str(),pt);
         Serial.println("-->[CONF] influxdb config saved.");
         return true;
     }
@@ -281,7 +281,7 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
         preferences.end();
         setLastKeySaved("lat");
         log_i("-->[CONF] geo: %s (%d,%d)",geo,lat,lon);
-        Serial.printf("-->[CONF] updated GeoHash to\t: %s\n",geo.c_str());
+        Serial.printf("-->[CONF] updated GeoHash to\t: %s\r\n",geo.c_str());
         return true;
     }
     DEBUG("[W][CONF] wrong GEO params!");
@@ -326,7 +326,7 @@ bool ConfigApp::solarEnable(bool enable) {
 bool ConfigApp::saveDeepSleep(int seconds){
     saveInt("deepSleep", seconds);
     deepSleep = seconds;
-    Serial.printf("-->[CONF] deep sleep time to\t: %d\n", seconds);
+    Serial.printf("-->[CONF] deep sleep time to\t: %d\r\n", seconds);
     return true;
 }
 
@@ -342,7 +342,7 @@ bool ConfigApp::saveHassIP(String ip) {
     preferences.putString("hassip", ip);
     preferences.end();
     setLastKeySaved("hassip");
-    Serial.printf("-->[CONF] Hass local IP \t: %s saved.\n",ip.c_str());
+    Serial.printf("-->[CONF] Hass local IP \t: %s saved.\r\n",ip.c_str());
     return true;
 }
 
@@ -351,7 +351,7 @@ bool ConfigApp::saveHassPort(int port) {
     preferences.putInt("hasspt", port);
     preferences.end();
     setLastKeySaved("hasspt");
-    Serial.printf("-->[CONF] Hass Port  \t: %i saved.\n", port);
+    Serial.printf("-->[CONF] Hass Port  \t: %i saved.\r\n", port);
     return true;
 }
 
@@ -360,7 +360,7 @@ bool ConfigApp::saveHassUser(String user) {
     preferences.putString("hassusr", user);
     preferences.end();
     setLastKeySaved("hassusr");
-    Serial.printf("-->[CONF] Hass User  \t: %s saved.\n", user.c_str());
+    Serial.printf("-->[CONF] Hass User  \t: %s saved.\r\n", user.c_str());
     return true;
 }
 
@@ -369,7 +369,7 @@ bool ConfigApp::saveHassPassword(String passw) {
     preferences.putString("hasspsw", passw);
     preferences.end();
     setLastKeySaved("hasspsw");
-    if (devmode) Serial.printf("-->[CONF] Hass password %s saved.\n", passw.c_str());
+    if (devmode) Serial.printf("-->[CONF] Hass password %s saved.\r\n", passw.c_str());
     else Serial.println("-->[CONF] Hass password saved.");
     return true;
 }

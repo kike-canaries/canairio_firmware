@@ -20,7 +20,7 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
                 ota.getInstance()->m_pOTAHandlerCallbacks->onStart();
         })
         .onEnd([]() {
-            Serial.println("\n-->[OTA] success!");
+            Serial.println("\r\n-->[OTA] success!");
             if(ota.getInstance()->m_pOTAHandlerCallbacks!=nullptr)
                 ota.getInstance()->m_pOTAHandlerCallbacks->onEnd();
         })

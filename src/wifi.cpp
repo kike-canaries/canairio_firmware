@@ -81,14 +81,14 @@ void wifiConnect(const char* ssid, const char* pass) {
     Serial.println(" done.");
     Serial.print("-->[WIFI] device network IP\t: ");
     Serial.println(WiFi.localIP());
-    Serial.println("-->[WIFI] cloud publish interval\t: " + String(cfg.stime * 2) + " sec.");
+    Serial.println("-->[WIFI] cloud publish interval: " + String(cfg.stime * 2) + " sec.");
     wd.pause();
     otaInit();
     ota.checkRemoteOTA();
     wd.resume();
     wifiCloudsInit();
   } else {
-    Serial.println("fail!\n[E][WIFI] disconnected!");
+    Serial.println("fail!\r\n[E][WIFI] disconnected!");
   }
 }
 
@@ -134,14 +134,14 @@ int getWifiRSSI() {
 }
 
 String getDeviceInfo() {
-  String info = getHostId() + "\n";
-  info = info + String(FLAVOR) + "\n";
-  info = info + "Rev" + String(REVISION) + " v" + String(VERSION) + "\n";
-  info = info + "" + cfg.getStationName() + "\n";
-  info = info + "IP: " + WiFi.localIP().toString() + "\n";
-  info = info + "OTA: " + String(TARGET) + " channel\n";
-  info = info + "Hass: " + String(hassIsConnected() ? "connected" : "disconnected") + "\n";
-  info = info + "Anaire: " + String(anaireIsConnected() ? "connected" : "disconnected") + "\n";
+  String info = getHostId() + "\r\n";
+  info = info + String(FLAVOR) + "\r\n";
+  info = info + "Rev" + String(REVISION) + " v" + String(VERSION) + "\r\n";
+  info = info + "" + cfg.getStationName() + "\r\n";
+  info = info + "IP: " + WiFi.localIP().toString() + "\r\n";
+  info = info + "OTA: " + String(TARGET) + " channel\r\n";
+  info = info + "Hass: " + String(hassIsConnected() ? "connected" : "disconnected") + "\r\n";
+  info = info + "Anaire: " + String(anaireIsConnected() ? "connected" : "disconnected") + "\r\n";
   if (cfg.devmode) Serial.println("-->[WIFI] AP RSSI signal \t: " + String(getWifiRSSI()) + " dBm");
   return info;
 }
@@ -152,6 +152,6 @@ void logMemory(const char* msg) {
   if (!cfg.devmode) return;
   if (heap_size == 0) heap_size = ESP.getFreeHeap();
   heap_size = heap_size - ESP.getFreeHeap();
-  Serial.printf("-->[HEAP] %s bytes used\t: %04db/%03dKb\n", msg, heap_size, ESP.getFreeHeap() / 1024);
+  Serial.printf("-->[HEAP] %s bytes used\t: %04db/%03dKb\r\n", msg, heap_size, ESP.getFreeHeap() / 1024);
   heap_size = ESP.getFreeHeap();
 }

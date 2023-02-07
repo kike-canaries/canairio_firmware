@@ -6,12 +6,12 @@ void Battery_OLED::setupBattADC() {
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize((adc_unit_t)ADC_UNIT_1, (adc_atten_t)ADC1_CHANNEL_6, (adc_bits_width_t)ADC_WIDTH_BIT_12, 1100, &adc_chars);
     // Check type of calibration value used to characterize ADC
     if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
-        Serial.printf("-->[BATT] ADC eFuse Vref:%u mV\n", adc_chars.vref);
+        Serial.printf("-->[BATT] ADC eFuse Vref:%u mV\r\n", adc_chars.vref);
         vref = adc_chars.vref;
     } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
-        Serial.printf("-->[BATT] ADC Two Point --> coeff_a:%umV coeff_b:%umV\n", adc_chars.coeff_a, adc_chars.coeff_b);
+        Serial.printf("-->[BATT] ADC Two Point --> coeff_a:%umV coeff_b:%umV\r\n", adc_chars.coeff_a, adc_chars.coeff_b);
     } else {
-        Serial.printf("-->[BATT] ADC Default Vref: %u mV\n", vref);
+        Serial.printf("-->[BATT] ADC Default Vref: %u mV\r\n", vref);
     }
     #endif
 }
@@ -40,7 +40,7 @@ bool Battery_OLED::isCharging() {
 
 void Battery_OLED::printValues() {
     if (!debug) return;
-        Serial.printf("-->[BATT] Battery voltage  \t: %.3fv vref: %i Charge:%i\n", curv, vref, getCharge());  // Output voltage and current of Bat
+        Serial.printf("-->[BATT] Battery voltage  \t: %.3fv vref: %i Charge:%i\r\n", curv, vref, getCharge());  // Output voltage and current of Bat
 }
 
 void Battery_OLED::update() {

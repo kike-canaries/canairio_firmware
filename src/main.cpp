@@ -210,16 +210,16 @@ void startingSensors() {
         printSensorsDetected();    
     }
 
-    Serial.printf("-->[INFO] registered units\t:\n");
+    Serial.printf("-->[INFO] registered units\t:\r\n");
     delay(1000);
     sensors.readAllSensors();                       // only to force to register all sensors
     gui.welcomeAddMessage("Units count: "+String(sensors.getUnitsRegisteredCount()));
     selectUnit = (UNIT) cfg.getUnitSelected();
-    Serial.printf("-->[INFO] restored saved unit \t: %s\n",sensors.getUnitName(selectUnit).c_str());
+    Serial.printf("-->[INFO] restored saved unit \t: %s\r\n",sensors.getUnitName(selectUnit).c_str());
     if (!sensors.isUnitRegistered(selectUnit)){
         sensors.resetNextUnit();
         selectUnit = sensors.getNextUnit();  // auto selection of sensor unit to show
-        Serial.printf("-->[INFO] not found! set to\t: %s\n",sensors.getUnitName(selectUnit).c_str());
+        Serial.printf("-->[INFO] not found! set to\t: %s\r\n",sensors.getUnitName(selectUnit).c_str());
     }
     gui.welcomeAddMessage("Show unit: "+sensors.getUnitName(selectUnit));
     sensors.printUnitsRegistered(true);
@@ -233,7 +233,7 @@ void startingSensors() {
 void setup() {
     Serial.begin(115200);
     delay(400);
-    Serial.println("\n== CanAirIO Setup ==\n");
+    Serial.println("\n== CanAirIO Setup ==\r\n");
     logMemory("INIT");
 
     // init app preferences and load settings
@@ -279,8 +279,8 @@ void setup() {
     gui.welcomeAddMessage("Connecting..");
     wifiInit();
     logMemory("WIFI");
-    Serial.printf("-->[INFO] InfluxDb cloud \t: %s\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
-    Serial.printf("-->[INFO] WiFi current config\t: %s\n", cfg.isWifiEnable() ? "enabled" : "disabled");
+    Serial.printf("-->[INFO] InfluxDb cloud \t: %s\r\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
+    Serial.printf("-->[INFO] WiFi current config\t: %s\r\n", cfg.isWifiEnable() ? "enabled" : "disabled");
     gui.welcomeAddMessage("WiFi: "+String(cfg.isIfxEnable() ? "On" : "Off"));
     gui.welcomeAddMessage("Influx: "+String(cfg.isIfxEnable() ? "On" : "Off"));
  
@@ -304,12 +304,12 @@ void setup() {
     gui.showMain();
     refreshGUIData();
     logMemory("GLIB");
-    Serial.printf("-->[INFO] sensors units detected\t: %d\n", sensors.getUnitsRegisteredCount());
-    Serial.printf("-->[INFO] unit selected to show \t: %s\n",sensors.getUnitName(selectUnit).c_str());
-    Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\n", sizeof(sensors));
-    Serial.printf("-->[HEAP] sizeof config \t: %04ub\n", sizeof(cfg));
-    Serial.printf("-->[HEAP] sizeof GUI    \t: %04ub\n", sizeof(gui));
-    Serial.println("\n==>[INFO] Setup End ===\n");
+    Serial.printf("-->[INFO] sensors units detected: %d\r\n", sensors.getUnitsRegisteredCount());
+    Serial.printf("-->[INFO] unit selected to show : %s\r\n",sensors.getUnitName(selectUnit).c_str());
+    Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\r\n", sizeof(sensors));
+    Serial.printf("-->[HEAP] sizeof config \t: %04ub\r\n", sizeof(cfg));
+    Serial.printf("-->[HEAP] sizeof GUI    \t: %04ub\r\n", sizeof(gui));
+    Serial.println("\n==>[INFO] Setup End ===\r\n");
 }
 
 void loop() {

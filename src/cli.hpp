@@ -2,6 +2,7 @@
 
 bool setup_mode = false;
 int setup_time = 15000;
+bool first_run = true;
 
 class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
   void onWifiStatus(bool isConnected) {
@@ -10,9 +11,17 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
 
   void onHelpShow() {
     // Enter your custom help here:
-    Serial.println("\r\nCustom commands:\r\n");
+    Serial.println("\r\nCanAirIO Commands:\r\n");
     Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
-    Serial.println("\n\nenter the word: setup, to configure the device");
+    Serial.println("debug\t<on/off>\tto enable debug mode");
+    Serial.println("stime\t<time>\t\tset the sample time in seconds");
+    Serial.println("spins\t<TX> <RX>\tset the UART pins");
+    Serial.println("stype\t<sensor_type>\tPlease see the documentation. (UART sensors)");
+    Serial.println("exit\t\t\texit of the setup mode (Auto exit in 15 seg)");
+    Serial.println("setup\t\t\ttype this to start the configuration");
+
+    if(first_run) Serial.println("\n\nEnter the word: \"setup\" to configure the device");
+    first_run = false;
   }
 
   void onNewWifi(String ssid, String passw){
@@ -62,7 +71,7 @@ void wcli_exit(String opts) {
 
 void wcli_setup(String opts) {
   setup_mode = true;
-  Serial.println("\r\nSetup status:\r\n");
+  Serial.println("\r\nSetup Mode. Status:\r\n");
   
   Serial.printf("WiFi current status\t: %s\r\n", WiFi.status() == WL_CONNECTED ? "connected" : "disconnected");
   Serial.printf("Sensor sample time \t: %d\r\n", cfg.stime);
@@ -71,6 +80,8 @@ void wcli_setup(String opts) {
   Serial.printf("UART sensor RX   \t: %d\r\n", cfg.sRX);
   Serial.printf("Sensor sample time\t: %d\r\n", cfg.stime);
   Serial.printf("Current debug mode\t: %s\r\n", cfg.devmode == true ? "enabled" : "disabled");
+
+  Serial.printf("\r\nType help for details or exit for leave.\r\n");
 }
 
 void wcli_reboot(String opts) {

@@ -21,6 +21,9 @@
 #define MQTT_DELAYED_TIME 30      // mqtt retry connection delayed time
 #define MQTT_BUFFER_SIZE 512      // mqtt buffer size
 
+#define KEY_CLD_ANAIRE "key_cloud_anaire"
+#define KEY_CLD_HOMEAS "key_cloud_homeas"
+
 void otaLoop();
 void wifiInit();
 void wifiStop();

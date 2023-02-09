@@ -14,7 +14,7 @@ void ConfigApp::init(const char app_name[]) {
 }
 
 void ConfigApp::reload() {
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RO_MODE);
     // device name or station name
     dname = preferences.getString("dname", "");
     // wifi settings
@@ -52,7 +52,7 @@ void ConfigApp::reload() {
 
 String ConfigApp::getCurrentConfig() {
     StaticJsonDocument<1000> doc;
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RO_MODE);
     doc["dname"] = preferences.getString("dname", "");       // device or station name
     doc["stime"] = preferences.getInt("stime", 5);           // sensor measure time
     doc["stype"] = preferences.getInt("stype", 0);           // sensor UART type;
@@ -102,36 +102,43 @@ void ConfigApp::setLastKeySaved(String key){
 }
 
 void ConfigApp::saveString(String key, String value){
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.putString(key.c_str(), value.c_str());
     preferences.end();
     setLastKeySaved(key);
 }
 
 void ConfigApp::saveInt(String key, int value){
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.putInt(key.c_str(), value);
     preferences.end();
     setLastKeySaved(key);
 }
 
 int32_t ConfigApp::getInt(String key, int defaultValue){
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RO_MODE);
     int32_t out = preferences.getInt(key.c_str(), defaultValue);
     preferences.end();
     return out;
 }
 
-void ConfigApp::saveFloat(String key, float value){
-    preferences.begin(_app_name, false);
-    preferences.putFloat(key.c_str(), value);
+bool ConfigApp::getBool(String key, bool defaultValue){
+    preferences.begin(_app_name, RO_MODE);
+    bool out = preferences.getBool(key.c_str(), defaultValue);
+    preferences.end();
+    return out;
+}
+
+void ConfigApp::saveBool(String key, bool value){
+    preferences.begin(_app_name, RW_MODE);
+    preferences.putBool(key.c_str(), value);
     preferences.end();
     setLastKeySaved(key);
 }
 
-void ConfigApp::saveBool(String key, bool value){
-    preferences.begin(_app_name, false);
-    preferences.putBool(key.c_str(), value);
+void ConfigApp::saveFloat(String key, float value){
+    preferences.begin(_app_name, RW_MODE);
+    preferences.putFloat(key.c_str(), value);
     preferences.end();
     setLastKeySaved(key);
 }
@@ -225,7 +232,7 @@ bool ConfigApp::saveSeaLevel(float hpa) {
 
 bool ConfigApp::saveSSID(String ssid){
     if (ssid.length() > 0) {
-        preferences.begin(_app_name, false);
+        preferences.begin(_app_name, RW_MODE);
         preferences.putString("ssid", ssid);
         preferences.end();
         setLastKeySaved("ssid");
@@ -238,7 +245,7 @@ bool ConfigApp::saveSSID(String ssid){
 
 bool ConfigApp::saveWifi(String ssid, String pass){
     if (ssid.length() > 0) {
-        preferences.begin(_app_name, false);
+        preferences.begin(_app_name, RW_MODE);
         preferences.putString("ssid", ssid);
         preferences.putString("pass", pass);
         preferences.putBool("wifiEnable", true);
@@ -256,7 +263,7 @@ bool ConfigApp::saveWifi(String ssid, String pass){
 
 bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
     if (db.length() > 0 && ip.length() > 0) {
-        preferences.begin(_app_name, false);
+        preferences.begin(_app_name, RW_MODE);
         preferences.putString("ifxdb", db);
         preferences.putString("ifxip", ip);
         if (pt > 0) preferences.putUInt("ifxpt", pt);
@@ -274,7 +281,7 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
 
 bool ConfigApp::saveGeo(double lat, double lon, String geo){
     if (lat != 0 && lon != 0) {
-        preferences.begin(_app_name, false);
+        preferences.begin(_app_name, RW_MODE);
         preferences.putDouble("lat", lat);
         preferences.putDouble("lon", lon);
         preferences.putString("geo", geo);
@@ -338,7 +345,7 @@ bool ConfigApp::saveI2COnly(bool enable) {
 }
 
 bool ConfigApp::saveHassIP(String ip) {
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.putString("hassip", ip);
     preferences.end();
     setLastKeySaved("hassip");
@@ -347,7 +354,7 @@ bool ConfigApp::saveHassIP(String ip) {
 }
 
 bool ConfigApp::saveHassPort(int port) {
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.putInt("hasspt", port);
     preferences.end();
     setLastKeySaved("hasspt");
@@ -356,7 +363,7 @@ bool ConfigApp::saveHassPort(int port) {
 }
 
 bool ConfigApp::saveHassUser(String user) {
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.putString("hassusr", user);
     preferences.end();
     setLastKeySaved("hassusr");
@@ -365,7 +372,7 @@ bool ConfigApp::saveHassUser(String user) {
 }
 
 bool ConfigApp::saveHassPassword(String passw) {
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.putString("hasspsw", passw);
     preferences.end();
     setLastKeySaved("hasspsw");
@@ -501,7 +508,7 @@ bool ConfigApp::isWifiConnected() {
 }
 
 void ConfigApp::clear() {
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.clear();
     preferences.end();
     Serial.println("-->[CONF] clear settings!");

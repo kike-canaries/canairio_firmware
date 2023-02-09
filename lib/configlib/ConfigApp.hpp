@@ -5,6 +5,9 @@
 #include <Preferences.h>
 #include <Watchdog.hpp>
 
+#define RW_MODE false
+#define RO_MODE true
+
 class RemoteConfigCallbacks;
 class ConfigApp {
    public:
@@ -106,6 +109,18 @@ class ConfigApp {
 
     bool saveHassUser(String user);
 
+    void saveString(String key, String value);
+
+    void saveInt(String key, int value);
+
+    int32_t getInt(String key, int defaultValue);
+    
+    bool getBool(String key, bool defaultValue);
+
+    void saveBool(String key, bool value);
+
+    void saveFloat(String key, float value);
+
     String getCurrentConfig();
 
     bool isWifiEnable();
@@ -162,16 +177,6 @@ class ConfigApp {
 
     RemoteConfigCallbacks* mRemoteConfigCallBacks = nullptr;
         
-    void saveString(String key, String value);
-
-    void saveInt(String key, int value);
-
-    int32_t getInt(String key, int defaultValue);
-
-    void saveFloat(String key, float value);
-
-    void saveBool(String key, bool value);
-
     void setLastKeySaved(String key);
 
     bool saveI2COnly(bool enable);

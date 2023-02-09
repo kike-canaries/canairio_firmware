@@ -1,6 +1,6 @@
 #include <bluetooth.hpp>
-#include <cli.hpp>
 #include <wifi.hpp>
+#include <cli.hpp>
 
 /******************************************************************************
 *   W I F I   M E T H O D S
@@ -81,6 +81,7 @@ void wifiConnect(const char* ssid, const char* pass) {
   delay(500);
   if (WiFi.isConnected()) {
     cfg.isNewWifi = false;  // flag for config via BLE
+    wcli.saveNetwork(ssid, pass);
     Serial.println(" done."); 
   } else {
     Serial.println("fail!\r\n[E][WIFI] disconnected!");
@@ -91,7 +92,7 @@ void wifiInit() {
   if (!WiFi.isConnected() && cfg.isWifiEnable() && cfg.ssid.length() > 0) {
     wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
   }
-  else if(WiFi.isConnected()) {
+  if(WiFi.isConnected()) {
     Serial.print("-->[WIFI] device network IP\t: ");
     Serial.println(WiFi.localIP());
     Serial.println("-->[WIFI] publish interval \t: " + String(cfg.stime * 2) + " sec.");
@@ -123,6 +124,7 @@ void wifiLoop() {
     influxDbInit();
     cfg.setWifiConnected(WiFi.isConnected());
   }
+  if (!WiFi.isConnected()) return;
   influxDbLoop();  // influxDB publication
   if (cfg.getBool(KEY_CLD_ANAIRE,true)) anaireLoop();
   if (cfg.getBool(KEY_CLD_HOMEAS,true)) hassLoop();

@@ -304,8 +304,8 @@ void setup() {
     gui.showMain();
     refreshGUIData();
     logMemory("GLIB");
-    Serial.printf("-->[INFO] sensors units detected: %d\r\n", sensors.getUnitsRegisteredCount());
-    Serial.printf("-->[INFO] unit selected to show : %s\r\n",sensors.getUnitName(selectUnit).c_str());
+    Serial.printf("-->[INFO] sensors units count\t: %d\r\n", sensors.getUnitsRegisteredCount());
+    Serial.printf("-->[INFO] show unit selected \t: %s\r\n",sensors.getUnitName(selectUnit).c_str());
     Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\r\n", sizeof(sensors));
     Serial.printf("-->[HEAP] sizeof config \t: %04ub\r\n", sizeof(cfg));
     Serial.printf("-->[HEAP] sizeof GUI    \t: %04ub\r\n", sizeof(gui));

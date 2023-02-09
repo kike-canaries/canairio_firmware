@@ -86,5 +86,6 @@ void anaireLoop () {
     client.loop();
     delay(10);
     if (!client.connected()) anaireConnect();
+    delay(10);
     anairePublish();
 }

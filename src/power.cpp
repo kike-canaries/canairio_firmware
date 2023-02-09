@@ -98,6 +98,6 @@ void powerLoop(){
             if(cfg.solarmode)powerDeepSleepTimer(cfg.deepSleep);
             else completeShutdown();
         }
-        if(cfg.devmode) Serial.printf("-->[HEAP] Min:%d Max:%d\t: %d\r\n", ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), ESP.getFreeHeap());
+        log_i("[HEAP] Min:%d Max:%d\t: %d\r\n", ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), ESP.getFreeHeap());
     }
 }

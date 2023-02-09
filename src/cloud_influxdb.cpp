@@ -113,7 +113,7 @@ void influxDbLoop() {
         timeStamp = millis();
         if (ifx_ready && sensors.isDataReady() && WiFi.isConnected() && cfg.isIfxEnable()) {
             if (influxDbWrite()){
-                if(cfg.devmode) Serial.printf ("-->[IFDB] CanAirIO cloud write\t: payload size: %d\r\n", sizeof(sensor));
+                if(cfg.devmode) Serial.printf ("-->[IFDB] CanAirIO published :)\t: payload size: %d\r\n", sizeof(sensor));
                 gui.displayDataOnIcon();
                 suspendDevice();
                 ifx_error_count = 0;

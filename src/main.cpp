@@ -267,6 +267,7 @@ void setup() {
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
     Serial.println("-->[INFO] enable sensor GPIO\t: " + String(MAIN_HW_EN_PIN));
     logMemory("GPIO");
+    gui.welcomeAddMessage("wait for setup..");
     wifiCLIInit();
     logMemory("CLI");
     startingSensors();

@@ -143,6 +143,20 @@ void ConfigApp::saveFloat(String key, float value){
     setLastKeySaved(key);
 }
 
+PreferenceType ConfigApp::keyType(String key) {
+    preferences.begin(_app_name, RO_MODE);
+    PreferenceType type = preferences.getType(key.c_str());
+    preferences.end();
+    return type;
+}
+
+bool ConfigApp::isKey(String key) {
+    preferences.begin(_app_name, RO_MODE);
+    bool iskey = preferences.isKey(key.c_str());
+    preferences.end();
+    return iskey;
+}
+
 bool ConfigApp::saveDeviceName(String name) {
     if (name.length() > 0) {
         saveString("dname",name);
@@ -288,6 +302,20 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
         preferences.end();
         setLastKeySaved("lat");
         log_i("-->[CONF] geo: %s (%d,%d)",geo,lat,lon);
+        Serial.printf("-->[CONF] updated GeoHash to\t: %s\r\n",geo.c_str());
+        return true;
+    }
+    DEBUG("[W][CONF] wrong GEO params!");
+    return false;
+}
+
+bool ConfigApp::saveGeo(String geo){
+    if (geo.length() > 5) {
+        preferences.begin(_app_name, RW_MODE);
+        preferences.putString("geo", geo);
+        preferences.end();
+        setLastKeySaved("geo");
+        log_i("[CONF] saving geo: %s",geo);
         Serial.printf("-->[CONF] updated GeoHash to\t: %s\r\n",geo.c_str());
         return true;
     }
@@ -512,6 +540,7 @@ void ConfigApp::clear() {
     preferences.clear();
     preferences.end();
     Serial.println("-->[CONF] clear settings!");
+    delay(200);
     reboot();
 }
 

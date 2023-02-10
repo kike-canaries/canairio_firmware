@@ -64,9 +64,10 @@ void otaInit() {
 }
 
 void wifiCloudsInit() {
-  influxDbInit();
   if (cfg.getBool(KEY_CLD_ANAIRE,true)) anaireInit();
   if (cfg.getBool(KEY_CLD_HOMEAS,true)) hassInit();
+  influxDbInit();
+  if (anaireIsConnected()) Serial.printf("-->[MQTT] %s\t: connected!\r\n", ANAIRE_HOST);
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
@@ -144,10 +145,13 @@ String getDeviceInfo() {
   info = info + "" + cfg.getStationName() + "\r\n";
   info = info + "IP: " + WiFi.localIP().toString() + "\r\n";
   info = info + "OTA: " + String(TARGET) + " channel\r\n";
-  info = info + "Hass: " + String(hassIsConnected() ? "connected" : "disconnected") + "\r\n";
-  info = info + "Anaire: " + String(anaireIsConnected() ? "connected" : "disconnected") + "\r\n";
-  if (cfg.devmode) Serial.println("-->[WIFI] AP RSSI signal \t: " + String(getWifiRSSI()) + " dBm");
+  // info = info + "Hass: " + String(hassIsConnected() ? "connected" : "disconnected") + "\r\n";
+  // info = info + "Anaire: " + String(anaireIsConnected() ? "connected" : "disconnected") + "\r\n";
   return info;
+}
+
+void printWifiRSSI(){
+  if (cfg.devmode) Serial.println("-->[WIFI] AP RSSI signal \t: " + String(getWifiRSSI()) + " dBm");
 }
 
 uint32_t heap_size = 0;

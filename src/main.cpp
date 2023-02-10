@@ -73,6 +73,7 @@ void refreshGUIData() {
     gui.displaySensorLiveIcon();  // all sensors read are ok 
     gui.setSensorData(data);
     gui.setInfoData(getDeviceInfo());
+    printWifiRSSI();
     logMemory ("LOOP");
 }
 
@@ -210,7 +211,7 @@ void startingSensors() {
         printSensorsDetected();    
     }
 
-    Serial.printf("-->[INFO] registered units\t:\r\n");
+    Serial.printf("-->[INFO] registering units\t:\r\n");
     delay(1000);
     sensors.readAllSensors();                       // only to force to register all sensors
     gui.welcomeAddMessage("Units count: "+String(sensors.getUnitsRegisteredCount()));

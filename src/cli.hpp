@@ -1,5 +1,10 @@
 #include <ConfigApp.hpp>
 
+#define lenght_array(array) ((sizeof(array)) / (sizeof(array[0])))
+
+static const char* const keys[] = {KEY_CLD_ANAIRE, KEY_CLD_HOMEAS, KEY_PAX_ENABLE};
+
+
 bool setup_mode = false;
 int setup_time = 15000;
 bool first_run = true;
@@ -37,6 +42,35 @@ void wcli_debug(String opts) {
   cfg.debugEnable(param.equals("ON") || param.equals("1"));
 }
 
+bool isValidKey(String key) {
+  int keys_size = lenght_array(keys);
+  for (int i = 0; i < keys_size; i++) {
+    if (key.equals(keys[i])) return true;
+  }
+  return false;
+}
+
+void wcli_klist(String opts) {
+  int keys_size = lenght_array(keys);
+  for (int i = 0; i < keys_size; i++) {
+    Serial.printf("%s\r\n", keys[i]);
+  }  
+}
+
+void wcli_kset(String opts) {
+  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+  String key = operands.first();
+  String value = operands.second();
+  value.toLowerCase();
+  if(isValidKey(key)){
+    Serial.printf("saving: %s:%s\r\n",key.c_str(),value.c_str());
+    cfg.saveBool(key,value.equals("on") || value.equals("1") || value.equals("enable"));
+  }
+  else {
+    Serial.printf("invalid key: %s\r\nPlease see the valid keys with klist command.\r\n",key.c_str());
+  }
+}
+
 void wcli_uartpins(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   int sTX = operands.first().toInt();
@@ -48,6 +82,7 @@ void wcli_uartpins(String opts) {
   else
     Serial.println("invalid pins values");
 }
+
 void wcli_stime(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   int stime = operands.first().toInt();
@@ -62,6 +97,11 @@ void wcli_stype(String opts) {
   if (stype > 7 || stype < 0) Serial.println("invalid UART sensor type");
   else cfg.saveSensorType(stype);
   cfg.reload();
+}
+
+void wcli_info(String opts) {
+  Serial.println();
+  Serial.print(getDeviceInfo());
 }
 
 void wcli_exit(String opts) {
@@ -101,6 +141,9 @@ void wifiCLIInit() {
   wcli.term->add("stime", &wcli_stime, "\tset the sample time (seconds)");
   wcli.term->add("spins", &wcli_uartpins, "\tset the UART pins TX RX");
   wcli.term->add("stype", &wcli_stype, "\tset the sensor type (UART)");
+  wcli.term->add("kset", &wcli_kset, "\tset preference key true/false or 1/0");
+  wcli.term->add("klist", &wcli_klist, "\tlist valid preference keys");
+  wcli.term->add("info", &wcli_info, "\tget device information");
   wcli.term->add("exit", &wcli_exit, "\texit of the setup mode (Auto exit in 15 seg)");
   wcli.term->add("setup", &wcli_setup, "\ttype this to start to configure the device :D\n");
   // Configuration loop:

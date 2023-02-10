@@ -82,7 +82,7 @@ void wifiConnect(const char* ssid, const char* pass) {
   delay(500);
   if (WiFi.isConnected()) {
     cfg.isNewWifi = false;  // flag for config via BLE
-    wcli.saveNetwork(ssid, pass);
+    if(!wcli.isSSIDSaved(ssid))wcli.saveNetwork(ssid, pass);
     Serial.println(" done."); 
   } else {
     Serial.println("fail!\r\n[E][WIFI] disconnected!");

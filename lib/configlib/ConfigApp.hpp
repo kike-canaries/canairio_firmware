@@ -87,6 +87,8 @@ class ConfigApp {
 
     bool saveInfluxDb(String db, String ip, int pt);
 
+    bool saveGeo(String geo);
+
     bool saveGeo(double lat, double lon, String geo);
 
     bool wifiEnable(bool enable);
@@ -139,6 +141,8 @@ class ConfigApp {
 
     String getStationName();
 
+    String getAnaireDeviceId();
+
     int getSensorType();
 
     void clear();
@@ -161,6 +165,10 @@ class ConfigApp {
 
     void setRemoteConfigCallbacks(RemoteConfigCallbacks* pCallbacks);
 
+    PreferenceType keyType(String key);
+
+    bool isKey(String key);
+
    private:
     ///preferences main key
     char* _app_name;
@@ -182,8 +190,6 @@ class ConfigApp {
     bool saveI2COnly(bool enable);
 
     void performCO2Calibration();
-
-    String getAnaireDeviceId();
 
     void DEBUG(const char* text, const char* textb = "");
 

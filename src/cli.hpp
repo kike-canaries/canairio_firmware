@@ -2,38 +2,11 @@
 
 #define lenght_array(array) ((sizeof(array)) / (sizeof(array[0])))
 
-static const char* const keys[] = {KEY_CLD_ANAIRE, KEY_CLD_HOMEAS, KEY_PAX_ENABLE};
-
+static const char* const keys[] = {KEY_CLD_ANAIRE, KEY_CLD_HOMEAS, KEY_PAX_ENABLE, KEY_I2C_ONLY, KEY_WIFI_ENABLE};
 
 bool setup_mode = false;
-int setup_time = 15000;
+int setup_time = 10000;
 bool first_run = true;
-
-class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
-  void onWifiStatus(bool isConnected) {
-    
-  }
-
-  void onHelpShow() {
-    // Enter your custom help here:
-    Serial.println("\r\nCanAirIO Commands:\r\n");
-    Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
-    Serial.println("debug\t<on/off>\tto enable debug mode");
-    Serial.println("stime\t<time>\t\tset the sample time in seconds");
-    Serial.println("spins\t<TX> <RX>\tset the UART pins");
-    Serial.println("stype\t<sensor_type>\tPlease see the documentation. (UART sensors)");
-    Serial.println("exit\t\t\texit of the setup mode (Auto exit in 15 seg)");
-    Serial.println("setup\t\t\ttype this to start the configuration");
-
-    if(first_run) Serial.println("\n\nEnter the word: \"setup\" to configure the device");
-    first_run = false;
-  }
-
-  void onNewWifi(String ssid, String passw){
-    cfg.saveWifi(ssid,passw);
-    cfg.reload();
-  }
-};
 
 void wcli_debug(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
@@ -52,19 +25,25 @@ bool isValidKey(String key) {
 
 void wcli_klist(String opts) {
   int keys_size = lenght_array(keys);
+  Serial.printf("\n%11s \t%s \t%s \r\n","KEY NAME","DEFINED","VALUE");
   for (int i = 0; i < keys_size; i++) {
-    Serial.printf("%s\r\n", keys[i]);
+    bool isDefined = cfg.isKey(keys[i]);
+    String defined = isDefined ? "custom " : "default";
+    String value = "";
+    if (isDefined) value = cfg.getBool(keys[i],false) ? "true" : "false";
+    Serial.printf("%11s \t%s \t%s \r\n", keys[i],defined.c_str(),value.c_str());
   }  
 }
 
 void wcli_kset(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   String key = operands.first();
-  String value = operands.second();
-  value.toLowerCase();
+  String v = operands.second();
+  v.toLowerCase();
   if(isValidKey(key)){
-    Serial.printf("saving: %s:%s\r\n",key.c_str(),value.c_str());
-    cfg.saveBool(key,value.equals("on") || value.equals("1") || value.equals("enable"));
+    Serial.printf("saving: %s:%s\r\n",key.c_str(),v.c_str());
+    cfg.saveBool(key,v.equals("on") || v.equals("1") || v.equals("enable") || v.equals("true"));
+    cfg.reload();
   }
   else {
     Serial.printf("invalid key: %s\r\nPlease see the valid keys with klist command.\r\n",key.c_str());
@@ -99,6 +78,21 @@ void wcli_stype(String opts) {
   cfg.reload();
 }
 
+void wcli_sgeoh (String opts) {
+  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+  String geoh = operands.first();
+  if (geoh.length() > 5) {
+    geoh.toUpperCase();
+    cfg.saveGeo(geoh);
+    cfg.ifxdbEnable(true);
+    cfg.reload();
+  } else {
+    Serial.println("\nInvalid Geohash. (Precision should be > to 6).\r\n");
+    Serial.println("Please visit: http://bit.ly/geohashe");
+    Serial.println("\nand select one of your fixed station.");
+  }
+}
+
 void wcli_info(String opts) {
   Serial.println();
   Serial.print(getDeviceInfo());
@@ -111,41 +105,94 @@ void wcli_exit(String opts) {
 
 void wcli_setup(String opts) {
   setup_mode = true;
-  Serial.println("\r\nSetup Mode. Status:\r\n");
-  
+  Serial.println("\r\nSetup Mode. Main presets:\r\n");
+  String canAirIOname = "Please set your geohash with \"sgeoh\" cmd";
+  if(cfg.geo.length()>5)canAirIOname = cfg.getStationName();
+  Serial.printf("CanAirIO device id\t: %s\r\n", canAirIOname.c_str());
+  Serial.printf("Device factory id\t: %s\r\n", cfg.getAnaireDeviceId().c_str());
   Serial.printf("WiFi current status\t: %s\r\n", WiFi.status() == WL_CONNECTED ? "connected" : "disconnected");
   Serial.printf("Sensor sample time \t: %d\r\n", cfg.stime);
   Serial.printf("UART sensor type \t: %d\r\n", cfg.getSensorType());
-  Serial.printf("UART sensor TX   \t: %d\r\n", cfg.sTX);
-  Serial.printf("UART sensor RX   \t: %d\r\n", cfg.sRX);
+  Serial.printf("UART sensor TX   \t: %d\r\n", cfg.sTX == -1 ? PMS_TX : cfg.sTX);
+  Serial.printf("UART sensor RX   \t: %d\r\n", cfg.sRX == -1 ? PMS_RX : cfg.sRX);
+  Serial.printf("Sensor geohash id\t: %s\r\n", cfg.geo.length() == 0 ? "undefined" : cfg.geo.c_str());
   Serial.printf("Sensor sample time\t: %d\r\n", cfg.stime);
   Serial.printf("Current debug mode\t: %s\r\n", cfg.devmode == true ? "enabled" : "disabled");
 
-  Serial.printf("\r\nType help for details or exit for leave.\r\n");
+  wcli_klist("");
+
+  Serial.printf("\r\nType help for details or exit\r\n");
 }
 
 void wcli_reboot(String opts) {
   wd.execute();
 }
 
+void wcli_clear(String opts) {
+  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+  String deviceId = operands.first();
+  if (deviceId.equals(cfg.getAnaireDeviceId())) {
+    Serial.println("Clearing device to defaults..");
+    wcli.clearSettings();
+    cfg.clear();
+  }
+  else {
+    Serial.println("\nPlease type clear and the factory device id to confirm.");
+  }
+}
+
+class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
+  void onWifiStatus(bool isConnected) {
+    
+  }
+
+  void onHelpShow() {
+    // Enter your custom help here:
+    Serial.println("\r\nCanAirIO Commands:\r\n");
+    Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
+    Serial.println("clear\t\t\tfactory settings reset. (needs confirmation)");
+    Serial.println("debug\t<on/off>\tto enable debug mode");
+    Serial.println("stime\t<time>\t\tset the sample time in seconds");
+    Serial.println("spins\t<TX> <RX>\tset the UART pins");
+    Serial.println("stype\t<sensor_type>\tPlease see the documentation. (UART sensors)");
+    Serial.println("sgeoh\t<GeohashId>\tset geohash id. Choose it here http://bit.ly/geohashe");
+    Serial.println("kset\t<key> <value>\tset preference key value (on/off or 1/0)");
+    Serial.println("klist\t\t\tlist valid preference keys");
+    Serial.println("info\t\t\tget the device information");
+    Serial.println("exit\t\t\texit of the setup mode");
+    Serial.println("setup\t\t\ttype this to start the configuration");
+
+    if(first_run) Serial.println("\n\nEnter the word: \"setup\" to configure the device");
+    first_run = false;
+  }
+
+  void onNewWifi(String ssid, String passw){
+    cfg.saveWifi(ssid,passw);
+    cfg.reload();
+  }
+};
+
 /**
- * @brief WiFi CLI init and custom commands
+ * @brief WiFi CLI init and CanAirIO custom commands
  **/
 void wifiCLIInit() {
   wcli.setCallback(new mESP32WifiCLICallbacks());
   wcli.setSilentMode(true);
+  wcli.disableConnectInBoot();
   wcli.begin();
   // Main Commands:
   wcli.term->add("reboot", &wcli_reboot, "\tperform a ESP32 reboot");
+  wcli.term->add("clear", &wcli_clear, "\tfactory settings reset. (needs confirmation)");
   wcli.term->add("debug", &wcli_debug, "\tenable debug mode");
   wcli.term->add("stime", &wcli_stime, "\tset the sample time (seconds)");
   wcli.term->add("spins", &wcli_uartpins, "\tset the UART pins TX RX");
   wcli.term->add("stype", &wcli_stype, "\tset the sensor type (UART)");
+  wcli.term->add("sgeoh", &wcli_sgeoh, "\tset geohash. Please help for details.");
   wcli.term->add("kset", &wcli_kset, "\tset preference key true/false or 1/0");
   wcli.term->add("klist", &wcli_klist, "\tlist valid preference keys");
   wcli.term->add("info", &wcli_info, "\tget device information");
-  wcli.term->add("exit", &wcli_exit, "\texit of the setup mode (Auto exit in 15 seg)");
-  wcli.term->add("setup", &wcli_setup, "\ttype this to start to configure the device :D\n");
+  wcli.term->add("exit", &wcli_exit, "\texit of the setup mode. AUTO EXIT in 10 seg! :)");
+  wcli.term->add("setup", &wcli_setup, "\tTYPE THIS WORD to start to configure the device :D\n");
   // Configuration loop:
   // 15 seconds for reconfiguration or first use case.
   // for reconfiguration type disconnect and switch the "output" mode

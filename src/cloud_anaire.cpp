@@ -44,7 +44,8 @@ void anairePublish() {
         if (client.publish(ANAIRE_TOPIC, buffer, n)) {
             if (cfg.devmode) Serial.printf("-->[MQTT] Anaire published :)\t: payload size: %d\r\n", n);
         } else {
-            Serial.printf("[W][MQTT] Anaire publish error \t: %d\r\n",client.lastError());
+            if(client.lastError()!=0)
+                Serial.printf("[E][MQTT] Anaire publish error \t: %d\r\n",client.lastError());
         }
     }
 }

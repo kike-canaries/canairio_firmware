@@ -33,7 +33,7 @@ void ConfigApp::reload() {
     ifxdb_enable = preferences.getBool(getKey(CONFKEYS::KBIFXENB).c_str(), false);
     ifx.db = preferences.getString("ifxdb", ifx.db);
     ifx.ip = preferences.getString("ifxip", ifx.ip);
-    ifx.pt = preferences.getUInt("ifxpt", ifx.pt);
+    ifx.pt = preferences.getInt("ifxpt", ifx.pt);
     // station and sensor settings
     lat = preferences.getDouble("lat", 0);
     lon = preferences.getDouble("lon", 0);
@@ -71,7 +71,7 @@ String ConfigApp::getCurrentConfig() {
     doc["ienb"] = preferences.getBool(getKey(CONFKEYS::KBIFXENB).c_str(), false);   // ifxdb on/off
     doc["ifxdb"] = preferences.getString("ifxdb", ifx.db);   // influxdb database name
     doc["ifxip"] = preferences.getString("ifxip", ifx.ip);   // influxdb database ip
-    doc["ifxpt"] = preferences.getUInt("ifxpt", ifx.pt);     // influxdb sensor tags
+    doc["ifxpt"] = preferences.getInt("ifxpt", ifx.pt);     // influxdb sensor tags
     doc["geo"] = preferences.getString("geo", "");           // influxdb GeoHash tag
     doc["denb"] = preferences.getBool("debugEnable", false); // debug mode enable
     doc["penb"] = preferences.getBool(getKey(CONFKEYS::KBPAXENB).c_str(), true);    // PaxCounter enable
@@ -189,7 +189,9 @@ ConfKeyType ConfigApp::getKeyType(String key) {
   return ConfKeyType::UNKNOWN;
 }
 
-
+/**
+ * @brief DEPRECATED
+ */ 
 bool ConfigApp::saveDeviceName(String name) {
     if (name.length() > 0) {
         saveString("dname",name);
@@ -313,7 +315,7 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
         preferences.begin(_app_name, RW_MODE);
         preferences.putString("ifxdb", db);
         preferences.putString("ifxip", ip);
-        if (pt > 0) preferences.putUInt("ifxpt", pt);
+        if (pt > 0) preferences.putInt("ifxpt", pt);
         preferences.putBool(getKey(CONFKEYS::KBIFXENB).c_str(), true);
         preferences.end();
         setLastKeySaved("ifxdb");

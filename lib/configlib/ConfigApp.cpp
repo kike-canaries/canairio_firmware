@@ -301,8 +301,7 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
         preferences.putString("geo", geo);
         preferences.end();
         setLastKeySaved("lat");
-        Serial.printf("-->[CONF] geo: %s (%d,%d)\r\n",geo,lat,lon);
-        Serial.printf("-->[CONF] updated GeoHash to\t: %s\r\n",geo.c_str());
+        Serial.printf("-->[CONF] New Geohash: %s \t: (%.4f,%.4f)\r\n",geo,lat,lon);
         return true;
     }
     DEBUG("[W][CONF] wrong GEO params!");
@@ -311,13 +310,12 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
 
 bool ConfigApp::saveGeo(String geo){
     if (geo.length() > 5) {
-        float *lat;
-        float *lon;
-        geohash.decode(geo.c_str(),geo.length(),lon,lat);
-        cfg.saveGeo((double)&lat, (double)&lon, geo);
+        float lat;
+        float lon;
+        geohash.decode(geo.c_str(),geo.length(),&lon,&lat);
+        log_i("[CONF] Geohash decoder: %s (%.4f,%.4f)\r\n",geo,lat,lon);
+        cfg.saveGeo(lat,lon, geo);
         setLastKeySaved("geo");
-        log_i("[CONF] saving geo: %s",geo);
-        Serial.printf("-->[CONF] updated GeoHash to\t: %s\r\n",geo.c_str());
         return true;
     }
     DEBUG("[W][CONF] wrong GEO params!");

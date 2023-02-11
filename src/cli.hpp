@@ -9,6 +9,8 @@ void wcli_debug(String opts) {
   String param = operands.first();
   param.toUpperCase();
   cfg.debugEnable(param.equals("ON") || param.equals("1"));
+  cfg.reload();
+  sensors.setDebugMode(cfg.devmode);
 }
 
 bool isValidKey(String key) {
@@ -96,9 +98,13 @@ void wcli_uartpins(String opts) {
 void wcli_stime(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   int stime = operands.first().toInt();
-  if (stime < 1) Serial.println("invalid sample time");
-  else cfg.saveSampleTime(stime);
-  cfg.reload();
+  if (stime >= 5) {
+    cfg.saveSampleTime(stime);
+    cfg.reload();
+    sensors.setSampleTime(stime);
+  }
+  else 
+    Serial.println("invalid sample time");
 }
 
 void wcli_stype(String opts) {

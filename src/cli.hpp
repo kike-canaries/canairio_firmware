@@ -73,9 +73,12 @@ void wcli_stime(String opts) {
 void wcli_stype(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   int stype = operands.first().toInt();
-  if (stype > 7 || stype < 0) Serial.println("invalid UART sensor type");
-  else cfg.saveSensorType(stype);
-  cfg.reload();
+  if (stype > 7 || stype < 0) Serial.println("invalid UART sensor type. Choose one into 0-7");
+  else {
+    cfg.saveSensorType(stype);
+    cfg.reload();
+    Serial.printf("\nselected UART sensor model\t: %s\r\n", sensors.getSensorName((SENSORS)cfg.stype));
+  }
 }
 
 void wcli_sgeoh (String opts) {
@@ -112,9 +115,9 @@ void wcli_setup(String opts) {
   Serial.printf("Device factory id\t: %s\r\n", cfg.getAnaireDeviceId().c_str());
   Serial.printf("WiFi current status\t: %s\r\n", WiFi.status() == WL_CONNECTED ? "connected" : "disconnected");
   Serial.printf("Sensor sample time \t: %d\r\n", cfg.stime);
-  Serial.printf("UART sensor type \t: %d\r\n", cfg.getSensorType());
-  Serial.printf("UART sensor TX   \t: %d\r\n", cfg.sTX == -1 ? PMS_TX : cfg.sTX);
-  Serial.printf("UART sensor RX   \t: %d\r\n", cfg.sRX == -1 ? PMS_RX : cfg.sRX);
+  Serial.printf("UART sensor model \t: %s\r\n", sensors.getSensorName((SENSORS)cfg.stype));
+  Serial.printf("UART sensor TX pin\t: %d\r\n", cfg.sTX == -1 ? PMS_TX : cfg.sTX);
+  Serial.printf("UART sensor RX pin\t: %d\r\n", cfg.sRX == -1 ? PMS_RX : cfg.sRX);
   Serial.printf("Sensor geohash id\t: %s\r\n", cfg.geo.length() == 0 ? "undefined" : cfg.geo.c_str());
   Serial.printf("Sensor sample time\t: %d\r\n", cfg.stime);
   Serial.printf("Current debug mode\t: %s\r\n", cfg.devmode == true ? "enabled" : "disabled");

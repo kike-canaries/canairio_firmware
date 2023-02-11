@@ -113,13 +113,12 @@ void wcli_setup(String opts) {
   if(cfg.geo.length()>5)canAirIOname = cfg.getStationName();
   Serial.printf("CanAirIO device id\t: %s\r\n", canAirIOname.c_str());
   Serial.printf("Device factory id\t: %s\r\n", cfg.getAnaireDeviceId().c_str());
+  Serial.printf("Sensor geohash id\t: %s\r\n", cfg.geo.length() == 0 ? "undefined" : cfg.geo.c_str());
   Serial.printf("WiFi current status\t: %s\r\n", WiFi.status() == WL_CONNECTED ? "connected" : "disconnected");
   Serial.printf("Sensor sample time \t: %d\r\n", cfg.stime);
   Serial.printf("UART sensor model \t: %s\r\n", sensors.getSensorName((SENSORS)cfg.stype));
   Serial.printf("UART sensor TX pin\t: %d\r\n", cfg.sTX == -1 ? PMS_TX : cfg.sTX);
   Serial.printf("UART sensor RX pin\t: %d\r\n", cfg.sRX == -1 ? PMS_RX : cfg.sRX);
-  Serial.printf("Sensor geohash id\t: %s\r\n", cfg.geo.length() == 0 ? "undefined" : cfg.geo.c_str());
-  Serial.printf("Sensor sample time\t: %d\r\n", cfg.stime);
   Serial.printf("Current debug mode\t: %s\r\n", cfg.devmode == true ? "enabled" : "disabled");
 
   wcli_klist("");

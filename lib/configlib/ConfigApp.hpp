@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include <Preferences.h>
 #include <Watchdog.hpp>
+#include <Geohash.hpp>
 
 #define RW_MODE false
 #define RO_MODE true
@@ -169,7 +170,7 @@ class ConfigApp {
 
     bool isKey(String key);
 
-   private:
+   private: 
     ///preferences main key
     char* _app_name;
     ///ESP32 preferences abstraction
@@ -182,6 +183,8 @@ class ConfigApp {
     bool ifxdb_enable; 
     ///WiFi state
     bool wifi_connected;
+
+    Geohash geohash;
 
     RemoteConfigCallbacks* mRemoteConfigCallBacks = nullptr;
         

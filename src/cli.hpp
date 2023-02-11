@@ -82,7 +82,7 @@ void wcli_sgeoh (String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   String geoh = operands.first();
   if (geoh.length() > 5) {
-    geoh.toUpperCase();
+    geoh.toLowerCase(); 
     cfg.saveGeo(geoh);
     cfg.ifxdbEnable(true);
     cfg.reload();

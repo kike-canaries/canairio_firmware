@@ -13,21 +13,50 @@ void wcli_debug(String opts) {
 
 bool isValidKey(String key) {
   for (int i = 0; i < KCOUNT; i++) {
-    if (key.equals(cfg.getKeyName((CONFIGKEYS)i))) return true;
+    if (key.equals(cfg.getKey((CONFKEYS)i))) return true;
   }
   return false;
 }
 
+String getValue(String key) {
+  ConfKeyType type = cfg.getKeyType(key);
+  if (type == ConfKeyType::BOOL) return cfg.getBool(key, false) ? "true" : "false";
+  if (type == ConfKeyType::FLOAT) return String(cfg.getFloat(key, false));
+  if (type == ConfKeyType::INT) return String(cfg.getInt(key, false));
+  return "";
+}
+
 void wcli_klist(String opts) {
-  Serial.printf("\n%11s \t%s \t%s \r\n", "KEY NAME", "DEFINED", "VALUE");
+  Serial.printf("\n%11s \t%s \t%s \r\n", "KEYNAME", "DEFINED", "VALUE");
+  Serial.printf("\n%11s \t%s \t%s \r\n", "=======", "=======", "=====");
   for (int i = 0; i < KCOUNT; i++) {
-    String key = cfg.getKeyName((CONFIGKEYS)i);
+    String key = cfg.getKey((CONFKEYS)i);
     bool isDefined = cfg.isKey(key);
     String defined = isDefined ? "custom " : "default";
     String value = "";
-    if (isDefined) value = cfg.getBool(key, false) ? "true" : "false";
+    if (isDefined) value = getValue(key);
     Serial.printf("%11s \t%s \t%s \r\n", key, defined.c_str(), value.c_str());
   }
+}
+
+void saveInteger(String key, String v) {
+  uint16_t value = v.toInt();
+  cfg.saveInt(key, value);
+  cfg.reload();
+  Serial.printf("saved: %s:%i\r\n",key.c_str(),value);
+}
+
+void saveFloat(String key, String v) {
+  float value = v.toFloat();
+  cfg.saveFloat(key, value);
+  cfg.reload();
+  Serial.printf("saved: %s:%.5f\r\n",key.c_str(),value);
+}
+
+void saveBoolean(String key, String v) {
+    cfg.saveBool(key,v.equals("on") || v.equals("1") || v.equals("enable") || v.equals("true"));
+    cfg.reload();
+    Serial.printf("saved: %s:%s\r\n",key.c_str(),cfg.getBool(key,false) ? "true" : "false");
 }
 
 void wcli_kset(String opts) {
@@ -36,9 +65,10 @@ void wcli_kset(String opts) {
   String v = operands.second();
   v.toLowerCase();
   if(isValidKey(key)){
-    cfg.saveBool(key,v.equals("on") || v.equals("1") || v.equals("enable") || v.equals("true"));
-    cfg.reload();
-    Serial.printf("saved: %s:%s\r\n",key.c_str(),cfg.getBool(key,false) ? "true" : "false");
+    if(cfg.getKeyType(key) == ConfKeyType::BOOL) saveBoolean(key,v);
+    else if(cfg.getKeyType(key) == ConfKeyType::FLOAT) saveFloat(key,v);
+    else if(cfg.getKeyType(key) == ConfKeyType::INT) saveInteger(key,v);
+    else Serial.println("Invalid key action for: " + key);
   }
   else {
     Serial.printf("invalid key: %s\r\nPlease see the valid keys with klist command.\r\n",key.c_str());

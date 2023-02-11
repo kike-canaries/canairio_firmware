@@ -4,6 +4,10 @@
 char const *keys[] = { CONFIG_KEYS_LIST };
 #undef X
 
+#define X(kname, kreal, ktype) ktype, 
+int keys_type[] = { CONFIG_KEYS_LIST };
+#undef X
+
 void ConfigApp::init(const char app_name[]) {
     _app_name = new char[strlen(app_name) + 1];
     strcpy(_app_name, app_name);
@@ -22,11 +26,11 @@ void ConfigApp::reload() {
     // device name or station name
     dname = preferences.getString("dname", "");
     // wifi settings
-    wifi_enable = preferences.getBool("wifiEnable", false);
+    wifi_enable = preferences.getBool(getKey(CONFKEYS::KBWIFIEN).c_str(), false);
     ssid = preferences.getString("ssid", "");
     pass = preferences.getString("pass", ""); 
     // influx db optional settings
-    ifxdb_enable = preferences.getBool("ifxEnable", false);
+    ifxdb_enable = preferences.getBool(getKey(CONFKEYS::KBIFXENB).c_str(), false);
     ifx.db = preferences.getString("ifxdb", ifx.db);
     ifx.ip = preferences.getString("ifxip", ifx.ip);
     ifx.pt = preferences.getUInt("ifxpt", ifx.pt);
@@ -42,7 +46,7 @@ void ConfigApp::reload() {
     altoffset = preferences.getFloat("altoffset", 0.0);
     sealevel = preferences.getFloat("sealevel", 1013.25);
     devmode = preferences.getBool("debugEnable", false);
-    pax_enable = preferences.getBool("paxEnable", true);
+    pax_enable = preferences.getBool(getKey(CONFKEYS::KBPAXENB).c_str(), true);
     i2conly = preferences.getBool("i2conly", false);
     solarmode = preferences.getBool("solarEnable", false);
     deepSleep = preferences.getInt("deepSleep", 0);
@@ -62,15 +66,15 @@ String ConfigApp::getCurrentConfig() {
     doc["stype"] = preferences.getInt("stype", 0);           // sensor UART type;
     doc["sRX"] = preferences.getInt("sRX", -1);           // sensor UART type;
     doc["sTX"] = preferences.getInt("sTX", -1);           // sensor UART type;
-    doc["wenb"] = preferences.getBool("wifiEnable", false);  // wifi on/off
+    doc["wenb"] = preferences.getBool(getKey(CONFKEYS::KBWIFIEN).c_str(), false);  // wifi on/off
     doc["ssid"] = preferences.getString("ssid", "");         // influxdb database name
-    doc["ienb"] = preferences.getBool("ifxEnable", false);   // ifxdb on/off
+    doc["ienb"] = preferences.getBool(getKey(CONFKEYS::KBIFXENB).c_str(), false);   // ifxdb on/off
     doc["ifxdb"] = preferences.getString("ifxdb", ifx.db);   // influxdb database name
     doc["ifxip"] = preferences.getString("ifxip", ifx.ip);   // influxdb database ip
     doc["ifxpt"] = preferences.getUInt("ifxpt", ifx.pt);     // influxdb sensor tags
     doc["geo"] = preferences.getString("geo", "");           // influxdb GeoHash tag
     doc["denb"] = preferences.getBool("debugEnable", false); // debug mode enable
-    doc["penb"] = preferences.getBool("paxEnable", true);    // PaxCounter enable
+    doc["penb"] = preferences.getBool(getKey(CONFKEYS::KBPAXENB).c_str(), true);    // PaxCounter enable
     doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
     doc["sse"] = preferences.getBool("solarEnable", false);  // Enable solar station
     doc["deepSleep"] = preferences.getInt("deepSleep", 0);  // deep sleep time in seconds
@@ -140,6 +144,13 @@ void ConfigApp::saveBool(String key, bool value){
     setLastKeySaved(key);
 }
 
+float ConfigApp::getFloat(String key, float defaultValue){
+    preferences.begin(_app_name, RO_MODE);
+    float out = preferences.getFloat(key.c_str(), defaultValue);
+    preferences.end();
+    return out;
+}
+
 void ConfigApp::saveFloat(String key, float value){
     preferences.begin(_app_name, RW_MODE);
     preferences.putFloat(key.c_str(), value);
@@ -161,10 +172,23 @@ bool ConfigApp::isKey(String key) {
     return iskey;
 }
 
-String ConfigApp::getKeyName(CONFIGKEYS key) {
-  if (key < 0 || key > CONFIGKEYS::KCOUNT) return "";
+String ConfigApp::getKey(CONFKEYS key) {
+  if (key < 0 || key > CONFKEYS::KCOUNT) return "";
   return String(keys[key]);
 }
+
+ConfKeyType ConfigApp::getKeyType(CONFKEYS key) {
+  if (key < 0 || key > CONFKEYS::KCOUNT) return ConfKeyType::UNKNOWN;
+  return (ConfKeyType)keys_type[key];
+}
+
+ConfKeyType ConfigApp::getKeyType(String key) {
+  for (int i = 0; i < KCOUNT; i++) {
+    if (key.equals(keys[i])) return (ConfKeyType)keys_type[i];
+  }
+  return ConfKeyType::UNKNOWN;
+}
+
 
 bool ConfigApp::saveDeviceName(String name) {
     if (name.length() > 0) {
@@ -271,7 +295,7 @@ bool ConfigApp::saveWifi(String ssid, String pass){
         preferences.begin(_app_name, RW_MODE);
         preferences.putString("ssid", ssid);
         preferences.putString("pass", pass);
-        preferences.putBool("wifiEnable", true);
+        preferences.putBool(getKey(CONFKEYS::KBWIFIEN).c_str(), true);
         preferences.end();
         setLastKeySaved("ssid");
         wifi_enable = true;
@@ -290,7 +314,7 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
         preferences.putString("ifxdb", db);
         preferences.putString("ifxip", ip);
         if (pt > 0) preferences.putUInt("ifxpt", pt);
-        preferences.putBool("ifxEnable", true);
+        preferences.putBool(getKey(CONFKEYS::KBIFXENB).c_str(), true);
         preferences.end();
         setLastKeySaved("ifxdb");
         ifxdb_enable = true;
@@ -332,14 +356,14 @@ bool ConfigApp::saveGeo(String geo){
 }
 
 bool ConfigApp::wifiEnable(bool enable) {
-    saveBool("wifiEnable", enable);
+    saveBool(getKey(CONFKEYS::KBWIFIEN).c_str(), enable);
     wifi_enable = enable;
     Serial.println("-->[CONF] updating WiFi state\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::ifxdbEnable(bool enable) {
-    saveBool("ifxEnable", enable);
+    saveBool(getKey(CONFKEYS::KBIFXENB), enable);
     ifxdb_enable = enable;
     Serial.println("-->[CONF] updating InfluxDB state\t: " + String(enable));
     return true;
@@ -353,7 +377,7 @@ bool ConfigApp::debugEnable(bool enable) {
 }
 
 bool ConfigApp::paxEnable(bool enable) {
-    saveBool("paxEnable", enable);
+    saveBool(getKey(CONFKEYS::KBPAXENB).c_str(), enable);
     pax_enable = enable;
     Serial.println("-->[CONF] new PaxCounter mode\t: " + String(enable));
     return true;

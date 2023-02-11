@@ -9,17 +9,23 @@
 #define RW_MODE false
 #define RO_MODE true
 
-#define CONFIG_KEYS_LIST         \
-    X(KEMPTY, "kempty", 1)       \
-    X(KBANAIRE, "anaire", 1)     \
-    X(KBHOMEAS, "homeas", 1)     \
-    X(KBPAXENB, "paxEnable", 1)  \
-    X(KBI2COLY, "i2conly", 1)    \
-    X(KBWIFIEN, "wifiEnable", 1) \
-    X(KCOUNT, "KCOUNT", 9)
+typedef enum {
+    INT, BOOL, FLOAT, UNKNOWN
+} ConfKeyType;
+
+#define CONFIG_KEYS_LIST            \
+    X(KBWIFIEN, "wifiEnable", BOOL) \
+    X(KBPAXENB, "paxEnable", BOOL)  \
+    X(KBIFXENB, "ifxEnable", BOOL)  \
+    X(KBANAIRE, "anaire", BOOL)     \
+    X(KBHOMEAS, "homeas", BOOL)     \
+    X(KBI2COLY, "i2conly", BOOL)    \
+    X(KFALTFST, "altoffset", FLOAT) \
+    X(KFTOFFST, "toffset", FLOAT)   \
+    X(KCOUNT, "KCOUNT", UNKNOWN)
 
 #define X(kname, kreal, ktype) kname,
-typedef enum CONFIGKEYS : size_t { CONFIG_KEYS_LIST } CONFIGKEYS; 
+typedef enum CONFKEYS : size_t { CONFIG_KEYS_LIST } CONFKEYS; 
 #undef X
 
 class RemoteConfigCallbacks;
@@ -135,6 +141,8 @@ class ConfigApp {
 
     void saveBool(String key, bool value);
 
+    float getFloat(String key, float defaultValue);
+
     void saveFloat(String key, float value);
 
     String getCurrentConfig();
@@ -183,7 +191,11 @@ class ConfigApp {
 
     bool isKey(String key);
 
-    String getKeyName(CONFIGKEYS key);
+    String getKey(CONFKEYS key);
+
+    ConfKeyType getKeyType(String key);
+
+    ConfKeyType getKeyType(CONFKEYS key);
     
    private: 
     ///preferences main key

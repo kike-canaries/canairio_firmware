@@ -64,8 +64,8 @@ void otaInit() {
 }
 
 void wifiCloudsInit() {
-  if (cfg.getBool(cfg.getKeyName(CONFIGKEYS::KBANAIRE),true)) anaireInit();
-  if (cfg.getBool(cfg.getKeyName(CONFIGKEYS::KBHOMEAS),true)) hassInit();
+  if (cfg.getBool(cfg.getKey(CONFKEYS::KBANAIRE),true)) anaireInit();
+  if (cfg.getBool(cfg.getKey(CONFKEYS::KBHOMEAS),true)) hassInit();
   influxDbInit();
   if (anaireIsConnected()) Serial.printf("-->[MQTT] %s\t: connected!\r\n", ANAIRE_HOST);
 }
@@ -127,8 +127,8 @@ void wifiLoop() {
   }
   if (!WiFi.isConnected()) return;
   influxDbLoop();  // influxDB publication
-  if (cfg.getBool(cfg.getKeyName(CONFIGKEYS::KBANAIRE),true)) anaireLoop();
-  if (cfg.getBool(cfg.getKeyName(CONFIGKEYS::KBHOMEAS),true)) hassLoop();
+  if (cfg.getBool(cfg.getKey(CONFKEYS::KBANAIRE),true)) anaireLoop();
+  if (cfg.getBool(cfg.getKey(CONFKEYS::KBHOMEAS),true)) hassLoop();
 }
 
 int getWifiRSSI() {

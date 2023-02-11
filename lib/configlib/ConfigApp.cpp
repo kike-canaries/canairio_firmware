@@ -1,5 +1,9 @@
 #include "ConfigApp.hpp"
 
+#define X(kname, kreal, ktype) kreal, 
+char const *keys[] = { CONFIG_KEYS_LIST };
+#undef X
+
 void ConfigApp::init(const char app_name[]) {
     _app_name = new char[strlen(app_name) + 1];
     strcpy(_app_name, app_name);
@@ -155,6 +159,11 @@ bool ConfigApp::isKey(String key) {
     bool iskey = preferences.isKey(key.c_str());
     preferences.end();
     return iskey;
+}
+
+String ConfigApp::getKeyName(CONFIGKEYS key) {
+  if (key < 0 || key > CONFIGKEYS::KCOUNT) return "";
+  return String(keys[key]);
 }
 
 bool ConfigApp::saveDeviceName(String name) {

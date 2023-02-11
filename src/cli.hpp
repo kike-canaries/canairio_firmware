@@ -1,9 +1,5 @@
 #include <ConfigApp.hpp>
 
-#define lenght_array(array) ((sizeof(array)) / (sizeof(array[0])))
-
-static const char* const keys[] = {KEY_CLD_ANAIRE, KEY_CLD_HOMEAS, KEY_PAX_ENABLE, KEY_I2C_ONLY, KEY_WIFI_ENABLE};
-
 bool setup_mode = false;
 int setup_time = 10000;
 bool first_run = true;
@@ -16,23 +12,22 @@ void wcli_debug(String opts) {
 }
 
 bool isValidKey(String key) {
-  int keys_size = lenght_array(keys);
-  for (int i = 0; i < keys_size; i++) {
-    if (key.equals(keys[i])) return true;
+  for (int i = 0; i < KCOUNT; i++) {
+    if (key.equals(cfg.getKeyName((CONFIGKEYS)i))) return true;
   }
   return false;
 }
 
 void wcli_klist(String opts) {
-  int keys_size = lenght_array(keys);
-  Serial.printf("\n%11s \t%s \t%s \r\n","KEY NAME","DEFINED","VALUE");
-  for (int i = 0; i < keys_size; i++) {
-    bool isDefined = cfg.isKey(keys[i]);
+  Serial.printf("\n%11s \t%s \t%s \r\n", "KEY NAME", "DEFINED", "VALUE");
+  for (int i = 0; i < KCOUNT; i++) {
+    String key = cfg.getKeyName((CONFIGKEYS)i);
+    bool isDefined = cfg.isKey(key);
     String defined = isDefined ? "custom " : "default";
     String value = "";
-    if (isDefined) value = cfg.getBool(keys[i],false) ? "true" : "false";
-    Serial.printf("%11s \t%s \t%s \r\n", keys[i],defined.c_str(),value.c_str());
-  }  
+    if (isDefined) value = cfg.getBool(key, false) ? "true" : "false";
+    Serial.printf("%11s \t%s \t%s \r\n", key, defined.c_str(), value.c_str());
+  }
 }
 
 void wcli_kset(String opts) {
@@ -41,9 +36,9 @@ void wcli_kset(String opts) {
   String v = operands.second();
   v.toLowerCase();
   if(isValidKey(key)){
-    Serial.printf("saving: %s:%s\r\n",key.c_str(),v.c_str());
     cfg.saveBool(key,v.equals("on") || v.equals("1") || v.equals("enable") || v.equals("true"));
     cfg.reload();
+    Serial.printf("saved: %s:%s\r\n",key.c_str(),cfg.getBool(key,false) ? "true" : "false");
   }
   else {
     Serial.printf("invalid key: %s\r\nPlease see the valid keys with klist command.\r\n",key.c_str());
@@ -156,7 +151,7 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
     Serial.println("debug\t<on/off>\tto enable debug mode");
     Serial.println("stime\t<time>\t\tset the sample time in seconds");
     Serial.println("spins\t<TX> <RX>\tset the UART pins");
-    Serial.println("stype\t<sensor_type>\tPlease see the documentation. (UART sensors)");
+    Serial.println("stype\t<sensor_type>\tset the UART sensor type. Integer.");
     Serial.println("sgeoh\t<GeohashId>\tset geohash id. Choose it here http://bit.ly/geohashe");
     Serial.println("kset\t<key> <value>\tset preference key value (on/off or 1/0)");
     Serial.println("klist\t\t\tlist valid preference keys");
@@ -189,7 +184,7 @@ void wifiCLIInit() {
   wcli.term->add("stime", &wcli_stime, "\tset the sample time (seconds)");
   wcli.term->add("spins", &wcli_uartpins, "\tset the UART pins TX RX");
   wcli.term->add("stype", &wcli_stype, "\tset the sensor type (UART)");
-  wcli.term->add("sgeoh", &wcli_sgeoh, "\tset geohash. Please help for details.");
+  wcli.term->add("sgeoh", &wcli_sgeoh, "\tset geohash. Type help for more details.");
   wcli.term->add("kset", &wcli_kset, "\tset preference key true/false or 1/0");
   wcli.term->add("klist", &wcli_klist, "\tlist valid preference keys");
   wcli.term->add("info", &wcli_info, "\tget device information");

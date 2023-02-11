@@ -27,9 +27,15 @@ String getValue(String key) {
 }
 
 void wcli_klist(String opts) {
+  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+  String opt = operands.first();
+  int key_count = KCOUNT;                       // Show all keys to configure 
+  if (opt.equals("basic")) key_count = KBASIC; // Only show the basic keys to configure
   Serial.printf("\n%11s \t%s \t%s \r\n", "KEYNAME", "DEFINED", "VALUE");
   Serial.printf("\n%11s \t%s \t%s \r\n", "=======", "=======", "=====");
-  for (int i = 0; i < KCOUNT; i++) {
+
+  for (int i = 0; i < key_count; i++) {
+    if(i==KBASIC) continue;
     String key = cfg.getKey((CONFKEYS)i);
     bool isDefined = cfg.isKey(key);
     String defined = isDefined ? "custom " : "default";
@@ -146,7 +152,7 @@ void wcli_setup(String opts) {
   Serial.printf("UART sensor RX pin\t: %d\r\n", cfg.sRX == -1 ? PMS_RX : cfg.sRX);
   Serial.printf("Current debug mode\t: %s\r\n", cfg.devmode == true ? "enabled" : "disabled");
 
-  wcli_klist("");
+  wcli_klist("basic");
 
   Serial.printf("\r\nType help for details or exit\r\n");
 }
@@ -221,10 +227,10 @@ void wifiCLIInit() {
   wcli.term->add("exit", &wcli_exit, "\texit of the setup mode. AUTO EXIT in 10 seg! :)");
   wcli.term->add("setup", &wcli_setup, "\tTYPE THIS WORD to start to configure the device :D\n");
   // Configuration loop:
-  // 15 seconds for reconfiguration or first use case.
+  // 10 seconds for reconfiguration or first use case.
   // for reconfiguration type disconnect and switch the "output" mode
   uint32_t start = millis();
   while (setup_mode || (millis() - start < setup_time)) wcli.loop();
   Serial.println();
-  Serial.println(" SETUP MODE END");
+  Serial.println("==>[INFO] Time for initial setup over ===\r\n");
 }

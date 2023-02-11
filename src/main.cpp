@@ -233,7 +233,8 @@ void startingSensors() {
 
 void setup() {
     Serial.begin(115200);
-    delay(400);
+    delay(500);
+    Serial.flush();
     Serial.println("\n== CanAirIO Setup ==\r\n");
     logMemory("INIT");
 
@@ -262,13 +263,14 @@ void setup() {
     Serial.println("-->[INFO] Revision\t\t: " + gui.getFirmwareVersionCode());
     Serial.println("-->[INFO] Firmware\t\t: " + String(VERSION));
     Serial.println("-->[INFO] Flavor  \t\t: " + String(FLAVOR));
-    Serial.println("-->[INFO] Target  \t\t: " + String(TARGET));
+    Serial.println("-->[INFO] Target  \t\t: " + String(TARGET)); 
+    logMemory("GPIO");
+    gui.welcomeAddMessage("wait for setup..");
+    Serial.println("\n-->[INFO] == Waiting for setup (10s)  ==");
+    wifiCLIInit();
     Serial.println("-->[INFO] == Detecting Sensors ==");
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
     Serial.println("-->[INFO] enable sensor GPIO\t: " + String(MAIN_HW_EN_PIN));
-    logMemory("GPIO");
-    gui.welcomeAddMessage("wait for setup..");
-    wifiCLIInit();
     logMemory("CLI");
     startingSensors();
     logMemory("SLIB");
@@ -302,7 +304,7 @@ void setup() {
     gui.welcomeAddMessage(cfg.getDeviceId());   // mac address
     gui.welcomeAddMessage("Watchdog:"+String(WATCHDOG_TIME)); 
     gui.welcomeAddMessage("==SETUP READY==");
-    delay(2000);
+    delay(500);
     gui.showMain();
     refreshGUIData();
     logMemory("GLIB");
@@ -311,7 +313,7 @@ void setup() {
     Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\r\n", sizeof(sensors));
     Serial.printf("-->[HEAP] sizeof config \t: %04ub\r\n", sizeof(cfg));
     Serial.printf("-->[HEAP] sizeof GUI    \t: %04ub\r\n", sizeof(gui));
-    Serial.println("\n==>[INFO] Setup End ===\r\n");
+    Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
 }
 
 void loop() {
@@ -327,4 +329,5 @@ void loop() {
 
     battery.loop();  // refresh battery level and voltage
     powerLoop();     // check power status and manage power saving
+    wcli.loop();     // CanAirIO command line interface
 }

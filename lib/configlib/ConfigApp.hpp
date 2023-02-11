@@ -10,18 +10,28 @@
 #define RO_MODE true
 
 typedef enum {
-    INT, BOOL, FLOAT, UNKNOWN
+    INT, BOOL, FLOAT, STRING, UNKNOWN
 } ConfKeyType;
 
 #define CONFIG_KEYS_LIST            \
     X(KBWIFIEN, "wifiEnable", BOOL) \
     X(KBPAXENB, "paxEnable", BOOL)  \
-    X(KBIFXENB, "ifxEnable", BOOL)  \
-    X(KBANAIRE, "anaire", BOOL)     \
-    X(KBHOMEAS, "homeas", BOOL)     \
     X(KBI2COLY, "i2conly", BOOL)    \
     X(KFALTFST, "altoffset", FLOAT) \
     X(KFTOFFST, "toffset", FLOAT)   \
+    X(KBASIC, "-----", UNKNOWN)     \
+    X(KBIFXENB, "ifxEnable", BOOL)  \
+    X(KSIFXDB, "ifxdb", STRING)     \
+    X(KSIFXIP, "ifxip", STRING)     \
+    X(KIIFXPT, "ifxpt", INT)        \
+    X(KSHASSU, "hassusr", STRING)   \
+    X(KSHASSPW, "hasspsw", STRING)  \
+    X(KIHASSPT, "hasspt", INT)      \
+    X(KFSEALV, "sealevel", FLOAT)   \
+    X(KBHOMEAS, "homeas", BOOL)     \
+    X(KBANAIRE, "anaire", BOOL)     \
+    X(KBSOLARE, "solarEnable", BOOL)\
+    X(KIDEEPSL, "deepSleep", INT)   \
     X(KCOUNT, "KCOUNT", UNKNOWN)
 
 #define X(kname, kreal, ktype) kname,

@@ -12,7 +12,6 @@
 #include <cloud_hass.hpp>
 #include <cloud_influxdb.hpp>
 #include <ESP32WifiCLI.hpp>
-#include <pkeys.h>
 
 //#define IFX_RETRY_CONNECTION 5    // influxdb publish retry 
 

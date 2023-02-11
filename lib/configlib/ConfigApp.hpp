@@ -9,6 +9,19 @@
 #define RW_MODE false
 #define RO_MODE true
 
+#define CONFIG_KEYS_LIST         \
+    X(KEMPTY, "kempty", 1)       \
+    X(KBANAIRE, "anaire", 1)     \
+    X(KBHOMEAS, "homeas", 1)     \
+    X(KBPAXENB, "paxEnable", 1)  \
+    X(KBI2COLY, "i2conly", 1)    \
+    X(KBWIFIEN, "wifiEnable", 1) \
+    X(KCOUNT, "KCOUNT", 9)
+
+#define X(kname, kreal, ktype) kname,
+typedef enum CONFIGKEYS : size_t { CONFIG_KEYS_LIST } CONFIGKEYS; 
+#undef X
+
 class RemoteConfigCallbacks;
 class ConfigApp {
    public:
@@ -170,6 +183,8 @@ class ConfigApp {
 
     bool isKey(String key);
 
+    String getKeyName(CONFIGKEYS key);
+    
    private: 
     ///preferences main key
     char* _app_name;

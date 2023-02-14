@@ -1,95 +1,36 @@
 ## CanAirIO Linux - MacOS installer
 
-## Usage
+### Requirements
 
-For the firmware install script help updated please run here:
+- Python3
+- USB Serial drivers (maybe only for Windows)
+
+### Upload the firmware 
+
+For example, you able to upload the CanAirIO firmware to ESP32DEVKIT board, choosing the right binary and this parameters:
+
+#### ESP32 boards
+``` bash
+python3 esptool.py esptool --port /dev/ttyUSB0 -b 1500000 write_flash --flash_size detect 0x0 canairio_ESP32DEVKIT_rev932_merged.bin
+```
+
+#### ESP32C3 boards
 
 ``` bash
-./install.sh help
+esptool --port /dev/ttyACM0 -b 1500000 --before default_reset --after hard_reset write_flash -z --flash_size detect 0x0 canairio_ESP32C3_rev932_merged.bin
 ```
 
-## Binaries and tools
+**Notes:**
 
-You can **download** this installer in [releases](https://github.com/kike-canaries/canairio_firmware/releases) section or [build](#Build) it for get this directory, binaries and some python tools dependencies. Please check too the execution permissions:
+- Maybe you need changing the port parameter.
+- Some old boards like WEMOS, sometimes doesn't support this 1500000bps speed, remove this parameter, it will try auto selection.
 
-```bash
-chmod 755 install.sh system/espota.py system/esptool.py
-```
 
-## Installer parameters
+### Binaries and tools
 
-```python
-usage: ./install.sh [binary]
-usage: ./install.sh [command] [binary] [option] [option]
+You can **download** this installer in [releases](https://github.com/kike-canaries/canairio_firmware/releases) section or [build](#Build) it for generate this directory, binaries and the `esptool` tool. (see bellow)
 
-Examples
-
-Install via default USB port:
-
-./install.sh canairio_d1mini_20190323rev273.bin
-
-Install via WiFi:
-
-./install.sh ota canairio_xxx.bin
-./install.sh ota canairio_xxx.bin 192.168.1.10
-
-Install via USB:
-
-./install.sh usb canairio_xxx.bin
-./install.sh usb canairio_xxx.bin /dev/ttyUSB3
-./install.sh usb canairio_xxx.bin /dev/ttyUSB3 1500000
-
-You can download old binaries files in relases:
-https://github.com/kike-canaries/canairio_firmware/releases
-
-Support channel: Telegram and Forum links on https://canair.io
-```
-
-## Output samples
-
-### USB update
-
-```python
-./install.sh usb canairio_TTGO_T7_rev654_20201026.bin /dev/ttyUSB0 1500000
-
-##########################################
-firmware: canairio_TTGO_T7_rev654_20201026.bin
-update via USB: /dev/ttyUSB0
-speed: 1500000
-##########################################
-
-esptool.py v2.8
-Serial port /dev/ttyUSB0
-Connecting....
-Uploading stub...
-Hard resetting via RTS pin...
-```
-
-### WiFi update
-
-```python
-./install.sh ota canairio_TTGO_T7_OTA_rev654_20201026.bin 192.168.178.68
-
-###################################################
-firmware: canairio_TTGO_T7_OTA_rev654_20201026.bin
-update via IP: 192.168.178.68
-speed: 
-###################################################
-
-11:19:24 [DEBUG]: Options: {'timeout': 10, 'esp_ip': '192.168.178.68', 'host_port': 34610, 'image': 'canairio_TTGO_T7_OTA_rev654_20201026.bin', 'host_ip': '0.0.0.0', 'auth': 'CanAirIO', 'esp_port': 3232, 'spiffs': False, 'debug': True, 'progress': True}
-11:19:24 [INFO]: Starting on 0.0.0.0:34610
-11:19:24 [INFO]: Upload size: 1659120
-Sending invitation to 192.168.178.68 
-Authenticating...OK
-11:19:24 [INFO]: Waiting for device...
-Uploading: [============================================================] 100% Done...
-
-11:20:20 [INFO]: Waiting for result...
-11:20:21 [INFO]: Result: OK
-11:20:21 [INFO]: Success
-```
-
-# Build
+### Build (optional)
 
 For rebuild all binaries, tools and this directory please first execute in the root of the CanAirIO firmware project:
 

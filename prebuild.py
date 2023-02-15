@@ -40,7 +40,7 @@ env.Append(BUILD_FLAGS=[
     u'-I \"' + srcdir + '\"'
     ])
 
-data = {
+manifest_fota = {
     "type":flavor, 
     "version":revision, 
     "host":"influxdb.canair.io",
@@ -48,16 +48,44 @@ data = {
     "bin":"/releases/" + target + "/canairio_" + flavor + "_rev" + revision + ".bin"
 }
 
+chipFamily = "ESP32"
+if flavor == "ESP32C3":
+    chipFamily = "ESP32-C3"
+
+bin_path = "https://influxdb.canair.io/releases/webi/"+target+"/canairio_" + flavor + "_rev" + revision + "_merged.bin"
+
+manifest_webi = {
+  "name": "CanAirIO "+flavor,
+  "version": revision,
+  "new_install_prompt_erase": True,
+  "funding_url": "https://liberapay.com/CanAirIO",
+  "builds": [
+    {
+      "chipFamily": chipFamily,
+      "parts": [
+        { "path": bin_path, "offset": 0 }
+      ]
+    }
+  ]
+}
+
 # build_flags = env.get("BUILD_FLAGS")
 # print("NEW BUILD_FLAGS")
 # print(build_flags)
 
-output_path =  "releases/manifest/" + target
+manifest_dir =  "releases/manifest/" + target
+manifest_webi_dir = "releases/manifest/webi/" + target
 
-os.makedirs(output_path, 0o755, True)
+os.makedirs(manifest_dir, 0o755, True)
+os.makedirs(manifest_webi_dir, 0o755, True)
 
-output_manifiest = output_path + "/firmware_" + flavor + ".json"
+manifest_fota_file = manifest_dir + "/firmware_" + flavor + ".json"
 
-with open(output_manifiest, 'w') as outfile:
-    json.dump(data, outfile)
+with open(manifest_fota_file, 'w') as outfile:
+    json.dump(manifest_fota, outfile)
+
+manifest_webi_file = manifest_webi_dir + "/firmware_" + flavor + ".json"
+
+with open(manifest_webi_file, 'w') as outfile:
+    json.dump(manifest_webi, outfile)
 

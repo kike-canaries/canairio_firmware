@@ -25,6 +25,7 @@ String getValue(String key) {
   if (type == ConfKeyType::BOOL) return cfg.getBool(key, false) ? "true" : "false";
   if (type == ConfKeyType::FLOAT) return String(cfg.getFloat(key, false));
   if (type == ConfKeyType::INT) return String(cfg.getInt(key, false));
+  if (type == ConfKeyType::STRING) return cfg.getString(key, "");
   return "";
 }
 
@@ -160,7 +161,8 @@ void wcli_setup(String opts) {
 
   wcli_klist("basic");
 
-  Serial.printf("\r\nType help for details or exit\r\n");
+  Serial.printf("\r\nType \"klist\" for advanced settings\r\n");
+  Serial.printf("Type \"help\" for available commands details\r\n");
 }
 
 void wcli_reboot(String opts) {
@@ -198,7 +200,7 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
     Serial.println("kset\t<key> <value>\tset preference key value (on/off or 1/0)");
     Serial.println("klist\t\t\tlist valid preference keys");
     Serial.println("info\t\t\tget the device information");
-    Serial.println("exit\t\t\texit of the setup mode");
+    Serial.println("exit\t\t\texit of the initial setup mode");
     Serial.println("setup\t\t\ttype this to start the configuration");
 
     if(first_run) Serial.println("\n\nEnter the word: \"setup\" to configure the device");
@@ -238,5 +240,6 @@ void wifiCLIInit() {
   uint32_t start = millis();
   while (setup_mode || (millis() - start < setup_time)) wcli.loop();
   Serial.println();
-  Serial.println("==>[INFO] Time for initial setup over ===\r\n");
+  if (setup_time==0) Serial.println("==>[INFO] Settings saved. Booting..\r\n");
+  else Serial.println("==>[INFO] Time for initial setup over. Booting..\r\n");
 }

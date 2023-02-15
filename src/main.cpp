@@ -183,7 +183,7 @@ void printSensorsDetected() {
 
 void startingSensors() {
     Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)cfg.stype));
-    gui.welcomeAddMessage("Enabling sensors:");
+    gui.welcomeAddMessage("Init sensors..");
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
     sensors.setSampleTime(cfg.stime);               // config sensors sample time (first use)
@@ -304,8 +304,9 @@ void setup() {
     gui.welcomeAddMessage(cfg.getDeviceId());   // mac address
     gui.welcomeAddMessage("Watchdog:"+String(WATCHDOG_TIME)); 
     gui.welcomeAddMessage("==SETUP READY==");
-    delay(500);
+    delay(600);
     gui.showMain();
+    gui.loop();
     refreshGUIData();
     logMemory("GLIB");
     Serial.printf("-->[INFO] sensors units count\t: %d\r\n", sensors.getUnitsRegisteredCount());

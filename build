@@ -34,7 +34,7 @@ showHelp () {
   echo "** Build release flavor or installer package **"
   echo "************************************************"
   echo ""
-  echo "Usage: ./build [flavor|list|all|installer|publish|help|print|list|clean]"
+  echo "Usage: ./build [flavor|list|all|installer|github|ota|webi|help|print|list|clean]"
   echo ""
   echo "example: ./build clean"
   echo "example: ./build all"
@@ -49,24 +49,12 @@ showHelp () {
   echo ""
 }
 
-updateInstallerBinaries () {
-  echo "Update installer binaries.."
-  cp $PIO_HOME/packages/tool-esptoolpy@1.30300.0/esptool.py $INSDIR/
-}
-
-updateFlavorBinaries() {
-  echo "Update installer flavors.."
-  rm -f $INSDIR/*.bin
-  rm -f $INSDIR/*.py   # old installer
-  cp $RELDIR/$BINDIR/*/*${SRC_REV}merged.bin $INSDIR/
-}
-
 clean () {
   echo "Clean installer directory.."
   rm -rf $RELDIR/$BINDIR
   rm -rf $RELDIR/$MANIFEST
   rm -f $INSDIR/*.bin
-  rm -f $INSDIR/*.py   # old installer
+  rm -f $INSDIR/*.py  
   for flavor in $flavors; do
     echo "Clean flavor $flavor.."
     pio run -s -e $flavor -t clean
@@ -105,9 +93,12 @@ buildInstaller () {
   echo "** Building installer with target: $TARGET"
   echo "***********************************************"
   echo ""
-  mkdir -p $INSDIR/system
-  updateInstallerBinaries
-  updateFlavorBinaries
+  echo "Update installer tool.."
+  cp $PIO_HOME/packages/tool-esptoolpy@1.30300.0/esptool.py $INSDIR/
+  echo "Update installer flavors.."
+  rm -f $INSDIR/*.bin
+  cp $RELDIR/$BINDIR/*/*${SRC_REV}_merged.bin $INSDIR/
+  cp ${PIO_HOME}/packages/tool-esptoolpy/esptool.py $INSDIR/
   printOutput
   cd $INSDIR/..
   rm -f ${NAME}_${TARGET}_rev${SRC_REV}_${DATE}.zip
@@ -128,9 +119,15 @@ publish_release () {
 }
 
 publish_release_ota () {
-  cd $INSDIR
-  scp *.bin canairio:$canairio_target/$TARGET
-  scp  ../../$MANIFEST/$TARGET/*.json canairio:$canairio_target/$TARGET
+  scp $RELDIR/$BINDIR/*/*${SRC_REV}.bin canairio:$canairio_target/$TARGET
+  scp $RELDIR/$MANIFEST/$TARGET/*.json canairio:$canairio_target/$TARGET
+}
+
+publish_release_webtools () {
+  scp $INSDIR/*.bin canairio:$canairio_target/webi/$TARGET 
+  scp $INSDIR/*.txt canairio:$canairio_target/webi/$TARGET 
+  scp $INSDIR/*.md canairio:$canairio_target/webi/$TARGET 
+  scp $RELDIR/$MANIFEST/webi/$TARGET/*.json canairio:$canairio_target/webi/$TARGET
 }
 
 printOutput () {
@@ -146,7 +143,7 @@ printOutput () {
   touch $INSDIR/md5output.txt
   cd $FIRMDIR
   for flavor in *; do
-    MD5FLAVOR=`md5sum $flavor/${NAME}_${flavor}_rev${SRC_REV}.bin`
+    MD5FLAVOR=`md5sum $flavor/${NAME}_${flavor}_rev${SRC_REV}_merged.bin`
     echo $MD5FLAVOR >> ../../$INSDIR/md5output.txt
   done
   cat ../../$INSDIR/md5output.txt
@@ -190,12 +187,16 @@ else
       printOutput
       ;;
 
-    publish)
+    github)
       publish_release
       ;;
 
-    otatrigger)
+    ota)
       publish_release_ota
+      ;;
+
+    webi)
+      publish_release_webtools
       ;;
 
     list)

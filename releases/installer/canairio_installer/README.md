@@ -17,7 +17,7 @@ python3 esptool.py esptool --port /dev/ttyUSB0 -b 1500000 write_flash --flash_si
 #### ESP32C3 boards
 
 ``` bash
-esptool --port /dev/ttyACM0 -b 1500000 --before default_reset --after hard_reset write_flash -z --flash_size detect 0x0 canairio_ESP32C3_rev932_merged.bin
+python3 esptool.py --port /dev/ttyACM0 -b 1500000 --before default_reset --after hard_reset write_flash -z --flash_size detect 0x0 canairio_ESP32C3_rev932_merged.bin
 ```
 
 **Notes:**

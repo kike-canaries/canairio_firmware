@@ -75,6 +75,9 @@ void wifiConnect(const char* ssid, const char* pass) {
   Serial.print(ssid);
   int wifi_retry = 0;
   WiFi.begin(ssid, pass);
+  #if !defined(ESP32C3)
+  WiFi.setTxPower(WIFI_POWER_8_5dBm);
+  #endif
   while (!WiFi.isConnected() && wifi_retry++ <= WIFI_RETRY_CONNECTION) {
     Serial.print(".");
     delay(500);  // increment this delay on possible reconnect issues

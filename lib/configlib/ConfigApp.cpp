@@ -116,6 +116,13 @@ void ConfigApp::saveString(String key, String value){
     setLastKeySaved(key);
 }
 
+String ConfigApp::getString(String key, String defaultValue){
+    preferences.begin(_app_name, RO_MODE);
+    String out = preferences.getString(key.c_str(), defaultValue);
+    preferences.end();
+    return out;
+}
+
 void ConfigApp::saveInt(String key, int value){
     preferences.begin(_app_name, RW_MODE);
     preferences.putInt(key.c_str(), value);

@@ -30,11 +30,17 @@ target = config.get("common", "target")
 # print ("environment:")
 # print (env.Dump())
 
+chipFamily = "ESP32"
+
+if flavor == "ESP32C3" or flavor == "ESP32C3OIPLUS" or flavor == "ESP32C3LOLIN" or flavor == "ESP32C3SEEDX":
+    chipFamily = "ESP32-C3"
+
 # get runtime credentials and put them to compiler directive
 env.Append(BUILD_FLAGS=[
     u'-DREVISION=' + revision + '',
     u'-DVERSION=\\"' + version + '\\"',
     u'-DFLAVOR=\\"' + flavor + '\\"',
+    u'-DFAMILY=\\"' + chipFamily + '\\"',
     u'-DTARGET=\\"' + target + '\\"',
     u'-D'+ flavor + '=1',
     u'-I \"' + srcdir + '\"'
@@ -47,10 +53,6 @@ manifest_fota = {
     "port":8080,
     "bin":"/releases/" + target + "/canairio_" + flavor + "_rev" + revision + ".bin"
 }
-
-chipFamily = "ESP32"
-if flavor == "ESP32C3":
-    chipFamily = "ESP32-C3"
 
 bin_path = "https://influxdb.canair.io/releases/webi/"+target+"/canairio_" + flavor + "_rev" + revision + "_merged.bin"
 

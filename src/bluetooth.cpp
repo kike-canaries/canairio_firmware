@@ -54,8 +54,8 @@ void bleServerDataRefresh(){
     pCharactData->setValue(getSensorData().c_str());
 }
 
-#if !defined(ESP32C3)
 void bleServerConfigRefresh(){
+    if (FAMILY == "ESP32-C3") return;
     cfg.setWifiConnected(WiFi.isConnected());  // for notify on each write
     pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
 }
@@ -63,6 +63,7 @@ void bleServerConfigRefresh(){
 // Config BLE callbacks
 class MyConfigCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
+        if (FAMILY == "ESP32-C3") return;
         std::string value = pCharacteristic->getValue();
         if (value.length() > 0) {
             if (cfg.save(value.c_str())) {
@@ -86,6 +87,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
     };
 
     void onRead(BLECharacteristic* pCharacteristic) {
+        if (FAMILY == "ESP32-C3") return;
         bleServerConfigRefresh();
     }
 };
@@ -93,6 +95,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
 // Status BLE callbacks
 class MyStatusCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
+        if (FAMILY == "ESP32-C3") return;
         std::string value = pCharacteristic->getValue();
         if (value.length() > 0 && cfg.getTrackStatusValues(value.c_str())) {
             log_v("[E][BTLE][STATUS] "+String(value.c_str()));
@@ -104,7 +107,6 @@ class MyStatusCallbacks : public BLECharacteristicCallbacks {
         }
     }
 };
-#endif
 
 class MyServerCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
@@ -132,7 +134,6 @@ void bleServerInit() {
     pCharactData = pService->createCharacteristic(
         CHARAC_DATA_UUID,
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-    #if !defined(ESP32C3)
     // Create a BLE Characteristic for Sensor mode: STATIC/MOVIL
     pCharactConfig = pService->createCharacteristic(
         CHARAC_CONFIG_UUID,
@@ -147,7 +148,6 @@ void bleServerInit() {
     pCharactStatus->setCallbacks(new MyStatusCallbacks());
     // Set callback data:
     bleServerConfigRefresh();
-    #endif
     bleServerDataRefresh();
     // Create a Data Descriptor (for notifications)
     pCharactData->addDescriptor(new BLE2902());

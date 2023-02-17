@@ -1,9 +1,14 @@
 #include <battery_tft.hpp>
 
 void Battery_TFT::setupBattADC() {
-    #ifndef ESP32C3
+    // TODO: all here is deprecated we need review the documentation
+    int channel_atten = 0;
+    #ifdef ADC1_CHANNEL_6
+    channel_atten = ADC1_CHANNEL_6;
+    #endif
+    if (FAMILY == "ESP32-C3") return;
     esp_adc_cal_characteristics_t adc_chars;
-    esp_adc_cal_value_t val_type = esp_adc_cal_characterize((adc_unit_t)ADC_UNIT_1, (adc_atten_t)ADC1_CHANNEL_6, (adc_bits_width_t)ADC_WIDTH_BIT_12, 1100, &adc_chars);
+    esp_adc_cal_value_t val_type = esp_adc_cal_characterize((adc_unit_t)ADC_UNIT_1, (adc_atten_t)channel_atten, (adc_bits_width_t)ADC_WIDTH_BIT_12, 1100, &adc_chars);
     //Check type of calibration value used to characterize ADC
     if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
         Serial.printf("-->[BATT] ADC eFuse Vref:%u mV\r\n", adc_chars.vref);
@@ -13,7 +18,6 @@ void Battery_TFT::setupBattADC() {
     } else {
         Serial.printf("-->[BATT] ADC Default Vref: %u mV\r\n", vref);
     }
-    #endif
 }
 
 void Battery_TFT::init(bool debug) {

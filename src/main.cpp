@@ -103,9 +103,7 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
             cfg.saveSampleTime(time);
             cfg.reload();
 
-            #if !defined(ESP32C3)
-            bleServerConfigRefresh();
-            #endif
+            if (FAMILY != "ESP32-C3") bleServerConfigRefresh();
 
             sensors.setSampleTime(cfg.stime);
         }
@@ -251,11 +249,11 @@ void setup() {
     gui.showWelcome();
     logMemory("GLIB");
     // init battery monitor
-    #if !defined(ESP32C3)
-    battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
-    battery.init(cfg.devmode);
-    battery.update();
-    #endif
+    if (FAMILY != "ESP32-C3") {
+      battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
+      battery.init(cfg.devmode);
+      battery.update();
+    }
     powerInit();
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC\t\t: " + cfg.deviceId);

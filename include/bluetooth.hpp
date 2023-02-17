@@ -13,10 +13,8 @@
 
 #define SERVICE_UUID        "c8d1d262-861f-4082-947e-f383a259aaf3"
 #define CHARAC_DATA_UUID    "b0f332a8-a5aa-4f3f-bb43-f99e7791ae01"
-#if !defined(ESP32C3)
 #define CHARAC_CONFIG_UUID  "b0f332a8-a5aa-4f3f-bb43-f99e7791ae02"
 #define CHARAC_STATUS_UUID  "b0f332a8-a5aa-4f3f-bb43-f99e7791ae03"
-#endif
 
 void bleLoop();
 void bleServerInit();

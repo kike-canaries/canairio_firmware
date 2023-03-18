@@ -73,6 +73,7 @@ void refreshGUIData() {
     gui.displaySensorLiveIcon();  // all sensors read are ok 
     gui.setSensorData(data);
     gui.setInfoData(getDeviceInfo());
+    printWifiRSSI();
     logMemory ("LOOP");
 }
 
@@ -101,7 +102,9 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
             Serial.println("-->[MAIN] onSampleTime changed\t: " + String(time));
             cfg.saveSampleTime(time);
             cfg.reload();
-            bleServerConfigRefresh();
+
+            if (FAMILY != "ESP32-C3") bleServerConfigRefresh();
+
             sensors.setSampleTime(cfg.stime);
         }
     };
@@ -178,7 +181,7 @@ void printSensorsDetected() {
 
 void startingSensors() {
     Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)cfg.stype));
-    gui.welcomeAddMessage("Enabling sensors:");
+    gui.welcomeAddMessage("Init sensors..");
     sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
     sensors.setSampleTime(cfg.stime);               // config sensors sample time (first use)
@@ -186,8 +189,15 @@ void startingSensors() {
     sensors.setCO2AltitudeOffset(cfg.altoffset);    // CO2 altitude compensation
     sensors.detectI2COnly(cfg.i2conly);             // force only i2c sensors
     sensors.setDebugMode(cfg.devmode);              // debugging mode 
-    sensors.init(cfg.getSensorType());              // start all sensors and
-                                                    // The UART sensor is choosed on Android app.
+    int mUART = cfg.stype;                          // optional UART sensor choosed on the Android app
+    int mTX = cfg.sTX;                              // UART TX defined via setup
+    int mRX = cfg.sRX;                              // UART RX defined via setup
+
+    if (cfg.sTX == -1 && cfg.sRX == -1)
+        sensors.init(mUART);                        // start all sensors (board predefined pins)
+    else
+        sensors.init(mUART, mRX, mTX);              // start all sensors and custom pins via setup.
+
                                                     // For more information about the supported sensors,
                                                     // please see the canairio_sensorlib documentation.
     if(sensors.getSensorsRegisteredCount()==0){
@@ -199,16 +209,16 @@ void startingSensors() {
         printSensorsDetected();    
     }
 
-    Serial.printf("-->[INFO] registered units\t:\n");
+    Serial.printf("-->[INFO] registering units\t:\r\n");
     delay(1000);
     sensors.readAllSensors();                       // only to force to register all sensors
     gui.welcomeAddMessage("Units count: "+String(sensors.getUnitsRegisteredCount()));
     selectUnit = (UNIT) cfg.getUnitSelected();
-    Serial.printf("-->[INFO] restored saved unit \t: %s\n",sensors.getUnitName(selectUnit).c_str());
+    Serial.printf("-->[INFO] restored saved unit \t: %s\r\n",sensors.getUnitName(selectUnit).c_str());
     if (!sensors.isUnitRegistered(selectUnit)){
         sensors.resetNextUnit();
         selectUnit = sensors.getNextUnit();  // auto selection of sensor unit to show
-        Serial.printf("-->[INFO] not found! set to\t: %s\n",sensors.getUnitName(selectUnit).c_str());
+        Serial.printf("-->[INFO] not found! set to\t: %s\r\n",sensors.getUnitName(selectUnit).c_str());
     }
     gui.welcomeAddMessage("Show unit: "+sensors.getUnitName(selectUnit));
     sensors.printUnitsRegistered(true);
@@ -221,8 +231,9 @@ void startingSensors() {
 
 void setup() {
     Serial.begin(115200);
-    delay(400);
-    Serial.println("\n== CanAirIO Setup ==\n");
+    delay(500);
+    Serial.flush();
+    Serial.println("\n== CanAirIO Setup ==\r\n");
     logMemory("INIT");
 
     // init app preferences and load settings
@@ -238,9 +249,11 @@ void setup() {
     gui.showWelcome();
     logMemory("GLIB");
     // init battery monitor
-    battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
-    battery.init(cfg.devmode);
-    battery.update();
+    if (FAMILY != "ESP32-C3") {
+      battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
+      battery.init(cfg.devmode);
+      battery.update();
+    }
     powerInit();
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC\t\t: " + cfg.deviceId);
@@ -248,11 +261,15 @@ void setup() {
     Serial.println("-->[INFO] Revision\t\t: " + gui.getFirmwareVersionCode());
     Serial.println("-->[INFO] Firmware\t\t: " + String(VERSION));
     Serial.println("-->[INFO] Flavor  \t\t: " + String(FLAVOR));
-    Serial.println("-->[INFO] Target  \t\t: " + String(TARGET));
+    Serial.println("-->[INFO] Target  \t\t: " + String(TARGET)); 
+    logMemory("GPIO");
+    gui.welcomeAddMessage("wait for setup..");
+    Serial.println("\n-->[INFO] == Waiting for setup (10s)  ==");
+    wifiCLIInit();
     Serial.println("-->[INFO] == Detecting Sensors ==");
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
     Serial.println("-->[INFO] enable sensor GPIO\t: " + String(MAIN_HW_EN_PIN));
-    logMemory("GPIO");
+    logMemory("CLI");
     startingSensors();
     logMemory("SLIB");
     // Setting callback for remote commands via Bluetooth config
@@ -264,8 +281,8 @@ void setup() {
     gui.welcomeAddMessage("Connecting..");
     wifiInit();
     logMemory("WIFI");
-    Serial.printf("-->[INFO] InfluxDb cloud \t: %s\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
-    Serial.printf("-->[INFO] WiFi current config\t: %s\n", cfg.isWifiEnable() ? "enabled" : "disabled");
+    Serial.printf("-->[INFO] InfluxDb cloud \t: %s\r\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
+    Serial.printf("-->[INFO] WiFi current config\t: %s\r\n", cfg.isWifiEnable() ? "enabled" : "disabled");
     gui.welcomeAddMessage("WiFi: "+String(cfg.isIfxEnable() ? "On" : "Off"));
     gui.welcomeAddMessage("Influx: "+String(cfg.isIfxEnable() ? "On" : "Off"));
  
@@ -285,16 +302,17 @@ void setup() {
     gui.welcomeAddMessage(cfg.getDeviceId());   // mac address
     gui.welcomeAddMessage("Watchdog:"+String(WATCHDOG_TIME)); 
     gui.welcomeAddMessage("==SETUP READY==");
-    delay(2000);
+    delay(600);
     gui.showMain();
+    gui.loop();
     refreshGUIData();
     logMemory("GLIB");
-    Serial.printf("-->[INFO] sensors units detected\t: %d\n", sensors.getUnitsRegisteredCount());
-    Serial.printf("-->[INFO] unit selected to show \t: %s\n",sensors.getUnitName(selectUnit).c_str());
-    Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\n", sizeof(sensors));
-    Serial.printf("-->[HEAP] sizeof config \t: %04ub\n", sizeof(cfg));
-    Serial.printf("-->[HEAP] sizeof GUI    \t: %04ub\n", sizeof(gui));
-    Serial.println("\n==>[INFO] Setup End ===\n");
+    Serial.printf("-->[INFO] sensors units count\t: %d\r\n", sensors.getUnitsRegisteredCount());
+    Serial.printf("-->[INFO] show unit selected \t: %s\r\n",sensors.getUnitName(selectUnit).c_str());
+    Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\r\n", sizeof(sensors));
+    Serial.printf("-->[HEAP] sizeof config \t: %04ub\r\n", sizeof(cfg));
+    Serial.printf("-->[HEAP] sizeof GUI    \t: %04ub\r\n", sizeof(gui));
+    Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
 }
 
 void loop() {
@@ -310,4 +328,5 @@ void loop() {
 
     battery.loop();  // refresh battery level and voltage
     powerLoop();     // check power status and manage power saving
+    wcli.loop();     // CanAirIO command line interface
 }

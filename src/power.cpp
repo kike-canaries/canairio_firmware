@@ -6,9 +6,9 @@ void prepairShutdown() {
     #ifndef M5STICKCPLUS
     digitalWrite(ADC_EN, LOW);
     delay(10);
-    rtc_gpio_init(GPIO_NUM_14);
-    rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
-	rtc_gpio_set_level(GPIO_NUM_14, 1);
+    //rtc_gpio_init(GPIO_NUM_14);
+    //rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
+    //rtc_gpio_set_level(GPIO_NUM_14, 1);
     delay(500);
     #endif
     gui.setPowerSave(); 
@@ -79,7 +79,7 @@ void powerDisableSensors() {
 void powerInit() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable Brownout Detector 
     // set cpu speed low to save battery
-    setCpuFrequencyMhz(80);
+    setCpuFrequencyMhz(240);
     Serial.print("-->[POWR] CPU Speed: ");
     Serial.print(getCpuFrequencyMhz());
     Serial.println(" MHz"); 
@@ -98,6 +98,6 @@ void powerLoop(){
             if(cfg.solarmode)powerDeepSleepTimer(cfg.deepSleep);
             else completeShutdown();
         }
-        if(cfg.devmode) Serial.printf("-->[HEAP] Min: %d Max: %d\t: %d\n", ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), ESP.getFreeHeap());
+        log_i("[HEAP] Min:%d Max:%d\t: %d\r\n", ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), ESP.getFreeHeap());
     }
 }

@@ -76,7 +76,7 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
 
       pax_count = listOfMAC.size();
       if (pax_count != last_pax_count) {
-          if(cfg.devmode) Serial.printf("-->[WIFI] new PAX count found\t: %d\n",pax_count);
+          if(cfg.devmode) Serial.printf("-->[WIFI] new PAX count found\t: %d\r\n",pax_count);
           last_pax_count = pax_count;
       }
       delay(10);
@@ -85,7 +85,6 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
 
 void wifiScanChannels() {
     channel = (channel % WIFI_CHANNEL_MAX) + 1;
-    // if (cfg.devmode) Serial.printf("-->[WIFI] PAX scanning channel %i\n",channel);
     esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
 }
 
@@ -107,7 +106,7 @@ void snifferInit() {
     esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
     wifiScanChannels();    
     sniffer_start = true;
-    Serial.println("-->[WIFI] started PAX counter sniffer ;)");
+    Serial.println("-->[WIFI] started PAX counter\t: sniffer ON ;)");
 }
 
 void snifferStop () {

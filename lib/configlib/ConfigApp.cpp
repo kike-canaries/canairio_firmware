@@ -1,5 +1,13 @@
 #include "ConfigApp.hpp"
 
+#define X(kname, kreal, ktype) kreal, 
+char const *keys[] = { CONFIG_KEYS_LIST };
+#undef X
+
+#define X(kname, kreal, ktype) ktype, 
+int keys_type[] = { CONFIG_KEYS_LIST };
+#undef X
+
 void ConfigApp::init(const char app_name[]) {
     _app_name = new char[strlen(app_name) + 1];
     strcpy(_app_name, app_name);
@@ -7,36 +15,38 @@ void ConfigApp::init(const char app_name[]) {
     deviceId = getDeviceId();
     reload();
     // override with debug INFO level (>=3)
-#if CORE_DEBUG_LEVEL >= 3
+#if CORE_DEBUG_LEVEL >= 1
     devmode = true;
 #endif
     if (devmode) Serial.println("-->[CONF] debug is enable.");
 }
 
 void ConfigApp::reload() {
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RO_MODE);
     // device name or station name
     dname = preferences.getString("dname", "");
     // wifi settings
-    wifi_enable = preferences.getBool("wifiEnable", false);
+    wifi_enable = preferences.getBool(getKey(CONFKEYS::KBWIFIEN).c_str(), false);
     ssid = preferences.getString("ssid", "");
     pass = preferences.getString("pass", ""); 
     // influx db optional settings
-    ifxdb_enable = preferences.getBool("ifxEnable", false);
+    ifxdb_enable = preferences.getBool(getKey(CONFKEYS::KBIFXENB).c_str(), false);
     ifx.db = preferences.getString("ifxdb", ifx.db);
     ifx.ip = preferences.getString("ifxip", ifx.ip);
-    ifx.pt = preferences.getUInt("ifxpt", ifx.pt);
+    ifx.pt = preferences.getInt("ifxpt", ifx.pt);
     // station and sensor settings
     lat = preferences.getDouble("lat", 0);
     lon = preferences.getDouble("lon", 0);
     geo = preferences.getString("geo", "");
     stime = preferences.getInt("stime", 5);
     stype = preferences.getInt("stype", 0);
+    sTX = preferences.getInt("sTX", -1);
+    sRX = preferences.getInt("sRX", -1);
     toffset = preferences.getFloat("toffset", 0.0);
     altoffset = preferences.getFloat("altoffset", 0.0);
     sealevel = preferences.getFloat("sealevel", 1013.25);
     devmode = preferences.getBool("debugEnable", false);
-    pax_enable = preferences.getBool("paxEnable", true);
+    pax_enable = preferences.getBool(getKey(CONFKEYS::KBPAXENB).c_str(), true);
     i2conly = preferences.getBool("i2conly", false);
     solarmode = preferences.getBool("solarEnable", false);
     deepSleep = preferences.getInt("deepSleep", 0);
@@ -50,19 +60,21 @@ void ConfigApp::reload() {
 
 String ConfigApp::getCurrentConfig() {
     StaticJsonDocument<1000> doc;
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RO_MODE);
     doc["dname"] = preferences.getString("dname", "");       // device or station name
     doc["stime"] = preferences.getInt("stime", 5);           // sensor measure time
     doc["stype"] = preferences.getInt("stype", 0);           // sensor UART type;
-    doc["wenb"] = preferences.getBool("wifiEnable", false);  // wifi on/off
+    doc["sRX"] = preferences.getInt("sRX", -1);           // sensor UART type;
+    doc["sTX"] = preferences.getInt("sTX", -1);           // sensor UART type;
+    doc["wenb"] = preferences.getBool(getKey(CONFKEYS::KBWIFIEN).c_str(), false);  // wifi on/off
     doc["ssid"] = preferences.getString("ssid", "");         // influxdb database name
-    doc["ienb"] = preferences.getBool("ifxEnable", false);   // ifxdb on/off
+    doc["ienb"] = preferences.getBool(getKey(CONFKEYS::KBIFXENB).c_str(), false);   // ifxdb on/off
     doc["ifxdb"] = preferences.getString("ifxdb", ifx.db);   // influxdb database name
     doc["ifxip"] = preferences.getString("ifxip", ifx.ip);   // influxdb database ip
-    doc["ifxpt"] = preferences.getUInt("ifxpt", ifx.pt);     // influxdb sensor tags
+    doc["ifxpt"] = preferences.getInt("ifxpt", ifx.pt);     // influxdb sensor tags
     doc["geo"] = preferences.getString("geo", "");           // influxdb GeoHash tag
     doc["denb"] = preferences.getBool("debugEnable", false); // debug mode enable
-    doc["penb"] = preferences.getBool("paxEnable", true);    // PaxCounter enable
+    doc["penb"] = preferences.getBool(getKey(CONFKEYS::KBPAXENB).c_str(), true);    // PaxCounter enable
     doc["i2conly"] = preferences.getBool("i2conly", false);  // force only i2c sensors
     doc["sse"] = preferences.getBool("solarEnable", false);  // Enable solar station
     doc["deepSleep"] = preferences.getInt("deepSleep", 0);  // deep sleep time in seconds
@@ -98,40 +110,95 @@ void ConfigApp::setLastKeySaved(String key){
 }
 
 void ConfigApp::saveString(String key, String value){
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.putString(key.c_str(), value.c_str());
     preferences.end();
     setLastKeySaved(key);
 }
 
+String ConfigApp::getString(String key, String defaultValue){
+    preferences.begin(_app_name, RO_MODE);
+    String out = preferences.getString(key.c_str(), defaultValue);
+    preferences.end();
+    return out;
+}
+
 void ConfigApp::saveInt(String key, int value){
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.putInt(key.c_str(), value);
     preferences.end();
     setLastKeySaved(key);
 }
 
 int32_t ConfigApp::getInt(String key, int defaultValue){
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RO_MODE);
     int32_t out = preferences.getInt(key.c_str(), defaultValue);
     preferences.end();
     return out;
 }
 
-void ConfigApp::saveFloat(String key, float value){
-    preferences.begin(_app_name, false);
-    preferences.putFloat(key.c_str(), value);
+bool ConfigApp::getBool(String key, bool defaultValue){
+    preferences.begin(_app_name, RO_MODE);
+    bool out = preferences.getBool(key.c_str(), defaultValue);
     preferences.end();
-    setLastKeySaved(key);
+    return out;
 }
 
 void ConfigApp::saveBool(String key, bool value){
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.putBool(key.c_str(), value);
     preferences.end();
     setLastKeySaved(key);
 }
 
+float ConfigApp::getFloat(String key, float defaultValue){
+    preferences.begin(_app_name, RO_MODE);
+    float out = preferences.getFloat(key.c_str(), defaultValue);
+    preferences.end();
+    return out;
+}
+
+void ConfigApp::saveFloat(String key, float value){
+    preferences.begin(_app_name, RW_MODE);
+    preferences.putFloat(key.c_str(), value);
+    preferences.end();
+    setLastKeySaved(key);
+}
+
+PreferenceType ConfigApp::keyType(String key) {
+    preferences.begin(_app_name, RO_MODE);
+    PreferenceType type = preferences.getType(key.c_str());
+    preferences.end();
+    return type;
+}
+
+bool ConfigApp::isKey(String key) {
+    preferences.begin(_app_name, RO_MODE);
+    bool iskey = preferences.isKey(key.c_str());
+    preferences.end();
+    return iskey;
+}
+
+String ConfigApp::getKey(CONFKEYS key) {
+  if (key < 0 || key > CONFKEYS::KCOUNT) return "";
+  return String(keys[key]);
+}
+
+ConfKeyType ConfigApp::getKeyType(CONFKEYS key) {
+  if (key < 0 || key > CONFKEYS::KCOUNT) return ConfKeyType::UNKNOWN;
+  return (ConfKeyType)keys_type[key];
+}
+
+ConfKeyType ConfigApp::getKeyType(String key) {
+  for (int i = 0; i < KCOUNT; i++) {
+    if (key.equals(keys[i])) return (ConfKeyType)keys_type[i];
+  }
+  return ConfKeyType::UNKNOWN;
+}
+
+/**
+ * @brief DEPRECATED
+ */ 
 bool ConfigApp::saveDeviceName(String name) {
     if (name.length() > 0) {
         saveString("dname",name);
@@ -145,7 +212,7 @@ bool ConfigApp::saveDeviceName(String name) {
 bool ConfigApp::saveSampleTime(int time) {
     if (time >= 5) {
         saveInt("stime", time);
-        Serial.printf("-->[CONF] set sample time to\t: %d\n", time);
+        Serial.printf("-->[CONF] set sample time to\t: %d\r\n", time);
         return true;
     }
     DEBUG("[W][CONF] warning: sample time is too low!");
@@ -159,7 +226,20 @@ bool ConfigApp::saveSampleTime(int time) {
  */
 bool ConfigApp::saveSensorType(int type) {
     saveInt("stype", type);
-    Serial.printf("-->[CONF] sensor device type\t: %d\n", type);
+    Serial.printf("-->[CONF] sensor device type\t: %d\r\n", type);
+    return true;
+}
+
+/**
+ * @brief ConfigApp::saveSensorPins
+ * @param tx UART sensor TX
+ * @param rx UART sensor RX
+ * @return true (compatibility)
+ */
+bool ConfigApp::saveSensorPins(int tx, int rx) {
+    saveInt("sTX", tx);
+    saveInt("sRX", rx);
+    Serial.printf("-->[CONF] sensor UART TX/RX\t: %d/%d\r\n", tx, rx);
     return true;
 }
 
@@ -174,7 +254,7 @@ int ConfigApp::getSensorType(){
  */
 bool ConfigApp::saveUnitSelected(int unit){
     saveInt("unit", unit);
-    Serial.printf("-->[CONF] default unit to \t: %d\n", unit);
+    Serial.printf("-->[CONF] default unit to \t: %d\r\n", unit);
     return true;
 }
 
@@ -188,27 +268,27 @@ int ConfigApp::getUnitSelected(){
 
 bool ConfigApp::saveTempOffset(float offset) {
     saveFloat("toffset", offset);
-    Serial.printf("-->[CONF] sensor temp offset\t: %0.2f\n", offset);
+    Serial.printf("-->[CONF] sensor temp offset\t: %0.2f\r\n", offset);
     return true;
 }
 
 bool ConfigApp::saveAltitudeOffset(float offset) {
     saveFloat("altoffset", offset);
-    Serial.printf("-->[CONF] sensor altitude offset\t: %0.2f\n", offset);
+    Serial.printf("-->[CONF] sensor altitude offset\t: %0.2f\r\n", offset);
     if(mRemoteConfigCallBacks!=nullptr) this->mRemoteConfigCallBacks->onAltitudeOffset(offset);
     return true;
 }
 
 bool ConfigApp::saveSeaLevel(float hpa) {
     saveFloat("sealevel", hpa);
-    Serial.printf("-->[CONF] sea level pressure\t: %0.2f\n", hpa);
+    Serial.printf("-->[CONF] sea level pressure\t: %0.2f\r\n", hpa);
     if(mRemoteConfigCallBacks!=nullptr) this->mRemoteConfigCallBacks->onSeaLevelPressure(hpa);
     return true;
 }
 
 bool ConfigApp::saveSSID(String ssid){
     if (ssid.length() > 0) {
-        preferences.begin(_app_name, false);
+        preferences.begin(_app_name, RW_MODE);
         preferences.putString("ssid", ssid);
         preferences.end();
         setLastKeySaved("ssid");
@@ -221,10 +301,10 @@ bool ConfigApp::saveSSID(String ssid){
 
 bool ConfigApp::saveWifi(String ssid, String pass){
     if (ssid.length() > 0) {
-        preferences.begin(_app_name, false);
+        preferences.begin(_app_name, RW_MODE);
         preferences.putString("ssid", ssid);
         preferences.putString("pass", pass);
-        preferences.putBool("wifiEnable", true);
+        preferences.putBool(getKey(CONFKEYS::KBWIFIEN).c_str(), true);
         preferences.end();
         setLastKeySaved("ssid");
         wifi_enable = true;
@@ -239,15 +319,15 @@ bool ConfigApp::saveWifi(String ssid, String pass){
 
 bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
     if (db.length() > 0 && ip.length() > 0) {
-        preferences.begin(_app_name, false);
+        preferences.begin(_app_name, RW_MODE);
         preferences.putString("ifxdb", db);
         preferences.putString("ifxip", ip);
-        if (pt > 0) preferences.putUInt("ifxpt", pt);
-        preferences.putBool("ifxEnable", true);
+        if (pt > 0) preferences.putInt("ifxpt", pt);
+        preferences.putBool(getKey(CONFKEYS::KBIFXENB).c_str(), true);
         preferences.end();
         setLastKeySaved("ifxdb");
         ifxdb_enable = true;
-        Serial.printf("-->[CONF] influxdb: %s@%s:%i\n",db.c_str(),ip.c_str(),pt);
+        Serial.printf("-->[CONF] influxdb: %s@%s:%i\r\n",db.c_str(),ip.c_str(),pt);
         Serial.println("-->[CONF] influxdb config saved.");
         return true;
     }
@@ -257,14 +337,27 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
 
 bool ConfigApp::saveGeo(double lat, double lon, String geo){
     if (lat != 0 && lon != 0) {
-        preferences.begin(_app_name, false);
+        preferences.begin(_app_name, RW_MODE);
         preferences.putDouble("lat", lat);
         preferences.putDouble("lon", lon);
         preferences.putString("geo", geo);
         preferences.end();
         setLastKeySaved("lat");
-        log_i("-->[CONF] geo: %s (%d,%d)",geo,lat,lon);
-        Serial.printf("-->[CONF] updated GeoHash to\t: %s\n",geo.c_str());
+        Serial.printf("-->[CONF] New Geohash: %s \t: (%.4f,%.4f)\r\n",geo,lat,lon);
+        return true;
+    }
+    DEBUG("[W][CONF] wrong GEO params!");
+    return false;
+}
+
+bool ConfigApp::saveGeo(String geo){
+    if (geo.length() > 5) {
+        float lat;
+        float lon;
+        geohash.decode(geo.c_str(),geo.length(),&lon,&lat);
+        log_i("[CONF] Geohash decoder: %s (%.4f,%.4f)\r\n",geo,lat,lon);
+        cfg.saveGeo(lat,lon, geo);
+        setLastKeySaved("geo");
         return true;
     }
     DEBUG("[W][CONF] wrong GEO params!");
@@ -272,14 +365,14 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
 }
 
 bool ConfigApp::wifiEnable(bool enable) {
-    saveBool("wifiEnable", enable);
+    saveBool(getKey(CONFKEYS::KBWIFIEN).c_str(), enable);
     wifi_enable = enable;
     Serial.println("-->[CONF] updating WiFi state\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::ifxdbEnable(bool enable) {
-    saveBool("ifxEnable", enable);
+    saveBool(getKey(CONFKEYS::KBIFXENB), enable);
     ifxdb_enable = enable;
     Serial.println("-->[CONF] updating InfluxDB state\t: " + String(enable));
     return true;
@@ -293,7 +386,7 @@ bool ConfigApp::debugEnable(bool enable) {
 }
 
 bool ConfigApp::paxEnable(bool enable) {
-    saveBool("paxEnable", enable);
+    saveBool(getKey(CONFKEYS::KBPAXENB).c_str(), enable);
     pax_enable = enable;
     Serial.println("-->[CONF] new PaxCounter mode\t: " + String(enable));
     return true;
@@ -309,7 +402,7 @@ bool ConfigApp::solarEnable(bool enable) {
 bool ConfigApp::saveDeepSleep(int seconds){
     saveInt("deepSleep", seconds);
     deepSleep = seconds;
-    Serial.printf("-->[CONF] deep sleep time to\t: %d\n", seconds);
+    Serial.printf("-->[CONF] deep sleep time to\t: %d\r\n", seconds);
     return true;
 }
 
@@ -321,38 +414,38 @@ bool ConfigApp::saveI2COnly(bool enable) {
 }
 
 bool ConfigApp::saveHassIP(String ip) {
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.putString("hassip", ip);
     preferences.end();
     setLastKeySaved("hassip");
-    Serial.printf("-->[CONF] Hass local IP \t: %s saved.\n",ip.c_str());
+    Serial.printf("-->[CONF] Hass local IP \t: %s saved.\r\n",ip.c_str());
     return true;
 }
 
 bool ConfigApp::saveHassPort(int port) {
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.putInt("hasspt", port);
     preferences.end();
     setLastKeySaved("hasspt");
-    Serial.printf("-->[CONF] Hass Port  \t: %i saved.\n", port);
+    Serial.printf("-->[CONF] Hass Port  \t: %i saved.\r\n", port);
     return true;
 }
 
 bool ConfigApp::saveHassUser(String user) {
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.putString("hassusr", user);
     preferences.end();
     setLastKeySaved("hassusr");
-    Serial.printf("-->[CONF] Hass User  \t: %s saved.\n", user.c_str());
+    Serial.printf("-->[CONF] Hass User  \t: %s saved.\r\n", user.c_str());
     return true;
 }
 
 bool ConfigApp::saveHassPassword(String passw) {
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.putString("hasspsw", passw);
     preferences.end();
     setLastKeySaved("hasspsw");
-    if (devmode) Serial.printf("-->[CONF] Hass password %s saved.\n", passw.c_str());
+    if (devmode) Serial.printf("-->[CONF] Hass password %s saved.\r\n", passw.c_str());
     else Serial.println("-->[CONF] Hass password saved.");
     return true;
 }
@@ -484,10 +577,11 @@ bool ConfigApp::isWifiConnected() {
 }
 
 void ConfigApp::clear() {
-    preferences.begin(_app_name, false);
+    preferences.begin(_app_name, RW_MODE);
     preferences.clear();
     preferences.end();
     Serial.println("-->[CONF] clear settings!");
+    delay(200);
     reboot();
 }
 

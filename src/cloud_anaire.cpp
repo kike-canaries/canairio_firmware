@@ -42,9 +42,10 @@ void anairePublish() {
         size_t n = serializeJson(doc, buffer);
 
         if (client.publish(ANAIRE_TOPIC, buffer, n)) {
-            if (cfg.devmode) Serial.printf("-->[MQTT] Anaire cloud published\t: payload size: %d\n", n);
+            if (cfg.devmode) Serial.printf("-->[MQTT] Anaire published\t: payload size: %d\t:)\r\n", n);
         } else {
-            Serial.printf("[E][MQTT] Anaire publish sensor data error: %d\n",client.lastError());
+            if(client.lastError()!=0)
+                Serial.printf("[E][MQTT] Anaire publish error \t: %d\r\n",client.lastError());
         }
     }
 }
@@ -55,18 +56,18 @@ void anaireConnect() {
     if (!(cfg.isWifiEnable() && WiFi.isConnected())) return;
 
     if (millis() - mqttDelayedStamp > MQTT_DELAYED_TIME * 1000) {
-        Serial.printf("-->[MQTT] %s\t: ", ANAIRE_HOST);
+        if (cfg.devmode) Serial.printf("-->[MQTT] %s\t: ", ANAIRE_HOST);
         int mqtt_try = 0;
         while (mqtt_try++ < MQTT_RETRY_CONNECTION && !client.connect(cfg.getStationName().c_str())) {
             delay(100);
         }
         if (mqtt_try >= MQTT_RETRY_CONNECTION && !client.connected()) {
             mqttDelayedStamp = millis();
-            Serial.println("connection failed!");
+            if (cfg.devmode) Serial.println("connection failed!");
             return;
         }
         mqttDelayedStamp = millis();
-        Serial.println("connected!");
+        if (cfg.devmode) Serial.println("connected!");
         client.subscribe(ANAIRE_TOPIC);
     }
 }
@@ -86,5 +87,6 @@ void anaireLoop () {
     client.loop();
     delay(10);
     if (!client.connected()) anaireConnect();
+    delay(10);
     anairePublish();
 }

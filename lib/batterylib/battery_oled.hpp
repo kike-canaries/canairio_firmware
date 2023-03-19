@@ -12,7 +12,10 @@
 
 #ifdef M5PICOD4 
   #define ADC_PIN 36
-#else 
+#endif
+#ifdef TTGO_T7
+   #define ADC_PIN 35
+ #else
   #define ADC_PIN 34
 #endif
 

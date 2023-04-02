@@ -26,7 +26,7 @@ void wifiInit();
 void wifiStop();
 void wifiRestart();
 void wifiLoop();
-void wifiCLIInit();
+void cliInit();
 
 int  getWifiRSSI();
 void printWifiRSSI();

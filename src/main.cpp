@@ -264,8 +264,10 @@ void setup() {
     Serial.println("-->[INFO] Target  \t\t: " + String(TARGET)); 
     logMemory("GPIO");
     gui.welcomeAddMessage("wait for setup..");
-    Serial.println("\n-->[INFO] == Waiting for setup (10s)  ==");
-    wifiCLIInit();
+    // CanAirIO CLI init and first setup (safe mode)
+    Serial.println("\n-->[INFO] == Waiting for safe mode setup (10s)  ==");
+    cliInit();  
+    // Sensors library initialization
     Serial.println("-->[INFO] == Detecting Sensors ==");
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
     Serial.println("-->[INFO] enable sensor GPIO\t: " + String(MAIN_HW_EN_PIN));
@@ -328,5 +330,4 @@ void loop() {
 
     battery.loop();  // refresh battery level and voltage
     powerLoop();     // check power status and manage power saving
-    wcli.loop();     // CanAirIO command line interface
 }

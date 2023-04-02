@@ -214,7 +214,7 @@ void startingSensors() {
     sensors.readAllSensors();                       // only to force to register all sensors
     gui.welcomeAddMessage("Units count: "+String(sensors.getUnitsRegisteredCount()));
     selectUnit = (UNIT) cfg.getUnitSelected();
-    Serial.printf("-->[INFO] restored saved unit \t: %s\r\n",sensors.getUnitName(selectUnit).c_str());
+    Serial.printf("-->[INFO] restored saved unit\t: %s\r\n",sensors.getUnitName(selectUnit).c_str());
     if (!sensors.isUnitRegistered(selectUnit)){
         sensors.resetNextUnit();
         selectUnit = sensors.getNextUnit();  // auto selection of sensor unit to show

@@ -71,7 +71,7 @@ void wifiCloudsInit() {
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
-  Serial.print("-->[WIFI] connecting to network\t: ");
+  Serial.print("-->[WIFI] connecting to wifi\t: ");
   Serial.print(ssid);
   int wifi_retry = 0;
   WiFi.begin(ssid, pass);

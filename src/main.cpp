@@ -210,8 +210,11 @@ void startingSensors() {
     }
 
     Serial.printf("-->[INFO] registering units\t:\r\n");
-    delay(1000);
+    delay(300);
     sensors.readAllSensors();                       // only to force to register all sensors
+    delay(300);
+    sensors.readAllSensors();                       // only to force to register all sensors
+    delay(10);
     gui.welcomeAddMessage("Units count: "+String(sensors.getUnitsRegisteredCount()));
     selectUnit = (UNIT) cfg.getUnitSelected();
     Serial.printf("-->[INFO] restored saved unit\t: %s\r\n",sensors.getUnitName(selectUnit).c_str());

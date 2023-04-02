@@ -1,8 +1,5 @@
 #include "GUIUtils.hpp"
-
 #include "GUIIcons.h"
-
-#//include <battery.hpp>
 
 /******************************************************************************
 *   D I S P L A Y  M E T H O D S

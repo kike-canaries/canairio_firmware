@@ -197,7 +197,7 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
     Serial.println("spins\t<TX> <RX>\tset the UART pins");
     Serial.println("stype\t<sensor_type>\tset the UART sensor type. Integer.");
     Serial.println("sgeoh\t<GeohashId>\tset geohash id. Choose it here http://bit.ly/geohashe");
-    Serial.println("kset\t<key> <value>\tset preference key value (on/off or 1/0)");
+    Serial.println("kset\t<key> <value>\tset preference key value (e.g on/off or 1/0 or text)");
     Serial.println("klist\t\t\tlist valid preference keys");
     Serial.println("info\t\t\tget the device information");
     Serial.println("exit\t\t\texit of the initial setup mode");
@@ -213,10 +213,29 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
   }
 };
 
+void cliTask(void *param) {
+  for ( ; ; ) {
+    wcli.loop();
+    vTaskDelay(50);
+  }
+  vTaskDelete( NULL );
+}
+
+void cliTaskInit() {
+  xTaskCreate(
+    cliTask,          /* Task function. */
+    "cliTask",        /* String with name of task. */
+    10000,            /* Stack size in bytes. */
+    NULL,             /* Parameter passed as input of the task */
+    1,                /* Priority of the task. */
+    NULL              /* Task handle. */
+  );
+}
+
 /**
  * @brief WiFi CLI init and CanAirIO custom commands
  **/
-void wifiCLIInit() {
+void cliInit() {
   wcli.setCallback(new mESP32WifiCLICallbacks());
   wcli.setSilentMode(true);
   wcli.disableConnectInBoot();
@@ -229,11 +248,11 @@ void wifiCLIInit() {
   wcli.term->add("spins", &wcli_uartpins, "\tset the UART pins TX RX");
   wcli.term->add("stype", &wcli_stype, "\tset the sensor type (UART)");
   wcli.term->add("sgeoh", &wcli_sgeoh, "\tset geohash. Type help for more details.");
-  wcli.term->add("kset", &wcli_kset, "\tset preference key true/false or 1/0");
+  wcli.term->add("kset", &wcli_kset, "\tset preference key (e.g on/off or 1/0 or text)");
   wcli.term->add("klist", &wcli_klist, "\tlist valid preference keys");
   wcli.term->add("info", &wcli_info, "\tget device information");
   wcli.term->add("exit", &wcli_exit, "\texit of the setup mode. AUTO EXIT in 10 seg! :)");
-  wcli.term->add("setup", &wcli_setup, "\tTYPE THIS WORD to start to configure the device :D\n");
+  wcli.term->add("setup", &wcli_setup, "\tTYPE THIS WORD to enter to SAFE MODE setup\n");
   // Configuration loop:
   // 10 seconds for reconfiguration or first use case.
   // for reconfiguration type disconnect and switch the "output" mode
@@ -242,4 +261,5 @@ void wifiCLIInit() {
   Serial.println();
   if (setup_time==0) Serial.println("==>[INFO] Settings saved. Booting..\r\n");
   else Serial.println("==>[INFO] Time for initial setup over. Booting..\r\n");
+  cliTaskInit();
 }

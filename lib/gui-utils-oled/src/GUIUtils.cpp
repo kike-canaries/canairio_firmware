@@ -56,6 +56,11 @@ void GUIUtils::showWelcome() {
 void GUIUtils::setPowerSave() {
     u8g2.setPowerSave(1);
 }
+
+void GUIUtils::setEmoticons(bool enable){
+    emoticons = enable;
+}
+
 void GUIUtils::showMain() {
     u8g2.clearBuffer();
     u8g2.sendBuffer();
@@ -102,37 +107,37 @@ void GUIUtils::welcomeRepeatMessage(String msg) {
 }
 
 void GUIUtils::displayCenterBig(String msg) {
-#ifndef EMOTICONS
-#ifdef TTGO_TQ
+  if (!emoticons) {
+    #ifdef TTGO_TQ
     u8g2.setCursor(0, 1);
     u8g2.setFont(u8g2_font_inb30_mn);
-#else
+    #else
     u8g2.setCursor(0, 0);
     u8g2.setFont(u8g2_font_inb24_mn);
-#endif
+    #endif
     u8g2.print(msg.c_str());
-#else
-#ifdef TTGO_TQ
+  } else {
+    #ifdef TTGO_TQ
     u8g2.setCursor(52, 00);
     u8g2.setFont(u8g2_font_9x18B_tf);
     u8g2.print(msg.c_str());
-#else
+    #else
     if (dw > 64) {
-        if (_deviceType <= AQI_COLOR::AQI_PM) {  // PM
-            u8g2.setCursor(dw - 64, 6);
-            u8g2.setFont(u8g2_font_inb24_mn);
-        } else {  // CO2
-            u8g2.setCursor(dw - 62, 10);
-            u8g2.setFont(u8g2_font_inb19_mn);
-        }
+      if (_deviceType <= AQI_COLOR::AQI_PM) {  // PM
+        u8g2.setCursor(dw - 64, 6);
+        u8g2.setFont(u8g2_font_inb24_mn);
+      } else {  // CO2
+        u8g2.setCursor(dw - 62, 10);
+        u8g2.setFont(u8g2_font_inb19_mn);
+      }
     } else {
-        if (_deviceType <= AQI_COLOR::AQI_PM) {  // PM
-            u8g2.setCursor(dw - 28, 7);
-            u8g2.setFont(u8g2_font_9x18B_tf);
-        } else {  // CO2
-            u8g2.setCursor(dw - 27, 8);
-            u8g2.setFont(u8g2_font_7x13B_tf);
-        }
+      if (_deviceType <= AQI_COLOR::AQI_PM) {  // PM
+        u8g2.setCursor(dw - 28, 7);
+        u8g2.setFont(u8g2_font_9x18B_tf);
+      } else {  // CO2
+        u8g2.setCursor(dw - 27, 8);
+        u8g2.setFont(u8g2_font_7x13B_tf);
+      }
     }
     u8g2.print(msg.c_str());
     u8g2.setCursor(94, 36);
@@ -140,21 +145,21 @@ void GUIUtils::displayCenterBig(String msg) {
     u8g2.setFont(u8g2_font_6x13_tf);
     String unit = _unit_symbol;
     u8g2.print(unit);
-#endif
-#endif
+    #endif
+  }
 }
 
 void GUIUtils::displayBottomLine(String msg) {
     u8g2.setFont(u8g2_font_4x6_tf);
-#ifdef TTGO_TQ
+    #ifdef TTGO_TQ
     u8g2.setCursor(115, 16);
     u8g2.print(msg.c_str());
-#else
-#ifndef EMOTICONS
-    u8g2.setCursor(0, 29);
-    u8g2.print(msg.c_str());
-#endif
-#endif
+    #else
+    if (!emoticons) {
+      u8g2.setCursor(0, 29);
+      u8g2.print(msg.c_str());
+    }
+    #endif
 }
 
 void GUIUtils::displayEmoticonLabel(int cursor, String msg) {
@@ -166,224 +171,218 @@ void GUIUtils::displayEmoticonLabel(int cursor, String msg) {
 }
 
 void GUIUtils::displayBigEmoticon(String msg) {
-#ifdef EMOTICONS
-#ifdef TTGO_TQ
+  if (emoticons) {
+    #ifdef TTGO_TQ
     u8g2.setFont(u8g2_font_6x12_tf);
     u8g2.setCursor(40, 14);
     u8g2.print(msg);
-#else
+    #else
     u8g2.setFont(u8g2_font_5x7_tf);  //5x7 5x7 6x10 4x6 5x7
     u8g2.setCursor(29, 28);          //(35, 26);; (25, 29); (30, 29); (29, 28); (25, 30)(30, 29)
     u8g2.print(msg);                 //4 8 7 6 7 6
-#endif
-#endif
+    #endif
+  }
 }
 
 void GUIUtils::displayBigLabel(int cursor, String msg) {
-#ifdef EMOTICONS
-#ifdef TTGO_TQ
+  if (emoticons) {
+    #ifdef TTGO_TQ
     u8g2.setFont(u8g2_font_5x7_tf);  //5x7 5x7 6x10 4x6 5x7
     u8g2.setCursor(cursor, 16);      //70 94 88 82 90 90
     u8g2.print(msg);
-#else
+    #else
     u8g2.setFont(u8g2_font_4x6_tf);
     u8g2.setCursor(35, 20);
     u8g2.print(msg);
-#endif  //4 8 7 6 7 6
-#endif
+    #endif  //4 8 7 6 7 6
+  }
 }
 
 void GUIUtils::displaySensorAverage(int average) {
-#ifndef EMOTICONS
+  if (!emoticons) {
 #ifdef TTGO_TQ
     if (average < 13) {
-        displayEmoticonLabel(0x0024, "GOOD");
+      displayEmoticonLabel(0x0024, "GOOD");
     } else if (average < 36) {
-        displayEmoticonLabel(0x0062, "MODERATE");
+      displayEmoticonLabel(0x0062, "MODERATE");
     } else if (average < 56) {
-        displayEmoticonLabel(0x0032, "UNH SEN G");
+      displayEmoticonLabel(0x0032, "UNH SEN G");
     } else if (average < 151) {
-        displayEmoticonLabel(0x0051, "UNHEALTY");
+      displayEmoticonLabel(0x0051, "UNHEALTY");
     } else if (average < 251) {
-        displayEmoticonLabel(0x0053, "VERY UNH");
+      displayEmoticonLabel(0x0053, "VERY UNH");
     } else {
-        displayEmoticonLabel(0x0057, "HAZARDOUS");
+      displayEmoticonLabel(0x0057, "HAZARDOUS");
     }
 #endif
-#else
+  } else {
     if (_deviceType <= AQI_COLOR::AQI_PM) {  //PM sensors and PAX
-        if (average < 13) {
+      if (average < 13) {
 #ifdef TTGO_TQ
-            u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
-            displayBigEmoticon("GOOD");
-            displayBigLabel(66, "/green");
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
+        displayBigEmoticon("GOOD");
+        displayBigLabel(66, "/green");
 #else
-            u8g2.drawXBM(0, 1, 32, 32, SmileFaceGood);
-            displayBigEmoticon("  GOOD");
-            displayBigLabel(0, " green");
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceGood);
+        displayBigEmoticon("  GOOD");
+        displayBigLabel(0, " green");
 #endif
-        } else if (average < 36) {
+      } else if (average < 36) {
 #ifdef TTGO_TQ
-            u8g2.drawXBM(1, 0, 32, 32, SmileFaceModerate);
-            displayBigEmoticon("MODERATE");
-            displayBigLabel(90, "/yel");
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceModerate);
+        displayBigEmoticon("MODERATE");
+        displayBigLabel(90, "/yel");
 #else
-            u8g2.drawXBM(0, 1, 32, 32, SmileFaceModerate);
-            displayBigEmoticon("MODERATE");
-            displayBigLabel(0, "yellow");
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceModerate);
+        displayBigEmoticon("MODERATE");
+        displayBigLabel(0, "yellow");
 #endif
-        } else if (average < 56) {
+      } else if (average < 56) {
 #ifdef TTGO_TQ
-            u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthySGroups);
-            displayBigEmoticon("UNH SEN");
-            displayBigLabel(84, "/oran");
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthySGroups);
+        displayBigEmoticon("UNH SEN");
+        displayBigLabel(84, "/oran");
 #else
-            u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthySGroups);
-            displayBigEmoticon("UNH SEN");
-            displayBigLabel(0, "orange");
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthySGroups);
+        displayBigEmoticon("UNH SEN");
+        displayBigLabel(0, "orange");
 #endif
-        } else if (average < 151) {
+      } else if (average < 151) {
 #ifdef TTGO_TQ
-            u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthy);
-            displayBigEmoticon("UNHEALT");
-            displayBigLabel(84, "/red");  //OK
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthy);
+        displayBigEmoticon("UNHEALT");
+        displayBigLabel(84, "/red");  //OK
 #else
-            u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthy);
-            displayBigEmoticon("UNHEALT");
-            displayBigLabel(0, "  red");
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthy);
+        displayBigEmoticon("UNHEALT");
+        displayBigLabel(0, "  red");
 #endif
-        } else if (average < 251) {
+      } else if (average < 251) {
 #ifdef TTGO_TQ
-            u8g2.drawXBM(1, 0, 32, 32, SmileFaceVeryUnhealthy);
-            displayBigEmoticon("V UNHEA");
-            displayBigLabel(84, "/viol");  //OK
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceVeryUnhealthy);
+        displayBigEmoticon("V UNHEA");
+        displayBigLabel(84, "/viol");  //OK
 #else
-            u8g2.drawXBM(0, 1, 32, 32, SmileFaceVeryUnhealthy);
-            displayBigEmoticon("V UNHEA");
-            displayBigLabel(0, "violet");
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceVeryUnhealthy);
+        displayBigEmoticon("V UNHEA");
+        displayBigLabel(0, "violet");
 #endif
-        } else {
+      } else {
 #ifdef TTGO_TQ
-            u8g2.drawXBM(1, 0, 32, 32, SmileFaceHazardous);
-            displayBigEmoticon("HAZARD");
-            displayBigLabel(78, "/brown");
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceHazardous);
+        displayBigEmoticon("HAZARD");
+        displayBigLabel(78, "/brown");
 #else
-            u8g2.drawXBM(0, 1, 32, 32, SmileFaceHazardous);
-            displayBigEmoticon("HAZARD");
-            displayBigLabel(0, " brown");
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceHazardous);
+        displayBigEmoticon("HAZARD");
+        displayBigLabel(0, " brown");
 #endif
-        }
-        char output[4];
-        sprintf(output, "%03d", average);
-        displayCenterBig(output);
+      }
+      char output[4];
+      sprintf(output, "%03d", average);
+      displayCenterBig(output);
     } else {  //PM sensors
-        if (average < 600) {
+      if (average < 600) {
 #ifdef TTGO_TQ
-            u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
-            displayBigEmoticon("GOOD");
-            displayBigLabel(66, "/green");
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
+        displayBigEmoticon("GOOD");
+        displayBigLabel(66, "/green");
 #else
-            u8g2.drawXBM(0, 1, 32, 32, SmileFaceGood);
-            displayBigEmoticon("  GOOD");
-            displayBigLabel(0, " green");
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceGood);
+        displayBigEmoticon("  GOOD");
+        displayBigLabel(0, " green");
 #endif
-        } else if (average < 800) {
+      } else if (average < 800) {
 #ifdef TTGO_TQ
-            u8g2.drawXBM(1, 0, 32, 32, SmileFaceModerate);
-            displayBigEmoticon("MODERATE");
-            displayBigLabel(90, "/yel");
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceModerate);
+        displayBigEmoticon("MODERATE");
+        displayBigLabel(90, "/yel");
 #else
-            u8g2.drawXBM(0, 1, 32, 32, SmileFaceModerate);
-            displayBigEmoticon("MODERATE");
-            displayBigLabel(0, "yellow");
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceModerate);
+        displayBigEmoticon("MODERATE");
+        displayBigLabel(0, "yellow");
 #endif
-        } else if (average < 1000) {
+      } else if (average < 1000) {
 #ifdef TTGO_TQ
-            u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthy);
-            displayBigEmoticon("UNHEALT");
-            displayBigLabel(84, "/red");  //OK
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthy);
+        displayBigEmoticon("UNHEALT");
+        displayBigLabel(84, "/red");  //OK
 #else
-            u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthy);
-            displayBigEmoticon("UNHEALT");
-            displayBigLabel(0, "  red");
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceUnhealthy);
+        displayBigEmoticon("UNHEALT");
+        displayBigLabel(0, "  red");
 #endif
-        } else if (average < 1400) {
+      } else if (average < 1400) {
 #ifdef TTGO_TQ
-            u8g2.drawXBM(1, 0, 32, 32, SmileFaceVeryUnhealthy);
-            displayBigEmoticon("V UNHEA");
-            displayBigLabel(84, "/viol");  //OK
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceVeryUnhealthy);
+        displayBigEmoticon("V UNHEA");
+        displayBigLabel(84, "/viol");  //OK
 #else
-            u8g2.drawXBM(0, 1, 32, 32, SmileFaceVeryUnhealthy);
-            displayBigEmoticon("V UNHEA");
-            displayBigLabel(0, "violet");
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceVeryUnhealthy);
+        displayBigEmoticon("V UNHEA");
+        displayBigLabel(0, "violet");
 #endif
-        } else {
+      } else {
 #ifdef TTGO_TQ
-            u8g2.drawXBM(1, 0, 32, 32, SmileFaceHazardous);
-            displayBigEmoticon("HAZARD");
-            displayBigLabel(78, "/brown");
+        u8g2.drawXBM(1, 0, 32, 32, SmileFaceHazardous);
+        displayBigEmoticon("HAZARD");
+        displayBigLabel(78, "/brown");
 #else
-            u8g2.drawXBM(0, 1, 32, 32, SmileFaceHazardous);
-            displayBigEmoticon("HAZARD");
-            displayBigLabel(0, " brown");
+        u8g2.drawXBM(0, 1, 32, 32, SmileFaceHazardous);
+        displayBigEmoticon("HAZARD");
+        displayBigLabel(0, " brown");
 #endif
-        }
-        char output[4];
-        sprintf(output, "%04d", average);
-        displayCenterBig(output);
+      }
+      char output[4];
+      sprintf(output, "%04d", average);
+      displayCenterBig(output);
     }
-#endif
+  }
 }
 
 void GUIUtils::displayMainValues() {
-    displaySensorAverage(_average);
-    char output[50];
-    if (_deviceType <= AQI_COLOR::AQI_PM) // PM sensors and PAX
-        sprintf(output, "%03d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
-    else
-        sprintf(output, "%04d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
-    displayBottomLine(String(output));
+  displaySensorAverage(_average);
+  char output[50];
+  if (_deviceType <= AQI_COLOR::AQI_PM)  // PM sensors and PAX
+    sprintf(output, "%03d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
+  else
+    sprintf(output, "%04d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
+  displayBottomLine(String(output));
 
-#ifdef EMOTICONS
-#ifndef TTGO_TQ
+  if (emoticons) {
+    #ifndef TTGO_TQ
     u8g2.setFont(u8g2_font_4x6_tf);
     u8g2.setCursor(48, 0);
     sprintf(output, "%04d", _mainValue);
-    // u8g2.print(output);  //TODO: it sometime fails
-#endif
-#endif
-    u8g2.setFont(u8g2_font_6x12_tf);
-#ifndef TTGO_TQ
-    //u8g2.setCursor(20, 39);
-    u8g2.setCursor(2, 39);
-#else
-#ifdef EMOTICONS
+    #endif
+  }
+  u8g2.setFont(u8g2_font_6x12_tf);
+  #ifndef TTGO_TQ
+  u8g2.setCursor(2, 39);
+  #else
+  if (emoticons)
     u8g2.setCursor(40, 23);  // valor RSSI
-#else
+  else
     u8g2.setCursor(100, 13);  // valor RSSI
-#endif
-#endif
-    if (_rssi == 0) {
-        u8g2.print("   ");
-    } else {
-        _rssi = abs(_rssi);
-        sprintf(output, "%02d", _rssi);
-        u8g2.print(_rssi);
-    }
-    if (_batteryCharge == 0) {
-        u8g2.print(" ");
-    } else {
-        u8g2.setFont(u8g2_font_6x12_tf);
-        u8g2.print(" ");
-        _batteryCharge = abs(_batteryCharge);
-        sprintf(output, "%02d", _batteryCharge);
-        u8g2.print(_batteryCharge);
-        u8g2.print("%");
-    }
-    isNewData = false;
-
-
-
+  #endif
+  if (_rssi == 0) {
+    u8g2.print("   ");
+  } else {
+    _rssi = abs(_rssi);
+    sprintf(output, "%02d", _rssi);
+    u8g2.print(_rssi);
+  }
+  if (_batteryCharge == 0) {
+    u8g2.print(" ");
+  } else {
+    u8g2.setFont(u8g2_font_6x12_tf);
+    u8g2.print(" ");
+    _batteryCharge = abs(_batteryCharge);
+    sprintf(output, "%02d", _batteryCharge);
+    u8g2.print(_batteryCharge);
+    u8g2.print("%");
+  }
+  isNewData = false;
 }
 
 // TODO: separate this function, format/display

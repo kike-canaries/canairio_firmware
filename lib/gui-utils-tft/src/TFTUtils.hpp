@@ -101,6 +101,8 @@ class TFTUtils {
 
     void setTrackTime(int h, int m, int s);
 
+    void setEmoticons(bool enable);
+
     void setBatteryStatus(float volts, int charge, bool isCharging);
 
     void setPowerSave();
@@ -223,6 +225,8 @@ class TFTUtils {
     String _info = "";
 
     bool isNewData;
+
+    bool emoticons;
 
     float _batteryVolts;
 

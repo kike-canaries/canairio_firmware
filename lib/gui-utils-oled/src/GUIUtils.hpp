@@ -76,6 +76,8 @@ class GUIUtils {
 
     void setTrackTime(int h, int m, int s);
 
+    void setEmoticons(bool enable);
+
     void suspendTaskGUI();
 
     void resumeTaskGUI();
@@ -137,6 +139,8 @@ class GUIUtils {
     bool _isCharging;
 
     bool isNewData;
+
+    bool emoticons;
 
     TaskHandle_t xHandle;
 

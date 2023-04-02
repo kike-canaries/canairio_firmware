@@ -16,6 +16,7 @@ typedef enum {
 #define CONFIG_KEYS_LIST              \
     X(KBWIFIEN, "wifiEnable", BOOL)   \
     X(KBPAXENB, "paxEnable", BOOL)    \
+    X(KEMOTICO, "emoEnable", BOOL)    \
     X(KBI2COLY, "i2conly", BOOL)      \
     X(KFALTFST, "altoffset", FLOAT)   \
     X(KFTOFFST, "toffset", FLOAT)     \

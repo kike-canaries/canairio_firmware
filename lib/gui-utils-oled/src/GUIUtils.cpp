@@ -101,15 +101,28 @@ void GUIUtils::welcomeRepeatMessage(String msg) {
     welcomeAddMessage(msg);
 }
 
+void GUIUtils::displayUnit() {
+  if (dw > 64) {
+    u8g2.setFont(u8g2_font_6x13_tf);
+    String unit = _unit_symbol;
+    int strw = u8g2.getStrWidth(unit.c_str());
+    u8g2.setCursor(dw-(strw+5), 40);
+    u8g2.print(unit);
+  }
+}
+
 void GUIUtils::displayCenterBig(String msg) {
   if (!emoticons) {
     #ifdef TTGO_TQ
     u8g2.setFont(u8g2_font_inb24_mn);
     #else
-    u8g2.setFont(u8g2_font_inb19_mn);
+    if (dw > 64)
+      u8g2.setFont(u8g2_font_inb33_mn);
+    else
+      u8g2.setFont(u8g2_font_inb19_mn);
     #endif
     int strw = u8g2.getStrWidth(msg.c_str());
-    u8g2.setCursor((dw-strw)/2, 0);
+    u8g2.setCursor((dw-strw)/2, 1);
     u8g2.print(msg.c_str());
   } else {
     #ifdef TTGO_TQ
@@ -134,12 +147,7 @@ void GUIUtils::displayCenterBig(String msg) {
         u8g2.setFont(u8g2_font_7x13B_tf);
       }
     }
-    u8g2.print(msg.c_str());
-    u8g2.setCursor(94, 36);
-    // u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.setFont(u8g2_font_6x13_tf);
-    String unit = _unit_symbol;
-    u8g2.print(unit);
+    u8g2.print(msg.c_str()); 
     #endif
   }
 }
@@ -150,10 +158,16 @@ void GUIUtils::displayBottomLine(String msg) {
     u8g2.setCursor(115, 16);
     u8g2.print(msg.c_str());
     #else
-    if (!emoticons) {
-      u8g2.setFont(u8g2_font_5x7_tf);
-      int strw = u8g2.getStrWidth(msg.c_str());
-      u8g2.setCursor((dw-strw)/2, 25);
+    if (!emoticons || dw > 64) {
+      if (dw > 64) {
+        u8g2.setFont(u8g2_font_7x13_tf);
+        u8g2.setCursor(4, 40);
+      }
+      else {
+        u8g2.setFont(u8g2_font_5x7_tf);
+        int strw = u8g2.getStrWidth(msg.c_str());
+        u8g2.setCursor((dw-strw)/2, 25);
+      }
       u8g2.print(msg.c_str());
     }
     #endif
@@ -338,7 +352,6 @@ if (!emoticons) {
 }
 
 void GUIUtils::displaySensorAverage(int average) {
-  
   char output[6];
   if (_deviceType <= AQI_COLOR::AQI_PM) {  //PM sensors and PAX
       sprintf(output, "%03d", average);
@@ -346,29 +359,10 @@ void GUIUtils::displaySensorAverage(int average) {
   else
       sprintf(output, "%04d", average);
   displayCenterBig(output);
-
 }
 
-void GUIUtils::displayMainValues() {
-  displaySensorAverage(_average);
-  displayAQIColor(_average);
+void GUIUtils::displayStatusBar(){
   char output[20];
-  sprintf(output, "%02d%% %2.1fC", (int)_humi,_temp);
-  displayBottomLine(String(output));
-
-  if (emoticons) {
-    #ifndef TTGO_TQ
-    u8g2.setFont(u8g2_font_4x6_tf);
-    u8g2.setCursor(48, 0);
-    sprintf(output, "%04d", _mainValue);
-    #endif
-  }
-  else{
-    if (_deviceType <= AQI_COLOR::AQI_PM)  // PM sensors and PAX
-      sprintf(output, "%04d", _mainValue);
-    else
-      sprintf(output, "%03d", _mainValue);
-  }
   u8g2.setFont(u8g2_font_6x12_tf);
   #ifndef TTGO_TQ
   u8g2.setCursor(2, 39);
@@ -395,6 +389,16 @@ void GUIUtils::displayMainValues() {
     u8g2.print(_batteryCharge);
     u8g2.print("%");
   }
+}
+
+void GUIUtils::displayMainValues() {
+  displaySensorAverage(_average);
+  displayAQIColor(_average);
+  displayUnit();
+  char output[20];
+  sprintf(output, "%02d%% %2.1fC", (int)_humi,_temp);
+  displayBottomLine(String(output)); 
+  displayStatusBar();
   isNewData = false;
 }
 

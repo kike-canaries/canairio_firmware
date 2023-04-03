@@ -854,6 +854,10 @@ void TFTUtils::setTrackTime(int h, int m, int s){
     resumeTaskGUI();
 }
 
+void TFTUtils::setEmoticons(bool enable) {
+
+}
+
 void TFTUtils::suspendTaskGUI(){
     if(taskGUIrunning) vTaskSuspend(xHandle);
 }

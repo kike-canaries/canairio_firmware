@@ -83,10 +83,12 @@ void anaireInit() {
 }
 
 void anaireLoop () {
-    if(!WiFi.isConnected()) return; 
+    if(!WiFi.isConnected()) return;
+    if (!client.connected()) {
+      anaireInit();
+      delay(10);
+    }
     client.loop();
-    delay(10);
-    if (!client.connected()) anaireConnect();
     delay(10);
     anairePublish();
 }

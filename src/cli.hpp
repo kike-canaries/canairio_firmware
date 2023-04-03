@@ -125,10 +125,11 @@ void wcli_sgeoh (String opts) {
   if (geoh.length() > 5) {
     geoh.toLowerCase(); 
     cfg.saveGeo(geoh);
-    cfg.ifxdbEnable(true);
+    delay(10); // possible issue with the task.
     cfg.reload();
+    cfg.ifxdbEnable(true);
   } else {
-    Serial.println("\nInvalid Geohash. (Precision should be > to 6).\r\n");
+    Serial.println("\nInvalid Geohash. (Precision should be > to 5).\r\n");
     Serial.println("Please visit: http://bit.ly/geohashe");
     Serial.println("\nand select one of your fixed station.");
   }

@@ -148,6 +148,8 @@ class GUIUtils {
 
     void displaySensorAverage(int average);
 
+    void displayAQIColor(int average);
+
     void displayCenterBig(String msg);
 
     void displayEmoticonLabel(int numsmile, String msg);

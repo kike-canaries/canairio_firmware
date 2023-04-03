@@ -75,27 +75,22 @@ void GUIUtils::showProgress(unsigned int progress, unsigned int total) {
 }
 
 void GUIUtils::welcomeAddMessage(String msg) {
-    if (lastDrawedLine >= dh - 6) {
-        delay(2000);
-        showWelcome();
-    }
-    u8g2.setFont(u8g2_font_4x6_tf);
-#ifdef TTGO_TQ
+  if (lastDrawedLine >= dh - 6) {
+    delay(500);
+    showWelcome();
+  }
+  u8g2.setFont(u8g2_font_4x6_tf);
+  if (dh == 32) {
     if (lastDrawedLine < 32) {
-        u8g2.drawStr(0, lastDrawedLine, msg.c_str());
-        lastDrawedLine = lastDrawedLine + 7;
-        u8g2.sendBuffer();
+      u8g2.drawStr(0, lastDrawedLine, msg.c_str());
     } else {
-        u8g2.drawStr(72, lastDrawedLine - 20, msg.c_str());
-        lastDrawedLine = lastDrawedLine + 7;
-        u8g2.sendBuffer();
+      u8g2.drawStr(72, lastDrawedLine - 20, msg.c_str());
     }
-#else
+  }
+  else
     u8g2.drawStr(0, lastDrawedLine, msg.c_str());
-    lastDrawedLine = lastDrawedLine + 7;
-    u8g2.sendBuffer();
-#endif
-    delay(100);
+  lastDrawedLine = lastDrawedLine + 7;
+  u8g2.sendBuffer();
 }
 
 // TODO: This metod failed on redraw or clear the space first
@@ -215,7 +210,8 @@ void GUIUtils::displaySensorAverage(int average) {
       displayEmoticonLabel(0x0057, "HAZARDOUS");
     }
 #endif
-  } else {
+  } 
+  else {
     if (_deviceType <= AQI_COLOR::AQI_PM) {  //PM sensors and PAX
       if (average < 13) {
 #ifdef TTGO_TQ
@@ -292,7 +288,8 @@ void GUIUtils::displaySensorAverage(int average) {
         displayBigEmoticon("  GOOD");
         displayBigLabel(0, " green");
 #endif
-      } else if (average < 800) {
+      } 
+      else if (average < 800) {
 #ifdef TTGO_TQ
         u8g2.drawXBM(1, 0, 32, 32, SmileFaceModerate);
         displayBigEmoticon("MODERATE");
@@ -302,7 +299,8 @@ void GUIUtils::displaySensorAverage(int average) {
         displayBigEmoticon("MODERATE");
         displayBigLabel(0, "yellow");
 #endif
-      } else if (average < 1000) {
+      } 
+      else if (average < 1000) {
 #ifdef TTGO_TQ
         u8g2.drawXBM(1, 0, 32, 32, SmileFaceUnhealthy);
         displayBigEmoticon("UNHEALT");
@@ -312,7 +310,8 @@ void GUIUtils::displaySensorAverage(int average) {
         displayBigEmoticon("UNHEALT");
         displayBigLabel(0, "  red");
 #endif
-      } else if (average < 1400) {
+      } 
+      else if (average < 1400) {
 #ifdef TTGO_TQ
         u8g2.drawXBM(1, 0, 32, 32, SmileFaceVeryUnhealthy);
         displayBigEmoticon("V UNHEA");
@@ -322,7 +321,8 @@ void GUIUtils::displaySensorAverage(int average) {
         displayBigEmoticon("V UNHEA");
         displayBigLabel(0, "violet");
 #endif
-      } else {
+      } 
+      else {
 #ifdef TTGO_TQ
         u8g2.drawXBM(1, 0, 32, 32, SmileFaceHazardous);
         displayBigEmoticon("HAZARD");
@@ -333,20 +333,18 @@ void GUIUtils::displaySensorAverage(int average) {
         displayBigLabel(0, " brown");
 #endif
       }
-      char output[4];
-      sprintf(output, "%04d", average);
-      displayCenterBig(output);
+      
     }
   }
+  char output[10];
+  sprintf(output, "%04d", average);
+  displayCenterBig(output);
 }
 
 void GUIUtils::displayMainValues() {
   displaySensorAverage(_average);
   char output[50];
-  if (_deviceType <= AQI_COLOR::AQI_PM)  // PM sensors and PAX
-    sprintf(output, "%03d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
-  else
-    sprintf(output, "%04d E%02d H%02d%% T%02d°C", _mainValue, 0, (int)_humi, (int)_temp);
+  sprintf(output, "H%02d%% T%02d°C",  (int)_humi, (int)_temp);
   displayBottomLine(String(output));
 
   if (emoticons) {
@@ -355,6 +353,12 @@ void GUIUtils::displayMainValues() {
     u8g2.setCursor(48, 0);
     sprintf(output, "%04d", _mainValue);
     #endif
+  }
+  else{
+    if (_deviceType <= AQI_COLOR::AQI_PM)  // PM sensors and PAX
+      sprintf(output, "%04d", _mainValue);
+    else
+      sprintf(output, "%03d", _mainValue);
   }
   u8g2.setFont(u8g2_font_6x12_tf);
   #ifndef TTGO_TQ

@@ -158,6 +158,10 @@ class GUIUtils {
 
     void displayBigLabel(int cursor, String msg);
 
+    void displayStatusBar();
+    
+    void displayUnit();
+
     void setupGUITask();
 
 };

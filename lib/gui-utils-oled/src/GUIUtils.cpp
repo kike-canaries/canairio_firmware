@@ -145,13 +145,15 @@ void GUIUtils::displayCenterBig(String msg) {
 }
 
 void GUIUtils::displayBottomLine(String msg) {
-    u8g2.setFont(u8g2_font_4x6_tf);
     #ifdef TTGO_TQ
+    u8g2.setFont(u8g2_font_4x6_tf);
     u8g2.setCursor(115, 16);
     u8g2.print(msg.c_str());
     #else
     if (!emoticons) {
-      u8g2.setCursor(0, 29);
+      u8g2.setFont(u8g2_font_5x7_tf);
+      int strw = u8g2.getStrWidth(msg.c_str());
+      u8g2.setCursor((dw-strw)/2, 25);
       u8g2.print(msg.c_str());
     }
     #endif
@@ -350,8 +352,8 @@ void GUIUtils::displaySensorAverage(int average) {
 void GUIUtils::displayMainValues() {
   displaySensorAverage(_average);
   displayAQIColor(_average);
-  char output[50];
-  sprintf(output, "H%02d%% T%02d°C",  (int)_humi, (int)_temp);
+  char output[20];
+  sprintf(output, "%02d%% %2.1fC", (int)_humi,_temp);
   displayBottomLine(String(output));
 
   if (emoticons) {

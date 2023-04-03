@@ -104,17 +104,17 @@ void GUIUtils::welcomeRepeatMessage(String msg) {
 void GUIUtils::displayCenterBig(String msg) {
   if (!emoticons) {
     #ifdef TTGO_TQ
-    u8g2.setCursor(0, 1);
-    u8g2.setFont(u8g2_font_inb30_mn);
-    #else
-    u8g2.setCursor(0, 0);
     u8g2.setFont(u8g2_font_inb24_mn);
+    #else
+    u8g2.setFont(u8g2_font_inb19_mn);
     #endif
+    int strw = u8g2.getStrWidth(msg.c_str());
+    u8g2.setCursor((dw-strw)/2, 0);
     u8g2.print(msg.c_str());
   } else {
     #ifdef TTGO_TQ
     u8g2.setCursor(52, 00);
-    u8g2.setFont(u8g2_font_9x18B_tf);
+    u8g2.setFont(u8g2_font_9x18B_tf); 
     u8g2.print(msg.c_str());
     #else
     if (dw > 64) {
@@ -193,8 +193,8 @@ void GUIUtils::displayBigLabel(int cursor, String msg) {
   }
 }
 
-void GUIUtils::displaySensorAverage(int average) {
-  if (!emoticons) {
+void GUIUtils::displayAQIColor(int average) {
+if (!emoticons) {
 #ifdef TTGO_TQ
     if (average < 13) {
       displayEmoticonLabel(0x0024, "GOOD");
@@ -209,7 +209,7 @@ void GUIUtils::displaySensorAverage(int average) {
     } else {
       displayEmoticonLabel(0x0057, "HAZARDOUS");
     }
-#endif
+#endif 
   } 
   else {
     if (_deviceType <= AQI_COLOR::AQI_PM) {  //PM sensors and PAX
@@ -273,11 +273,9 @@ void GUIUtils::displaySensorAverage(int average) {
         displayBigEmoticon("HAZARD");
         displayBigLabel(0, " brown");
 #endif
-      }
-      char output[4];
-      sprintf(output, "%03d", average);
-      displayCenterBig(output);
-    } else {  //PM sensors
+      } 
+    } //PM sensors
+    else {  
       if (average < 600) {
 #ifdef TTGO_TQ
         u8g2.drawXBM(1, 0, 32, 32, SmileFaceGood);
@@ -333,16 +331,25 @@ void GUIUtils::displaySensorAverage(int average) {
         displayBigLabel(0, " brown");
 #endif
       }
-      
     }
   }
-  char output[10];
-  sprintf(output, "%04d", average);
+}
+
+void GUIUtils::displaySensorAverage(int average) {
+  
+  char output[6];
+  if (_deviceType <= AQI_COLOR::AQI_PM) {  //PM sensors and PAX
+      sprintf(output, "%03d", average);
+  }
+  else
+      sprintf(output, "%04d", average);
   displayCenterBig(output);
+
 }
 
 void GUIUtils::displayMainValues() {
   displaySensorAverage(_average);
+  displayAQIColor(_average);
   char output[50];
   sprintf(output, "H%02d%% T%02d°C",  (int)_humi, (int)_temp);
   displayBottomLine(String(output));

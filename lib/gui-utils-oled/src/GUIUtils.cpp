@@ -361,34 +361,41 @@ void GUIUtils::displaySensorAverage(int average) {
   displayCenterBig(output);
 }
 
-void GUIUtils::displayStatusBar(){
-  char output[20];
-  u8g2.setFont(u8g2_font_6x12_tf);
-  #ifndef TTGO_TQ
-  u8g2.setCursor(2, 39);
-  #else
-  if (emoticons)
-    u8g2.setCursor(40, 23);  // valor RSSI
+void GUIUtils::displayWifiIcon(){
+  int wifix = 10;
+  if (dh == 32) wifix = 18;
+  if (_rssi < 50)
+    u8g2.drawBitmap(dw - wifix, dh - 8, 1, 8, ic_wifi_100);
+  else if (_rssi < 60)
+    u8g2.drawBitmap(dw - wifix, dh - 8, 1, 8, ic_wifi_75);
+  else if (_rssi < 70)
+    u8g2.drawBitmap(dw - wifix, dh - 8, 1, 8, ic_wifi_50);
   else
-    u8g2.setCursor(100, 13);  // valor RSSI
-  #endif
-  if (_rssi == 0) {
-    u8g2.print("   ");
-  } else {
-    _rssi = abs(_rssi);
-    sprintf(output, "%02d", _rssi);
-    u8g2.print(_rssi);
-  }
-  if (_batteryCharge == 0) {
-    u8g2.print(" ");
-  } else {
-    u8g2.setFont(u8g2_font_6x12_tf);
-    u8g2.print(" ");
-    _batteryCharge = abs(_batteryCharge);
-    sprintf(output, "%02d", _batteryCharge);
-    u8g2.print(_batteryCharge);
-    u8g2.print("%");
-  }
+    u8g2.drawBitmap(dw - wifix, dh - 8, 1, 8, ic_wifi_25);
+}
+
+void GUIUtils::displayBatteryIcon(){
+  if (_batteryCharge>75)
+    u8g2.drawBitmap(0, dh - 8, 1, 8, ic_batt_100);
+  else if (_batteryCharge>50)
+    u8g2.drawBitmap(0, dh - 8, 1, 8, ic_batt_75);
+  else if (_batteryCharge>25)
+    u8g2.drawBitmap(0, dh - 8, 1, 8, ic_batt_50);
+  else
+    u8g2.drawBitmap(0, dh - 8, 1, 8, ic_batt_25);
+}
+
+void GUIUtils::displayStatusBar(){
+  // if (_batteryCharge == 0) {
+  //   u8g2.print(" ");
+  // } else {
+  //   u8g2.setFont(u8g2_font_6x12_tf);
+  //   u8g2.print(" ");
+  //   _batteryCharge = abs(_batteryCharge);
+  //   sprintf(output, "%02d", _batteryCharge);
+  //   u8g2.print(_batteryCharge);
+  //   u8g2.print("%");
+  // }
 }
 
 void GUIUtils::displayMainValues() {
@@ -437,19 +444,17 @@ void GUIUtils::setInfoData(String info) {
 void GUIUtils::setBatteryStatus(float volts, int charge, bool isCharging) {
      suspendTaskGUI();
     _batteryVolts = volts;
-    _batteryCharge = charge;
+    _batteryCharge = abs(charge);
     _isCharging = isCharging;
     resumeTaskGUI();
 }
 
 void GUIUtils::displayGUIStatusFlags() {
 #ifdef TTGO_TQ
-    if (_bleOn)
-        u8g2.drawBitmap(dw - 9, dh - 8, 1, 8, ic_bluetooth_on);
     if (_blePair)
-        u8g2.drawBitmap(dw - 9, dh - 8, 1, 8, ic_bluetooth_pair);
+        u8g2.drawBitmap(dw - 9, dh - 8, 1, 8, ic_bluetooth_on);
     if (_wifiOn)
-        u8g2.drawBitmap(dw - 18, dh - 8, 1, 8, ic_wifi_on);
+      displayWifiIcon();
     if (dataOn)
         u8g2.drawBitmap(dw - 35, dh - 8, 1, 8, ic_data_on);
     if (preferenceSave)
@@ -458,20 +463,18 @@ void GUIUtils::displayGUIStatusFlags() {
         u8g2.drawBitmap(dw - 48, dh - 8, 1, 8, ic_sensor_live);
 
 #else
-    if (_bleOn)
-        u8g2.drawBitmap(dw - 10, dh - 8, 1, 8, ic_bluetooth_on);
+    u8g2.drawLine(0, dh - 10, dw - 1, dh - 10);
     if (_blePair)
-        u8g2.drawBitmap(dw - 10, dh - 8, 1, 8, ic_bluetooth_pair);
+        u8g2.drawBitmap(dw - 20, dh - 8, 1, 8, ic_bluetooth_on);
     if (_wifiOn)
-        u8g2.drawBitmap(dw - 20, dh - 8, 1, 8, ic_wifi_on);
+        displayWifiIcon();
     if (dataOn)
         u8g2.drawBitmap(dw - 30, dh - 8, 1, 8, ic_data_on);
     if (preferenceSave)
-        u8g2.drawBitmap(10, dh - 8, 1, 8, ic_pref_save);
+        u8g2.drawBitmap(20, dh - 8, 1, 8, ic_pref_save);
     if (sensorLive)
-        u8g2.drawBitmap(0, dh - 8, 1, 8, ic_sensor_live);
-
-    u8g2.drawLine(0, dh - 10, dw - 1, dh - 10);
+        u8g2.drawBitmap(10, dh - 8, 1, 8, ic_sensor_live);
+    displayBatteryIcon();
 #endif
     if (dataOn) dataOn = false;                  // reset trigger for publish data ok.
     if (preferenceSave) preferenceSave = false;  // reset trigger for save preference ok.

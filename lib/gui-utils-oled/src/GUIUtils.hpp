@@ -158,6 +158,10 @@ class GUIUtils {
 
     void displayBigLabel(int cursor, String msg);
 
+    void displayWifiIcon();
+
+    void displayBatteryIcon();
+
     void displayStatusBar();
     
     void displayUnit();

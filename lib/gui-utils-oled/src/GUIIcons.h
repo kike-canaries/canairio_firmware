@@ -20,14 +20,58 @@ static const unsigned char PROGMEM ic_bluetooth_pair[] = {
     B00011100,
 };
 
-static const unsigned char PROGMEM ic_wifi_on[] = {
+// static const unsigned char PROGMEM ic_wifi_on[] = {
+//     B00000000,
+//     B00011000,
+//     B00111100,
+//     B01000010,
+//     B10011001,
+//     B00100100,
+//     B01000010,
+//     B00011000,
+// };
+
+static const unsigned char PROGMEM ic_wifi_100[] = {
+    B11111111,
+    B11111111,
+    B01111110,
+    B01111110,
+    B00111100,
+    B00111100,
+    B00011000,
+    B00011000,
+};
+
+static const unsigned char PROGMEM ic_wifi_75[] = {
+    B00000000,
+    B00000000,
+    B01111110,
+    B01111110,
+    B00111100,
+    B00111100,
+    B00011000,
+    B00011000,
+};
+
+static const unsigned char PROGMEM ic_wifi_50[] = {
+    B00000000,
+    B00000000,
+    B00000000,
+    B00000000,
+    B00111100,
+    B00111100,
+    B00011000,
+    B00011000,
+};
+
+static const unsigned char PROGMEM ic_wifi_25[] = {
+    B00000000,
+    B00000000,
+    B00000000,
+    B00000000,
+    B00000000,
     B00000000,
     B00011000,
-    B00111100,
-    B01000010,
-    B10011001,
-    B00100100,
-    B01000010,
     B00011000,
 };
 
@@ -40,6 +84,51 @@ static const unsigned char PROGMEM ic_data_on[] = {
     B01101111,
     B01100110,
     B00000000,
+};
+
+
+static const unsigned char PROGMEM ic_batt_25[] = {
+    B00011000,
+    B01111110,
+    B01000010,
+    B01000010,
+    B01000010,
+    B01000010,
+    B01111110,
+    B01111110,
+};
+
+static const unsigned char PROGMEM ic_batt_50[] = {
+    B00011000,
+    B01111110,
+    B01000010,
+    B01000010,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+};
+
+static const unsigned char PROGMEM ic_batt_75[] = {
+    B00011000,
+    B01111110,
+    B01000010,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+};
+
+static const unsigned char PROGMEM ic_batt_100[] = {
+    B00011000,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
 };
 
 static const unsigned char PROGMEM ic_pref_save[] = {

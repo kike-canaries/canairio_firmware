@@ -2,14 +2,22 @@
 
 void Battery_OLED::setupBattADC() {
     // TODO: all here is deprecated we need review the documentation
-    int channel_atten = 0;
-    #ifdef ADC1_CHANNEL_6
-    channel_atten = ADC1_CHANNEL_6;
+   int channel_atten = 0;
+   
+   #ifndef TTGO_T7
+
+        #ifdef ADC1_CHANNEL_6
+            channel_atten = ADC1_CHANNEL_6;            
+        #else
+            channel_atten = ADC1_CHANNEL_7;
+        #endif
     #endif
+
     if (FAMILY == "ESP32-C3") return;
     esp_adc_cal_characteristics_t adc_chars;
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize((adc_unit_t)ADC_UNIT_1, (adc_atten_t)channel_atten, (adc_bits_width_t)ADC_WIDTH_BIT_12, 1100, &adc_chars);
     // Check type of calibration value used to characterize ADC
+   
     if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
         Serial.printf("-->[BATT] ADC eFuse Vref:%u mV\r\n", adc_chars.vref);
         vref = adc_chars.vref;
@@ -18,6 +26,8 @@ void Battery_OLED::setupBattADC() {
     } else {
         Serial.printf("-->[BATT] ADC Default Vref: %u mV\r\n", vref);
     }
+    
+
 }
 
 void Battery_OLED::init(bool debug) {
@@ -51,7 +61,11 @@ void Battery_OLED::update() {
     digitalWrite(ADC_EN, HIGH);
     delay(10);  // suggested by @ygator user in issue #2
     uint16_t v = analogRead(ADC_PIN);
+    #ifdef TTGO_T7
+       curv = ((float)v / 4095.0) * 7.58;
+    #else
     curv = ((float)v / 4095.0) * 15.83;
+    #endif
     digitalWrite(ADC_EN, LOW);  // for possible issue: https://github.com/Xinyuan-LilyGO/TTGO-T-Display/issues/6
     
 }

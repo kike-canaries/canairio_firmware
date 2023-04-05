@@ -32,6 +32,7 @@ class Battery {
                 this->callback->onBatteryUpdate(curv, getCharge(), isCharging());
                 printValues();
             }
+            printValues();
         }
     }
 

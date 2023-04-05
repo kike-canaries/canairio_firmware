@@ -26,6 +26,7 @@ void anairePublish() {
         char buffer[MQTT_BUFFER_SIZE];
 
         doc["id"] = cfg.getStationName();
+        doc["ver"] = cfg.getVersion();
         doc["CO2"] = String(sensors.getCO2());
         doc["humidity"] = String(humi);
         doc["temperature"] = String(temp);

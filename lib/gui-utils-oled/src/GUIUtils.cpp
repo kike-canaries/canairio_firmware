@@ -24,7 +24,7 @@ void GUIUtils::displayInit() {
     u8g2.setBusClock(100000);
     u8g2.begin();
     u8g2.setFont(u8g2_font_6x10_tf);
-    u8g2.setContrast(255);
+    u8g2.setContrast(128);
     u8g2.setFontRefHeightExtendedText();
     u8g2.setDrawColor(1);
     u8g2.setFontPosTop();
@@ -375,14 +375,16 @@ void GUIUtils::displayWifiIcon(){
 }
 
 void GUIUtils::displayBatteryIcon(){
-  if (_batteryCharge>75)
+  if (_batteryCharge>80)
     u8g2.drawBitmap(0, dh - 8, 1, 8, ic_batt_100);
-  else if (_batteryCharge>50)
-    u8g2.drawBitmap(0, dh - 8, 1, 8, ic_batt_75);
-  else if (_batteryCharge>25)
-    u8g2.drawBitmap(0, dh - 8, 1, 8, ic_batt_50);
+  else if (_batteryCharge>60)
+    u8g2.drawBitmap(0, dh - 8, 1, 8, ic_batt_80);
+  else if (_batteryCharge>40)
+    u8g2.drawBitmap(0, dh - 8, 1, 8, ic_batt_60);
+  else if (_batteryCharge>20)
+    u8g2.drawBitmap(0, dh - 8, 1, 8, ic_batt_40);
   else
-    u8g2.drawBitmap(0, dh - 8, 1, 8, ic_batt_25);
+    u8g2.drawBitmap(0, dh - 8, 1, 8, ic_batt_00);
 }
 
 void GUIUtils::displayStatusBar(){
@@ -463,7 +465,7 @@ void GUIUtils::displayGUIStatusFlags() {
         u8g2.drawBitmap(dw - 48, dh - 8, 1, 8, ic_sensor_live);
 
 #else
-    u8g2.drawLine(0, dh - 10, dw - 1, dh - 10);
+    u8g2.drawLine(0, dh - 11, dw - 1, dh - 11);
     if (_blePair)
         u8g2.drawBitmap(dw - 20, dh - 8, 1, 8, ic_bluetooth_on);
     if (_wifiOn)

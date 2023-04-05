@@ -20,17 +20,6 @@ static const unsigned char PROGMEM ic_bluetooth_pair[] = {
     B00011100,
 };
 
-// static const unsigned char PROGMEM ic_wifi_on[] = {
-//     B00000000,
-//     B00011000,
-//     B00111100,
-//     B01000010,
-//     B10011001,
-//     B00100100,
-//     B01000010,
-//     B00011000,
-// };
-
 static const unsigned char PROGMEM ic_wifi_100[] = {
     B11111111,
     B11111111,
@@ -86,8 +75,18 @@ static const unsigned char PROGMEM ic_data_on[] = {
     B00000000,
 };
 
+static const unsigned char PROGMEM ic_batt_00[] = {
+    B00011000,
+    B01111110,
+    B01000010,
+    B01000010,
+    B01000010,
+    B01000010,
+    B01000010,
+    B01111110,
+};
 
-static const unsigned char PROGMEM ic_batt_25[] = {
+static const unsigned char PROGMEM ic_batt_20[] = {
     B00011000,
     B01111110,
     B01000010,
@@ -98,7 +97,18 @@ static const unsigned char PROGMEM ic_batt_25[] = {
     B01111110,
 };
 
-static const unsigned char PROGMEM ic_batt_50[] = {
+static const unsigned char PROGMEM ic_batt_40[] = {
+    B00011000,
+    B01111110,
+    B01000010,
+    B01000010,
+    B01000010,
+    B01111110,
+    B01111110,
+    B01111110,
+};
+
+static const unsigned char PROGMEM ic_batt_60[] = {
     B00011000,
     B01111110,
     B01000010,
@@ -109,7 +119,7 @@ static const unsigned char PROGMEM ic_batt_50[] = {
     B01111110,
 };
 
-static const unsigned char PROGMEM ic_batt_75[] = {
+static const unsigned char PROGMEM ic_batt_80[] = {
     B00011000,
     B01111110,
     B01000010,

@@ -5,18 +5,10 @@
 #include <esp_adc_cal.h>
 
 #define BATTERY_MIN_V 3.4
-#define BATTERY_MAX_V 4.04
-#define BATTCHARG_MIN_V 4.06
-#define BATTCHARG_MAX_V 4.198
+#define BATTERY_MAX_V 4.28
+#define BATTCHARG_MIN_V 4.3
+#define BATTCHARG_MAX_V 4.5
 #define ADC_EN 14
-
-#ifdef M5PICOD4 
-  #define ADC_PIN 36
-#elseif TTGO_T7
-   #define ADC_PIN 35
-#else
-  #define ADC_PIN 34
-#endif
 
 class Battery_OLED : public Battery {
   public:

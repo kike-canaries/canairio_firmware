@@ -178,6 +178,8 @@ class ConfigApp {
 
     String getAnaireDeviceId();
 
+    String getVersion();
+
     int getSensorType();
 
     void clear();

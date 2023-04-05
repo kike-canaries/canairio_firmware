@@ -556,6 +556,10 @@ String ConfigApp::getStationName() {
     return name;
 }
 
+String ConfigApp::getVersion() {
+    return "v"+String(VERSION)+"r"+String(REVISION)+String(TARGET);
+}
+
 bool ConfigApp::isWifiEnable() {
     return wifi_enable;
 }

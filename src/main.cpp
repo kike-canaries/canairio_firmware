@@ -210,9 +210,9 @@ void startingSensors() {
     }
 
     Serial.printf("-->[INFO] registering units\t:\r\n");
-    delay(300);
+    delay(500);
     sensors.readAllSensors();                       // only to force to register all sensors
-    delay(300);
+    delay(500);
     sensors.readAllSensors();                       // only to force to register all sensors
     delay(10);
     gui.welcomeAddMessage("Units count: "+String(sensors.getUnitsRegisteredCount()));

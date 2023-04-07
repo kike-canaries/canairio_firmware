@@ -319,6 +319,8 @@ void setup() {
     Serial.printf("-->[HEAP] sizeof config \t: %04ub\r\n", sizeof(cfg));
     Serial.printf("-->[HEAP] sizeof GUI    \t: %04ub\r\n", sizeof(gui));
     Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
+    // testing workaround on init config.
+    cfg.saveString("kdevid",cfg.getDeviceId());
 }
 
 void loop() {

@@ -47,7 +47,13 @@ void Battery_TFT::update() {
 }
 
 bool Battery_TFT::isCharging() {
-    return curv > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V ) / 2;
+  bool charging = false;
+  if (isDischarging >= 0)
+    charging = !isDischarging;
+  else
+    charging = curv > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V) / 2;
+//   if (debug) Serial.printf("-->[BATT] Batt is charging\t: %s\r\n", charging ? "True" : "False");
+  return charging;
 }
 
 int Battery_TFT::getCharge() {

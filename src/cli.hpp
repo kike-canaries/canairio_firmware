@@ -11,6 +11,7 @@ void wcli_debug(String opts) {
   cfg.debugEnable(param.equals("ON") || param.equals("1"));
   cfg.reload();
   sensors.setDebugMode(cfg.devmode);
+  battery.debug = cfg.devmode;
 }
 
 bool isValidKey(String key) {

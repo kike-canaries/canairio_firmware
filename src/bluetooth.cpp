@@ -39,6 +39,7 @@ String getSensorData() {
     doc["alt"] = sensors.getAltitude();
     doc["pre"] = sensors.getPressure();
     doc["bat"] = battery.getCharge();
+    doc["vol"] = battery.getVoltage();
     doc["PAX"] = getPaxCount();
     doc["dsl"] = sensors.getSensorName((SENSORS) sensors.getUARTDeviceTypeSelected());
     String json;

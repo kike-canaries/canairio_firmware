@@ -18,7 +18,6 @@ class Battery {
 
   bool captureStage = true;
   CircularBuffer<float, SAMPLES> buffer;
-  float lastAverage;
   int isDischarging = -1;
 
   virtual void init(bool debug = false) = 0;
@@ -85,11 +84,11 @@ class Battery {
       captureStage = false;
       if (debug) Serial.println("-->[BATT] first capture ready.");
     } 
-    if (buffer.isFull() && (sampleCount % 3 == 0)) {
-      float lastAvarage = getAverage();
+    if (buffer.isFull() && (sampleCount % 2 == 0)) {
+      float average = getAverage();
       float slope = getSlope();
       bool discharging = slope <= 0;
-      if (debug) Serial.printf("-->[BATT] avarage: %2.4f slope\t: %2.6f\r\n", lastAverage, slope);
+      if (debug) Serial.printf("-->[BATT] avarage: %2.4f slope\t: %2.6f\r\n", average, slope);
       if (debug) Serial.printf("-->[BATT] is discharging  \t: %s\r\n", discharging ? "True" : "False");
       isDischarging = (int) discharging;
     }

@@ -43,12 +43,12 @@ void Battery_TFT::update() {
     delay(10);  // suggested by @ygator user in issue #2
     uint16_t v = analogRead(ADC_PIN);
     curv = ((float)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
-    digitalWrite(ADC_EN, LOW);  // for possible issue: https://github.com/Xinyuan-LilyGO/TTGO-T-Display/issues/6
+    if (!captureStage) digitalWrite(ADC_EN, LOW);  // for possible issue: https://github.com/Xinyuan-LilyGO/TTGO-T-Display/issues/6
 }
 
 bool Battery_TFT::isCharging() {
   bool charging = false;
-  if (isDischarging >= 0)
+  if (curv > BATTERY_MAX_V && isDischarging >= 0)
     charging = !isDischarging;
   else
     charging = curv > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V) / 2;

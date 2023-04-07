@@ -2,9 +2,8 @@
 #include <CircularBuffer.h>
 
 #define SLOW_RATE 5000  // time into updates for visualization in ms
-#define UPDATES 60      // # of updates before calculate avarage (avarage calc start = SLOW_RATE*UPDATES)
-#define FAST_RATE 500   // time into samples for catpure and calculate avarage reference
-#define SAMPLES 20      // # of samples on buffer to calculate avarage (sample time = SAMPLES*FAST_RATE)
+#define FAST_RATE 500   // time into samples for catpure initial buffer
+#define SAMPLES 60      // # of samples on buffer (sample time = SAMPLES*FAST_RATE)
 
 class BatteryUpdateCallbacks {
  public:
@@ -20,7 +19,7 @@ class Battery {
   bool captureStage = true;
   CircularBuffer<float, SAMPLES> buffer;
   float lastAverage;
-  int isUploading = -1;
+  int isDischarging = -1;
 
   virtual void init(bool debug = false) = 0;
   virtual void update() = 0;
@@ -28,6 +27,29 @@ class Battery {
   virtual int getCharge() = 0;
   virtual bool isCharging() = 0;
   virtual void printValues() = 0;
+
+  float getAverage() {
+    float avg = 0.0;
+    using index_t = decltype(buffer)::index_t;
+    for (index_t i = 0; i < buffer.size(); i++) {
+      avg += buffer[i] / (float)buffer.size();
+    }
+    return avg;
+  }
+
+  float getSlope() {
+    if (!buffer.isFull()) return 0.0;
+    float sumX = 0, sumY = 0, sumXY = 0, sumXsq = 0;
+    using index_t = decltype(buffer)::index_t;
+    for (index_t i = 0; i < buffer.size(); i++) {
+        sumX += i;
+        sumY += buffer[i];
+        sumXY += i * buffer[i];
+        sumXsq += i * i;
+    }
+    float m = ((SAMPLES * sumXY) - (sumX * sumY)) / ((SAMPLES * sumXsq) - (sumX * sumX));
+    return m;
+  }
 
   void setUpdateCallbacks(BatteryUpdateCallbacks *callbacks) {
     this->callback = callbacks;
@@ -50,44 +72,29 @@ class Battery {
   int sampleCount = 0;
 
   bool isNewVoltage() {
-    if (debug) Serial.printf("-->[BATT] curv:%2.3f pcurv:%2.3f\r\n", curv, pcurv);
+    // if (debug) Serial.printf("-->[BATT] curv:%2.3f pcurv:%2.3f\r\n", curv, pcurv);
     return (abs(curv - pcurv) > 0.015);
   }
 
  protected:
-  float getAverage() {
-    float avg = 0.0;
-    using index_t = decltype(buffer)::index_t;
-    for (index_t i = 0; i < buffer.size(); i++) {
-      avg += buffer[i] / (float)buffer.size();
-    }
-    return avg;
-  }
 
   void capture() {
     buffer.push(curv);
     if (buffer.isFull() && captureStage) {
-      if(sampleCount == 0) lastAverage = getAverage();
-      Serial.printf("-->[BATT] LastAverage :%2.5f\r\n", lastAverage);
       interval = SLOW_RATE;  // restore slow rate sample
       captureStage = false;
+      if (debug) Serial.println("-->[BATT] first capture ready.");
     } 
-    if (!captureStage && sampleCount++ > UPDATES) {
-      Serial.printf("-->[BATT] reset initial Average\r\n");
-      captureStage = true;
-      sampleCount = 0;
-      interval = FAST_RATE;  // restore fast rate sample for capture
-      buffer.clear();
+    if (buffer.isFull() && (sampleCount % 3 == 0)) {
+      float lastAvarage = getAverage();
+      float slope = getSlope();
+      bool discharging = slope <= 0;
+      if (debug) Serial.printf("-->[BATT] avarage: %2.4f slope\t: %2.6f\r\n", lastAverage, slope);
+      if (debug) Serial.printf("-->[BATT] is discharging  \t: %s\r\n", discharging ? "True" : "False");
+      isDischarging = (int) discharging;
     }
-    if (buffer.isFull() && (sampleCount % 10 == 0)) {
-      float curAvg = getAverage();
-      float diff = abs(lastAverage - curAvg);
-      bool uploading = lastAverage >= curAvg || diff < 0.0015;
-      Serial.printf("-->[BATT] LA:%2.4f CA:%2.4f DF\t: %2.5f\r\n", lastAverage, curAvg, diff);
-      Serial.printf("-->[BATT] Batt is uploading\t: %s\r\n", uploading ? "True" : "False");
-      isUploading = (int)uploading;
-    }
-    // Serial.printf("-->[BATT] capture curv:%2.3f\r\n",curv);
+    if (sampleCount++ > 100) sampleCount = 0;
+    // if (debug && !buffer.isFull() )Serial.printf("-->[BATT] push to buffer volt\t: %2.4f\r\n",curv);
   }
 
   void notify() {

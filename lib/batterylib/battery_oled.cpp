@@ -48,17 +48,16 @@ float Battery_OLED::getVoltage() {
 
 bool Battery_OLED::isCharging() {
   bool charging = false;
-  // if (curv > BATTCHARG_MAX_V && isUploading >=0 ) charging = isUploading;
-  if (isUploading >= 0)
-    charging = isUploading;
+  if (isDischarging >= 0)
+    charging = !isDischarging;
   else
     charging = curv > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V) / 2;
-  Serial.printf("-->[BATT] Batt is charging\t: %s\r\n", charging ? "True" : "False");
+//   if (debug) Serial.printf("-->[BATT] Batt is charging\t: %s\r\n", charging ? "True" : "False");
   return charging;
 }
 
 void Battery_OLED::printValues() {
-  // if (!debug) return;
+  if (!debug) return;
   Serial.printf("-->[BATT] Battery voltage  \t: %.3fv vref: %i Charge:%i\r\n", curv, vref, getCharge());  // Output voltage and current of Bat
 }
 

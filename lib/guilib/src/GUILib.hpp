@@ -9,9 +9,15 @@
 #include <TFTUtils.hpp>
 #endif
 
+#ifdef ESP32S3
+#include <TFTUtils.hpp>
+#endif
+
 #ifndef M5STICKCPLUS
   #ifndef TTGO_TDISPLAY
-  #include <GUIUtils.hpp>
+    #ifndef ESP32S3
+    #include <GUIUtils.hpp>
+    #endif
   #endif
 #endif
 

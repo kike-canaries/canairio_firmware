@@ -24,8 +24,8 @@
 #endif
 
 #ifdef ESP32S3
-#define BUTTON_R 37
-#define BUTTON_L 39
+#define BUTTON_R 0
+#define BUTTON_L 0
 #define TFT_BL 45
 #endif
 

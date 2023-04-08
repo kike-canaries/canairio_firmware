@@ -4,6 +4,8 @@
 #include <SPI.h>
 #ifdef M5STICKCPLUS
 #include <M5StickCPlus.h>
+#elif ESP32S3
+#include "S3_Parallel16_ili9488.h" 
 #else
 #include <TFT_eSPI.h>
 #endif
@@ -49,7 +51,11 @@ class TFTUtils {
    public:
     TFTUtils(void){};
 
+    #ifdef ESP32S3
+    LGFX tft;
+    #else
     TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
+    #endif
 
     enum WIFI_MODE { WIFI_OFF, WIFI_ON };
 

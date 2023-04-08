@@ -454,6 +454,8 @@ void TFTUtils::suspend() {
     delay(2000);
     #ifdef M5STICKCPLUS
     M5.Axp.PowerOff();
+    #elif ESP32S3
+
     #else
     int r = digitalRead(TFT_BL);
     digitalWrite(TFT_BL, !r);

@@ -48,7 +48,7 @@ void Battery_TFT::update() {
 
 bool Battery_TFT::isCharging() {
   bool charging = false;
-  if (curv > BATTERY_MAX_V && isDischarging >= 0)
+  if (BATTERY_MAX_V <= BATTCHARG_MIN_V && isDischarging >= 0)
     charging = !isDischarging;
   else
     charging = curv > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V) / 2;

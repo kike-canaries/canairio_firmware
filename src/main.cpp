@@ -130,8 +130,12 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
             Serial.println("NONE");
         }
     };
+
     void onPowerOff(){
-        powerDeepSleepButton();
+        if(cfg.getBool(CONFKEYS::KWKUPRST,false))
+            powerCompleteShutdown();
+        else
+            powerDeepSleepButton();
     };
 };
 

@@ -130,8 +130,12 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
             Serial.println("NONE");
         }
     };
+
     void onPowerOff(){
-        powerDeepSleepButton();
+        if(cfg.getBool(CONFKEYS::KWKUPRST,false))
+            powerCompleteShutdown();
+        else
+            powerDeepSleepButton();
     };
 };
 
@@ -247,7 +251,7 @@ void setup() {
     gui.setWifiMode(cfg.isWifiEnable());
     gui.setPaxMode(cfg.isPaxEnable());
     gui.setSampleTime(cfg.stime);
-    gui.setEmoticons(cfg.getBool(cfg.getKey(CONFKEYS::KEMOTICO),true));
+    gui.setEmoticons(cfg.getBool(CONFKEYS::KEMOTICO,true));
     gui.displayInit();
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();
@@ -267,7 +271,9 @@ void setup() {
     Serial.println("-->[INFO] Flavor  \t\t: " + String(FLAVOR));
     Serial.println("-->[INFO] Target  \t\t: " + String(TARGET)); 
     logMemory("GPIO");
-    gui.welcomeAddMessage("wait for setup..");
+
+    if (cfg.getBool(CONFKEYS::KFAILSAFE, true))
+      gui.welcomeAddMessage("wait for setup..");
     // CanAirIO CLI init and first setup (safe mode)
     Serial.println("\n-->[INFO] == Waiting for safe mode setup (10s)  ==");
     cliInit();  
@@ -321,6 +327,8 @@ void setup() {
     Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
     // testing workaround on init config.
     cfg.saveString("kdevid",cfg.getDeviceId());
+    // enabling CLI interface
+    cliTaskInit();
 }
 
 void loop() {

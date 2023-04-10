@@ -21,6 +21,8 @@ typedef enum {
     X(KFALTFST, "altoffset", FLOAT)   \
     X(KFTOFFST, "toffset", FLOAT)     \
     X(KBASIC, "-----", UNKNOWN)       \
+    X(KDEBUG, "debugEnable", BOOL)    \
+    X(KFLIPV, "flipVEnable", BOOL)    \
     X(KBHOMEAS, "homeaEnable", BOOL)  \
     X(KBANAIRE, "anaireEnable", BOOL) \
     X(KBIFXENB, "ifxEnable", BOOL)    \
@@ -31,7 +33,7 @@ typedef enum {
     X(KSHASSPW, "hasspsw", STRING)    \
     X(KIHASSPT, "hasspt", INT)        \
     X(KFSEALV, "sealevel", FLOAT)     \
-    X(KFAILSAFE, "fsafeEnable", BOOL)    \
+    X(KFAILSAFE, "fsafeEnable", BOOL) \
     X(KWKUPRST, "wkrstEnable", BOOL)  \
     X(KBSOLARE, "solarEnable", BOOL)  \
     X(KIDEEPSL, "deepSleep", INT)     \

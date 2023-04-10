@@ -103,6 +103,8 @@ class TFTUtils {
 
     void setEmoticons(bool enable);
 
+    void flipVertical(bool enable);
+
     void setBatteryStatus(float volts, int charge, bool isCharging);
 
     void setPowerSave();

@@ -374,7 +374,10 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
         preferences.putDouble("lon", lon);
         preferences.putString("geo", geo);
         preferences.end();
-        setLastKeySaved("lat");
+        cfg.lat = lat;
+        cfg.lon = lon;
+        cfg.geo = geo;
+        setLastKeySaved("geo");
         Serial.printf("-->[CONF] New Geohash: %s \t: (%.4f,%.4f)\r\n",geo,lat,lon);
         return true;
     }
@@ -397,49 +400,49 @@ bool ConfigApp::saveGeo(String geo){
 }
 
 bool ConfigApp::wifiEnable(bool enable) {
-    saveBool(getKey(CONFKEYS::KBWIFIEN).c_str(), enable);
+    saveBool(CONFKEYS::KBWIFIEN, enable);
     wifi_enable = enable;
     Serial.println("-->[CONF] updating WiFi state\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::ifxdbEnable(bool enable) {
-    saveBool(getKey(CONFKEYS::KBIFXENB), enable);
+    saveBool(CONFKEYS::KBIFXENB, enable);
     ifxdb_enable = enable;
     Serial.println("-->[CONF] updating InfluxDB state\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::debugEnable(bool enable) {
-    saveBool("debugEnable", enable);
+    saveBool(CONFKEYS::KDEBUG, enable);
     devmode = enable;
     Serial.println("-->[CONF] new debug mode\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::paxEnable(bool enable) {
-    saveBool(getKey(CONFKEYS::KBPAXENB).c_str(), enable);
+    saveBool(CONFKEYS::KBPAXENB, enable);
     pax_enable = enable;
     Serial.println("-->[CONF] new PaxCounter mode\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::solarEnable(bool enable) {
-    saveBool("solarEnable", enable);
+    saveBool(CONFKEYS::KBSOLARE, enable);
     solarmode = enable;
     Serial.println("-->[CONF] Solar Station mode\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::saveDeepSleep(int seconds){
-    saveInt("deepSleep", seconds);
+    saveInt(CONFKEYS::KIDEEPSL, seconds);
     deepSleep = seconds;
     Serial.printf("-->[CONF] deep sleep time to\t: %d\r\n", seconds);
     return true;
 }
 
 bool ConfigApp::saveI2COnly(bool enable) {
-    saveBool("i2conly", enable);
+    saveBool(CONFKEYS::KBI2COLY, enable);
     i2conly = enable;
     Serial.println("-->[CONF] forced only i2c sensors\t: " + String(enable));
     return true;

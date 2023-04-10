@@ -247,7 +247,7 @@ void setup() {
     gui.setWifiMode(cfg.isWifiEnable());
     gui.setPaxMode(cfg.isPaxEnable());
     gui.setSampleTime(cfg.stime);
-    gui.setEmoticons(cfg.getBool(cfg.getKey(CONFKEYS::KEMOTICO),true));
+    gui.setEmoticons(cfg.getBool(CONFKEYS::KEMOTICO,true));
     gui.displayInit();
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();

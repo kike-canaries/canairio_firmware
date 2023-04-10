@@ -116,11 +116,19 @@ void ConfigApp::saveString(String key, String value){
     setLastKeySaved(key);
 }
 
+void ConfigApp::saveString(CONFKEYS key, String value){
+    saveString(getKey(key),value);
+}
+
 String ConfigApp::getString(String key, String defaultValue){
     preferences.begin(_app_name, RO_MODE);
     String out = preferences.getString(key.c_str(), defaultValue);
     preferences.end();
     return out;
+}
+
+String ConfigApp::getString(CONFKEYS key, String defaultValue){
+    return getString(getKey(key),defaultValue);
 }
 
 void ConfigApp::saveInt(String key, int value){
@@ -130,6 +138,10 @@ void ConfigApp::saveInt(String key, int value){
     setLastKeySaved(key);
 }
 
+void ConfigApp::saveInt(CONFKEYS key, int value){
+    saveInt(getKey(key),value);
+}
+
 int32_t ConfigApp::getInt(String key, int defaultValue){
     preferences.begin(_app_name, RO_MODE);
     int32_t out = preferences.getInt(key.c_str(), defaultValue);
@@ -137,11 +149,8 @@ int32_t ConfigApp::getInt(String key, int defaultValue){
     return out;
 }
 
-bool ConfigApp::getBool(String key, bool defaultValue){
-    preferences.begin(_app_name, RO_MODE);
-    bool out = preferences.getBool(key.c_str(), defaultValue);
-    preferences.end();
-    return out;
+int32_t ConfigApp::getInt(CONFKEYS key, int defaultValue){ 
+    return getInt(getKey(key),defaultValue);
 }
 
 void ConfigApp::saveBool(String key, bool value){
@@ -151,11 +160,19 @@ void ConfigApp::saveBool(String key, bool value){
     setLastKeySaved(key);
 }
 
-float ConfigApp::getFloat(String key, float defaultValue){
+void ConfigApp::saveBool(CONFKEYS key, bool value){
+    saveBool(getKey(key),value);
+}
+
+bool ConfigApp::getBool(String key, bool defaultValue){
     preferences.begin(_app_name, RO_MODE);
-    float out = preferences.getFloat(key.c_str(), defaultValue);
+    bool out = preferences.getBool(key.c_str(), defaultValue);
     preferences.end();
     return out;
+}
+
+bool ConfigApp::getBool(CONFKEYS key, bool defaultValue){
+    return getBool(getKey(key),defaultValue);
 }
 
 void ConfigApp::saveFloat(String key, float value){
@@ -163,6 +180,21 @@ void ConfigApp::saveFloat(String key, float value){
     preferences.putFloat(key.c_str(), value);
     preferences.end();
     setLastKeySaved(key);
+}
+
+void ConfigApp::saveFloat(CONFKEYS key, float value){
+    saveFloat(getKey(key),value);
+}
+
+float ConfigApp::getFloat(String key, float defaultValue){
+    preferences.begin(_app_name, RO_MODE);
+    float out = preferences.getFloat(key.c_str(), defaultValue);
+    preferences.end();
+    return out;
+}
+
+float ConfigApp::getFloat(CONFKEYS key, float defaultValue){
+    return getFloat(getKey(key),defaultValue);
 }
 
 PreferenceType ConfigApp::keyType(String key) {

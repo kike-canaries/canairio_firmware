@@ -271,7 +271,9 @@ void setup() {
     Serial.println("-->[INFO] Flavor  \t\t: " + String(FLAVOR));
     Serial.println("-->[INFO] Target  \t\t: " + String(TARGET)); 
     logMemory("GPIO");
-    gui.welcomeAddMessage("wait for setup..");
+
+    if (cfg.getBool(CONFKEYS::KFAILSAFE, true))
+      gui.welcomeAddMessage("wait for setup..");
     // CanAirIO CLI init and first setup (safe mode)
     Serial.println("\n-->[INFO] == Waiting for safe mode setup (10s)  ==");
     cliInit();  
@@ -325,6 +327,8 @@ void setup() {
     Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
     // testing workaround on init config.
     cfg.saveString("kdevid",cfg.getDeviceId());
+    // enabling CLI interface
+    cliTaskInit();
 }
 
 void loop() {

@@ -165,6 +165,7 @@ void wcli_setup(String opts) {
 
   Serial.printf("\r\nType \"klist\" for advanced settings\r\n");
   Serial.printf("Type \"help\" for available commands details\r\n");
+  Serial.printf("Type \"exit\" for leave the safe mode\r\n");
 }
 
 void wcli_reboot(String opts) {
@@ -259,9 +260,14 @@ void cliInit() {
   // 10 seconds for reconfiguration or first use case.
   // for reconfiguration type disconnect and switch the "output" mode
   uint32_t start = millis();
-  while (setup_mode || (millis() - start < setup_time)) wcli.loop();
+  if (cfg.getBool(CONFKEYS::KFAILSAFE, true))
+  {
+    while (setup_mode || (millis() - start < setup_time)) wcli.loop();
+    Serial.println();
+    if (setup_time == 0)
+      Serial.println("==>[INFO] Settings saved. Booting..\r\n");
+    else
+      Serial.println("==>[INFO] Time for initial setup over. Booting..\r\n");
+  }
   Serial.println();
-  if (setup_time==0) Serial.println("==>[INFO] Settings saved. Booting..\r\n");
-  else Serial.println("==>[INFO] Time for initial setup over. Booting..\r\n");
-  cliTaskInit();
 }

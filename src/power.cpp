@@ -14,7 +14,8 @@ void prepairShutdown() {
     gui.setPowerSave(); 
 }
 
-void completeShutdown(){
+void powerCompleteShutdown(){
+    Serial.println("-->[POWR] Complete shutdown..");
     #ifndef M5STICKCPLUS
     esp_bluedroid_disable();
     esp_bt_controller_disable();
@@ -37,7 +38,7 @@ void powerDeepSleepButton(){
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
     #endif
-    completeShutdown();
+    powerCompleteShutdown();
 }
 
 void powerDeepSleepTimer(int seconds) {
@@ -52,7 +53,7 @@ void powerDeepSleepTimer(int seconds) {
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
     #endif
     #ifndef M5STICKCPLUS
-    completeShutdown(); 
+    powerCompleteShutdown(); 
     #endif
 }
 
@@ -96,7 +97,7 @@ void powerLoop(){
         if (vbat > 3.0 && vbat < BATTERY_MIN_V) {
             Serial.println("-->[POWR] Goto DeepSleep (VBat too low)");
             if(cfg.solarmode)powerDeepSleepTimer(cfg.deepSleep);
-            else completeShutdown();
+            else powerCompleteShutdown();
         }
         log_i("[HEAP] Min:%d Max:%d\t: %d\r\n", ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), ESP.getFreeHeap());
     }

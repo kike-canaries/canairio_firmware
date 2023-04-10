@@ -253,6 +253,7 @@ void setup() {
     gui.setSampleTime(cfg.stime);
     gui.setEmoticons(cfg.getBool(CONFKEYS::KEMOTICO,true));
     gui.displayInit();
+    gui.flipVertical(cfg.getBool(CONFKEYS::KFLIPV,false));
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();
     logMemory("GLIB");

@@ -61,6 +61,11 @@ void GUIUtils::setEmoticons(bool enable){
     emoticons = enable;
 }
 
+void GUIUtils::flipVertical(bool enable){
+  if(enable) u8g2.setFlipMode(1); 
+  else u8g2.setFlipMode(0); 
+}
+
 void GUIUtils::showMain() {
     u8g2.clearBuffer();
     u8g2.sendBuffer();

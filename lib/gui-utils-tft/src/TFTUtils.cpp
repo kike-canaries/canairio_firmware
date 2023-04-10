@@ -38,7 +38,6 @@ void TFTUtils::displayInit() {
     #else
     tft.init();
     #endif
-    tft.setRotation(0);
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextSize(1);
@@ -855,7 +854,11 @@ void TFTUtils::setTrackTime(int h, int m, int s){
 }
 
 void TFTUtils::setEmoticons(bool enable) {
+}
 
+void TFTUtils::flipVertical(bool enable){
+  if(enable) tft.setRotation(2);
+  else tft.setRotation(0);
 }
 
 void TFTUtils::suspendTaskGUI(){

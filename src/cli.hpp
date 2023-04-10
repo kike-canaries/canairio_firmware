@@ -8,10 +8,11 @@ void wcli_debug(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   String param = operands.first();
   param.toUpperCase();
-  cfg.debugEnable(param.equals("ON") || param.equals("1"));
-  cfg.reload();
-  sensors.setDebugMode(cfg.devmode);
-  battery.debug = cfg.devmode;
+  bool dbgmode = param.equals("ON") || param.equals("1");
+  cfg.debugEnable(dbgmode);
+  cfg.devmode = dbgmode;
+  sensors.setDebugMode(dbgmode);
+  battery.debug = dbgmode;
 }
 
 bool isValidKey(String key) {
@@ -52,20 +53,17 @@ void wcli_klist(String opts) {
 void saveInteger(String key, String v) {
   uint16_t value = v.toInt();
   cfg.saveInt(key, value);
-  cfg.reload();
   Serial.printf("saved: %s:%i\r\n",key.c_str(),value);
 }
 
 void saveFloat(String key, String v) {
   float value = v.toFloat();
   cfg.saveFloat(key, value);
-  cfg.reload();
   Serial.printf("saved: %s:%.5f\r\n",key.c_str(),value);
 }
 
 void saveBoolean(String key, String v) {
     cfg.saveBool(key,v.equals("on") || v.equals("1") || v.equals("enable") || v.equals("true"));
-    cfg.reload();
     Serial.printf("saved: %s:%s\r\n",key.c_str(),cfg.getBool(key,false) ? "true" : "false");
 }
 
@@ -91,7 +89,6 @@ void wcli_uartpins(String opts) {
   int sRX = operands.second().toInt();
   if (sTX >= 0 && sRX >= 0) {
     cfg.saveSensorPins(sTX, sRX);
-    cfg.reload();
   }
   else
     Serial.println("invalid pins values");
@@ -102,7 +99,6 @@ void wcli_stime(String opts) {
   int stime = operands.first().toInt();
   if (stime >= 5) {
     cfg.saveSampleTime(stime);
-    cfg.reload();
     sensors.setSampleTime(stime);
   }
   else 
@@ -115,7 +111,6 @@ void wcli_stype(String opts) {
   if (stype > 7 || stype < 0) Serial.println("invalid UART sensor type. Choose one into 0-7");
   else {
     cfg.saveSensorType(stype);
-    cfg.reload();
     Serial.printf("\nselected UART sensor model\t: %s\r\n", sensors.getSensorName((SENSORS)cfg.stype));
   }
 }
@@ -126,8 +121,6 @@ void wcli_sgeoh (String opts) {
   if (geoh.length() > 5) {
     geoh.toLowerCase(); 
     cfg.saveGeo(geoh);
-    delay(10); // possible issue with the task.
-    cfg.reload();
     cfg.ifxdbEnable(true);
   } else {
     Serial.println("\nInvalid Geohash. (Precision should be > to 5).\r\n");
@@ -212,7 +205,6 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
 
   void onNewWifi(String ssid, String passw){
     cfg.saveWifi(ssid,passw);
-    cfg.reload();
   }
 };
 

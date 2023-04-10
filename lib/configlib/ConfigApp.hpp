@@ -31,7 +31,7 @@ typedef enum {
     X(KSHASSPW, "hasspsw", STRING)    \
     X(KIHASSPT, "hasspt", INT)        \
     X(KFSEALV, "sealevel", FLOAT)     \
-    X(KWKUPRST, "wakeupByReset", BOOL)  \
+    X(KWKUPRST, "wakeByReset", BOOL)  \
     X(KBSOLARE, "solarEnable", BOOL)  \
     X(KIDEEPSL, "deepSleep", INT)     \
     X(KCOUNT, "KCOUNT", UNKNOWN)

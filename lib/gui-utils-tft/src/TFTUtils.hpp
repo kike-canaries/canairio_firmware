@@ -85,6 +85,8 @@ class TFTUtils {
 
     void pageStart();
 
+    void checkButtons();
+
     void pageEnd();
 
     void clearScreen();
@@ -329,8 +331,6 @@ class TFTUtils {
     void loadLastData();
 
     void showWindowBike();
-
-    void checkButtons();
 
     void suspend();
 

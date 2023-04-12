@@ -105,13 +105,24 @@ void wcli_stime(String opts) {
     Serial.println("invalid sample time");
 }
 
+void wcli_stype_error(){
+  Serial.println("invalid UART sensor type! Choose one into 0-7:");
+  for (int i=0; i<=7 ;i++)Serial.printf("%i\t%s\r\n",i,sensors.getSensorName((SENSORS)i));
+}
+
 void wcli_stype(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
-  int stype = operands.first().toInt();
-  if (stype > 7 || stype < 0) Serial.println("invalid UART sensor type. Choose one into 0-7");
+  String stype = operands.first();
+  if(stype.length()==0){
+    wcli_stype_error();
+    return;
+  }
+  int type = stype.toInt();
+  if (type > 7 || type < 0) wcli_stype_error();
   else {
-    cfg.saveSensorType(stype);
-    Serial.printf("\nselected UART sensor model\t: %s\r\n", sensors.getSensorName((SENSORS)cfg.stype));
+    cfg.saveSensorType(type);
+    Serial.printf("\nselected UART sensor model\t: %s\r\n", sensors.getSensorName((SENSORS)type));
+    Serial.println("Please reboot to changes apply");
   }
 }
 
@@ -211,7 +222,7 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
 void cliTask(void *param) {
   for ( ; ; ) {
     wcli.loop();
-    vTaskDelay(50);
+    vTaskDelay(120 / portTICK_PERIOD_MS);
   }
   vTaskDelete( NULL );
 }
@@ -220,7 +231,7 @@ void cliTaskInit() {
   xTaskCreate(
     cliTask,          /* Task function. */
     "cliTask",        /* String with name of task. */
-    10000,            /* Stack size in bytes. */
+    3000,            /* Stack size in bytes. */
     NULL,             /* Parameter passed as input of the task */
     1,                /* Priority of the task. */
     NULL              /* Task handle. */

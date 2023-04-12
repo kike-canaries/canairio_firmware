@@ -8,6 +8,7 @@ void guiTask(void* pvParameters) {
     Serial.println("-->[TGUI] starting task loop");
     while (1) {
         gui.pageStart();
+        gui.checkButtons();
         gui.displayMainValues();
         gui.pageEnd();
         vTaskDelay(80 / portTICK_PERIOD_MS);
@@ -808,7 +809,6 @@ void TFTUtils::pageStart() {
         if (wstate == 3 ) displayMainHeader();
     }
     /// fast interactions (80ms)
-    checkButtons();
     if(sensorLive) drawFanIcon();
     updateCalibrationField();
     displayGUIStatusFlags();

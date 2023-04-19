@@ -55,6 +55,7 @@ void influxDbParseFields() {
 }
 
 bool influxDbWrite() {
+    if(!influxDbIsConfigured()) return false;
     influxDbParseFields();
     log_d("[IFDB] %s",influx.pointToLineProtocol(sensor).c_str());
     if (!influx.writePoint(sensor)) {

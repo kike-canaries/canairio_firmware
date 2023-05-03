@@ -374,9 +374,9 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
         preferences.putDouble("lon", lon);
         preferences.putString("geo", geo);
         preferences.end();
-        cfg.lat = lat;
-        cfg.lon = lon;
-        cfg.geo = geo;
+        this->lat = lat;
+        this->lon = lon;
+        this->geo = geo;
         setLastKeySaved("geo");
         Serial.printf("-->[CONF] New Geohash: %s \t: (%.4f,%.4f)\r\n",geo,lat,lon);
         return true;

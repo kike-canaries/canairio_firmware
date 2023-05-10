@@ -67,6 +67,11 @@ void saveBoolean(String key, String v) {
     Serial.printf("saved: %s:%s\r\n",key.c_str(),cfg.getBool(key,false) ? "true" : "false");
 }
 
+void saveString(String key, String v) {
+  cfg.saveString(key, v);
+  Serial.printf("saved: %s:%s\r\n",key.c_str(),v.c_str());
+}
+
 void wcli_kset(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   String key = operands.first();
@@ -76,6 +81,7 @@ void wcli_kset(String opts) {
     if(cfg.getKeyType(key) == ConfKeyType::BOOL) saveBoolean(key,v);
     else if(cfg.getKeyType(key) == ConfKeyType::FLOAT) saveFloat(key,v);
     else if(cfg.getKeyType(key) == ConfKeyType::INT) saveInteger(key,v);
+    else if(cfg.getKeyType(key) == ConfKeyType::STRING) saveString(key,v);
     else Serial.println("Invalid key action for: " + key);
   }
   else {

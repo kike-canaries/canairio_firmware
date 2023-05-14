@@ -131,7 +131,7 @@ void wifiLoop() {
   if (!WiFi.isConnected()) return;
   influxDbLoop();  // influxDB publication
   if (cfg.getBool(CONFKEYS::KBANAIRE,true)) anaireLoop();
-  if (cfg.getBool(CONFKEYS::KBHOMEAS,true)) hassLoop();
+  if (cfg.getBool(CONFKEYS::KBHOMEAS,false)) hassLoop();
 }
 
 int getWifiRSSI() {

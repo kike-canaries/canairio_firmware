@@ -29,6 +29,7 @@ typedef enum {
     X(KSIFXDB, "ifxdb", STRING)       \
     X(KSIFXIP, "ifxip", STRING)       \
     X(KIIFXPT, "ifxpt", INT)          \
+    X(KSHASSIP, "hassip", STRING)     \
     X(KSHASSU, "hassusr", STRING)     \
     X(KSHASSPW, "hasspsw", STRING)    \
     X(KIHASSPT, "hasspt", INT)        \

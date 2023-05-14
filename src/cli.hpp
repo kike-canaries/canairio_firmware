@@ -63,6 +63,7 @@ void saveFloat(String key, String v) {
 }
 
 void saveBoolean(String key, String v) {
+    v.toLowerCase();
     cfg.saveBool(key,v.equals("on") || v.equals("1") || v.equals("enable") || v.equals("true"));
     Serial.printf("saved: %s:%s\r\n",key.c_str(),cfg.getBool(key,false) ? "true" : "false");
 }
@@ -76,7 +77,6 @@ void wcli_kset(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   String key = operands.first();
   String v = operands.second();
-  v.toLowerCase();
   if(isValidKey(key)){
     if(cfg.getKeyType(key) == ConfKeyType::BOOL) saveBoolean(key,v);
     else if(cfg.getKeyType(key) == ConfKeyType::FLOAT) saveFloat(key,v);

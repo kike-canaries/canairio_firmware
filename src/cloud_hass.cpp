@@ -120,7 +120,7 @@ void hassPublish() {
     uint32_t ptime = cfg.stime;
     if (ptime<MIN_PUBLISH_INTERVAL) ptime = MIN_PUBLISH_INTERVAL-1; // publish before to the last cloud
     if(!cfg.solarmode && cfg.deepSleep > 0) ptime = cfg.deepSleep;
-    if (millis() - mqttTimeStamp > ptime) {
+    if (millis() - mqttTimeStamp > ptime * 1000) {
         mqttTimeStamp = millis(); 
         if (!hassConfigured) hassRegisterSensors();
         hassPubSensorPayload();
@@ -180,9 +180,11 @@ void hassInit() {
 }
 
 void hassLoop () {
-    if (!isHassEnable()) return;
-    if(!WiFi.isConnected()) return; 
-    if (!hassInited) hassInit();
+    if(!WiFi.isConnected()) return;
+    if (!clientHass.connected()) {
+      anaireInit();
+      delay(10);
+    }
     clientHass.loop();
     delay(10);
     if (!clientHass.connected()) hassConnect(); 

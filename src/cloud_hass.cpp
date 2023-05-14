@@ -181,6 +181,7 @@ void hassInit() {
 
 void hassLoop () {
     if(!WiFi.isConnected()) return;
+    if (!isHassEnable()) return;
     if (!clientHass.connected()) {
       anaireInit();
       delay(10);

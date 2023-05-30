@@ -85,6 +85,8 @@ class TFTUtils {
 
     void pageStart();
 
+    void checkButtons();
+
     void pageEnd();
 
     void clearScreen();
@@ -100,6 +102,10 @@ class TFTUtils {
     void setTrackValues(float speed, float distance);
 
     void setTrackTime(int h, int m, int s);
+
+    void setEmoticons(bool enable);
+
+    void flipVertical(bool enable);
 
     void setBatteryStatus(float volts, int charge, bool isCharging);
 
@@ -122,7 +128,8 @@ class TFTUtils {
     const int pwmLedChannelTFT = 0;
 
 #ifdef M5STICKCPLUS
-    int backlight[5] = {7, 8, 9, 10, 11};
+    int backlight[5] = {5, 20, 30, 50, 80};
+
 #else
     int backlight[5] = {10, 30, 60, 120, 220};
 #endif
@@ -223,6 +230,8 @@ class TFTUtils {
 
     bool isNewData;
 
+    bool emoticons;
+
     float _batteryVolts;
 
     int _batteryCharge;
@@ -322,8 +331,6 @@ class TFTUtils {
     void loadLastData();
 
     void showWindowBike();
-
-    void checkButtons();
 
     void suspend();
 

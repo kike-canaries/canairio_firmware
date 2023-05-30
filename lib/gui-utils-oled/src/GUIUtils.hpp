@@ -1,8 +1,8 @@
 #ifndef GUIUtils_hpp
 #define GUIUtils_hpp
 
+#include <FS.h>
 #include <U8g2lib.h>
-//#include "hal.hpp"
 
 enum AQI_COLOR { AQI_NONE, AQI_PM, AQI_CO2 };
 
@@ -76,6 +76,10 @@ class GUIUtils {
 
     void setTrackTime(int h, int m, int s);
 
+    void setEmoticons(bool enable);
+
+    void flipVertical (bool enable);
+
     void suspendTaskGUI();
 
     void resumeTaskGUI();
@@ -138,11 +142,15 @@ class GUIUtils {
 
     bool isNewData;
 
+    bool emoticons;
+
     TaskHandle_t xHandle;
 
     bool taskGUIrunning;
 
     void displaySensorAverage(int average);
+
+    void displayAQIColor(int average);
 
     void displayCenterBig(String msg);
 
@@ -151,6 +159,14 @@ class GUIUtils {
     void displayBigEmoticon(String msg);
 
     void displayBigLabel(int cursor, String msg);
+
+    void displayWifiIcon();
+
+    void displayBatteryIcon();
+
+    void displayStatusBar();
+    
+    void displayUnit();
 
     void setupGUITask();
 

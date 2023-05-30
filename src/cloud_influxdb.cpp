@@ -24,7 +24,7 @@ void influxDbAddTags() {
     sensor.addTag("mac",cfg.deviceId.c_str());
     sensor.addTag("geo3",cfg.geo.substring(0,3).c_str());
     sensor.addTag("name",cfg.getStationName().c_str());
-    sensor.addTag("rev","v"+String(VERSION)+"r"+String(REVISION)+String(TARGET));
+    sensor.addTag("rev",cfg.getVersion());
 }
 
 void influxDbParseFields() {
@@ -55,6 +55,7 @@ void influxDbParseFields() {
 }
 
 bool influxDbWrite() {
+    if(!influxDbIsConfigured()) return false;
     influxDbParseFields();
     log_d("[IFDB] %s",influx.pointToLineProtocol(sensor).c_str());
     if (!influx.writePoint(sensor)) {
@@ -90,7 +91,7 @@ void enableSensors() {
         sensors.setSampleTime(cfg.deepSleep);
         sensors.init();
         enable_sensors = true;
-        Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\n", sizeof(sensors));
+        Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\r\n", sizeof(sensors));
     }
 }
 
@@ -113,13 +114,13 @@ void influxDbLoop() {
         timeStamp = millis();
         if (ifx_ready && sensors.isDataReady() && WiFi.isConnected() && cfg.isIfxEnable()) {
             if (influxDbWrite()){
-                if(cfg.devmode) Serial.printf ("-->[IFDB] CanAirIO cloud write\t: payload size: %d\n", sizeof(sensor));
+                if(cfg.devmode) Serial.printf ("-->[IFDB] CanAirIO published \t: payload size: %d\t:)\r\n", sizeof(sensor));
                 gui.displayDataOnIcon();
                 suspendDevice();
                 ifx_error_count = 0;
             }
             else {
-                Serial.printf("[E][IFDB] write error to %s@%s:%i \n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
+                Serial.printf("[E][IFDB] write error to %s@%s:%i \r\n",cfg.ifx.db.c_str(),cfg.ifx.ip.c_str(),cfg.ifx.pt);
                 if (cfg.solarmode && ifx_error_count++ > IFX_ERROR_COUNT_MAX) {
                     powerDeepSleepTimer(cfg.deepSleep);
                 }
@@ -133,7 +134,7 @@ void influxDbInit() {
         String url = "http://" + cfg.ifx.ip + ":" + String(cfg.ifx.pt);
         influx.setInsecure();
         influx.setConnectionParamsV1(url.c_str(), cfg.ifx.db.c_str());
-        if (cfg.devmode) Serial.printf("-->[IFDB] InfluxDB config  \t: %s:%i\n", cfg.ifx.ip.c_str(), cfg.ifx.pt);
+        if (cfg.devmode) Serial.printf("-->[IFDB] InfluxDB config  \t: %s:%i\r\n", cfg.ifx.ip.c_str(), cfg.ifx.pt);
         influxDbAddTags();
         Serial.printf("-->[IFDB] %s\t: ", cfg.ifx.ip.c_str());
         int influx_retry = 0;

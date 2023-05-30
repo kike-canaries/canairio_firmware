@@ -8,6 +8,7 @@ void guiTask(void* pvParameters) {
     Serial.println("-->[TGUI] starting task loop");
     while (1) {
         gui.pageStart();
+        gui.checkButtons();
         gui.displayMainValues();
         gui.pageEnd();
         vTaskDelay(80 / portTICK_PERIOD_MS);
@@ -38,7 +39,6 @@ void TFTUtils::displayInit() {
     #else
     tft.init();
     #endif
-    tft.setRotation(0);
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextSize(1);
@@ -809,7 +809,6 @@ void TFTUtils::pageStart() {
         if (wstate == 3 ) displayMainHeader();
     }
     /// fast interactions (80ms)
-    checkButtons();
     if(sensorLive) drawFanIcon();
     updateCalibrationField();
     displayGUIStatusFlags();
@@ -852,6 +851,14 @@ void TFTUtils::setTrackTime(int h, int m, int s){
     _minutes = m;
     _seconds = s;
     resumeTaskGUI();
+}
+
+void TFTUtils::setEmoticons(bool enable) {
+}
+
+void TFTUtils::flipVertical(bool enable){
+  if(enable) tft.setRotation(2);
+  else tft.setRotation(0);
 }
 
 void TFTUtils::suspendTaskGUI(){

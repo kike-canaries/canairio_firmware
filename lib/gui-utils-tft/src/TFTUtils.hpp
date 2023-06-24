@@ -91,6 +91,8 @@ class TFTUtils {
 
     void pageStart();
 
+    void checkButtons();
+
     void pageEnd();
 
     void clearScreen();
@@ -108,6 +110,8 @@ class TFTUtils {
     void setTrackTime(int h, int m, int s);
 
     void setEmoticons(bool enable);
+
+    void flipVertical(bool enable);
 
     void setBatteryStatus(float volts, int charge, bool isCharging);
 
@@ -333,8 +337,6 @@ class TFTUtils {
     void loadLastData();
 
     void showWindowBike();
-
-    void checkButtons();
 
     void suspend();
 

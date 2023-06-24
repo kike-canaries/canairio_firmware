@@ -21,16 +21,21 @@ typedef enum {
     X(KFALTFST, "altoffset", FLOAT)   \
     X(KFTOFFST, "toffset", FLOAT)     \
     X(KBASIC, "-----", UNKNOWN)       \
+    X(KDEBUG, "debugEnable", BOOL)    \
+    X(KFLIPV, "flipVEnable", BOOL)    \
     X(KBHOMEAS, "homeaEnable", BOOL)  \
     X(KBANAIRE, "anaireEnable", BOOL) \
     X(KBIFXENB, "ifxEnable", BOOL)    \
     X(KSIFXDB, "ifxdb", STRING)       \
     X(KSIFXIP, "ifxip", STRING)       \
     X(KIIFXPT, "ifxpt", INT)          \
+    X(KSHASSIP, "hassip", STRING)     \
     X(KSHASSU, "hassusr", STRING)     \
     X(KSHASSPW, "hasspsw", STRING)    \
     X(KIHASSPT, "hasspt", INT)        \
     X(KFSEALV, "sealevel", FLOAT)     \
+    X(KFAILSAFE, "fsafeEnable", BOOL) \
+    X(KWKUPRST, "wkrstEnable", BOOL)  \
     X(KBSOLARE, "solarEnable", BOOL)  \
     X(KIDEEPSL, "deepSleep", INT)     \
     X(KCOUNT, "KCOUNT", UNKNOWN)
@@ -143,20 +148,28 @@ class ConfigApp {
     bool saveHassUser(String user);
 
     void saveInt(String key, int value);
+    void saveInt(CONFKEYS key, int value);
 
     int32_t getInt(String key, int defaultValue);
+    int32_t getInt(CONFKEYS key, int defaultValue);
     
     bool getBool(String key, bool defaultValue);
+    bool getBool(CONFKEYS key, bool defaultValue);
 
     void saveBool(String key, bool value);
+    void saveBool(CONFKEYS key, bool value);
 
     float getFloat(String key, float defaultValue);
+    float getFloat(CONFKEYS key, float defaultValue);
 
     void saveFloat(String key, float value);
+    void saveFloat(CONFKEYS key, float value);
 
     void saveString(String key, String value);
+    void saveString(CONFKEYS key, String value);
 
     String getString(String key, String defaultValue);
+    String getString(CONFKEYS key, String defaultValue);
 
     String getCurrentConfig();
 

@@ -116,11 +116,19 @@ void ConfigApp::saveString(String key, String value){
     setLastKeySaved(key);
 }
 
+void ConfigApp::saveString(CONFKEYS key, String value){
+    saveString(getKey(key),value);
+}
+
 String ConfigApp::getString(String key, String defaultValue){
     preferences.begin(_app_name, RO_MODE);
     String out = preferences.getString(key.c_str(), defaultValue);
     preferences.end();
     return out;
+}
+
+String ConfigApp::getString(CONFKEYS key, String defaultValue){
+    return getString(getKey(key),defaultValue);
 }
 
 void ConfigApp::saveInt(String key, int value){
@@ -130,6 +138,10 @@ void ConfigApp::saveInt(String key, int value){
     setLastKeySaved(key);
 }
 
+void ConfigApp::saveInt(CONFKEYS key, int value){
+    saveInt(getKey(key),value);
+}
+
 int32_t ConfigApp::getInt(String key, int defaultValue){
     preferences.begin(_app_name, RO_MODE);
     int32_t out = preferences.getInt(key.c_str(), defaultValue);
@@ -137,11 +149,8 @@ int32_t ConfigApp::getInt(String key, int defaultValue){
     return out;
 }
 
-bool ConfigApp::getBool(String key, bool defaultValue){
-    preferences.begin(_app_name, RO_MODE);
-    bool out = preferences.getBool(key.c_str(), defaultValue);
-    preferences.end();
-    return out;
+int32_t ConfigApp::getInt(CONFKEYS key, int defaultValue){ 
+    return getInt(getKey(key),defaultValue);
 }
 
 void ConfigApp::saveBool(String key, bool value){
@@ -151,11 +160,19 @@ void ConfigApp::saveBool(String key, bool value){
     setLastKeySaved(key);
 }
 
-float ConfigApp::getFloat(String key, float defaultValue){
+void ConfigApp::saveBool(CONFKEYS key, bool value){
+    saveBool(getKey(key),value);
+}
+
+bool ConfigApp::getBool(String key, bool defaultValue){
     preferences.begin(_app_name, RO_MODE);
-    float out = preferences.getFloat(key.c_str(), defaultValue);
+    bool out = preferences.getBool(key.c_str(), defaultValue);
     preferences.end();
     return out;
+}
+
+bool ConfigApp::getBool(CONFKEYS key, bool defaultValue){
+    return getBool(getKey(key),defaultValue);
 }
 
 void ConfigApp::saveFloat(String key, float value){
@@ -163,6 +180,21 @@ void ConfigApp::saveFloat(String key, float value){
     preferences.putFloat(key.c_str(), value);
     preferences.end();
     setLastKeySaved(key);
+}
+
+void ConfigApp::saveFloat(CONFKEYS key, float value){
+    saveFloat(getKey(key),value);
+}
+
+float ConfigApp::getFloat(String key, float defaultValue){
+    preferences.begin(_app_name, RO_MODE);
+    float out = preferences.getFloat(key.c_str(), defaultValue);
+    preferences.end();
+    return out;
+}
+
+float ConfigApp::getFloat(CONFKEYS key, float defaultValue){
+    return getFloat(getKey(key),defaultValue);
 }
 
 PreferenceType ConfigApp::keyType(String key) {
@@ -342,7 +374,10 @@ bool ConfigApp::saveGeo(double lat, double lon, String geo){
         preferences.putDouble("lon", lon);
         preferences.putString("geo", geo);
         preferences.end();
-        setLastKeySaved("lat");
+        this->lat = lat;
+        this->lon = lon;
+        this->geo = geo;
+        setLastKeySaved("geo");
         Serial.printf("-->[CONF] New Geohash: %s \t: (%.4f,%.4f)\r\n",geo,lat,lon);
         return true;
     }
@@ -365,49 +400,49 @@ bool ConfigApp::saveGeo(String geo){
 }
 
 bool ConfigApp::wifiEnable(bool enable) {
-    saveBool(getKey(CONFKEYS::KBWIFIEN).c_str(), enable);
+    saveBool(CONFKEYS::KBWIFIEN, enable);
     wifi_enable = enable;
     Serial.println("-->[CONF] updating WiFi state\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::ifxdbEnable(bool enable) {
-    saveBool(getKey(CONFKEYS::KBIFXENB), enable);
+    saveBool(CONFKEYS::KBIFXENB, enable);
     ifxdb_enable = enable;
     Serial.println("-->[CONF] updating InfluxDB state\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::debugEnable(bool enable) {
-    saveBool("debugEnable", enable);
+    saveBool(CONFKEYS::KDEBUG, enable);
     devmode = enable;
     Serial.println("-->[CONF] new debug mode\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::paxEnable(bool enable) {
-    saveBool(getKey(CONFKEYS::KBPAXENB).c_str(), enable);
+    saveBool(CONFKEYS::KBPAXENB, enable);
     pax_enable = enable;
     Serial.println("-->[CONF] new PaxCounter mode\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::solarEnable(bool enable) {
-    saveBool("solarEnable", enable);
+    saveBool(CONFKEYS::KBSOLARE, enable);
     solarmode = enable;
     Serial.println("-->[CONF] Solar Station mode\t: " + String(enable));
     return true;
 }
 
 bool ConfigApp::saveDeepSleep(int seconds){
-    saveInt("deepSleep", seconds);
+    saveInt(CONFKEYS::KIDEEPSL, seconds);
     deepSleep = seconds;
     Serial.printf("-->[CONF] deep sleep time to\t: %d\r\n", seconds);
     return true;
 }
 
 bool ConfigApp::saveI2COnly(bool enable) {
-    saveBool("i2conly", enable);
+    saveBool(CONFKEYS::KBI2COLY, enable);
     i2conly = enable;
     Serial.println("-->[CONF] forced only i2c sensors\t: " + String(enable));
     return true;

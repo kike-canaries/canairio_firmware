@@ -56,9 +56,9 @@ void hassPubSensorPayload() {
     size_t n = serializeJson(doc, buffer);
  
     if (clientHass.publish(getStateTopic().c_str(), buffer, n)) {
-        if(cfg.devmode) Serial.printf ("-->[MQTT] HASS local published\t: payload size: %d\r\n", n);
+        if(cfg.devmode) Serial.printf ("-->[MQTT] HA local published\t: payload size: %d\r\n", n);
     } else {
-        Serial.printf("[E][MQTT] Hass publish state error\t: %d\r\n",clientHass.lastError());
+        Serial.printf("[E][MQTT] HA publish state error\t: %d\r\n",clientHass.lastError());
     }
 }
 
@@ -96,8 +96,8 @@ bool hassRegisterSensors() {
     hassConfigured = publishDiscoveryPayload("pressure", "pressure", "hPa");
     hassConfigured = publishDiscoveryPayload("battery", "battery", "%");
 
-    if (hassConfigured) Serial.printf("-->[MQTT] Hass device registered\t: %s\r\n",getHostId().c_str());
-    else Serial.printf("[E][MQTT] Hass not configured yet\t: device: %s\r\n",getHostId().c_str());
+    if (hassConfigured) Serial.printf("-->[MQTT] HA device registered\t: %s\r\n",getHostId().c_str());
+    else Serial.printf("[E][MQTT] HA not configured yet\t: device: %s\r\n",getHostId().c_str());
 
     return hassConfigured;
 }
@@ -120,7 +120,7 @@ void hassPublish() {
     uint32_t ptime = cfg.stime;
     if (ptime<MIN_PUBLISH_INTERVAL) ptime = MIN_PUBLISH_INTERVAL-1; // publish before to the last cloud
     if(!cfg.solarmode && cfg.deepSleep > 0) ptime = cfg.deepSleep;
-    if (millis() - mqttTimeStamp > ptime) {
+    if (millis() - mqttTimeStamp > ptime * 1000) {
         mqttTimeStamp = millis(); 
         if (!hassConfigured) hassRegisterSensors();
         hassPubSensorPayload();
@@ -180,9 +180,12 @@ void hassInit() {
 }
 
 void hassLoop () {
+    if(!WiFi.isConnected()) return;
     if (!isHassEnable()) return;
-    if(!WiFi.isConnected()) return; 
-    if (!hassInited) hassInit();
+    if (!clientHass.connected()) {
+      anaireInit();
+      delay(10);
+    }
     clientHass.loop();
     delay(10);
     if (!clientHass.connected()) hassConnect(); 

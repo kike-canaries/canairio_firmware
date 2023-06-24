@@ -8,10 +8,11 @@ void wcli_debug(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   String param = operands.first();
   param.toUpperCase();
-  cfg.debugEnable(param.equals("ON") || param.equals("1"));
-  cfg.reload();
-  sensors.setDebugMode(cfg.devmode);
-  battery.debug = cfg.devmode;
+  bool dbgmode = param.equals("ON") || param.equals("1");
+  cfg.debugEnable(dbgmode);
+  cfg.devmode = dbgmode;
+  sensors.setDebugMode(dbgmode);
+  battery.debug = dbgmode;
 }
 
 bool isValidKey(String key) {
@@ -52,32 +53,35 @@ void wcli_klist(String opts) {
 void saveInteger(String key, String v) {
   uint16_t value = v.toInt();
   cfg.saveInt(key, value);
-  cfg.reload();
   Serial.printf("saved: %s:%i\r\n",key.c_str(),value);
 }
 
 void saveFloat(String key, String v) {
   float value = v.toFloat();
   cfg.saveFloat(key, value);
-  cfg.reload();
   Serial.printf("saved: %s:%.5f\r\n",key.c_str(),value);
 }
 
 void saveBoolean(String key, String v) {
+    v.toLowerCase();
     cfg.saveBool(key,v.equals("on") || v.equals("1") || v.equals("enable") || v.equals("true"));
-    cfg.reload();
     Serial.printf("saved: %s:%s\r\n",key.c_str(),cfg.getBool(key,false) ? "true" : "false");
+}
+
+void saveString(String key, String v) {
+  cfg.saveString(key, v);
+  Serial.printf("saved: %s:%s\r\n",key.c_str(),v.c_str());
 }
 
 void wcli_kset(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   String key = operands.first();
   String v = operands.second();
-  v.toLowerCase();
   if(isValidKey(key)){
     if(cfg.getKeyType(key) == ConfKeyType::BOOL) saveBoolean(key,v);
     else if(cfg.getKeyType(key) == ConfKeyType::FLOAT) saveFloat(key,v);
     else if(cfg.getKeyType(key) == ConfKeyType::INT) saveInteger(key,v);
+    else if(cfg.getKeyType(key) == ConfKeyType::STRING) saveString(key,v);
     else Serial.println("Invalid key action for: " + key);
   }
   else {
@@ -91,7 +95,6 @@ void wcli_uartpins(String opts) {
   int sRX = operands.second().toInt();
   if (sTX >= 0 && sRX >= 0) {
     cfg.saveSensorPins(sTX, sRX);
-    cfg.reload();
   }
   else
     Serial.println("invalid pins values");
@@ -102,21 +105,30 @@ void wcli_stime(String opts) {
   int stime = operands.first().toInt();
   if (stime >= 5) {
     cfg.saveSampleTime(stime);
-    cfg.reload();
     sensors.setSampleTime(stime);
   }
   else 
     Serial.println("invalid sample time");
 }
 
+void wcli_stype_error(){
+  Serial.println("invalid UART sensor type! Choose one into 0-7:");
+  for (int i=0; i<=7 ;i++)Serial.printf("%i\t%s\r\n",i,sensors.getSensorName((SENSORS)i));
+}
+
 void wcli_stype(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
-  int stype = operands.first().toInt();
-  if (stype > 7 || stype < 0) Serial.println("invalid UART sensor type. Choose one into 0-7");
+  String stype = operands.first();
+  if(stype.length()==0){
+    wcli_stype_error();
+    return;
+  }
+  int type = stype.toInt();
+  if (type > 7 || type < 0) wcli_stype_error();
   else {
-    cfg.saveSensorType(stype);
-    cfg.reload();
-    Serial.printf("\nselected UART sensor model\t: %s\r\n", sensors.getSensorName((SENSORS)cfg.stype));
+    cfg.saveSensorType(type);
+    Serial.printf("\nselected UART sensor model\t: %s\r\n", sensors.getSensorName((SENSORS)type));
+    Serial.println("Please reboot to changes apply");
   }
 }
 
@@ -126,8 +138,6 @@ void wcli_sgeoh (String opts) {
   if (geoh.length() > 5) {
     geoh.toLowerCase(); 
     cfg.saveGeo(geoh);
-    delay(10); // possible issue with the task.
-    cfg.reload();
     cfg.ifxdbEnable(true);
   } else {
     Serial.println("\nInvalid Geohash. (Precision should be > to 5).\r\n");
@@ -165,6 +175,7 @@ void wcli_setup(String opts) {
 
   Serial.printf("\r\nType \"klist\" for advanced settings\r\n");
   Serial.printf("Type \"help\" for available commands details\r\n");
+  Serial.printf("Type \"exit\" for leave the safe mode\r\n");
 }
 
 void wcli_reboot(String opts) {
@@ -211,14 +222,13 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
 
   void onNewWifi(String ssid, String passw){
     cfg.saveWifi(ssid,passw);
-    cfg.reload();
   }
 };
 
 void cliTask(void *param) {
   for ( ; ; ) {
     wcli.loop();
-    vTaskDelay(50);
+    vTaskDelay(120 / portTICK_PERIOD_MS);
   }
   vTaskDelete( NULL );
 }
@@ -227,7 +237,7 @@ void cliTaskInit() {
   xTaskCreate(
     cliTask,          /* Task function. */
     "cliTask",        /* String with name of task. */
-    10000,            /* Stack size in bytes. */
+    3000,            /* Stack size in bytes. */
     NULL,             /* Parameter passed as input of the task */
     1,                /* Priority of the task. */
     NULL              /* Task handle. */
@@ -259,9 +269,14 @@ void cliInit() {
   // 10 seconds for reconfiguration or first use case.
   // for reconfiguration type disconnect and switch the "output" mode
   uint32_t start = millis();
-  while (setup_mode || (millis() - start < setup_time)) wcli.loop();
+  if (cfg.getBool(CONFKEYS::KFAILSAFE, true))
+  {
+    while (setup_mode || (millis() - start < setup_time)) wcli.loop();
+    Serial.println();
+    if (setup_time == 0)
+      Serial.println("==>[INFO] Settings saved. Booting..\r\n");
+    else
+      Serial.println("==>[INFO] Time for initial setup over. Booting..\r\n");
+  }
   Serial.println();
-  if (setup_time==0) Serial.println("==>[INFO] Settings saved. Booting..\r\n");
-  else Serial.println("==>[INFO] Time for initial setup over. Booting..\r\n");
-  cliTaskInit();
 }

@@ -46,6 +46,8 @@ void influxDbParseFields() {
     sensor.addField("geo",cfg.geo.c_str());
     sensor.addField("prs",sensors.getPressure());
     sensor.addField("gas",sensors.getGas());
+    sensor.addField("nh3",sensors.getNH3());
+    sensor.addField("co",sensors.getCO());
     sensor.addField("alt",sensors.getAltitude());
     sensor.addField("bat",battery.getCharge());
     sensor.addField("vbat",battery.getVoltage());
@@ -55,6 +57,7 @@ void influxDbParseFields() {
 }
 
 bool influxDbWrite() {
+    if(!influxDbIsConfigured()) return false;
     influxDbParseFields();
     log_d("[IFDB] %s",influx.pointToLineProtocol(sensor).c_str());
     if (!influx.writePoint(sensor)) {

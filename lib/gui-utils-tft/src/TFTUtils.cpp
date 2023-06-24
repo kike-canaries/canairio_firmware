@@ -53,7 +53,7 @@ void TFTUtils::displayInit() {
 void TFTUtils::showWelcome() {
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
-    tft.setFont(&Orbitron_Medium_20);
+    tft.setFreeFont(&Orbitron_Medium_20);
     tft.setCursor(2,20);
     tft.print("CanAirIO ");
     tft.setTextFont(2);
@@ -158,7 +158,7 @@ void TFTUtils::showInfoWindow() {
     showStatus();
     tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
     tft.setTextFont(1);
-    tft.setFont(&Orbitron_Medium_20);
+    tft.setFreeFont(&Orbitron_Medium_20);
     tft.setTextDatum(MC_DATUM);
     tft.drawString("DEVINFO", tft.width() / 2, 30);
     tft.drawLine(18,44,117,44,TFT_GREY);
@@ -181,7 +181,7 @@ void TFTUtils::refreshInfoWindow() {
 void TFTUtils::showSetup() {
     showStatus();
     tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
-    tft.setFont(&Orbitron_Medium_20);
+    tft.setFreeFont(&Orbitron_Medium_20);
     tft.setTextDatum(MC_DATUM);
     tft.drawString("SETUP", tft.width() / 2, 30);
 
@@ -424,11 +424,11 @@ void TFTUtils::showProgress(unsigned int progress, unsigned int total) {
     suspendTaskGUI();
     if(progress == 0) showWelcome();
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setFont(&Orbitron_Medium_20);
+    tft.setFreeFont(&Orbitron_Medium_20);
     tft.setCursor(8, 103);
     tft.println("Updating:");
 
-    tft.setFont(&Orbitron_Light_32);
+    tft.setFreeFont(&Orbitron_Light_32);
     tft.setTextDatum(TC_DATUM);
     tft.fillRect(6, 105, 120, 30, TFT_BLACK);
     tft.setCursor(8, 135);
@@ -467,7 +467,7 @@ void TFTUtils::suspend() {
 }
 
 void TFTUtils::displayCenterBig(String msg) {
-    tft.setFont(&Orbitron_Light_32);
+    tft.setFreeFont(&Orbitron_Light_32);
     tft.setTextDatum(MC_DATUM);
     tft.setTextColor(TFT_WHITE,TFT_BLACK);
     tft.drawString(msg.c_str(), tft.width() / 2, 36);
@@ -495,10 +495,10 @@ void TFTUtils::displayEmoticonLabel(int cursor, String msg) {
 
 void TFTUtils::displayEmoticonColor(uint32_t color, String msg) {
     tft.fillRect(RCOLSTART-1, 170, 56, 20, color);
-    // tft.setFont(&Orbitron_Medium_20);
+    // tft.setFreeFont(&Orbitron_Medium_20);
     tft.setTextFont(1);
     // tft.setTextSize(0);
-    tft.setCursor(81, 178, &Orbitron_Medium_20);
+    tft.setCursor(81, 178);
     tft.println(msg);
 }
 
@@ -531,7 +531,7 @@ void TFTUtils::displayMainValues(){
         tft.fillRect(2, 25, 130, 40, TFT_BLACK);
         tft.fillRect(1, 170, 64, 20, TFT_BLACK);
         tft.fillRect(1, 210, 64, 20, TFT_BLACK);
-        tft.setFont(&Orbitron_Medium_20);
+        tft.setFreeFont(&Orbitron_Medium_20);
 
         if (wstate == 0 || wstate == 3) {
             tft.setCursor(1, 187);

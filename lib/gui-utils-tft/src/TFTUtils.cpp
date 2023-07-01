@@ -650,6 +650,25 @@ uint32_t TFTUtils::getAQIColor(uint32_t value) {
         else if (value <= 1500) return 3;
         else if (value <= 2000) return 4;
         else                    return 5;
+
+    } 
+     if (_colorType == AQI_COLOR::AQI_CO) {
+
+        if (value <= 4)        return 0;
+        else if (value <= 35)  return 1;
+        else if (value <= 55)  return 2;
+        else if (value <= 150) return 3;
+        else if (value <= 250) return 4;
+        else                   return 5;
+
+    } 
+    else if (_colorType == AQI_COLOR::AQI_NH3) {
+        if (value <= 4)       return 0;
+        else if (value <= 800)  return 1;
+        else if (value <= 1000) return 2;
+        else if (value <= 1500) return 3;
+        else if (value <= 2000) return 4;
+        else                    return 5;
     }
     else return 0;
 }

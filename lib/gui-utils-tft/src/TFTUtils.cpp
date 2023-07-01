@@ -653,21 +653,27 @@ uint32_t TFTUtils::getAQIColor(uint32_t value) {
 
     } 
      if (_colorType == AQI_COLOR::AQI_CO) {
+//Conversion factor at 20ºC and 1013 hPa, 1ppm=1165 mg/m3 and 1 mg/m3=0,858 ppm
+// 1 ppm is equivalent to 1.16mg/m3 for a gas with molecular weight=28.01, Pressure=1013.25 mbar, Temperature=20C ****** TO CHECK *******
+// 1 ppm is equivalent to 1.25mg/Nm3 for a gas with molecular weight=28.01, Pressure=1013.25 mbar, Temperature=0C
 
-        if (value <= 4)        return 0;
-        else if (value <= 35)  return 1;
-        else if (value <= 55)  return 2;
-        else if (value <= 150) return 3;
-        else if (value <= 250) return 4;
+        if (value <= 6)        return 0;
+        else if (value <= 8)   return 1;
+        else if (value <= 11)  return 2;
+        else if (value <= 17)  return 3;
+        else if (value > 17)   return 4;
         else                   return 5;
 
     } 
     else if (_colorType == AQI_COLOR::AQI_NH3) {
-        if (value <= 4)       return 0;
-        else if (value <= 800)  return 1;
-        else if (value <= 1000) return 2;
-        else if (value <= 1500) return 3;
-        else if (value <= 2000) return 4;
+//1 ppm is equivalent to 0.71mg/m3 for a gas with molecular weight=17.031, Pressure=1013.25 mbar, Temperature=20C
+// 1 ppm is equivalent to 0.76mg/Nm3 for a gas with molecular weight=17.031, Pressure=1013.25 mbar, Temperature=0C
+        
+        if (value <= 7)         return 0;
+        else if (value <= 10)   return 1;
+        else if (value <= 14)   return 2;
+        else if (value <= 21)   return 3;
+        else if (value > 21)    return 4;
         else                    return 5;
     }
     else return 0;

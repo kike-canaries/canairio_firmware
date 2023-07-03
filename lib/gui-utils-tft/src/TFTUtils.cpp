@@ -519,7 +519,7 @@ void TFTUtils::displayMainHeader() {
     if (wstate == 3 && toggle1s) return;
     char output[6];
     if (_unit == 0) sprintf(output, "%04d", _mainValue);
-    else sprintf(output, "%04d", _minorValue);
+    else sprintf(output, "%05.1f", _minorValue);  //else sprintf(output, "%04d", _minorValue);
     displayCenterBig(output);
     displayMainUnit(_unit_name, _unit_symbol);
 }

@@ -4,6 +4,45 @@
 #include <ArduinoJson.h>
 #include <Preferences.h>
 #include <Watchdog.hpp>
+#include <Geohash.hpp>
+
+#define RW_MODE false
+#define RO_MODE true
+
+typedef enum {
+    INT, BOOL, FLOAT, STRING, UNKNOWN
+} ConfKeyType;
+
+#define CONFIG_KEYS_LIST              \
+    X(KBWIFIEN, "wifiEnable", BOOL)   \
+    X(KBPAXENB, "paxEnable", BOOL)    \
+    X(KEMOTICO, "emoEnable", BOOL)    \
+    X(KBI2COLY, "i2conly", BOOL)      \
+    X(KFALTFST, "altoffset", FLOAT)   \
+    X(KFTOFFST, "toffset", FLOAT)     \
+    X(KBASIC, "-----", UNKNOWN)       \
+    X(KDEBUG, "debugEnable", BOOL)    \
+    X(KFLIPV, "flipVEnable", BOOL)    \
+    X(KBHOMEAS, "homeaEnable", BOOL)  \
+    X(KBANAIRE, "anaireEnable", BOOL) \
+    X(KBIFXENB, "ifxEnable", BOOL)    \
+    X(KSIFXDB, "ifxdb", STRING)       \
+    X(KSIFXIP, "ifxip", STRING)       \
+    X(KIIFXPT, "ifxpt", INT)          \
+    X(KSHASSIP, "hassip", STRING)     \
+    X(KSHASSU, "hassusr", STRING)     \
+    X(KSHASSPW, "hasspsw", STRING)    \
+    X(KIHASSPT, "hasspt", INT)        \
+    X(KFSEALV, "sealevel", FLOAT)     \
+    X(KFAILSAFE, "fsafeEnable", BOOL) \
+    X(KWKUPRST, "wkrstEnable", BOOL)  \
+    X(KBSOLARE, "solarEnable", BOOL)  \
+    X(KIDEEPSL, "deepSleep", INT)     \
+    X(KCOUNT, "KCOUNT", UNKNOWN)
+
+#define X(kname, kreal, ktype) kname,
+typedef enum CONFKEYS : size_t { CONFIG_KEYS_LIST } CONFKEYS; 
+#undef X
 
 class RemoteConfigCallbacks;
 class ConfigApp {
@@ -14,6 +53,8 @@ class ConfigApp {
     
     int stime;
     int stype;
+    int sTX;
+    int sRX;
     double lat;
     double lon;
     String geo;
@@ -70,6 +111,8 @@ class ConfigApp {
 
     bool saveSensorType(int type);
 
+    bool saveSensorPins(int tx, int rx);
+
     bool saveUnitSelected(int unit);
 
     int getUnitSelected();
@@ -79,6 +122,8 @@ class ConfigApp {
     bool saveWifi(String ssid, String pass);
 
     bool saveInfluxDb(String db, String ip, int pt);
+
+    bool saveGeo(String geo);
 
     bool saveGeo(double lat, double lon, String geo);
 
@@ -102,6 +147,30 @@ class ConfigApp {
 
     bool saveHassUser(String user);
 
+    void saveInt(String key, int value);
+    void saveInt(CONFKEYS key, int value);
+
+    int32_t getInt(String key, int defaultValue);
+    int32_t getInt(CONFKEYS key, int defaultValue);
+    
+    bool getBool(String key, bool defaultValue);
+    bool getBool(CONFKEYS key, bool defaultValue);
+
+    void saveBool(String key, bool value);
+    void saveBool(CONFKEYS key, bool value);
+
+    float getFloat(String key, float defaultValue);
+    float getFloat(CONFKEYS key, float defaultValue);
+
+    void saveFloat(String key, float value);
+    void saveFloat(CONFKEYS key, float value);
+
+    void saveString(String key, String value);
+    void saveString(CONFKEYS key, String value);
+
+    String getString(String key, String defaultValue);
+    String getString(CONFKEYS key, String defaultValue);
+
     String getCurrentConfig();
 
     bool isWifiEnable();
@@ -119,6 +188,10 @@ class ConfigApp {
     String getDeviceIdShort();
 
     String getStationName();
+
+    String getAnaireDeviceId();
+
+    String getVersion();
 
     int getSensorType();
 
@@ -142,7 +215,17 @@ class ConfigApp {
 
     void setRemoteConfigCallbacks(RemoteConfigCallbacks* pCallbacks);
 
-   private:
+    PreferenceType keyType(String key);
+
+    bool isKey(String key);
+
+    String getKey(CONFKEYS key);
+
+    ConfKeyType getKeyType(String key);
+
+    ConfKeyType getKeyType(CONFKEYS key);
+    
+   private: 
     ///preferences main key
     char* _app_name;
     ///ESP32 preferences abstraction
@@ -156,25 +239,15 @@ class ConfigApp {
     ///WiFi state
     bool wifi_connected;
 
+    Geohash geohash;
+
     RemoteConfigCallbacks* mRemoteConfigCallBacks = nullptr;
         
-    void saveString(String key, String value);
-
-    void saveInt(String key, int value);
-
-    int32_t getInt(String key, int defaultValue);
-
-    void saveFloat(String key, float value);
-
-    void saveBool(String key, bool value);
-
     void setLastKeySaved(String key);
 
     bool saveI2COnly(bool enable);
 
     void performCO2Calibration();
-
-    String getAnaireDeviceId();
 
     void DEBUG(const char* text, const char* textb = "");
 

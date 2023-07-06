@@ -8,6 +8,7 @@ void guiTask(void* pvParameters) {
     Serial.println("-->[TGUI] starting task loop");
     while (1) {
         gui.pageStart();
+        gui.checkButtons();
         gui.displayMainValues();
         gui.pageEnd();
         vTaskDelay(80 / portTICK_PERIOD_MS);
@@ -38,7 +39,6 @@ void TFTUtils::displayInit() {
     #else
     tft.init();
     #endif
-    tft.setRotation(0);
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextSize(1);
@@ -517,9 +517,18 @@ void TFTUtils::displayMainHeader() {
     if (state != 0) return;
     tft.fillRect(2, 25, 130, 40, TFT_BLACK);
     if (wstate == 3 && toggle1s) return;
-    char output[6];
-    if (_unit == 0) sprintf(output, "%04d", _mainValue);
-    else sprintf(output, "%04d", _minorValue);
+    char output[10];
+    float value = 0.0;
+    if (_unit == 0) value =  _mainValue;
+    else value = _minorValue;
+    
+    uint16_t m_int_val = value;
+    double m_tmp_val = value - m_int_val;
+    bool isInt = !(m_tmp_val > 0);
+
+    if (isInt) sprintf(output, "%04d", m_int_val);
+    else sprintf(output, "%05.1f", value);
+
     displayCenterBig(output);
     displayMainUnit(_unit_name, _unit_symbol);
 }
@@ -649,6 +658,31 @@ uint32_t TFTUtils::getAQIColor(uint32_t value) {
         else if (value <= 1000) return 2;
         else if (value <= 1500) return 3;
         else if (value <= 2000) return 4;
+        else                    return 5;
+
+    } 
+     if (_colorType == AQI_COLOR::AQI_CO) {
+//Conversion factor at 20ºC and 1013 hPa, 1ppm=1165 mg/m3 and 1 mg/m3=0,858 ppm
+// 1 ppm is equivalent to 1.16mg/m3 for a gas with molecular weight=28.01, Pressure=1013.25 mbar, Temperature=20C ****** TO CHECK *******
+// 1 ppm is equivalent to 1.25mg/Nm3 for a gas with molecular weight=28.01, Pressure=1013.25 mbar, Temperature=0C
+
+        if (value <= 6)        return 0;
+        else if (value <= 8)   return 1;
+        else if (value <= 11)  return 2;
+        else if (value <= 17)  return 3;
+        else if (value > 17)   return 4;
+        else                   return 5;
+
+    } 
+    else if (_colorType == AQI_COLOR::AQI_NH3) {
+//1 ppm is equivalent to 0.71mg/m3 for a gas with molecular weight=17.031, Pressure=1013.25 mbar, Temperature=20C
+// 1 ppm is equivalent to 0.76mg/Nm3 for a gas with molecular weight=17.031, Pressure=1013.25 mbar, Temperature=0C
+        
+        if (value <= 7)         return 0;
+        else if (value <= 10)   return 1;
+        else if (value <= 14)   return 2;
+        else if (value <= 21)   return 3;
+        else if (value > 21)    return 4;
         else                    return 5;
     }
     else return 0;
@@ -809,7 +843,6 @@ void TFTUtils::pageStart() {
         if (wstate == 3 ) displayMainHeader();
     }
     /// fast interactions (80ms)
-    checkButtons();
     if(sensorLive) drawFanIcon();
     updateCalibrationField();
     displayGUIStatusFlags();
@@ -852,6 +885,14 @@ void TFTUtils::setTrackTime(int h, int m, int s){
     _minutes = m;
     _seconds = s;
     resumeTaskGUI();
+}
+
+void TFTUtils::setEmoticons(bool enable) {
+}
+
+void TFTUtils::flipVertical(bool enable){
+  if(enable) tft.setRotation(2);
+  else tft.setRotation(0);
 }
 
 void TFTUtils::suspendTaskGUI(){

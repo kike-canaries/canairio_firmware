@@ -61,9 +61,9 @@ void hassPubSensorPayload() {
     size_t n = serializeJson(doc, buffer);
  
     if (clientHass.publish(getStateTopic().c_str(), buffer, n)) {
-        if(cfg.devmode) Serial.printf ("-->[MQTT] HASS local published\t: payload size: %d\n", n);
+        if(cfg.devmode) Serial.printf ("-->[MQTT] HA local published\t: payload size: %d\r\n", n);
     } else {
-        Serial.printf("[E][MQTT] Hass publish state error\t: %d\n",clientHass.lastError());
+        Serial.printf("[E][MQTT] HA publish state error\t: %d\r\n",clientHass.lastError());
     }
 }
 
@@ -88,7 +88,7 @@ bool publishDiscoveryPayload(String name, String dclass, String unit) {
     size_t n = serializeJson(doc, MQTT_message);
      
     if (clientHass.publish(getConfTopic(dclass).c_str(), MQTT_message, n)) return true;
-    Serial.printf("[E][MQTT] publish config error\t: class %s (%d)\n", dclass.c_str(), clientHass.lastError());
+    Serial.printf("[E][MQTT] publish config error\t: class %s (%d)\r\n", dclass.c_str(), clientHass.lastError());
     return false;
 }
 
@@ -106,8 +106,8 @@ bool hassRegisterSensors() {
     hassConfigured = publishDiscoveryPayload("geiger_usvh", "geiger_usvh", "uSv/h");
 #endif
 
-    if (hassConfigured) Serial.printf("-->[MQTT] Hass device registered\t: %s\n",getHostId().c_str());
-    else Serial.printf("[E][MQTT] Hass not configured yet\t: device: %s\n",getHostId().c_str());
+    if (hassConfigured) Serial.printf("-->[MQTT] HA device registered\t: %s\r\n",getHostId().c_str());
+    else Serial.printf("[E][MQTT] HA not configured yet\t: device: %s\r\n",getHostId().c_str());
 
     return hassConfigured;
 }
@@ -119,7 +119,7 @@ void messageReceived(String &topic, String &payload) {
 
 bool hassStatusSubscription() {
     if (clientHass.subscribe(getServerStatusTopic().c_str())) return true;
-    Serial.printf("[E][MQTT] status subscription error\t: %d\n",clientHass.lastError());
+    Serial.printf("[E][MQTT] status subscription error\t: %d\r\n",clientHass.lastError());
     hassSubscribed = false;
     return false;
 }
@@ -130,7 +130,7 @@ void hassPublish() {
     uint32_t ptime = cfg.stime;
     if (ptime<MIN_PUBLISH_INTERVAL) ptime = MIN_PUBLISH_INTERVAL-1; // publish before to the last cloud
     if(!cfg.solarmode && cfg.deepSleep > 0) ptime = cfg.deepSleep;
-    if (millis() - mqttTimeStamp > ptime) {
+    if (millis() - mqttTimeStamp > ptime * 1000) {
         mqttTimeStamp = millis(); 
         if (!hassConfigured) hassRegisterSensors();
         hassPubSensorPayload();
@@ -157,7 +157,7 @@ void hassConnect() {
             hassSubscribed = false;
             hassConfigured = false;
             Serial.println("connection failed!");
-            if (cfg.devmode) Serial.printf("-->[MQTT] %s\n",cfg.hassusr.c_str());
+            if (cfg.devmode) Serial.printf("-->[MQTT] %s\r\n",cfg.hassusr.c_str());
             return;
         }
         Serial.println("connected!");
@@ -190,9 +190,12 @@ void hassInit() {
 }
 
 void hassLoop () {
+    if(!WiFi.isConnected()) return;
     if (!isHassEnable()) return;
-    if(!WiFi.isConnected()) return; 
-    if (!hassInited) hassInit();
+    if (!clientHass.connected()) {
+      anaireInit();
+      delay(10);
+    }
     clientHass.loop();
     delay(10);
     if (!clientHass.connected()) hassConnect(); 

@@ -5,6 +5,7 @@
 
 #include <Batterylib.hpp>
 
+void powerCompleteShutdown();
 void powerDeepSleepButton();
 void powerDeepSleepTimer(int);
 void powerLightSleepTimer(int);

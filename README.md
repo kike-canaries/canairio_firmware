@@ -59,9 +59,10 @@ We have different alternatives for load the current firmware. In order of comple
 
 ## Via CanAirIO Web Installer (RECOMMENDED)
 
-If you already have a ESP32 board, you can test our CanAirIO firmware on one click, with our web installer:  
+If you already have a ESP32 board, you can test our CanAirIO firmware on one click, with our web installer:
 
-[![video_2021-11-13_23-36-10](https://user-images.githubusercontent.com/423856/141661066-0fafcaa9-98b4-419b-b1e7-4371f3cb99b8.gif)](https://canair.io/installer.html)
+[![canairio web installer on m5stickcplus](https://user-images.githubusercontent.com/423856/152767232-81c11957-26f0-4a83-bf63-6a4bee41a168.gif)](https://youtu.be/TdX1AZ4PzBA)  
+[Full video](https://youtu.be/TdX1AZ4PzBA) - [Web installer](https://canair.io/installer.html)
 
 ## Via CanAirIO loader
 

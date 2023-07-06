@@ -52,29 +52,17 @@ void loadGUIData() {
         data.mainUnitId = UNIT::NUNIT;
         data.color = AQI_COLOR::AQI_PM;
     } else if (selectUnit != UNIT::NUNIT) {
-        if (selectUnit != RADIATION){
-           data.mainValue = sensors.getUnitValue(selectUnit);
-           data.unitName = sensors.getUnitName(selectUnit);
-           data.unitSymbol = sensors.getUnitSymbol(selectUnit);
-           }else{
-           data.mainValue = 100 * sensors.getUnitValue(selectUnit); // from uSv/h to uSv/h*100
-           data.unitName = "radiation";
-           data.unitSymbol = "uSv/h *100";
-           }
+        data.mainValue = sensors.getUnitValue(selectUnit);
+        data.unitName = sensors.getUnitName(selectUnit);
+        data.unitSymbol = sensors.getUnitSymbol(selectUnit);
         data.mainUnitId = selectUnit;
         data.color = selectAQIColor();
     }
     // Minor unit selection
     if (nextUnit != UNIT::NUNIT) {
-        if (nextUnit != RADIATION){
-           data.minorValue = sensors.getUnitValue(nextUnit);
-           data.unitName = sensors.getUnitName(nextUnit);
-           data.unitSymbol = sensors.getUnitSymbol(nextUnit);
-           }else{
-           data.minorValue = 100 * sensors.getUnitValue(nextUnit); // from uSv/h to uSv/h*100
-           data.unitName = "radiation";
-           data.unitSymbol = "uSv/h *100";
-           }
+        data.minorValue = sensors.getUnitValue(nextUnit);
+        data.unitName = sensors.getUnitName(nextUnit);
+        data.unitSymbol = sensors.getUnitSymbol(nextUnit);
         data.color = selectAQIColor();
     }
     data.onSelectionUnit = nextUnit;

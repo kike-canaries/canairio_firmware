@@ -38,7 +38,10 @@ String getSensorData() {
     doc["hum"] = sensors.getHumidity();
     doc["alt"] = sensors.getAltitude();
     doc["pre"] = sensors.getPressure();
+    doc["nh3"] = sensors.getNH3();
+    doc["co"] = sensors.getCO();
     doc["bat"] = battery.getCharge();
+    doc["vol"] = battery.getVoltage();
     doc["PAX"] = getPaxCount();
     doc["dsl"] = sensors.getSensorName((SENSORS) sensors.getUARTDeviceTypeSelected());
     String json;
@@ -55,26 +58,15 @@ void bleServerDataRefresh(){
 }
 
 void bleServerConfigRefresh(){
+    if (FAMILY == "ESP32-C3") return;
     cfg.setWifiConnected(WiFi.isConnected());  // for notify on each write
     pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
 }
 
-class MyServerCallbacks : public BLEServerCallbacks {
-    void onConnect(BLEServer* pServer) {
-        deviceConnected = true;
-        Serial.println("-->[BTLE] device client is connected.");
-    };
-
-    void onDisconnect(BLEServer* pServer) {
-        deviceConnected = false;
-        Serial.println("-->[BTLE] device client is disconnected.");
-    };
-};  // BLEServerCallbacks
-
-
 // Config BLE callbacks
 class MyConfigCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
+        if (FAMILY == "ESP32-C3") return;
         std::string value = pCharacteristic->getValue();
         if (value.length() > 0) {
             if (cfg.save(value.c_str())) {
@@ -98,6 +90,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
     };
 
     void onRead(BLECharacteristic* pCharacteristic) {
+        if (FAMILY == "ESP32-C3") return;
         bleServerConfigRefresh();
     }
 };
@@ -105,6 +98,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
 // Status BLE callbacks
 class MyStatusCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
+        if (FAMILY == "ESP32-C3") return;
         std::string value = pCharacteristic->getValue();
         if (value.length() > 0 && cfg.getTrackStatusValues(value.c_str())) {
             log_v("[E][BTLE][STATUS] "+String(value.c_str()));
@@ -116,6 +110,20 @@ class MyStatusCallbacks : public BLECharacteristicCallbacks {
         }
     }
 };
+
+class MyServerCallbacks : public BLEServerCallbacks {
+    void onConnect(BLEServer* pServer) {
+        deviceConnected = true;
+        Serial.println("-->[BTLE] device client is connected.");
+    };
+
+    void onDisconnect(BLEServer* pServer) {
+        deviceConnected = false;
+        Serial.println("-->[BTLE] device client is disconnected.");
+    };
+};  // BLEServerCallbacks
+
+
 
 void bleServerInit() {
     // Create the BLE Device
@@ -137,8 +145,6 @@ void bleServerInit() {
     pCharactStatus = pService->createCharacteristic(
         CHARAC_STATUS_UUID,
         BLECharacteristic::PROPERTY_WRITE);
-    // Create a Data Descriptor (for notifications)
-    pCharactData->addDescriptor(new BLE2902());
     // Config callback
     pCharactConfig->setCallbacks(new MyConfigCallbacks());
     // Status callback
@@ -146,11 +152,13 @@ void bleServerInit() {
     // Set callback data:
     bleServerConfigRefresh();
     bleServerDataRefresh();
+    // Create a Data Descriptor (for notifications)
+    pCharactData->addDescriptor(new BLE2902());
     // Start the service
     pService->start();
     // Start advertising
     pServer->getAdvertising()->start();
-    Serial.println("-->[BTLE] Bluetooth GATT server\t: ready for config client!");
+    Serial.println("-->[BTLE] Bluetooth GATT \t: ready for config client!");
 }
 
 void bleLoop() {
@@ -159,8 +167,6 @@ void bleLoop() {
     if (deviceConnected && (millis() - bleTimeStamp > cfg.stime * 1000)) {  // each 5 secs
         log_i("[BTLE] sending notification..");
         log_d("[BTLE] %s",getNotificationData().c_str());
-        log_d("[BTLE] sending config data..");
-        log_d("[BTLE] %s",getSensorData().c_str());
         bleTimeStamp = millis();
         pCharactData->setValue(getNotificationData().c_str());  // small payload for notification
         pCharactData->notify();

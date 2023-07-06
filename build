@@ -26,7 +26,9 @@ OWNER="kike-canaries"
 REPO="canairio_firmware"
 INSDIR=$RELDIR/installer/${NAME}_installer
 
-flavors="TTGO_T7 WEMOSOLED HELTEC TTGO_TQ ESP32DEVKIT TTGO_TDISPLAY ESP32PICOD4 M5STICKCPLUS M5ATOM M5PICOD4"
+flavors="TTGO_T7 WEMOSOLED HELTEC TTGO_TQ ESP32DEVKIT TTGO_TDISPLAY ESP32PICOD4 M5STICKCPLUS M5ATOM M5PICOD4 ESP32C3 ESP32C3OIPLUS ESP32C3LOLIN ESP32C3SEEDX"
+#flavors="TTGO_T7 WEMOSOLED ESP32DEVKIT TTGO_TDISPLAY M5STICKCPLUS M5ATOM ESP32C3 ESP32C3OIPLUS ESP32C3LOLIN ESP32C3SEEDX"
+#flavors="TTGO_T7 ESP32C3 ESP32C3OIPLUS ESP32C3LOLIN ESP32C3SEEDX"
 
 showHelp () {
   echo ""
@@ -34,7 +36,7 @@ showHelp () {
   echo "** Build release flavor or installer package **"
   echo "************************************************"
   echo ""
-  echo "Usage: ./build [flavor|list|all|installer|publish|help|print|list|clean]"
+  echo "Usage: ./build [flavor|list|all|installer|github|ota|webi|help|print|list|clean]"
   echo ""
   echo "example: ./build clean"
   echo "example: ./build all"
@@ -49,30 +51,12 @@ showHelp () {
   echo ""
 }
 
-updateInstallerBinaries () {
-  echo "Update installer binaries.."
-  cp $OUTDIR/$DEFAULT/partitions.bin $INSDIR/system/
-  cp ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin $INSDIR/system/
-  cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/bin/bootloader_dio_40m.bin $INSDIR/system/
-  cp ~/.platformio/packages/tool-esptoolpy/esptool.py $INSDIR/system/
-  cp ~/.platformio/packages/framework-arduinoespressif32/tools/espota.py $INSDIR/system/
-  curl https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/releases/installer/canairio_installer/install.sh -o $INSDIR/install.sh
-  chmod 755 $INSDIR/install.sh
-}
-
-updateFlavorBinaries() {
-  echo "Update installer flavors.."
-  rm -f $INSDIR/*.bin
-  rm -f $INSDIR/*.py   # old installer
-  cp $RELDIR/$BINDIR/*/*${SRC_REV}.bin $INSDIR/
-}
-
 clean () {
   echo "Clean installer directory.."
   rm -rf $RELDIR/$BINDIR
   rm -rf $RELDIR/$MANIFEST
   rm -f $INSDIR/*.bin
-  rm -f $INSDIR/*.py   # old installer
+  rm -f $INSDIR/*.py  
   for flavor in $flavors; do
     echo "Clean flavor $flavor.."
     pio run -s -e $flavor -t clean
@@ -95,7 +79,13 @@ build () {
   FIRMDIR=$RELDIR/$BINDIR/$1
   mkdir -p $FIRMDIR 
   cp $OUTDIR/$1/firmware.bin $FIRMDIR/${NAME}_${1}_rev${SRC_REV}.bin
+  if [ $1 == ESP32C3 ] || [ $1 == ESP32C3LOLIN ] || [ $1 == ESP32C3SEEDX ] || [ $1 == ESP32C3OIPLUS ]; then
+    /usr/bin/python3 ${PIO_HOME}/packages/tool-esptoolpy/esptool.py --chip esp32c3 merge_bin -o  $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash_mode dio --flash_freq 80m --flash_size 4MB 0x0000 $OUTDIR/$1/bootloader.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 ${PIO_HOME}/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
+  else
+    esptool --chip esp32 merge_bin -o $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash_mode dio --flash_freq 40m --flash_size 4MB 0x1000 ${PIO_HOME}/packages/framework-arduinoespressif32@3.20003.220626/tools/sdk/esp32/bin/bootloader_dio_40m.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 ${PIO_HOME}/packages/framework-arduinoespressif32@3.20003.220626/tools/partitions/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
+  fi
   md5sum $FIRMDIR/${NAME}_${1}_rev${SRC_REV}.bin
+  md5sum $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin
   echo "***********************************************"
   echo ""
 }
@@ -105,9 +95,12 @@ buildInstaller () {
   echo "** Building installer with target: $TARGET"
   echo "***********************************************"
   echo ""
-  mkdir -p $INSDIR/system
-  updateInstallerBinaries
-  updateFlavorBinaries
+  echo "Update installer tool.."
+  cp $PIO_HOME/packages/tool-esptoolpy@1.30300.0/esptool.py $INSDIR/
+  echo "Update installer flavors.."
+  rm -f $INSDIR/*.bin
+  cp $RELDIR/$BINDIR/*/*${SRC_REV}_merged.bin $INSDIR/
+  cp ${PIO_HOME}/packages/tool-esptoolpy/esptool.py $INSDIR/
   printOutput
   cd $INSDIR/..
   rm -f ${NAME}_${TARGET}_rev${SRC_REV}_${DATE}.zip
@@ -119,14 +112,24 @@ buildInstaller () {
 
 publish_release () {
   cd $INSDIR/..
-  COMMIT_LOG=`git log -1 --format='%ci %H %s'`
-  github-release upload --owner ${OWNER} --repo ${REPO} --tag "rev${SRC_REV}" --release-name "rev${SRC_REV} v${SRC_VER}" --body "${COMMIT_LOG}" ${NAME}_${TARGET}_rev${SRC_REV}_${DATE}.zip
+  # github-release upload --owner ${OWNER} --repo ${REPO} --tag "rev${SRC_REV}" --release-name "rev${SRC_REV} v${SRC_VER}" --body "${COMMIT_LOG}" ${NAME}_${TARGET}_rev${SRC_REV}_${DATE}.zip
+  echo "Publishing release: v${SRC_VER} rev${SRC_REV}" 
+  echo "uploading: ${NAME}_${TARGET}_rev${SRC_REV}_${DATE}.zip"
+  git tag -a "v${SRC_VER}" -m "release v${SRC_VER} rev${SRC_REV}"
+  git push origin "v${SRC_VER}"
+  git log -n 10 --pretty=format:"%h %s" | gh release create "v${SRC_VER}" -F - -t "v${SRC_VER} rev${SRC_REV}" -p ${NAME}_${TARGET}_rev${SRC_REV}_${DATE}.zip
 }
 
 publish_release_ota () {
-  cd $INSDIR
-  scp -P $canairio_port *.bin $canairio_host:$canairio_target/$TARGET
-  scp -P $canairio_port ../../$MANIFEST/$TARGET/*.json $canairio_host:$canairio_target/$TARGET
+  scp $RELDIR/$BINDIR/*/*${SRC_REV}.bin canairio:$canairio_target/$TARGET
+  scp $RELDIR/$MANIFEST/$TARGET/*.json canairio:$canairio_target/$TARGET
+}
+
+publish_release_webtools () {
+  scp $INSDIR/*.bin canairio:$canairio_target/webi/$TARGET 
+  scp $INSDIR/*.txt canairio:$canairio_target/webi/$TARGET 
+  scp $INSDIR/*.md canairio:$canairio_target/webi/$TARGET 
+  scp $RELDIR/$MANIFEST/webi/$TARGET/*.json canairio:$canairio_target/webi/$TARGET
 }
 
 printOutput () {
@@ -142,7 +145,7 @@ printOutput () {
   touch $INSDIR/md5output.txt
   cd $FIRMDIR
   for flavor in *; do
-    MD5FLAVOR=`md5sum $flavor/${NAME}_${flavor}_rev${SRC_REV}.bin`
+    MD5FLAVOR=`md5sum $flavor/${NAME}_${flavor}_rev${SRC_REV}_merged.bin`
     echo $MD5FLAVOR >> ../../$INSDIR/md5output.txt
   done
   cat ../../$INSDIR/md5output.txt
@@ -186,12 +189,16 @@ else
       printOutput
       ;;
 
-    publish)
+    github)
       publish_release
       ;;
 
-    otatrigger)
+    ota)
       publish_release_ota
+      ;;
+
+    webi)
+      publish_release_webtools
       ;;
 
     list)

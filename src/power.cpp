@@ -6,15 +6,16 @@ void prepairShutdown() {
     #ifndef M5STICKCPLUS
     digitalWrite(ADC_EN, LOW);
     delay(10);
-    rtc_gpio_init(GPIO_NUM_14);
-    rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
-	rtc_gpio_set_level(GPIO_NUM_14, 1);
+    //rtc_gpio_init(GPIO_NUM_14);
+    //rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
+    //rtc_gpio_set_level(GPIO_NUM_14, 1);
     delay(500);
     #endif
     gui.setPowerSave(); 
 }
 
-void completeShutdown(){
+void powerCompleteShutdown(){
+    Serial.println("-->[POWR] Complete shutdown..");
     #ifndef M5STICKCPLUS
     esp_bluedroid_disable();
     esp_bt_controller_disable();
@@ -37,7 +38,7 @@ void powerDeepSleepButton(){
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
     #endif
-    completeShutdown();
+    powerCompleteShutdown();
 }
 
 void powerDeepSleepTimer(int seconds) {
@@ -47,12 +48,12 @@ void powerDeepSleepTimer(int seconds) {
     #ifdef M5STICKCPLUS
     M5.Axp.DeepSleep(seconds*1000000);
     #endif
-    esp_sleep_enable_timer_wakeup(seconds * 1000000);
+    esp_sleep_enable_timer_wakeup(seconds * 1000000ULL);
     #ifdef TTGO_TDISPLAY
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
     #endif
     #ifndef M5STICKCPLUS
-    completeShutdown(); 
+    powerCompleteShutdown(); 
     #endif
 }
 
@@ -79,7 +80,7 @@ void powerDisableSensors() {
 void powerInit() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable Brownout Detector 
     // set cpu speed low to save battery
-    setCpuFrequencyMhz(80);
+    setCpuFrequencyMhz(240);
     Serial.print("-->[POWR] CPU Speed: ");
     Serial.print(getCpuFrequencyMhz());
     Serial.println(" MHz"); 
@@ -96,8 +97,8 @@ void powerLoop(){
         if (vbat > 3.0 && vbat < BATTERY_MIN_V) {
             Serial.println("-->[POWR] Goto DeepSleep (VBat too low)");
             if(cfg.solarmode)powerDeepSleepTimer(cfg.deepSleep);
-            else completeShutdown();
+            else powerCompleteShutdown();
         }
-        if(cfg.devmode) Serial.printf("-->[HEAP] Min: %d Max: %d\t: %d\n", ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), ESP.getFreeHeap());
+        log_i("[HEAP] Min:%d Max:%d\t: %d\r\n", ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), ESP.getFreeHeap());
     }
 }

@@ -20,14 +20,47 @@ static const unsigned char PROGMEM ic_bluetooth_pair[] = {
     B00011100,
 };
 
-static const unsigned char PROGMEM ic_wifi_on[] = {
+static const unsigned char PROGMEM ic_wifi_100[] = {
+    B11111111,
+    B11111111,
+    B01111110,
+    B01111110,
+    B00111100,
+    B00111100,
+    B00011000,
+    B00011000,
+};
+
+static const unsigned char PROGMEM ic_wifi_75[] = {
+    B00000000,
+    B00000000,
+    B01111110,
+    B01111110,
+    B00111100,
+    B00111100,
+    B00011000,
+    B00011000,
+};
+
+static const unsigned char PROGMEM ic_wifi_50[] = {
+    B00000000,
+    B00000000,
+    B00000000,
+    B00000000,
+    B00111100,
+    B00111100,
+    B00011000,
+    B00011000,
+};
+
+static const unsigned char PROGMEM ic_wifi_25[] = {
+    B00000000,
+    B00000000,
+    B00000000,
+    B00000000,
+    B00000000,
     B00000000,
     B00011000,
-    B00111100,
-    B01000010,
-    B10011001,
-    B00100100,
-    B01000010,
     B00011000,
 };
 
@@ -40,6 +73,72 @@ static const unsigned char PROGMEM ic_data_on[] = {
     B01101111,
     B01100110,
     B00000000,
+};
+
+static const unsigned char PROGMEM ic_batt_00[] = {
+    B00011000,
+    B01111110,
+    B01000010,
+    B01000010,
+    B01000010,
+    B01000010,
+    B01000010,
+    B01111110,
+};
+
+static const unsigned char PROGMEM ic_batt_20[] = {
+    B00011000,
+    B01111110,
+    B01000010,
+    B01000010,
+    B01000010,
+    B01000010,
+    B01111110,
+    B01111110,
+};
+
+static const unsigned char PROGMEM ic_batt_40[] = {
+    B00011000,
+    B01111110,
+    B01000010,
+    B01000010,
+    B01000010,
+    B01111110,
+    B01111110,
+    B01111110,
+};
+
+static const unsigned char PROGMEM ic_batt_60[] = {
+    B00011000,
+    B01111110,
+    B01000010,
+    B01000010,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+};
+
+static const unsigned char PROGMEM ic_batt_80[] = {
+    B00011000,
+    B01111110,
+    B01000010,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+};
+
+static const unsigned char PROGMEM ic_batt_100[] = {
+    B00011000,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
+    B01111110,
 };
 
 static const unsigned char PROGMEM ic_pref_save[] = {
@@ -64,7 +163,6 @@ static const unsigned char PROGMEM ic_sensor_live[] = {
     B00000000,
 };
 
-#ifdef EMOTICONS
   static unsigned char SmileFaceGood[] = {                                     //32x32
   0x00, 0xf0, 0x0f, 0x00, 0x00, 0x0e, 0x70, 0x00, 0x00, 0x01, 0x80, 0x00,
   0xc0, 0x00, 0x00, 0x03, 0x20, 0x00, 0x00, 0x04, 0x10, 0x00, 0x00, 0x08,
@@ -143,4 +241,4 @@ static const unsigned char PROGMEM ic_sensor_live[] = {
   0x08, 0x00, 0x7c, 0x10, 0x08, 0x00, 0x00, 0x10, 0x10, 0x00, 0x00, 0x08,
   0x20, 0x00, 0x00, 0x04, 0xc0, 0x00, 0x00, 0x03, 0x00, 0x01, 0x80, 0x00,
   0x00, 0x0e, 0x70, 0x00, 0x00, 0xf0, 0x0f, 0x00 };
-#endif
+  

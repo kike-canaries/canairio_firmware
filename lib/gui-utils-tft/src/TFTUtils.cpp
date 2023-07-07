@@ -517,9 +517,18 @@ void TFTUtils::displayMainHeader() {
     if (state != 0) return;
     tft.fillRect(2, 25, 130, 40, TFT_BLACK);
     if (wstate == 3 && toggle1s) return;
-    char output[6];
-    if (_unit == 0) sprintf(output, "%04d", _mainValue);
-    else sprintf(output, "%05.1f", _minorValue);  //else sprintf(output, "%04d", _minorValue);
+    char output[10];
+    float value = 0.0;
+    if (_unit == 0) value =  _mainValue;
+    else value = _minorValue;
+    
+    uint16_t m_int_val = value;
+    double m_tmp_val = value - m_int_val;
+    bool isInt = !(m_tmp_val > 0);
+
+    if (isInt) sprintf(output, "%04d", m_int_val);
+    else sprintf(output, "%05.1f", value);
+
     displayCenterBig(output);
     displayMainUnit(_unit_name, _unit_symbol);
 }

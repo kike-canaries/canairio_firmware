@@ -38,6 +38,7 @@ typedef enum {
     X(KWKUPRST, "wkrstEnable", BOOL)  \
     X(KBSOLARE, "solarEnable", BOOL)  \
     X(KIDEEPSL, "deepSleep", INT)     \
+    X(KGEIGERP, "geigerPin", INT)     \
     X(KCOUNT, "KCOUNT", UNKNOWN)
 
 #define X(kname, kreal, ktype) kname,

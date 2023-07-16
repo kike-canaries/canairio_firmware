@@ -188,18 +188,18 @@ void printSensorsDetected() {
 void startingSensors() {
     Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)cfg.stype));
     gui.welcomeAddMessage("Init sensors..");
-    int geigerPin = cfg.getInt(CONFKEYS::KGEIGERP, -1);
-    sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
-    sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
-    sensors.setSampleTime(cfg.stime);               // config sensors sample time (first use)
-    sensors.setTempOffset(cfg.toffset);             // temperature compensation
-    sensors.setCO2AltitudeOffset(cfg.altoffset);    // CO2 altitude compensation
-    sensors.detectI2COnly(cfg.i2conly);             // force only i2c sensors
-    sensors.setDebugMode(cfg.devmode);              // debugging mode 
-    sensors.enableGeigerSensor(geigerPin);          // Geiger sensor pin
-    int mUART = cfg.stype;                          // optional UART sensor choosed on the Android app
-    int mTX = cfg.sTX;                              // UART TX defined via setup
-    int mRX = cfg.sRX;                              // UART RX defined via setup
+    int geigerPin = cfg.getInt(CONFKEYS::KGEIGERP, -1);    // Geiger sensor pin (config it via CLI) 
+    sensors.setOnDataCallBack(&onSensorDataOk);            // all data read callback
+    sensors.setOnErrorCallBack(&onSensorDataError);        // on data error callback
+    sensors.setDebugMode(cfg.devmode);                     // debugging mode 
+    sensors.setSampleTime(cfg.stime);                      // config sensors sample time (first use)
+    sensors.setTempOffset(cfg.toffset);                    // temperature compensation
+    sensors.setCO2AltitudeOffset(cfg.altoffset);           // CO2 altitude compensation
+    sensors.detectI2COnly(cfg.i2conly);                    // force only i2c sensors
+    sensors.enableGeigerSensor(geigerPin);                 // Geiger sensor init
+    int mUART = cfg.stype;                                 // optional UART sensor choosed on the Android app
+    int mTX = cfg.sTX;                                     // UART TX defined via setup
+    int mRX = cfg.sRX;                                     // UART RX defined via setup
 
     if (cfg.sTX == -1 && cfg.sRX == -1)
         sensors.init(mUART);                        // start all sensors (board predefined pins)

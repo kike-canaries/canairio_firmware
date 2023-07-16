@@ -285,7 +285,7 @@ void setup() {
     // Sensors library initialization
     Serial.println("-->[INFO] == Detecting Sensors ==");
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
-    Serial.println("-->[INFO] enable sensor GPIO\t: " + String(MAIN_HW_EN_PIN));
+    Serial.println("-->[INFO] enable hw on GPIO\t: " + String(MAIN_HW_EN_PIN));
     startingSensors();
     logMemory("SLIB");
     // Setting callback for remote commands via Bluetooth config

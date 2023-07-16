@@ -68,7 +68,7 @@ void TFTUtils::showWelcome() {
 }
 
 void TFTUtils::welcomeAddMessage(String msg) {
-    // Serial.println("-->[TGUI] add message: "+msg);
+    Serial.println("-->[TGUI] add message: "+msg);
     tft.setTextFont(1);
     tft.setCursor(5, lastDrawedLine);
     tft.println(msg.substring(0,21).c_str());
@@ -454,6 +454,8 @@ void TFTUtils::suspend() {
     delay(2000);
     #ifdef M5STICKCPLUS
     M5.Axp.PowerOff();
+    #elif ESP32S3
+
     #else
     int r = digitalRead(TFT_BL);
     digitalWrite(TFT_BL, !r);

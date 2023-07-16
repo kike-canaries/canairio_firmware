@@ -9,6 +9,7 @@
 
 #define BATTERY_MIN_V 3.4
 #define BATTERY_MAX_V 4.19
+
 #define BATTCHARG_MIN_V 4.4
 #define BATTCHARG_MAX_V 4.85
 

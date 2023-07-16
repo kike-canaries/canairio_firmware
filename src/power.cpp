@@ -85,8 +85,11 @@ void powerInit() {
     Serial.print(getCpuFrequencyMhz());
     Serial.println(" MHz"); 
     // init all sensors (step-up to 5V with enable pin)
+    #ifndef ESP32S3
     pinMode(MAIN_HW_EN_PIN, OUTPUT);
     powerEnableSensors();
+    #endif
+    Serial.println("-->[POWR] external hardware \t: ready");
 }
 
 void powerLoop(){

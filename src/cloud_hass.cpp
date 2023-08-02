@@ -52,8 +52,8 @@ void hassPubSensorPayload() {
     doc["signal_strength"] = String(getWifiRSSI());
     doc["battery"] = String(battery.getCharge());
     doc["voltage"] = String(battery.getVoltage());
-    doc["geiger_cpm"] = String(sensors.getGeigerCPM());
-    doc["geiger_usvh"] = String(sensors.getGeigerMicroSievertHour());
+    doc["cpm"] = String(sensors.getGeigerCPM());
+    doc["usvh"] = String(sensors.getGeigerMicroSievertHour());
 
     size_t n = serializeJson(doc, buffer);
  

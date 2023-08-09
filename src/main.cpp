@@ -188,16 +188,18 @@ void printSensorsDetected() {
 void startingSensors() {
     Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)cfg.stype));
     gui.welcomeAddMessage("Init sensors..");
-    sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
-    sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
-    sensors.setSampleTime(cfg.stime);               // config sensors sample time (first use)
-    sensors.setTempOffset(cfg.toffset);             // temperature compensation
-    sensors.setCO2AltitudeOffset(cfg.altoffset);    // CO2 altitude compensation
-    sensors.detectI2COnly(cfg.i2conly);             // force only i2c sensors
-    sensors.setDebugMode(cfg.devmode);              // debugging mode 
-    int mUART = cfg.stype;                          // optional UART sensor choosed on the Android app
-    int mTX = cfg.sTX;                              // UART TX defined via setup
-    int mRX = cfg.sRX;                              // UART RX defined via setup
+    int geigerPin = cfg.getInt(CONFKEYS::KGEIGERP, -1);    // Geiger sensor pin (config it via CLI) 
+    sensors.setOnDataCallBack(&onSensorDataOk);            // all data read callback
+    sensors.setOnErrorCallBack(&onSensorDataError);        // on data error callback
+    sensors.setDebugMode(cfg.devmode);                     // debugging mode 
+    sensors.setSampleTime(cfg.stime);                      // config sensors sample time (first use)
+    sensors.setTempOffset(cfg.toffset);                    // temperature compensation
+    sensors.setCO2AltitudeOffset(cfg.altoffset);           // CO2 altitude compensation
+    sensors.detectI2COnly(cfg.i2conly);                    // force only i2c sensors
+    sensors.enableGeigerSensor(geigerPin);                 // Geiger sensor init
+    int mUART = cfg.stype;                                 // optional UART sensor choosed on the Android app
+    int mTX = cfg.sTX;                                     // UART TX defined via setup
+    int mRX = cfg.sRX;                                     // UART RX defined via setup
 
     if (cfg.sTX == -1 && cfg.sRX == -1)
         sensors.init(mUART);                        // start all sensors (board predefined pins)
@@ -283,7 +285,7 @@ void setup() {
     // Sensors library initialization
     Serial.println("-->[INFO] == Detecting Sensors ==");
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
-    Serial.println("-->[INFO] enable sensor GPIO\t: " + String(MAIN_HW_EN_PIN));
+    Serial.println("-->[INFO] enable hw on GPIO\t: " + String(MAIN_HW_EN_PIN));
     startingSensors();
     logMemory("SLIB");
     // Setting callback for remote commands via Bluetooth config

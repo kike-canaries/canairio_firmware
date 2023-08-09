@@ -52,6 +52,8 @@ void hassPubSensorPayload() {
     doc["signal_strength"] = String(getWifiRSSI());
     doc["battery"] = String(battery.getCharge());
     doc["voltage"] = String(battery.getVoltage());
+    doc["cpm"] = String(sensors.getGeigerCPM());
+    doc["usvh"] = String(sensors.getGeigerMicroSievertHour());
 
     size_t n = serializeJson(doc, buffer);
  
@@ -95,6 +97,8 @@ bool hassRegisterSensors() {
     hassConfigured = publishDiscoveryPayload("gas", "gas", "m³");
     hassConfigured = publishDiscoveryPayload("pressure", "pressure", "hPa");
     hassConfigured = publishDiscoveryPayload("battery", "battery", "%");
+    hassConfigured = publishDiscoveryPayload("geiger_cpm", "geiger_cpm", "cpm");
+    hassConfigured = publishDiscoveryPayload("geiger_usvh", "geiger_usvh", "uSv/h");
 
     if (hassConfigured) Serial.printf("-->[MQTT] HA device registered\t: %s\r\n",getHostId().c_str());
     else Serial.printf("[E][MQTT] HA not configured yet\t: device: %s\r\n",getHostId().c_str());

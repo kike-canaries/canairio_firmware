@@ -237,56 +237,31 @@ void LoraWANGetData()
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();
 
-    lpp.reset();
-    lpp.addField("pm1",sensors.getPM1());
-    lpp.addField("pm25",sensors.getPM25());
-    lpp.addField("pm10",sensors.getPM10());
-    lpp.addField("co2",sensors.getCO2());
-    lpp.addField("co2hum",sensors.getCO2humi());
-    sensor.addField("co2tmp",sensors.getCO2temp());
-    sensor.addField("tmp",temp);
-    sensor.addField("hum",humi);
-    sensor.addField("geo",cfg.geo.c_str());
-    sensor.addField("prs",sensors.getPressure());
-    sensor.addField("gas",sensors.getGas());
-    sensor.addField("nh3",sensors.getNH3());
-    sensor.addField("co",sensors.getCO());
-    sensor.addField("alt",sensors.getAltitude());
-    sensor.addField("bat",battery.getCharge());
-    sensor.addField("vbat",battery.getVoltage());
-    sensor.addField("rssi",getWifiRSSI());
-    sensor.addField("heap",ESP.getFreeHeap());
-    sensor.addField("name",cfg.getStationName().c_str());
-    sensor.addField("rev",cfg.getVersion());
-    sensor.addField("mac",cfg.deviceId.c_str());
     
-
- lpp.reset();
-  lpp.addVoltage(1, getBatteryVoltage());
-  lpp.addTemperature(1, temperature);
-  lpp.addRelativeHumidity(1, humidity);
-  lpp.addDigitalInput(1,TurnsPulses); 
-  lpp.addAnalogInput(1,SensorId);
-  lpp.addAnalogInput(2,cycles);
-  lpp.addGPS(2, latitude, longitude, alt);
-
-  Serial.println("Transmiting...");
-  Serial.print("lpp data size: ");
-  Serial.print(lpp.getSize());
-  Serial.println();
+    ....addField("pm1",sensors.getPM1());
+    ....addField("pm25",sensors.getPM25());
+    ....addField("pm10",sensors.getPM10());
+    ....addField("co2",sensors.getCO2());
+    ....addField("co2hum",sensors.getCO2humi());
+    ....addField("co2tmp",sensors.getCO2temp());
+    ....addField("tmp",temp);
+    ....addField("hum",humi);
+    ....addField("geo",cfg.geo.c_str());
+    ....addField("prs",sensors.getPressure());
+    ....addField("gas",sensors.getGas());
+    ....addField("nh3",sensors.getNH3());
+    ....addField("co",sensors.getCO());
+    ....addField("alt",sensors.getAltitude());
+    ....addField("bat",battery.getCharge());
+    ....addField("vbat",battery.getVoltage());
+    ....addField("rssi",getWifiRSSI());
+    ....addField("heap",ESP.getFreeHeap());
+    ....addField("name",cfg.getStationName().c_str());
+    ....addField("rev",cfg.getVersion());
+    ....addField("mac",cfg.deviceId.c_str());
+    
   
-  // Request ACK only for the 3 firts transmision of a cycle
-  bool requestack=cycles<3?true:false;
-  
-  // if (LoRaWAN.send(1, lpp.getBuffer(), lpp.getSize(), requestack)) {
-  if (LoRaWAN.send(lpp.getSize(), lpp.getBuffer(), 2, requestack)) {
-    Serial.println("Send OK");
-  } else {
-    Serial.println("Send FAILED");
-  }
-
-
-}*/
+ */
     
 }
 

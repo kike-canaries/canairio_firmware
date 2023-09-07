@@ -5,9 +5,7 @@
 #include <Arduino.h>
 #include <lmic.h>
 #include "lora_credentials.h"
-#include <pb.h>
-#include <pb_common.h>
-#include <pb_encode.h>
+
 
 // This EUI must be in little-endian format, so least-significant-byte
 // first. When copying an EUI from ttnctl output, this means to reverse
@@ -23,7 +21,7 @@ static const u1_t PROGMEM DEVEUI[8] = TTN_DEVEUI;
 // practice, a key taken from ttnctl can be copied as-is.
 static const u1_t PROGMEM APPKEY[16] = TTN_APPKEY;
 
-static uint8_t LORA_DATA[] = "Only test";
+//static uint8_t LORA_DATA[] = "Only test";
 //static uint8_t LORA_DATA[21];
 static osjob_t sendjob;
 

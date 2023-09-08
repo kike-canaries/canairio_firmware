@@ -349,6 +349,7 @@ void loop() {
     gui.loop();      // Only for OLED
 
     battery.loop();  // refresh battery level and voltage
-    LoraWANDo();
+    //LoraWANDo();
+    os_runloop_once();
     powerLoop();     // check power status and manage power saving
 }

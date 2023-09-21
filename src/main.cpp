@@ -189,6 +189,7 @@ void startingSensors() {
     Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)cfg.stype));
     gui.welcomeAddMessage("Init sensors..");
     int geigerPin = cfg.getInt(CONFKEYS::KGEIGERP, -1);    // Geiger sensor pin (config it via CLI) 
+    int tunit = cfg.getInt(CONFKEYS::KTEMPUNT, 0);         // Temperature unit (defaulut celsius)
     sensors.setOnDataCallBack(&onSensorDataOk);            // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError);        // on data error callback
     sensors.setDebugMode(cfg.devmode);                     // debugging mode 
@@ -197,6 +198,7 @@ void startingSensors() {
     sensors.setCO2AltitudeOffset(cfg.altoffset);           // CO2 altitude compensation
     sensors.detectI2COnly(cfg.i2conly);                    // force only i2c sensors
     sensors.enableGeigerSensor(geigerPin);                 // Geiger sensor init
+    sensors.setTemperatureUnit((TEMPUNIT)tunit);           // Config temperature unit (K,C or F)
     int mUART = cfg.stype;                                 // optional UART sensor choosed on the Android app
     int mTX = cfg.sTX;                                     // UART TX defined via setup
     int mRX = cfg.sRX;                                     // UART RX defined via setup

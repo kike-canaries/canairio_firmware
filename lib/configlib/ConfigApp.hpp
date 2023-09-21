@@ -20,6 +20,7 @@ typedef enum {
     X(KBI2COLY, "i2conly", BOOL)      \
     X(KFALTFST, "altoffset", FLOAT)   \
     X(KFTOFFST, "toffset", FLOAT)     \
+    X(KTEMPUNT, "tunit", INT)         \
     X(KBASIC, "-----", UNKNOWN)       \
     X(KDEBUG, "debugEnable", BOOL)    \
     X(KFLIPV, "flipVEnable", BOOL)    \

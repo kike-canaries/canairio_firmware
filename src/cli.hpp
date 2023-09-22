@@ -48,6 +48,8 @@ void wcli_klist(String opts) {
     if (isDefined) value = getValue(key);
     Serial.printf("%11s \t%s \t%s \r\n", key, defined.c_str(), value.c_str());
   }
+
+  Serial.printf("\r\nMore info on https://canair.io/docs/cli");
 }
 
 void saveInteger(String key, String v) {
@@ -146,9 +148,34 @@ void wcli_sgeoh (String opts) {
   }
 }
 
+void wcli_sensors() {
+    Serial.printf("\r\nCanAirIO Sensorslib\t: %s\r\n",sensors.getLibraryVersion().c_str());
+    Serial.print("Sensors detected  \t: ");
+    int i = 0;
+    while (sensors.getSensorsRegistered()[i++] != 0) {
+        Serial.print(sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i - 1]));
+        Serial.print(",");
+    }
+    Serial.println();
+}
+
+void wcli_sensors_values() {
+    Serial.println("\r\nCurrent sensors values:");
+    UNIT unit = sensors.getNextUnit();
+    while(unit != UNIT::NUNIT) {
+        String uName = sensors.getUnitName(unit);
+        float uValue = sensors.getUnitValue(unit);
+        String uSymb = sensors.getUnitSymbol(unit);
+        Serial.printf(" %s:\t%02.1f\t%s\n", uName.c_str(), uValue, uSymb.c_str());
+        unit = sensors.getNextUnit();
+    }
+}
+
 void wcli_info(String opts) {
   Serial.println();
   Serial.print(getDeviceInfo());
+  wcli_sensors();
+  wcli_sensors_values();
 }
 
 void wcli_exit(String opts) {

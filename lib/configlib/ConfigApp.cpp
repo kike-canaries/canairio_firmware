@@ -22,6 +22,7 @@ void ConfigApp::init(const char app_name[]) {
 }
 
 void ConfigApp::reload() {
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RO_MODE);
     // device name or station name
     dname = preferences.getString("dname", "");
@@ -60,6 +61,7 @@ void ConfigApp::reload() {
 
 String ConfigApp::getCurrentConfig() {
     StaticJsonDocument<1000> doc;
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RO_MODE);
     doc["dname"] = preferences.getString("dname", "");       // device or station name
     doc["stime"] = preferences.getInt("stime", 5);           // sensor measure time
@@ -110,6 +112,7 @@ void ConfigApp::setLastKeySaved(String key){
 }
 
 void ConfigApp::saveString(String key, String value){
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RW_MODE);
     preferences.putString(key.c_str(), value.c_str());
     preferences.end();
@@ -121,6 +124,7 @@ void ConfigApp::saveString(CONFKEYS key, String value){
 }
 
 String ConfigApp::getString(String key, String defaultValue){
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RO_MODE);
     String out = preferences.getString(key.c_str(), defaultValue);
     preferences.end();
@@ -132,6 +136,7 @@ String ConfigApp::getString(CONFKEYS key, String defaultValue){
 }
 
 void ConfigApp::saveInt(String key, int value){
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RW_MODE);
     preferences.putInt(key.c_str(), value);
     preferences.end();
@@ -143,6 +148,7 @@ void ConfigApp::saveInt(CONFKEYS key, int value){
 }
 
 int32_t ConfigApp::getInt(String key, int defaultValue){
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RO_MODE);
     int32_t out = preferences.getInt(key.c_str(), defaultValue);
     preferences.end();
@@ -154,6 +160,7 @@ int32_t ConfigApp::getInt(CONFKEYS key, int defaultValue){
 }
 
 void ConfigApp::saveBool(String key, bool value){
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RW_MODE);
     preferences.putBool(key.c_str(), value);
     preferences.end();
@@ -165,6 +172,7 @@ void ConfigApp::saveBool(CONFKEYS key, bool value){
 }
 
 bool ConfigApp::getBool(String key, bool defaultValue){
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RO_MODE);
     bool out = preferences.getBool(key.c_str(), defaultValue);
     preferences.end();
@@ -176,6 +184,7 @@ bool ConfigApp::getBool(CONFKEYS key, bool defaultValue){
 }
 
 void ConfigApp::saveFloat(String key, float value){
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RW_MODE);
     preferences.putFloat(key.c_str(), value);
     preferences.end();
@@ -187,6 +196,7 @@ void ConfigApp::saveFloat(CONFKEYS key, float value){
 }
 
 float ConfigApp::getFloat(String key, float defaultValue){
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RO_MODE);
     float out = preferences.getFloat(key.c_str(), defaultValue);
     preferences.end();
@@ -198,6 +208,7 @@ float ConfigApp::getFloat(CONFKEYS key, float defaultValue){
 }
 
 PreferenceType ConfigApp::keyType(String key) {
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RO_MODE);
     PreferenceType type = preferences.getType(key.c_str());
     preferences.end();
@@ -205,6 +216,7 @@ PreferenceType ConfigApp::keyType(String key) {
 }
 
 bool ConfigApp::isKey(String key) {
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RO_MODE);
     bool iskey = preferences.isKey(key.c_str());
     preferences.end();
@@ -320,6 +332,7 @@ bool ConfigApp::saveSeaLevel(float hpa) {
 
 bool ConfigApp::saveSSID(String ssid){
     if (ssid.length() > 0) {
+        std::lock_guard<std::mutex> lck(config_mtx);
         preferences.begin(_app_name, RW_MODE);
         preferences.putString("ssid", ssid);
         preferences.end();
@@ -333,6 +346,7 @@ bool ConfigApp::saveSSID(String ssid){
 
 bool ConfigApp::saveWifi(String ssid, String pass){
     if (ssid.length() > 0) {
+        std::lock_guard<std::mutex> lck(config_mtx);
         preferences.begin(_app_name, RW_MODE);
         preferences.putString("ssid", ssid);
         preferences.putString("pass", pass);
@@ -351,6 +365,7 @@ bool ConfigApp::saveWifi(String ssid, String pass){
 
 bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
     if (db.length() > 0 && ip.length() > 0) {
+        std::lock_guard<std::mutex> lck(config_mtx);
         preferences.begin(_app_name, RW_MODE);
         preferences.putString("ifxdb", db);
         preferences.putString("ifxip", ip);
@@ -369,6 +384,7 @@ bool ConfigApp::saveInfluxDb(String db, String ip, int pt) {
 
 bool ConfigApp::saveGeo(double lat, double lon, String geo){
     if (lat != 0 && lon != 0) {
+        std::lock_guard<std::mutex> lck(config_mtx);
         preferences.begin(_app_name, RW_MODE);
         preferences.putDouble("lat", lat);
         preferences.putDouble("lon", lon);
@@ -449,6 +465,7 @@ bool ConfigApp::saveI2COnly(bool enable) {
 }
 
 bool ConfigApp::saveHassIP(String ip) {
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RW_MODE);
     preferences.putString("hassip", ip);
     preferences.end();
@@ -458,6 +475,7 @@ bool ConfigApp::saveHassIP(String ip) {
 }
 
 bool ConfigApp::saveHassPort(int port) {
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RW_MODE);
     preferences.putInt("hasspt", port);
     preferences.end();
@@ -467,6 +485,7 @@ bool ConfigApp::saveHassPort(int port) {
 }
 
 bool ConfigApp::saveHassUser(String user) {
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RW_MODE);
     preferences.putString("hassusr", user);
     preferences.end();
@@ -476,6 +495,7 @@ bool ConfigApp::saveHassUser(String user) {
 }
 
 bool ConfigApp::saveHassPassword(String passw) {
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RW_MODE);
     preferences.putString("hasspsw", passw);
     preferences.end();
@@ -616,6 +636,7 @@ bool ConfigApp::isWifiConnected() {
 }
 
 void ConfigApp::clear() {
+    std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RW_MODE);
     preferences.clear();
     preferences.end();

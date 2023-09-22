@@ -235,12 +235,12 @@ void cliTask(void *param) {
 
 void cliTaskInit() {
   xTaskCreate(
-    cliTask,          /* Task function. */
-    "cliTask",        /* String with name of task. */
-    3000,            /* Stack size in bytes. */
-    NULL,             /* Parameter passed as input of the task */
-    1,                /* Priority of the task. */
-    NULL              /* Task handle. */
+    cliTask,          // Task function. 
+    "cliTask",        // String with name of task.
+    4000,            // Stack size in bytes.
+    NULL,             // Parameter passed as input of the task
+    1,                // Priority of the task.
+    NULL              // Task handle.
   );
 }
 

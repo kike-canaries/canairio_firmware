@@ -7,7 +7,7 @@
 
 <a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/android-hpma115s0/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>
 
-Citizen science project with mobile and fixed sensors for measuring air quality (PM 2.5 or CO2) using low-cost sensors and smartphones. Built with a `ESP32` module board interfaced with an [CanAirIO Android client app](https://github.com/kike-canaries/canairio_android).
+A citizen science project that employs both mobile and fixed sensors to measure air quality (PM 2.5 or CO2) and environmental variables. This is achieved using low-cost sensors and smartphones. The project is built around an ESP32 module board integrated with the [CanAirIO Android client app](https://github.com/kike-canaries/canairio_android).
 
 <table>
 	<tr>
@@ -88,7 +88,7 @@ esptool --port /dev/ttyUSB0 -b 1500000 write_flash 0x0 canairio_ESP32DEVKIT_rev9
 
 ### Windows
 
-Please read the [Espressif Uploader](https://canair.io/docs/firmware_upload.html#espressif-uploader) section in the main documentation for details to load the firmware via the oficial **Espressif Download Tool** in Windows.
+Please read the [Espressif Uploader](https://canair.io/docs/firmware_upload.html#espressif-uploader) section in the main documentation to have details of how load the firmware via the official **Espressif Download Tool** in Windows.
 
 ## Via PlatformIO (Compiling on Linux, Mac or Windows)
 
@@ -124,9 +124,9 @@ This build a basic compiler image with all PlatformIO stuff. For build the proje
 
 ## OTA WAN updates
 
-CanAirIO has two channels to have remote OTA updates of your device, the production channel and development channel. With that you don't need again install the firmware again for any update, all here is automatic and you only need have WiFi enable on your device for receive this firmware updates.
+CanAirIO offers two channels for remote OTA (Over-The-Air) updates for your device: the production channel and the development channel. This means you won't need to reinstall the firmware manually for any updates; it's all automatic. You only need to have Wi-Fi enabled on your device to receive these firmware updates.
 
-If you want the last testing updates, please choose in releases the development firmware (zip file with **dev** name), and upload it to your board or via the web installer choose testing option of each firmare.
+If you're interested in the latest testing updates, please go to the releases section and choose and download the development firmware (a zip file with `dev` in its name), then upload it to your board to receive these kind of updates.
 
 # Supporting the project
 
@@ -142,15 +142,17 @@ When creating a pull request, we recommend that you do the following:
 
 Also you can consider make a donation, be a patron or buy a device:  
 
+
 - Via **Ethereum**:
 - 0x1779cD3b85b6D8Cf1A5886B2CF5C53a0E072C108
 - Be a patron: [Github Sponsors](https://github.com/sponsors/hpsaturn), [LiberaPay](https://liberapay.com/CanAirIO)
 - **Buy a device**: [CanAirIO Bike in Tindie](https://www.tindie.com/products/hpsaturn/canairio-bike/)
 - Inviting us **a coffee**: [buymeacoffee](https://www.buymeacoffee.com/hpsaturn), [Sponsors](https://github.com/sponsors/hpsaturn?frequency=one-time)  
 
-<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" align="center_horizontal" width="180" ></a>
+<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" align="left" style="margin: 10px" width="160" ></a>  
 
-**NOTE:**  Supporting our Citizen Science Initiative many people be able to fight for air quality rights in many countries with this kind of problems. More info in [CanAir.IO](https://canair.io)
+**NOTE:**  
+Supporting our Citizen Science Initiative many people be able to fight for air quality rights in many countries with this kind of problems. More info in [CanAir.IO](https://canair.io)  
 
 # CanAirIO device HOWTO guide
 
@@ -172,7 +174,7 @@ We have some build guides with different alternatives, please visit our [CanAirI
 
 ** W A R N N I N G **
 
-The full updated and last versions for all box versions, are in the [official repository](https://github.com/kike-canaries/canairio_firmware/tree/master/box) because it is more easy for handling the versions than Thingiverse. This page it is only a guide.
+The last versions for all box versions, are in the [official repository](https://github.com/kike-canaries/canairio_firmware/tree/master/box) because it is more easy for handling the versions than Thingiverse.
 
 # TODO
 
@@ -190,5 +192,7 @@ The full updated and last versions for all box versions, are in the [official re
 - [x] Pax counter disable/enable
 - [x] Home Assistant integration (with zero-config)
 - [x] Anaire cloud integration (Automatic time series of your station)
+- [x] Fahrenheit and Kelvin units supported
+- [x] Geiger sensor supported
 - [ ] Sensor community alternativa for fixed stations
 - [ ] Anonymous authentication

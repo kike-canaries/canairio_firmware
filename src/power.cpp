@@ -1,6 +1,6 @@
-#include <power.hpp>
-#include <GUILib.hpp>
 #include <ConfigApp.hpp>
+#include <GUILib.hpp>
+#include <power.hpp>
 
 void prepairShutdown() {
     #ifndef M5STICKCPLUS

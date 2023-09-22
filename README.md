@@ -22,15 +22,15 @@ Citizen science project with mobile and fixed sensors for measuring air quality 
 - Super easy [web installer](https://canair.io/installer), via Chrome or Edge
 - Mobile station (via Bluetooth LE for tag GPS variables)
 - Fixed station, (using only your WiFi)
-- Fast WiFi credentials provisioning via Bluetooth
+- Fast WiFi credentials provisioning via Bluetooth or via
 - [CLI tool](https://canair.io/docs/cli.html) alternative for configuration and provisioning
-- Automatic firmware OTA updates (stable/testing channels)
+- Based on [CanAirIO Sensors Library](https://github.com/kike-canaries/canairio_sensorlib#readme) to support more sensors in the future
+- Automatic firmware OTA updates (with stable/testing channels)
 - Share mobile tracks via [mobile.canair.io](https://mobile.canair.io) or [CanAirIO app](https://github.com/kike-canaries/canairio_android)
 - [Home Assistant](https://www.home-assistant.io/) integration, discovery and multisensor support
 - Share your fixed station quickly via [Anaire Cloud](https://portal.anaire.org/d/detail/detalle?orgId=1&var-uid=U33TTGOTDA3D46&var-name=&refresh=1m)
-- Separated [sensors layer](https://github.com/kike-canaries/canairio_sensorlib#readme) for improve support of new sensors
 - PAX Counter feature (default wifi sniffer sensor to count people)
-- Multiple boards and sensors support with only one firmware
+- Multiple boards and sensors supported with only one firmware
 
 ## Boards supported
 
@@ -50,12 +50,13 @@ The [last release](https://github.com/kike-canaries/canairio_firmware/releases) 
 | **ESP32C3OIPLUS** | TTGO-T-OI-Plus | OLED | BLE not supported |
 | **ESP32C3LOLIN** | LOLIN Mini C3 | OLED | BLE not supported |
 | **ESP32C3SEEDX** | Seeed_xiao_esp32c3 | OLED | BLE not supported |
+| **ESP32S3** | T7S3 and Makerfabs | - | In development |
 
-** is possible that the **current firmware supports more boards** and sensors. Also you can choose the sensor brand or type on the CanAirIO Android app.
+** is possible that the **current firmware supports more boards** and sensors. Also you can choose the sensor brand or type on the CanAirIO Android app or on the firmware CLI.
 
 # Installation alternatives
 
-We have different alternatives for load the current firmware. In order of complexity they are:
+We have different alternatives to load the current firmware. By complexity order, they are:
 
 ## Via CanAirIO Web Installer (RECOMMENDED)
 
@@ -65,7 +66,7 @@ If you already have a ESP32 board, you can test our CanAirIO firmware on one cli
 
 ## Via CanAirIO loader
 
-You will able to install the last version of CanAirIO firmware with internet updates via a simple Arduino sketch that it will doing all for you, you only need to use the official [Arduino IDE](https://www.arduino.cc/en/software) or [Arduino Droid app for Android](https://play.google.com/store/apps/details?id=name.antonsmirnov.android.arduinodroid2&hl=en&gl=US) for load this [simple sketch](https://github.com/hpsaturn/esp32-canairio-loader/blob/master/canairio_loader/canairio_loader.ino). Please follow the instructions [here](https://github.com/hpsaturn/esp32-canairio-loader) or follow the next [YouTube video guide](https://youtu.be/FjfGdnTk-rc) for Android OTG installation alternative.
+You will able to install the last version of CanAirIO firmware using a simple Arduino sketch that it will doing all for you, you only need to use the official [Arduino IDE](https://www.arduino.cc/en/software) or [Arduino Droid app for Android](https://play.google.com/store/apps/details?id=name.antonsmirnov.android.arduinodroid2&hl=en&gl=US) for load this [simple sketch](https://github.com/hpsaturn/esp32-canairio-loader/blob/master/canairio_loader/canairio_loader.ino). Please follow the instructions [here](https://github.com/hpsaturn/esp32-canairio-loader) or follow the next [YouTube video guide](https://youtu.be/FjfGdnTk-rc) for Android OTG installation alternative.
 
 ## Via binaries
 
@@ -73,7 +74,7 @@ You can download the last firmware version in [releases](https://github.com/kike
 
 ![releases assets](images/assets.jpg)
 
-please uncompress the zip file and connect your CanAirIO device to your USB and execute the next command for upload the firmware to your model board, for example for an ESP32DevKit board you should run the next commands:
+please uncompress the zip file and connect your CanAirIO device to your USB and execute the next command to upload the firmware to your board, for example for an ESP32DevKit board you should run the next commands:
 
 ### Linux and MacOSx
 

@@ -5,7 +5,7 @@
 
 ![CanAirIO Community](/images/canairio_collage_community.jpg)
 
-<a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/android-hpma115s0/master/assets/googleplay/gplayicon.png" align="left" width="128" ></a>
+<a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/android-hpma115s0/master/assets/googleplay/gplayicon.png" align="left" style="margin: 2px" width="140" ></a>
 
 A citizen science project that employs both mobile and fixed sensors to measure air quality (PM 2.5 or CO2) and environmental variables. This is achieved using low-cost sensors and smartphones. The project is built around an ESP32 module board integrated with the [CanAirIO Android client app](https://github.com/kike-canaries/canairio_android).
 
@@ -149,10 +149,11 @@ Also you can consider make a donation, be a patron or buy a device:
 - **Buy a device**: [CanAirIO Bike in Tindie](https://www.tindie.com/products/hpsaturn/canairio-bike/)
 - Inviting us **a coffee**: [buymeacoffee](https://www.buymeacoffee.com/hpsaturn), [Sponsors](https://github.com/sponsors/hpsaturn?frequency=one-time)  
 
-<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" align="left" style="margin: 10px" width="160" ></a>  
+<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" align="left" style="margin: 10px" width="140" ></a>  
 
 **NOTE:**  
 Supporting our Citizen Science Initiative many people be able to fight for air quality rights in many countries with this kind of problems. More info in [CanAir.IO](https://canair.io)  
+
 
 # CanAirIO device HOWTO guide
 

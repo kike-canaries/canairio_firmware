@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - devel
+    paths-ignore:
+      - '**/README.md'
 
 jobs:
   build:

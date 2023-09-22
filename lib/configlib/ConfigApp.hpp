@@ -5,6 +5,7 @@
 #include <Preferences.h>
 #include <Watchdog.hpp>
 #include <Geohash.hpp>
+#include <mutex>
 
 #define RW_MODE false
 #define RO_MODE true
@@ -227,7 +228,9 @@ class ConfigApp {
 
     ConfKeyType getKeyType(CONFKEYS key);
     
-   private: 
+   private:  
+    /// mutex for R/W actions
+    std::mutex config_mtx;
     ///preferences main key
     char* _app_name;
     ///ESP32 preferences abstraction

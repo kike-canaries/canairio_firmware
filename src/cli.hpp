@@ -49,7 +49,7 @@ void wcli_klist(String opts) {
     Serial.printf("%11s \t%s \t%s \r\n", key, defined.c_str(), value.c_str());
   }
 
-  Serial.printf("\r\nMore info on https://canair.io/docs/cli");
+  Serial.printf("\r\nMore info: https://canair.io/docs/cli\r\n");
 }
 
 void saveInteger(String key, String v) {
@@ -65,9 +65,9 @@ void saveFloat(String key, String v) {
 }
 
 void saveBoolean(String key, String v) {
-    v.toLowerCase();
-    cfg.saveBool(key,v.equals("on") || v.equals("1") || v.equals("enable") || v.equals("true"));
-    Serial.printf("saved: %s:%s\r\n",key.c_str(),cfg.getBool(key,false) ? "true" : "false");
+  v.toLowerCase();
+  cfg.saveBool(key, v.equals("on") || v.equals("1") || v.equals("enable") || v.equals("true"));
+  Serial.printf("saved: %s:%s\r\n", key.c_str(), cfg.getBool(key, false) ? "true" : "false");
 }
 
 void saveString(String key, String v) {
@@ -174,8 +174,10 @@ void wcli_sensors_values() {
 void wcli_info(String opts) {
   Serial.println();
   Serial.print(getDeviceInfo());
+  gui.suspendTaskGUI();
   wcli_sensors();
   wcli_sensors_values();
+  gui.resumeTaskGUI();
 }
 
 void wcli_exit(String opts) {
@@ -264,9 +266,9 @@ void cliTaskInit() {
   xTaskCreate(
     cliTask,          // Task function. 
     "cliTask",        // String with name of task.
-    4000,            // Stack size in bytes.
+    3000,             // Stack size in bytes.
     NULL,             // Parameter passed as input of the task
-    1,                // Priority of the task.
+    10,               // Priority of the task.
     NULL              // Task handle.
   );
 }

@@ -64,9 +64,10 @@ void otaInit() {
 }
 
 void wifiCloudsInit() {
+  influxDbInit();
   if (cfg.getBool(CONFKEYS::KBANAIRE,false)) anaireInit();
   if (cfg.getBool(CONFKEYS::KBHOMEAS,false)) hassInit();
-  influxDbInit();
+  else return;
   if (anaireIsConnected()) Serial.printf("-->[MQTT] %s\t: connected!\r\n", ANAIRE_HOST);
 }
 
@@ -143,13 +144,12 @@ int getWifiRSSI() {
 
 String getDeviceInfo() {
   String info = getHostId() + "\r\n";
-  info = info + String(FLAVOR) + "\r\n";
   info = info + "Rev" + String(REVISION) + " v" + String(VERSION) + "\r\n";
   info = info + "" + cfg.getStationName() + "\r\n";
+  info = info + String(FLAVOR) + "\r\n";
   info = info + "IP: " + WiFi.localIP().toString() + "\r\n";
   info = info + "OTA: " + String(TARGET) + " channel\r\n";
-  // info = info + "Hass: " + String(hassIsConnected() ? "connected" : "disconnected") + "\r\n";
-  // info = info + "Anaire: " + String(anaireIsConnected() ? "connected" : "disconnected") + "\r\n";
+  info = info + "MEM: " + String(ESP.getFreeHeap() / 1024) + "Kb\r\n";
   return info;
 }
 

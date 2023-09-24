@@ -110,6 +110,7 @@ void snifferInit() {
 }
 
 void snifferStop () {
+    // TODO: cleaer the vector of MACs??
     Serial.println("-->[WIFI] stoping PAX counter sniffer..");
     esp_wifi_set_promiscuous(false);
     esp_wifi_stop();

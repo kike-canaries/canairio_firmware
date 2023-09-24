@@ -1,6 +1,5 @@
 #include <bluetooth.hpp>
 #include <wifi.hpp>
-#include <cli.hpp>
 
 /******************************************************************************
 *   W I F I   M E T H O D S
@@ -64,9 +63,10 @@ void otaInit() {
 }
 
 void wifiCloudsInit() {
-  if (cfg.getBool(CONFKEYS::KBANAIRE,true)) anaireInit();
-  if (cfg.getBool(CONFKEYS::KBHOMEAS,true)) hassInit();
   influxDbInit();
+  if (cfg.getBool(CONFKEYS::KBANAIRE,false)) anaireInit();
+  if (cfg.getBool(CONFKEYS::KBHOMEAS,false)) hassInit();
+  else return;
   if (anaireIsConnected()) Serial.printf("-->[MQTT] %s\t: connected!\r\n", ANAIRE_HOST);
 }
 
@@ -85,7 +85,9 @@ void wifiConnect(const char* ssid, const char* pass) {
   delay(500);
   if (WiFi.isConnected()) {
     cfg.isNewWifi = false;  // flag for config via BLE
+    #ifndef DISABLE_CLI
     if(!wcli.isSSIDSaved(ssid))wcli.saveNetwork(ssid, pass);
+    #endif
     Serial.println(" done."); 
   } else {
     Serial.println("fail!\r\n[E][WIFI] disconnected!");
@@ -130,7 +132,7 @@ void wifiLoop() {
   }
   if (!WiFi.isConnected()) return;
   influxDbLoop();  // influxDB publication
-  if (cfg.getBool(CONFKEYS::KBANAIRE,true)) anaireLoop();
+  if (cfg.getBool(CONFKEYS::KBANAIRE,false)) anaireLoop();
   if (cfg.getBool(CONFKEYS::KBHOMEAS,false)) hassLoop();
 }
 
@@ -143,26 +145,15 @@ int getWifiRSSI() {
 
 String getDeviceInfo() {
   String info = getHostId() + "\r\n";
-  info = info + String(FLAVOR) + "\r\n";
   info = info + "Rev" + String(REVISION) + " v" + String(VERSION) + "\r\n";
   info = info + "" + cfg.getStationName() + "\r\n";
+  info = info + String(FLAVOR) + "\r\n";
   info = info + "IP: " + WiFi.localIP().toString() + "\r\n";
   info = info + "OTA: " + String(TARGET) + " channel\r\n";
-  // info = info + "Hass: " + String(hassIsConnected() ? "connected" : "disconnected") + "\r\n";
-  // info = info + "Anaire: " + String(anaireIsConnected() ? "connected" : "disconnected") + "\r\n";
+  info = info + "MEM: " + String(ESP.getFreeHeap() / 1024) + "Kb\r\n";
   return info;
 }
 
 void printWifiRSSI(){
   if (cfg.devmode) Serial.println("-->[WIFI] AP RSSI signal \t: " + String(getWifiRSSI()) + " dBm");
-}
-
-uint32_t heap_size = 0;
-
-void logMemory(const char* msg) {
-  if (!cfg.devmode) return;
-  if (heap_size == 0) heap_size = ESP.getFreeHeap();
-  heap_size = heap_size - ESP.getFreeHeap();
-  Serial.printf("-->[HEAP] %s bytes used\t: %04db/%03dKb\r\n", msg, heap_size, ESP.getFreeHeap() / 1024);
-  heap_size = ESP.getFreeHeap();
 }

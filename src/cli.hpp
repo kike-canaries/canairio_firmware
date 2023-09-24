@@ -53,7 +53,7 @@ void wcli_klist(String opts) {
 }
 
 void saveInteger(String key, String v) {
-  uint16_t value = v.toInt();
+  int32_t value = v.toInt();
   cfg.saveInt(key, value);
   Serial.printf("saved: %s:%i\r\n",key.c_str(),value);
 }

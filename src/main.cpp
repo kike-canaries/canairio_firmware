@@ -13,6 +13,7 @@
 #include <Sensors.hpp>
 #include <bluetooth.hpp>
 #include <power.hpp>
+#include <logmem.hpp>
 #include <wifi.hpp>
 
 UNIT selectUnit = UNIT::NUNIT;
@@ -267,8 +268,10 @@ void setup() {
       gui.welcomeAddMessage("wait for setup..");
       Serial.println("\n-->[INFO] == Waiting for safe mode setup (10s)  ==");
     }
+    #ifndef DISABLE_CLI
     cliInit();
     logMemory("CLI ");
+    #endif
     // init battery monitor
     if (FAMILY != "ESP32-C3") {
       battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
@@ -326,16 +329,18 @@ void setup() {
     refreshGUIData(false);
     logMemory("GLIB");
     Serial.printf("-->[INFO] sensors units count\t: %d\r\n", sensors.getUnitsRegisteredCount());
-    Serial.printf("-->[INFO] show unit selected \t: %s\r\n",sensors.getUnitName(selectUnit).c_str());
-    Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\r\n", sizeof(sensors));
-    Serial.printf("-->[HEAP] sizeof config \t: %04ub\r\n", sizeof(cfg));
-    Serial.printf("-->[HEAP] sizeof GUI    \t: %04ub\r\n", sizeof(gui));
-    Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
+    Serial.printf("-->[INFO] show unit selected \t: %s\r\n",sensors.getUnitName(selectUnit).c_str()); 
     // testing workaround on init config.
     cfg.saveString("kdevid",cfg.getDeviceId());
     // enabling CLI interface
+    logMemoryObjects();
+    #ifndef DISABLE_CLI
     cliTaskInit();
     logMemory("CLITASK");
+    Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
+    #else
+    Serial.println("\n==>[INFO] Setup End. ===\r\n");
+    #endif
 }
 
 void loop() {

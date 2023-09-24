@@ -1,6 +1,5 @@
 #include <bluetooth.hpp>
 #include <wifi.hpp>
-#include <cli.hpp>
 
 /******************************************************************************
 *   W I F I   M E T H O D S
@@ -86,7 +85,9 @@ void wifiConnect(const char* ssid, const char* pass) {
   delay(500);
   if (WiFi.isConnected()) {
     cfg.isNewWifi = false;  // flag for config via BLE
+    #ifndef DISABLE_CLI
     if(!wcli.isSSIDSaved(ssid))wcli.saveNetwork(ssid, pass);
+    #endif
     Serial.println(" done."); 
   } else {
     Serial.println("fail!\r\n[E][WIFI] disconnected!");
@@ -155,14 +156,4 @@ String getDeviceInfo() {
 
 void printWifiRSSI(){
   if (cfg.devmode) Serial.println("-->[WIFI] AP RSSI signal \t: " + String(getWifiRSSI()) + " dBm");
-}
-
-uint32_t heap_size = 0;
-
-void logMemory(const char* msg) {
-  if (!cfg.devmode) return;
-  if (heap_size == 0) heap_size = ESP.getFreeHeap();
-  heap_size = heap_size - ESP.getFreeHeap();
-  Serial.printf("-->[HEAP] %s bytes used\t: %04db/%03dKb\r\n", msg, heap_size, ESP.getFreeHeap() / 1024);
-  heap_size = ESP.getFreeHeap();
 }

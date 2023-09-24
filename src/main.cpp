@@ -338,23 +338,31 @@ void setup() {
     cfg.saveString("kdevid",cfg.getDeviceId());
     // enabling CLI interface
     logMemoryObjects();
+
+#ifdef LORADEVKIT
     LoRaWANSetup();
+    #endif
+
     logMemory("LORAWAN");    
 #ifndef DISABLE_CLI
     cliTaskInit();
     logMemory("CLITASK");
-<<<<<<< HEAD
-    
-    #ifdef LORADEVKIT
-    LoRaWANSetup();
-    #endif
-   
-=======
     Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
     #else
     Serial.println("\n==>[INFO] Setup End. ===\r\n");
     #endif
->>>>>>> e0d27eaf5f766a05a7fe356f6b01dcb60f5b9c60
+
+#ifndef DISABLE_CLI
+    cliTaskInit();
+    logMemory("CLITASK");
+    Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
+    #else
+    Serial.println("\n==>[INFO] Setup End. ===\r\n");
+    #endif
+
+ 
+
+
 }
 
 void loop() {
@@ -370,7 +378,6 @@ void loop() {
 
     battery.loop();  // refresh battery level and voltage
 
-    //LoraWANDo();
     #ifdef LORADEVKIT
     os_runloop_once();
     #endif

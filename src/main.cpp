@@ -15,6 +15,7 @@
 #include <power.hpp>
 #include <logmem.hpp>
 #include <wifi.hpp>
+#include <lorawan.h>
 
 UNIT selectUnit = UNIT::NUNIT;
 UNIT nextUnit = UNIT::NUNIT;
@@ -334,7 +335,9 @@ void setup() {
     cfg.saveString("kdevid",cfg.getDeviceId());
     // enabling CLI interface
     logMemoryObjects();
-    #ifndef DISABLE_CLI
+    LoRaWANSetup();
+    logMemory("LORAWAN");    
+#ifndef DISABLE_CLI
     cliTaskInit();
     logMemory("CLITASK");
     Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
@@ -355,5 +358,7 @@ void loop() {
     gui.loop();      // Only for OLED
 
     battery.loop();  // refresh battery level and voltage
+    //LoraWANDo();
+    os_runloop_once();
     powerLoop();     // check power status and manage power saving
 }

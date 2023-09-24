@@ -256,6 +256,7 @@ bool ConfigApp::saveDeviceName(String name) {
 bool ConfigApp::saveSampleTime(int time) {
     if (time >= 5) {
         saveInt("stime", time);
+        stime=time;
         Serial.printf("-->[CONF] set sample time to\t: %d\r\n", time);
         return true;
     }

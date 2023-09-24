@@ -14,7 +14,10 @@
 #include <bluetooth.hpp>
 #include <power.hpp>
 #include <wifi.hpp>
+
+#ifdef LORADEVKIT
 #include <lorawan.h>
+#endif
 
 UNIT selectUnit = UNIT::NUNIT;
 UNIT nextUnit = UNIT::NUNIT;
@@ -333,7 +336,10 @@ void setup() {
     // enabling CLI interface
     cliTaskInit();
     logMemory("CLITASK");
+    
+    #ifdef LORADEVKIT
     LoRaWANSetup();
+    #endif
    
 }
 
@@ -349,7 +355,11 @@ void loop() {
     gui.loop();      // Only for OLED
 
     battery.loop();  // refresh battery level and voltage
+
     //LoraWANDo();
+    #ifdef LORADEVKIT
     os_runloop_once();
+    #endif
+    
     powerLoop();     // check power status and manage power saving
 }

@@ -176,10 +176,8 @@ void wcli_sensors_values() {
 void wcli_info(String opts) {
   Serial.println();
   Serial.print(getDeviceInfo());
-  gui.suspendTaskGUI();
   wcli_sensors();
   wcli_sensors_values();
-  gui.resumeTaskGUI();
 }
 
 void wcli_exit(String opts) {

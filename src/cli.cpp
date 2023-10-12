@@ -269,7 +269,7 @@ void cliTaskInit() {
     "cliTask",        // String with name of task.
     3000,             // Stack size in bytes.
     NULL,             // Parameter passed as input of the task
-    10,               // Priority of the task.
+    1,                // Priority of the task.
     NULL              // Task handle.
   );
   #endif

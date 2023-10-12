@@ -339,30 +339,18 @@ void setup() {
     // enabling CLI interface
     logMemoryObjects();
 
-#ifdef LORADEVKIT
+    #ifdef LORADEVKIT
     LoRaWANSetup();
-    #endif
-
     logMemory("LORAWAN");    
-#ifndef DISABLE_CLI
+    #endif
+
+    #ifndef DISABLE_CLI
     cliTaskInit();
     logMemory("CLITASK");
     Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
     #else
     Serial.println("\n==>[INFO] Setup End. ===\r\n");
     #endif
-
-#ifndef DISABLE_CLI
-    cliTaskInit();
-    logMemory("CLITASK");
-    Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
-    #else
-    Serial.println("\n==>[INFO] Setup End. ===\r\n");
-    #endif
-
- 
-
-
 }
 
 void loop() {

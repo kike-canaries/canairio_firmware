@@ -341,10 +341,10 @@ void setup() {
     // enabling CLI interface
     logMemoryObjects();
 
-    #ifdef LORADEVKIT
-    LoRaWANSetup();
-    logMemory("LORAWAN");    
-    #endif
+    // #ifdef LORADEVKIT
+    // LoRaWANSetup();
+    // logMemory("LORAWAN");    
+    // #endif
 
     #ifndef DISABLE_CLI
     cliTaskInit();

@@ -34,8 +34,8 @@ enum AQI_COLOR { AQI_NONE, AQI_PM, AQI_CO2, AQI_CO, AQI_NH3 };
 typedef struct GUIData {
     uint8_t mainUnitId;
     uint8_t onSelectionUnit;
-    float mainValue;  
-    float minorValue;  
+    float mainValue;
+    float minorValue;
     String unitName;
     String unitSymbol;
     float humi;
@@ -186,11 +186,11 @@ class TFTUtils {
 
     float _temp = 0.0;
 
-    float _mainValue = 0.0;  
+    float _mainValue = 0.0;
 
     int _mainUnitId = 0;
     
-    float _minorValue = 0.0; 
+    float _minorValue = 0.0;
 
     String _unit_symbol = "";
 

@@ -176,10 +176,8 @@ void wcli_sensors_values() {
 void wcli_info(String opts) {
   Serial.println();
   Serial.print(getDeviceInfo());
-  gui.suspendTaskGUI();
   wcli_sensors();
   wcli_sensors_values();
-  gui.resumeTaskGUI();
 }
 
 void wcli_exit(String opts) {
@@ -271,7 +269,7 @@ void cliTaskInit() {
     "cliTask",        // String with name of task.
     3000,             // Stack size in bytes.
     NULL,             // Parameter passed as input of the task
-    10,               // Priority of the task.
+    1,                // Priority of the task.
     NULL              // Task handle.
   );
   #endif

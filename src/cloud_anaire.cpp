@@ -41,6 +41,9 @@ void anairePublish() {
         doc["geo"] = cfg.geo;
         doc["battery"] = String(battery.getCharge());
         doc["VBat"] = String(battery.getVoltage());
+        doc["co"] = String(sensors.getCO());
+        doc["nh3"] = String(sensors.getNH3());
+        doc["no2"] = String(sensors.getNO2());
 
         size_t n = serializeJson(doc, buffer);
 

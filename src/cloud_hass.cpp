@@ -54,6 +54,9 @@ void hassPubSensorPayload() {
     doc["voltage"] = String(battery.getVoltage());
     doc["cpm"] = String(sensors.getGeigerCPM());
     doc["usvh"] = String(sensors.getGeigerMicroSievertHour());
+    doc["co"] = String(sensors.getCO());
+    doc["nh3"] = String(sensors.getNH3());
+    doc["no2"] = String(sensors.getNO2());
 
     size_t n = serializeJson(doc, buffer);
  

@@ -29,6 +29,8 @@
 #define blue 0x5D9B
 #define ligthgreen 0xF59F
 
+#define GUI_TASK_STACK 10000
+
 enum AQI_COLOR { AQI_NONE, AQI_PM, AQI_CO2, AQI_CO, AQI_NH3 };
 
 typedef struct GUIData {
@@ -115,6 +117,8 @@ class TFTUtils {
 
     void resumeTaskGUI();
 
+    int32_t getStackFree();
+
     String getFirmwareVersionCode ();
 
     void loop();
@@ -160,9 +164,9 @@ class TFTUtils {
 
     int dh = 0;  // display height
 
-    uint32_t bufGraphMain[MAX_X];  // Main graph buffer
+    uint8_t bufGraphMain[MAX_X];  // Main graph buffer
     
-    uint32_t bufGraphMinor[MAX_X];  // Secondary graph buffer
+    uint8_t bufGraphMinor[MAX_X];  // Secondary graph buffer
 
     int state = 0;
 
@@ -274,11 +278,11 @@ class TFTUtils {
 
     void displayBigLabel(int cursor, String msg);
 
-    void resetBuffer(uint32_t * buf);
+    void resetBuffer(uint8_t * buf);
 
-    double getMultiplicator(uint32_t * buf);
+    double getMultiplicator(uint8_t * buf);
 
-    uint32_t getAQIColor(uint32_t value);
+    uint32_t getAQIColor(uint8_t value);
     
     void drawBarGraph();
 

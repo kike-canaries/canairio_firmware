@@ -151,6 +151,7 @@ String getDeviceInfo() {
   info = info + "IP: " + WiFi.localIP().toString() + "\r\n";
   info = info + "OTA: " + String(TARGET) + " channel\r\n";
   info = info + "MEM: " + String(ESP.getFreeHeap() / 1024) + "Kb\r\n";
+  info = info + "STK: " + String(gui.getStackFree() / 1024) + "Kb\r\n";
   return info;
 }
 

@@ -18,9 +18,9 @@ void guiTask(void* pvParameters) {
 void TFTUtils::setupGUITask() {
     taskGUIrunning = true;
     xTaskCreatePinnedToCore(
-        guiTask,    /* Function to implement the task */
+        guiTask,     /* Function to implement the task */
         "tempTask ", /* Name of the task */
-        10000,        /* Stack size in words */
+        5000,       /* Stack size in words */
         NULL,        /* Task input parameter */
         5,           /* Priority of the task */
         &xHandle,    /* Task handle. */

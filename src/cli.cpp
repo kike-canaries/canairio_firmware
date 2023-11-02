@@ -263,16 +263,17 @@ void cliTask(void *param) {
 }
 
 void cliTaskInit() {
-  #ifndef DISABLE_CLI
-  xTaskCreate(
-    cliTask,          // Task function. 
-    "cliTask",        // String with name of task.
-    3000,             // Stack size in bytes.
-    NULL,             // Parameter passed as input of the task
-    1,                // Priority of the task.
-    NULL              // Task handle.
+#ifndef DISABLE_CLI
+  xTaskCreatePinnedToCore(
+      cliTask,     // Function to implement the task
+      "cliTask ",  // Name of the task
+      3000,        // Stack size in words
+      NULL,        // Task input parameter
+      1,           // Priority of the task
+      NULL,        // Task handle.
+      1            // Core where the task should run
   );
-  #endif
+#endif
 }
 
 /**

@@ -513,38 +513,34 @@ void GUIUtils::pageEnd() {
     u8g2.nextPage();
 }
 
-void GUIUtils::setBrightness(uint32_t value){
-
+void GUIUtils::setBrightness(uint32_t value) {
 }
 
-void GUIUtils::setWifiMode(bool enable){
-
+void GUIUtils::setWifiMode(bool enable) {
 }
 
-void GUIUtils::setPaxMode(bool enable){
-
+void GUIUtils::setPaxMode(bool enable) {
 }
 
-void GUIUtils::setSampleTime(int time){
-
+void GUIUtils::setSampleTime(int time) {
 }
 
-void GUIUtils::setTrackValues(float speed, float distance){
-
+void GUIUtils::setTrackValues(float speed, float distance) {
 }
 
-void GUIUtils::setTrackTime(int h, int m, int s){
-
+void GUIUtils::setTrackTime(int h, int m, int s) {
 }
 
-void GUIUtils::suspendTaskGUI(){
+void GUIUtils::suspendTaskGUI() {
 }
 
-void GUIUtils::resumeTaskGUI(){
+void GUIUtils::resumeTaskGUI() {
 }
 
-void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
+int32_t GUIUtils::getStackFree() {
+}
 
+void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks) {
 }
 
 void GUIUtils::loop(){

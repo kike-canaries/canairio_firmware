@@ -6,5 +6,6 @@
 
 void cliInit();
 void cliTaskInit();
+int32_t cliTaskStackFree();
 
 #endif

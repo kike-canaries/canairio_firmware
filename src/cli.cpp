@@ -6,6 +6,8 @@ bool setup_mode = false;
 int setup_time = 10000;
 bool first_run = true;
 
+TaskHandle_t xCliHandle;
+
 void wcli_debug(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   String param = operands.first();
@@ -267,13 +269,17 @@ void cliTaskInit() {
   xTaskCreatePinnedToCore(
       cliTask,     // Function to implement the task
       "cliTask ",  // Name of the task
-      3000,        // Stack size in words
+      4000,        // Stack size in words
       NULL,        // Task input parameter
       1,           // Priority of the task
-      NULL,        // Task handle.
+      &xCliHandle,        // Task handle.
       1            // Core where the task should run
   );
 #endif
+}
+
+int32_t cliTaskStackFree(){
+    return uxTaskGetStackHighWaterMark(xCliHandle);
 }
 
 /**

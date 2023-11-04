@@ -538,6 +538,7 @@ void GUIUtils::resumeTaskGUI() {
 }
 
 int32_t GUIUtils::getStackFree() {
+  return 0;
 }
 
 void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks) {

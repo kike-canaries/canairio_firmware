@@ -170,7 +170,7 @@ void wcli_sensors_values() {
         String uName = sensors.getUnitName(unit);
         float uValue = sensors.getUnitValue(unit);
         String uSymb = sensors.getUnitSymbol(unit);
-        Serial.printf(" %s:\t%02.1f\t%s\n", uName.c_str(), uValue, uSymb.c_str());
+        Serial.printf(" %s:\t%02.1f\t%s\r\n", uName.c_str(), uValue, uSymb.c_str());
         unit = sensors.getNextUnit();
     }
 }

@@ -16,9 +16,11 @@
 #include <logmem.hpp>
 #include <wifi.hpp>
 
+
 #ifdef LORADEVKIT
-#include <lorawan.h>
-#endif
+#include "LMIC-node.h"
+#endif 
+
 
 UNIT selectUnit = UNIT::NUNIT;
 UNIT nextUnit = UNIT::NUNIT;
@@ -339,10 +341,10 @@ void setup() {
     // enabling CLI interface
     logMemoryObjects();
 
-    #ifdef LORADEVKIT
-    LoRaWANSetup();
-    logMemory("LORAWAN");    
-    #endif
+    // #ifdef LORADEVKIT
+    // LoRaWANSetup();
+    // logMemory("LORAWAN");    
+    // #endif
 
     #ifndef DISABLE_CLI
     cliTaskInit();

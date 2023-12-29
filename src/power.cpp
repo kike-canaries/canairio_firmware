@@ -83,9 +83,7 @@ void powerInit() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable Brownout Detector 
     // set cpu speed low to save battery
     setCpuFrequencyMhz(240);
-    Serial.print("-->[POWR] CPU Speed: ");
-    Serial.print(getCpuFrequencyMhz());
-    Serial.println(" MHz");  
+    Serial.printf("-->[POWR] CPU Speed:%i MHz\r\n",getCpuFrequencyMhz());
     powerEnableSensors();
 }
 

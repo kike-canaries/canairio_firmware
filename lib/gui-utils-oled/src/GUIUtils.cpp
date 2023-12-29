@@ -18,6 +18,8 @@ void GUIUtils::displayInit() {
     U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
 #elif M5PICOD4
     U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
+#elif LORADEVKIT
+    U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, 15, 4, 16);
 #else  // display via i2c for TTGO_T7 (old D1MINI) board
     U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
 #endif
@@ -511,38 +513,35 @@ void GUIUtils::pageEnd() {
     u8g2.nextPage();
 }
 
-void GUIUtils::setBrightness(uint32_t value){
-
+void GUIUtils::setBrightness(uint32_t value) {
 }
 
-void GUIUtils::setWifiMode(bool enable){
-
+void GUIUtils::setWifiMode(bool enable) {
 }
 
-void GUIUtils::setPaxMode(bool enable){
-
+void GUIUtils::setPaxMode(bool enable) {
 }
 
-void GUIUtils::setSampleTime(int time){
-
+void GUIUtils::setSampleTime(int time) {
 }
 
-void GUIUtils::setTrackValues(float speed, float distance){
-
+void GUIUtils::setTrackValues(float speed, float distance) {
 }
 
-void GUIUtils::setTrackTime(int h, int m, int s){
-
+void GUIUtils::setTrackTime(int h, int m, int s) {
 }
 
-void GUIUtils::suspendTaskGUI(){
+void GUIUtils::suspendTaskGUI() {
 }
 
-void GUIUtils::resumeTaskGUI(){
+void GUIUtils::resumeTaskGUI() {
 }
 
-void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks){
+int32_t GUIUtils::getStackFree() {
+  return 0;
+}
 
+void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks) {
 }
 
 void GUIUtils::loop(){

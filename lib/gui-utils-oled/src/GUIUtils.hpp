@@ -84,6 +84,8 @@ class GUIUtils {
 
     void resumeTaskGUI();
 
+    int32_t getStackFree();
+
     void setPowerSave();
 
     String getFirmwareVersionCode ();

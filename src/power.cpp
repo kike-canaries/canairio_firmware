@@ -1,6 +1,6 @@
-#include <power.hpp>
-#include <GUILib.hpp>
 #include <ConfigApp.hpp>
+#include <GUILib.hpp>
+#include <power.hpp>
 
 void prepairShutdown() {
     #ifndef M5STICKCPLUS
@@ -69,6 +69,8 @@ void powerLightSleepTimer(int seconds) {
 
 void powerEnableSensors() {
     if(cfg.devmode) Serial.println("-->[POWR] == enable sensors ==");
+    // init all sensors (step-up to 5V with enable pin)
+    pinMode(MAIN_HW_EN_PIN, OUTPUT);
     digitalWrite(MAIN_HW_EN_PIN, HIGH);  // step-up on
 }
 
@@ -83,9 +85,7 @@ void powerInit() {
     setCpuFrequencyMhz(240);
     Serial.print("-->[POWR] CPU Speed: ");
     Serial.print(getCpuFrequencyMhz());
-    Serial.println(" MHz"); 
-    // init all sensors (step-up to 5V with enable pin)
-    pinMode(MAIN_HW_EN_PIN, OUTPUT);
+    Serial.println(" MHz");  
     powerEnableSensors();
 }
 

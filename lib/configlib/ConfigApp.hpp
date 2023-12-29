@@ -5,6 +5,7 @@
 #include <Preferences.h>
 #include <Watchdog.hpp>
 #include <Geohash.hpp>
+#include <mutex>
 
 #define RW_MODE false
 #define RO_MODE true
@@ -20,6 +21,7 @@ typedef enum {
     X(KBI2COLY, "i2conly", BOOL)      \
     X(KFALTFST, "altoffset", FLOAT)   \
     X(KFTOFFST, "toffset", FLOAT)     \
+    X(KTEMPUNT, "tunit", INT)         \
     X(KBASIC, "-----", UNKNOWN)       \
     X(KDEBUG, "debugEnable", BOOL)    \
     X(KFLIPV, "flipVEnable", BOOL)    \
@@ -34,10 +36,12 @@ typedef enum {
     X(KSHASSPW, "hasspsw", STRING)    \
     X(KIHASSPT, "hasspt", INT)        \
     X(KFSEALV, "sealevel", FLOAT)     \
+    X(KSTIME, "stime", INT)           \
     X(KFAILSAFE, "fsafeEnable", BOOL) \
     X(KWKUPRST, "wkrstEnable", BOOL)  \
     X(KBSOLARE, "solarEnable", BOOL)  \
     X(KIDEEPSL, "deepSleep", INT)     \
+    X(KGEIGERP, "geigerPin", INT)     \
     X(KCOUNT, "KCOUNT", UNKNOWN)
 
 #define X(kname, kreal, ktype) kname,
@@ -225,7 +229,9 @@ class ConfigApp {
 
     ConfKeyType getKeyType(CONFKEYS key);
     
-   private: 
+   private:  
+    /// mutex for R/W actions
+    std::mutex config_mtx;
     ///preferences main key
     char* _app_name;
     ///ESP32 preferences abstraction

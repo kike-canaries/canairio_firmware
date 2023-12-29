@@ -13,7 +13,12 @@
 #include <Sensors.hpp>
 #include <bluetooth.hpp>
 #include <power.hpp>
+#include <logmem.hpp>
 #include <wifi.hpp>
+
+#ifdef LORADEVKIT
+#include <lorawan.h>
+#endif
 
 UNIT selectUnit = UNIT::NUNIT;
 UNIT nextUnit = UNIT::NUNIT;
@@ -188,16 +193,20 @@ void printSensorsDetected() {
 void startingSensors() {
     Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)cfg.stype));
     gui.welcomeAddMessage("Init sensors..");
-    sensors.setOnDataCallBack(&onSensorDataOk);     // all data read callback
-    sensors.setOnErrorCallBack(&onSensorDataError); // on data error callback
-    sensors.setSampleTime(cfg.stime);               // config sensors sample time (first use)
-    sensors.setTempOffset(cfg.toffset);             // temperature compensation
-    sensors.setCO2AltitudeOffset(cfg.altoffset);    // CO2 altitude compensation
-    sensors.detectI2COnly(cfg.i2conly);             // force only i2c sensors
-    sensors.setDebugMode(cfg.devmode);              // debugging mode 
-    int mUART = cfg.stype;                          // optional UART sensor choosed on the Android app
-    int mTX = cfg.sTX;                              // UART TX defined via setup
-    int mRX = cfg.sRX;                              // UART RX defined via setup
+    int geigerPin = cfg.getInt(CONFKEYS::KGEIGERP, -1);    // Geiger sensor pin (config it via CLI) 
+    int tunit = cfg.getInt(CONFKEYS::KTEMPUNT, 0);         // Temperature unit (defaulut celsius)
+    sensors.setOnDataCallBack(&onSensorDataOk);            // all data read callback
+    sensors.setOnErrorCallBack(&onSensorDataError);        // on data error callback
+    sensors.setDebugMode(cfg.devmode);                     // debugging mode 
+    sensors.setSampleTime(cfg.stime);                      // config sensors sample time (first use)
+    sensors.setTempOffset(cfg.toffset);                    // temperature compensation
+    sensors.setCO2AltitudeOffset(cfg.altoffset);           // CO2 altitude compensation
+    sensors.detectI2COnly(cfg.i2conly);                    // force only i2c sensors
+    sensors.enableGeigerSensor(geigerPin);                 // Geiger sensor init
+    sensors.setTemperatureUnit((TEMPUNIT)tunit);           // Config temperature unit (K,C or F)
+    int mUART = cfg.stype;                                 // optional UART sensor choosed on the Android app
+    int mTX = cfg.sTX;                                     // UART TX defined via setup
+    int mRX = cfg.sRX;                                     // UART RX defined via setup
 
     if (cfg.sTX == -1 && cfg.sRX == -1)
         sensors.init(mUART);                        // start all sensors (board predefined pins)
@@ -263,8 +272,10 @@ void setup() {
       gui.welcomeAddMessage("wait for setup..");
       Serial.println("\n-->[INFO] == Waiting for safe mode setup (10s)  ==");
     }
+    #ifndef DISABLE_CLI
     cliInit();
     logMemory("CLI ");
+    #endif
     // init battery monitor
     if (FAMILY != "ESP32-C3") {
       battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
@@ -283,7 +294,7 @@ void setup() {
     // Sensors library initialization
     Serial.println("-->[INFO] == Detecting Sensors ==");
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
-    Serial.println("-->[INFO] enable sensor GPIO\t: " + String(MAIN_HW_EN_PIN));
+    Serial.println("-->[INFO] enable hw on GPIO\t: " + String(MAIN_HW_EN_PIN));
     startingSensors();
     logMemory("SLIB");
     // Setting callback for remote commands via Bluetooth config
@@ -322,16 +333,24 @@ void setup() {
     refreshGUIData(false);
     logMemory("GLIB");
     Serial.printf("-->[INFO] sensors units count\t: %d\r\n", sensors.getUnitsRegisteredCount());
-    Serial.printf("-->[INFO] show unit selected \t: %s\r\n",sensors.getUnitName(selectUnit).c_str());
-    Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\r\n", sizeof(sensors));
-    Serial.printf("-->[HEAP] sizeof config \t: %04ub\r\n", sizeof(cfg));
-    Serial.printf("-->[HEAP] sizeof GUI    \t: %04ub\r\n", sizeof(gui));
-    Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
+    Serial.printf("-->[INFO] show unit selected \t: %s\r\n",sensors.getUnitName(selectUnit).c_str()); 
     // testing workaround on init config.
     cfg.saveString("kdevid",cfg.getDeviceId());
     // enabling CLI interface
+    logMemoryObjects();
+
+    #ifdef LORADEVKIT
+    LoRaWANSetup();
+    logMemory("LORAWAN");    
+    #endif
+
+    #ifndef DISABLE_CLI
     cliTaskInit();
     logMemory("CLITASK");
+    Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
+    #else
+    Serial.println("\n==>[INFO] Setup End. ===\r\n");
+    #endif
 }
 
 void loop() {
@@ -346,5 +365,10 @@ void loop() {
     gui.loop();      // Only for OLED
 
     battery.loop();  // refresh battery level and voltage
+
+    #ifdef LORADEVKIT
+    os_runloop_once();
+    #endif
+    
     powerLoop();     // check power status and manage power saving
 }

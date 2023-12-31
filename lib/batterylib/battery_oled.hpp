@@ -4,7 +4,7 @@
 #include <battery.hpp>
 #include <esp_adc_cal.h>
 
-#ifdef TTGO_T7
+#if defined(TTGO_T7) || defined(TTGO_T7S3)
 #define BATTERY_MIN_V 3.4
 #define BATTERY_MAX_V 4.28
 #define BATTCHARG_MIN_V 3.8

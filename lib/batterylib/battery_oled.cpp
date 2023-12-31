@@ -6,6 +6,9 @@
 #elif TTGO_T7
     #define ADC_PIN 35
     int channel_atten = ADC1_CHANNEL_7;
+#elif TTGO_T7S3
+    #define ADC_PIN 2
+    int channel_atten = ADC1_CHANNEL_2;
 #else
     #define ADC_PIN 34
     int channel_atten = 0;
@@ -17,6 +20,7 @@ void Battery_OLED::setupBattADC() {
   // TODO: all here is deprecated we need review the documentation
   esp_adc_cal_characteristics_t adc_chars;
   esp_adc_cal_value_t val_type = esp_adc_cal_characterize((adc_unit_t)ADC_UNIT_1, (adc_atten_t)channel_atten, (adc_bits_width_t)ADC_WIDTH_BIT_12, 1100, &adc_chars);
+  analogReadResolution(12);
   // Check type of calibration value used to characterize ADC
   if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
     Serial.printf("-->[BATT] ADC eFuse Vref:%u mV\r\n", adc_chars.vref);
@@ -65,7 +69,7 @@ void Battery_OLED::update() {
   digitalWrite(ADC_EN, HIGH);
   delay(10);  // suggested by @ygator user in issue #2
   uint16_t v = analogRead(ADC_PIN);
-#ifdef TTGO_T7
+#if defined(TTGO_T7) || defined(TTGO_T7S3)
   curv = ((float)v / 4095.0) * 7.58;
 #else
   curv = ((float)v / 4095.0) * 15.83;

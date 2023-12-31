@@ -81,6 +81,8 @@ build () {
   cp $OUTDIR/$1/firmware.bin $FIRMDIR/${NAME}_${1}_rev${SRC_REV}.bin
   if [ $1 == ESP32C3 ] || [ $1 == ESP32C3LOLIN ] || [ $1 == ESP32C3SEEDX ] || [ $1 == ESP32C3OIPLUS ]; then
     /usr/bin/python3 ${PIO_HOME}/packages/tool-esptoolpy/esptool.py --chip esp32c3 merge_bin -o  $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash_mode dio --flash_freq 80m --flash_size 4MB 0x0000 $OUTDIR/$1/bootloader.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 ${PIO_HOME}/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
+  elif [ $1 == ESP32S3 ] || [ $1 == TTGO_T7S3 ]; then
+    /usr/bin/python3 ${PIO_HOME}/packages/tool-esptoolpy/esptool.py --chip esp32s3 merge_bin -o  $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash_mode dio --flash_freq 80m --flash_size 8MB 0x0000 $OUTDIR/$1/bootloader.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 ${PIO_HOME}/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
   else
     esptool --chip esp32 merge_bin -o $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash_mode dio --flash_freq 40m --flash_size 4MB 0x1000 ${PIO_HOME}/packages/framework-arduinoespressif32@3.20003.220626/tools/sdk/esp32/bin/bootloader_dio_40m.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 ${PIO_HOME}/packages/framework-arduinoespressif32@3.20003.220626/tools/partitions/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
   fi

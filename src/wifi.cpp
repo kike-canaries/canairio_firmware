@@ -157,6 +157,7 @@ String getDeviceInfo() {
   #ifdef CONFIG_IDF_TARGET_ESP32S3
   info = info + "CPU: " + String(powerESP32TempRead()) + "°C\r\n";
   #endif
+  info = info + "BAT: " + String(battery.getVoltage()) + "v "+String(battery.getCharge()) +"%\r\n";
   return info;
 }
 

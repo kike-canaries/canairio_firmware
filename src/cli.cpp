@@ -154,13 +154,17 @@ void wcli_sgeoh (String opts) {
 
 void wcli_sensors() {
     Serial.printf("\r\nCanAirIO Sensorslib\t: %s\r\n",sensors.getLibraryVersion().c_str());
-    Serial.print("Sensors detected  \t: ");
     int i = 0;
-    while (sensors.getSensorsRegistered()[i++] != 0) {
-        Serial.print(sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i - 1]));
-        Serial.print(",");
+    int count = sensors.getSensorsRegisteredCount();
+    Serial.printf("Sensors count  \t\t: %i (", count);
+    if (count > 0 && sensors.getSensorsRegistered()[0] == SENSORS::Auto) {
+      Serial.printf("%s,", sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[0]));
+      i = 1;
     }
-    Serial.println();
+    while (sensors.getSensorsRegistered()[i++] != 0) {
+      Serial.printf("%s,", sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i-1]));
+    }
+    Serial.println(")");
 }
 
 void wcli_sensors_values() {

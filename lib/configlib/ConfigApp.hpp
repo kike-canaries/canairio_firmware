@@ -37,6 +37,10 @@ typedef enum {
     X(KIHASSPT, "hasspt", INT)        \
     X(KFSEALV, "sealevel", FLOAT)     \
     X(KSTIME, "stime", INT)           \
+    X(KBATVMX, "battVmax", FLOAT)     \
+    X(KBATVMI, "battVmin", FLOAT)     \
+    X(KCHRVMX, "chrgVmin", FLOAT)     \
+    X(KCHRVMI, "chrgVmax", FLOAT)     \
     X(KFAILSAFE, "fsafeEnable", BOOL) \
     X(KWKUPRST, "wkrstEnable", BOOL)  \
     X(KBSOLARE, "solarEnable", BOOL)  \
@@ -163,8 +167,8 @@ class ConfigApp {
     void saveBool(String key, bool value);
     void saveBool(CONFKEYS key, bool value);
 
-    float getFloat(String key, float defaultValue);
-    float getFloat(CONFKEYS key, float defaultValue);
+    float getFloat(String key, float defaultValue = 0.0);
+    float getFloat(CONFKEYS key, float defaultValue = 0.0);
 
     void saveFloat(String key, float value);
     void saveFloat(CONFKEYS key, float value);
@@ -222,6 +226,8 @@ class ConfigApp {
     PreferenceType keyType(String key);
 
     bool isKey(String key);
+    
+    bool isKey(CONFKEYS key);
 
     String getKey(CONFKEYS key);
 

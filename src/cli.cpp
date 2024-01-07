@@ -106,6 +106,42 @@ void wcli_uartpins(String opts) {
     Serial.println("invalid pins values");
 }
 
+bool validBattLimits(float min, float max){
+  return (min >= 3.0 && min <= 5.0 && max <=5.0 && max >= 3.0);
+}
+
+void wcli_battvLimits(String opts) {
+  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+  float battMin = operands.first().toFloat();
+  float battMax = operands.second().toFloat();
+  if (validBattLimits(battMin, battMax)) {
+    Serial.printf("Battery limits: Vmin: %2.2f Vmax: %2.2f\r\n", battMin, battMax);
+    battery.setBattLimits(battMin, battMax);
+    cfg.saveFloat(CONFKEYS::KBATVMI,battMin);
+    cfg.saveFloat(CONFKEYS::KBATVMX,battMax);
+  }
+  else {
+    Serial.println("-->[BATT] !invalid battery value! Current values:");
+    battery.printLimits();
+  }
+}
+
+void wcli_chargLimits(String opts) {
+  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+  float battMin = operands.first().toFloat();
+  float battMax = operands.second().toFloat();
+  if (validBattLimits(battMin, battMax)) {
+    Serial.printf("Battery charging limits: Vmin: %2.2f Vmax: %2.2f\r\n", battMin, battMax);
+    battery.setChargLimits(battMin, battMax);
+    cfg.saveFloat(CONFKEYS::KCHRVMI,battMin);
+    cfg.saveFloat(CONFKEYS::KCHRVMX,battMax);
+  }
+  else {
+    Serial.println("-->[BATT] !invalid battery value! Current values:");
+    battery.printLimits();
+  }
+}
+
 void wcli_stime(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   int stime = operands.first().toInt();
@@ -242,9 +278,11 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
     Serial.println("clear\t\t\tfactory settings reset. (needs confirmation)");
     Serial.println("debug\t<on/off>\tto enable debug mode");
     Serial.println("stime\t<time>\t\tset the sample time in seconds");
-    Serial.println("spins\t<TX> <RX>\tset the UART pins");
     Serial.println("stype\t<sensor_type>\tset the UART sensor type. Integer.");
     Serial.println("sgeoh\t<GeohashId>\tset geohash id. Choose it here http://bit.ly/geohashe");
+    Serial.println("spins\t<TX> <RX>\tset the UART pins");
+    Serial.println("battv\t<Vmin> <Vmax>\tset battery min/max voltage");
+    Serial.println("charg\t<Vmin> <Vmax>\tset battery charging min/max voltage");
     Serial.println("kset\t<key> <value>\tset preference key value (e.g on/off or 1/0 or text)");
     Serial.println("klist\t\t\tlist valid preference keys");
     Serial.println("info\t\t\tget the device information");
@@ -299,9 +337,11 @@ void cliInit() {
   wcli.term->add("clear", &wcli_clear, "\tfactory settings reset. (needs confirmation)");
   wcli.term->add("debug", &wcli_debug, "\tenable debug mode");
   wcli.term->add("stime", &wcli_stime, "\tset the sample time (seconds)");
-  wcli.term->add("spins", &wcli_uartpins, "\tset the UART pins TX RX");
   wcli.term->add("stype", &wcli_stype, "\tset the sensor type (UART)");
   wcli.term->add("sgeoh", &wcli_sgeoh, "\tset geohash. Type help for more details.");
+  wcli.term->add("spins", &wcli_uartpins, "\tset the UART pins TX RX");
+  wcli.term->add("battv", &wcli_battvLimits, "\tset battery min/max voltage");
+  wcli.term->add("charg", &wcli_chargLimits, "\tset battery charging min/max voltage");
   wcli.term->add("kset", &wcli_kset, "\tset preference key (e.g on/off or 1/0 or text)");
   wcli.term->add("klist", &wcli_klist, "\tlist valid preference keys");
   wcli.term->add("info", &wcli_info, "\tget device information");

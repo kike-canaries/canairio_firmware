@@ -129,7 +129,7 @@ class Battery {
     if (this->callback != nullptr && isNewVoltage()) {
       pcurv = curv;
       this->callback->onBatteryUpdate(curv, getCharge(), isCharging());
-      printValues();
+      if(!captureStage) printValues();
     }
   }
 

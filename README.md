@@ -50,7 +50,9 @@ The [last release](https://github.com/kike-canaries/canairio_firmware/releases) 
 | **ESP32C3OIPLUS** | TTGO-T-OI-Plus | OLED | BLE not supported |
 | **ESP32C3LOLIN** | LOLIN Mini C3 | OLED | BLE not supported |
 | **ESP32C3SEEDX** | Seeed_xiao_esp32c3 | OLED | BLE not supported |
-| **ESP32S3** | T7S3 and Makerfabs | - | In development |
+| **TTGO T7S3** | LilyGO ESP32S3 T7S3 | OLED | Config via CLI. BLE notifications |
+| **ESP32S3** | ESP32S3 CAM Freenove | OLED | Config via CLI. BLE notifications |
+| **ESP32S3** | Makerfabs S3 Parallel | TFT | In development |
 
 ** is possible that the **current firmware supports more boards** and sensors. Also you can choose the sensor brand or type on the CanAirIO Android app or on the firmware CLI.
 

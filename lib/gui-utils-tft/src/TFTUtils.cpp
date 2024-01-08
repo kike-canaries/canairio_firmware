@@ -5,7 +5,7 @@
 ******************************************************************************/
 
 void guiTask(void* pvParameters) {
-    Serial.println("-->[TGUI] starting task loop");
+    log_i("[TGUI] starting task loop");
     while (1) {
         gui.pageStart();
         gui.checkButtons();
@@ -18,13 +18,13 @@ void guiTask(void* pvParameters) {
 void TFTUtils::setupGUITask() {
     taskGUIrunning = true;
     xTaskCreatePinnedToCore(
-        guiTask,    /* Function to implement the task */
-        "tempTask ", /* Name of the task */
-        10000,        /* Stack size in words */
-        NULL,        /* Task input parameter */
-        5,           /* Priority of the task */
-        &xHandle,    /* Task handle. */
-        1);          /* Core where the task should run */
+        guiTask,        // Function to implement the task
+        "tempTask ",    // Name of the task
+        GUI_TASK_STACK, // Stack size in words
+        NULL,           // Task input parameter
+        5,              // Priority of the task
+        &xHandle,       // Task handle
+        1);             // Core where the task should run
 }
 
 void TFTUtils::displayInit() {
@@ -47,7 +47,7 @@ void TFTUtils::displayInit() {
     ledcAttachPin(TFT_BL, pwmLedChannelTFT);
     #endif
     notifyBrightness();
-    Serial.println("-->[TGUI] display config ready.");
+    log_i("[TGUI] display config ready.");
 }
 
 void TFTUtils::showWelcome() {
@@ -64,11 +64,11 @@ void TFTUtils::showWelcome() {
     lastDrawedLine = 32;
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextFont(1);
-    Serial.println("-->[TGUI] displayed welcome screen");
+    log_i("[TGUI] displayed welcome screen");
 }
 
 void TFTUtils::welcomeAddMessage(String msg) {
-    // Serial.println("-->[TGUI] add message: "+msg);
+    log_d("[TGUI] add message: %s",msg);
     tft.setTextFont(1);
     tft.setCursor(5, lastDrawedLine);
     tft.println(msg.substring(0,21).c_str());
@@ -124,7 +124,7 @@ void TFTUtils::showMain() {
 
     if(!taskGUIrunning) setupGUITask();           // init GUI thread
 
-    Serial.println("-->[TGUI] displayed main screen");
+    log_i("[TGUI] displayed main screen");
 }
 
 void TFTUtils::showWindowBike(){
@@ -151,7 +151,7 @@ void TFTUtils::showWindowBike(){
 
     loadLastData();
 
-    Serial.println("-->[TGUI] displayed bike screen");
+    log_i("[TGUI] displayed bike screen");
 }
 
 void TFTUtils::showInfoWindow() {
@@ -164,7 +164,7 @@ void TFTUtils::showInfoWindow() {
     tft.drawLine(18,44,117,44,TFT_GREY);
     state = 7;
     refreshInfoWindow();
-    Serial.println("-->[TGUI] displayed info screen");
+    log_i("[TGUI] displayed info screen");
 }
 
 void TFTUtils::refreshInfoWindow() {
@@ -219,7 +219,7 @@ void TFTUtils::showSetup() {
 
     tft.fillRect(68, SSTART, 1, 150, TFT_GREY);
 
-    Serial.println("-->[TGUI] displayed setup screen");
+    log_i("[TGUI] displayed setup screen");
 }
 
 void TFTUtils::refreshSetup() {
@@ -336,7 +336,7 @@ void TFTUtils::updateCalibrationField(){
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.setCursor(MARVALL, SSTART + PRESETH * 4, 2);
         if (_calibration_counter > 0){
-            Serial.println("-->[TGUI] coundown to calibration: "+String(_calibration_counter));
+            log_i("[TGUI] coundown to calibration: %i",_calibration_counter);
             tft.println("" + String(_calibration_counter--) + "s");
         }
         else if (_calibration_counter == 0) {
@@ -352,7 +352,7 @@ void TFTUtils::updateCalibrationField(){
 }
 
 void TFTUtils::startCalibration(){
-    Serial.println("-->[TGUI] starting sensor calibration");
+    log_i("[TGUI] starting sensor calibration");
     _calibration_counter = 10;
 }
 
@@ -517,9 +517,18 @@ void TFTUtils::displayMainHeader() {
     if (state != 0) return;
     tft.fillRect(2, 25, 130, 40, TFT_BLACK);
     if (wstate == 3 && toggle1s) return;
-    char output[6];
-    if (_unit == 0) sprintf(output, "%04d", _mainValue);
-    else sprintf(output, "%04d", _minorValue);
+    char output[10];
+    float value = 0.0;
+    if (_unit == 0) value =  _mainValue;
+    else value = _minorValue;
+    
+    uint16_t m_int_val = value;
+    double m_tmp_val = value - m_int_val;
+    bool isInt = !(m_tmp_val > 0);
+
+    if (isInt) sprintf(output, "%04d", m_int_val);
+    else sprintf(output, "%05.1f", value);
+
     displayCenterBig(output);
     displayMainUnit(_unit_name, _unit_symbol);
 }
@@ -632,7 +641,7 @@ void TFTUtils::displayGUIStatusFlags() {
     }
 }
 
-uint32_t TFTUtils::getAQIColor(uint32_t value) {
+uint32_t TFTUtils::getAQIColor(uint8_t value) {
     if (_colorType == AQI_COLOR::AQI_PM) {
 
         if (value <= 13)       return 0;
@@ -649,6 +658,31 @@ uint32_t TFTUtils::getAQIColor(uint32_t value) {
         else if (value <= 1000) return 2;
         else if (value <= 1500) return 3;
         else if (value <= 2000) return 4;
+        else                    return 5;
+
+    } 
+     if (_colorType == AQI_COLOR::AQI_CO) {
+//Conversion factor at 20ºC and 1013 hPa, 1ppm=1165 mg/m3 and 1 mg/m3=0,858 ppm
+// 1 ppm is equivalent to 1.16mg/m3 for a gas with molecular weight=28.01, Pressure=1013.25 mbar, Temperature=20C ****** TO CHECK *******
+// 1 ppm is equivalent to 1.25mg/Nm3 for a gas with molecular weight=28.01, Pressure=1013.25 mbar, Temperature=0C
+
+        if (value <= 6)        return 0;
+        else if (value <= 8)   return 1;
+        else if (value <= 11)  return 2;
+        else if (value <= 17)  return 3;
+        else if (value > 17)   return 4;
+        else                   return 5;
+
+    } 
+    else if (_colorType == AQI_COLOR::AQI_NH3) {
+//1 ppm is equivalent to 0.71mg/m3 for a gas with molecular weight=17.031, Pressure=1013.25 mbar, Temperature=20C
+// 1 ppm is equivalent to 0.76mg/Nm3 for a gas with molecular weight=17.031, Pressure=1013.25 mbar, Temperature=0C
+        
+        if (value <= 7)         return 0;
+        else if (value <= 10)   return 1;
+        else if (value <= 14)   return 2;
+        else if (value <= 21)   return 3;
+        else if (value > 21)    return 4;
         else                    return 5;
     }
     else return 0;
@@ -731,11 +765,11 @@ void TFTUtils::drawDualLineGraph() {
     _average = _average / MAX_X;
 }
 
-void TFTUtils::resetBuffer(uint32_t *buf) {
+void TFTUtils::resetBuffer(uint8_t *buf) {
     for (int i = 0; i < MAX_X; i++) buf[i] = 0;
 }
 
-double TFTUtils::getMultiplicator(uint32_t * buf) {
+double TFTUtils::getMultiplicator(uint8_t * buf) {
   uint32_t maxVal = 1;
   for (int i = 0; i < MAX_X; i++) {
     if (buf[i] > maxVal) maxVal = buf[i];
@@ -867,6 +901,10 @@ void TFTUtils::suspendTaskGUI(){
 
 void TFTUtils::resumeTaskGUI(){
     if(taskGUIrunning) vTaskResume(xHandle);
+}
+
+int32_t TFTUtils::getStackFree(){
+    return uxTaskGetStackHighWaterMark(xHandle);
 }
 
 TFTUtils* TFTUtils::getInstance() {

@@ -20,6 +20,11 @@ class Battery {
   CircularBuffer<float, SAMPLES> buffer;
   int isDischarging = -1;
 
+  float btDiscVMin = 0.0; 
+  float btDiscVMax = 0.0; 
+  float btCharVMin = 0.0; 
+  float btCharVMax = 0.0; 
+
   virtual void init(bool debug = false) = 0;
   virtual void update() = 0;
   virtual float getVoltage() = 0;
@@ -52,6 +57,30 @@ class Battery {
 
   void setUpdateCallbacks(BatteryUpdateCallbacks *callbacks) {
     this->callback = callbacks;
+  }
+
+  void setLimits(float battDiscVMin, float battDiscVMax, float battChargVMin, float battChargVMax) {
+    this->btDiscVMin = battDiscVMin;
+    this->btDiscVMax = battDiscVMax;
+    this->btCharVMin = battChargVMin;
+    this->btCharVMax = battChargVMax;
+  }
+
+  void setBattLimits(float battMinV, float battMaxV) {
+    this->btDiscVMin = battMinV;
+    this->btDiscVMax = battMaxV;
+  }
+
+  void setChargLimits(float chargMinV, float chargMaxV) {
+    this->btCharVMin = chargMinV;
+    this->btCharVMax = chargMaxV;
+  }
+
+  void printLimits(){
+    Serial.printf("-->[BATT] BVmin:%1.2f BVmax:%1.2f\t: CVmax:%1.2f CVmin:%1.2f\r\n",
+        btDiscVMin, btDiscVMax,
+        btCharVMin, btCharVMax
+    );
   }
 
   void loop() {

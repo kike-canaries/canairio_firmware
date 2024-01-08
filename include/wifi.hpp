@@ -11,7 +11,10 @@
 #include <cloud_anaire.hpp>
 #include <cloud_hass.hpp>
 #include <cloud_influxdb.hpp>
-#include <ESP32WifiCLI.hpp>
+
+#ifndef DISABLE_CLI
+#include <cli.hpp>
+#endif
 
 //#define IFX_RETRY_CONNECTION 5    // influxdb publish retry 
 
@@ -26,11 +29,8 @@ void wifiInit();
 void wifiStop();
 void wifiRestart();
 void wifiLoop();
-void cliInit();
-void cliTaskInit();
 
 int  getWifiRSSI();
 void printWifiRSSI();
 String getDeviceInfo();
 String getHostId();
-void logMemory(const char *msg);

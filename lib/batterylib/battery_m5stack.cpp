@@ -5,6 +5,7 @@
 void Battery_M5STACK::init(bool debug) {
     this->debug = debug;
     M5.Axp.EnableCoulombcounter();  // Enable Coulomb counter.
+    setLimits(BATTERY_MIN_V, BATTERY_MAX_V, BATTCHARG_MIN_V, BATTCHARG_MAX_V);
 }
 
 float Battery_M5STACK::getVoltage() {
@@ -17,14 +18,14 @@ void Battery_M5STACK::update() {
 }
 
 bool Battery_M5STACK::isCharging() {
-    return M5.axp.GetVBusVoltage() > BATTCHARG_MAX_V;
+    return M5.axp.GetVBusVoltage() > btCharVMax;
 }
 
 int Battery_M5STACK::getCharge() {
     if (isCharging()) {
-        return calcPercentage(curv, BATTCHARG_MAX_V, BATTCHARG_MIN_V);
+        return calcPercentage(curv, btCharVMax, btCharVMin);
     } else {
-        return calcPercentage(curv, BATTERY_MAX_V, BATTERY_MIN_V);
+        return calcPercentage(curv, btDiscVMax, btDiscVMin);
     }
 }
 

@@ -38,6 +38,8 @@ String getSensorData() {
     doc["hum"] = sensors.getHumidity();
     doc["alt"] = sensors.getAltitude();
     doc["pre"] = sensors.getPressure();
+    doc["nh3"] = sensors.getNH3();
+    doc["co"] = sensors.getCO();
     doc["bat"] = battery.getCharge();
     doc["vol"] = battery.getVoltage();
     doc["PAX"] = getPaxCount();

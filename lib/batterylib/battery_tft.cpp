@@ -11,12 +11,12 @@ void Battery_TFT::setupBattADC() {
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize((adc_unit_t)ADC_UNIT_1, (adc_atten_t)channel_atten, (adc_bits_width_t)ADC_WIDTH_BIT_12, 1100, &adc_chars);
     //Check type of calibration value used to characterize ADC
     if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
-        Serial.printf("-->[BATT] ADC eFuse Vref:%u mV\r\n", adc_chars.vref);
+        log_i("[BATT] ADC eFuse Vref  \t: %u mV\r\n", adc_chars.vref);
         vref = adc_chars.vref;
     } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
-        Serial.printf("-->[BATT] ADC Two Point --> coeff_a:%umV coeff_b:%umV\r\n", adc_chars.coeff_a, adc_chars.coeff_b);
+        log_i("[BATT] ADC Two Point coeff_a \t: %umV coeff_b:%umV\r\n", adc_chars.coeff_a, adc_chars.coeff_b);
     } else {
-        Serial.printf("-->[BATT] ADC Default Vref: %u mV\r\n", vref);
+        log_i("[BATT] ADC Default Vref  \t: %u mV\r\n", vref);
     }
 }
 
@@ -32,6 +32,7 @@ void Battery_TFT::init(bool debug) {
     delay(10);                         // suggested by @ygator user in issue #2
     setupBattADC();
     delay(10);                         // suggested by @ygator user in issue #2
+    setLimits(BATTERY_MIN_V, BATTERY_MAX_V, BATTCHARG_MIN_V, BATTCHARG_MAX_V);
 }
 
 float Battery_TFT::getVoltage () {
@@ -48,19 +49,19 @@ void Battery_TFT::update() {
 
 bool Battery_TFT::isCharging() {
   bool charging = false;
-  if (BATTERY_MAX_V <= BATTCHARG_MIN_V && isDischarging >= 0)
+  if (btDiscVMax <= btCharVMin && isDischarging >= 0)
     charging = !isDischarging;
   else
-    charging = curv > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V) / 2;
+    charging = curv > btDiscVMax + (btCharVMin - btDiscVMax) / 2;
 //   if (debug) Serial.printf("-->[BATT] Batt is charging\t: %s\r\n", charging ? "True" : "False");
   return charging;
 }
 
 int Battery_TFT::getCharge() {
     if (isCharging()) {
-        return calcPercentage(curv, BATTCHARG_MAX_V, BATTCHARG_MIN_V);
+        return calcPercentage(curv, this->btCharVMax, this->btCharVMin);
     } else {
-        return calcPercentage(curv, BATTERY_MAX_V, BATTERY_MIN_V);
+        return calcPercentage(curv, this->btDiscVMax, this->btDiscVMin);
     }
 }
 

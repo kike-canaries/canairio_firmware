@@ -242,6 +242,22 @@ void startingSensors() {
     delay(300);
 }
 
+void initBattery() {
+  if (FAMILY != "ESP32-C3") {
+      battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
+      battery.init(cfg.devmode);
+      if(cfg.isKey(CONFKEYS::KBATVMX)) {
+        battery.setBattLimits(cfg.getFloat(CONFKEYS::KBATVMI),cfg.getFloat(CONFKEYS::KBATVMX));
+      }
+      if(cfg.isKey(CONFKEYS::KCHRVMX)) {
+        battery.setChargLimits(cfg.getFloat(CONFKEYS::KCHRVMI),cfg.getFloat(CONFKEYS::KCHRVMX));
+      }
+      if(cfg.devmode) battery.printLimits();
+      battery.update();
+      logMemory("BATT");
+  }
+}
+
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
@@ -277,12 +293,7 @@ void setup() {
     logMemory("CLI ");
     #endif
     // init battery monitor
-    if (FAMILY != "ESP32-C3") {
-      battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
-      battery.init(cfg.devmode);
-      battery.update();
-      logMemory("BATT");
-    }
+    initBattery(); 
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC\t\t: " + cfg.deviceId);
     Serial.println("-->[INFO] Hostname\t\t: " + getHostId());

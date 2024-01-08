@@ -254,7 +254,6 @@ void initBattery() {
       }
       if(cfg.devmode) battery.printLimits();
       battery.update();
-      logMemory("BATT");
   }
 }
 
@@ -294,6 +293,7 @@ void setup() {
     #endif
     // init battery monitor
     initBattery(); 
+    logMemory("BATT");
     // device wifi mac addres and firmware version
     Serial.println("-->[INFO] ESP32MAC\t\t: " + cfg.deviceId);
     Serial.println("-->[INFO] Hostname\t\t: " + getHostId());

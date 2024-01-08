@@ -215,12 +215,18 @@ PreferenceType ConfigApp::keyType(String key) {
     return type;
 }
 
+
+
 bool ConfigApp::isKey(String key) {
     std::lock_guard<std::mutex> lck(config_mtx);
     preferences.begin(_app_name, RO_MODE);
     bool iskey = preferences.isKey(key.c_str());
     preferences.end();
     return iskey;
+}
+
+bool ConfigApp::isKey(CONFKEYS key) {
+    return isKey(getKey(key));
 }
 
 String ConfigApp::getKey(CONFKEYS key) {

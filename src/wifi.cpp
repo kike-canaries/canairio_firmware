@@ -154,6 +154,10 @@ String getDeviceInfo() {
   info = info + "MEM: " + String(ESP.getFreeHeap() / 1024) + "Kb\r\n";
   info = info + "GUI: " + String(gui.getStackFree() / 1024) + "Kb\r\n";
   info = info + "CLI: " + String(cliTaskStackFree() / 1024) + "Kb\r\n";
+  #ifdef CONFIG_IDF_TARGET_ESP32S3
+  info = info + "CPU: " + String(powerESP32TempRead()) + "°C\r\n";
+  #endif
+  info = info + "BAT: " + String(battery.getVoltage()) + "v "+String(battery.getCharge()) +"%\r\n";
   return info;
 }
 

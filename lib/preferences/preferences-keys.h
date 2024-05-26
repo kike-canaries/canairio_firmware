@@ -1,0 +1,35 @@
+#define CONFIG_KEYS_LIST            \
+  X(KBWIFIEN, "wifiEnable", BOOL)   \
+  X(KSSID, "ssid", STRING)   \
+  X(KPASS, "pass", STRING)   \
+  X(KBPAXENB, "paxEnable", BOOL)    \
+  X(KEMOTICO, "emoEnable", BOOL)    \
+  X(KBI2COLY, "i2conly", BOOL)      \
+  X(KFALTFST, "altoffset", FLOAT)   \
+  X(KFTOFFST, "toffset", FLOAT)     \
+  X(KTEMPUNT, "tunit", INT)         \
+  X(KBASIC, "-----", UNKNOWN)       \
+  X(KDEBUG, "debugEnable", BOOL)    \
+  X(KFLIPV, "flipVEnable", BOOL)    \
+  X(KBHOMEAS, "homeaEnable", BOOL)  \
+  X(KBANAIRE, "anaireEnable", BOOL) \
+  X(KBIFXENB, "ifxEnable", BOOL)    \
+  X(KSIFXDB, "ifxdb", STRING)       \
+  X(KSIFXIP, "ifxip", STRING)       \
+  X(KIIFXPT, "ifxpt", INT)          \
+  X(KSHASSIP, "hassip", STRING)     \
+  X(KSHASSU, "hassusr", STRING)     \
+  X(KSHASSPW, "hasspsw", STRING)    \
+  X(KIHASSPT, "hasspt", INT)        \
+  X(KFSEALV, "sealevel", FLOAT)     \
+  X(KSTIME, "stime", INT)           \
+  X(KBATVMX, "battVmax", FLOAT)     \
+  X(KBATVMI, "battVmin", FLOAT)     \
+  X(KCHRVMX, "chrgVmin", FLOAT)     \
+  X(KCHRVMI, "chrgVmax", FLOAT)     \
+  X(KFAILSAFE, "fsafeEnable", BOOL) \
+  X(KWKUPRST, "wkrstEnable", BOOL)  \
+  X(KBSOLARE, "solarEnable", BOOL)  \
+  X(KIDEEPSL, "deepSleep", INT)     \
+  X(KGEIGERP, "geigerPin", INT)     \
+  X(KCOUNT, "KCOUNT", UNKNOWN)

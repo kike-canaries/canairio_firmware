@@ -1,6 +1,8 @@
 #ifndef DISABLE_CLI
-#include <cli.hpp>
+#include "cli.hpp"
 #include <wifi.hpp>
+#include "cloud_influxdb.hpp"
+#include "ConfigApp.hpp"
 
 bool setup_mode = false;
 int setup_time = 10000;
@@ -13,8 +15,8 @@ void wcli_debug(String opts) {
   String param = operands.first();
   param.toUpperCase();
   bool dbgmode = param.equals("ON") || param.equals("1");
-  cfg.debugEnable(dbgmode);
-  cfg.devmode = dbgmode;
+  debugEnable(dbgmode);
+  devmode = dbgmode;
   sensors.setDebugMode(dbgmode);
   battery.debug = dbgmode;
 }
@@ -100,7 +102,7 @@ void wcli_uartpins(String opts) {
   int sTX = operands.first().toInt();
   int sRX = operands.second().toInt();
   if (sTX >= 0 && sRX >= 0) {
-    cfg.saveSensorPins(sTX, sRX);
+    saveSensorPins(sTX, sRX);
   }
   else
     Serial.println("invalid pins values");
@@ -146,7 +148,7 @@ void wcli_stime(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   int stime = operands.first().toInt();
   if (stime >= 5) {
-    cfg.saveSampleTime(stime);
+    saveSampleTime(stime);
     sensors.setSampleTime(stime);
   }
   else 
@@ -168,7 +170,7 @@ void wcli_stype(String opts) {
   int type = stype.toInt();
   if (type > 7 || type < 0) wcli_stype_error();
   else {
-    cfg.saveSensorType(type);
+    saveSensorType(type);
     Serial.printf("\nselected UART sensor model\t: %s\r\n", sensors.getSensorName((SENSORS)type));
     Serial.println("Please reboot to changes apply");
   }
@@ -179,8 +181,8 @@ void wcli_sgeoh (String opts) {
   String geoh = operands.first();
   if (geoh.length() > 5) {
     geoh.toLowerCase(); 
-    cfg.saveGeo(geoh);
-    cfg.ifxdbEnable(true);
+    saveGeo(geoh);
+    ifxdbEnable(true);
   } else {
     Serial.println("\nInvalid Geohash. (Precision should be > to 5).\r\n");
     Serial.println("Please visit: http://bit.ly/geohashe");
@@ -231,16 +233,16 @@ void wcli_setup(String opts) {
   setup_mode = true;
   Serial.println("\r\nSetup Mode. Main presets:\r\n");
   String canAirIOname = "Please set your geohash with \"sgeoh\" cmd";
-  if(cfg.geo.length()>5)canAirIOname = cfg.getStationName();
+  if(geo.length()>5)canAirIOname = getStationName();
   Serial.printf("CanAirIO device id\t: %s\r\n", canAirIOname.c_str());
-  Serial.printf("Device factory id\t: %s\r\n", cfg.getAnaireDeviceId().c_str());
-  Serial.printf("Sensor geohash id\t: %s\r\n", cfg.geo.length() == 0 ? "undefined" : cfg.geo.c_str());
+  Serial.printf("Device factory id\t: %s\r\n", getAnaireDeviceId().c_str());
+  Serial.printf("Sensor geohash id\t: %s\r\n", geo.length() == 0 ? "undefined" : geo.c_str());
   Serial.printf("WiFi current status\t: %s\r\n", WiFi.status() == WL_CONNECTED ? "connected" : "disconnected");
-  Serial.printf("Sensor sample time \t: %d\r\n", cfg.stime);
-  Serial.printf("UART sensor model \t: %s\r\n", sensors.getSensorName((SENSORS)cfg.stype));
-  Serial.printf("UART sensor TX pin\t: %d\r\n", cfg.sTX == -1 ? PMS_TX : cfg.sTX);
-  Serial.printf("UART sensor RX pin\t: %d\r\n", cfg.sRX == -1 ? PMS_RX : cfg.sRX);
-  Serial.printf("Current debug mode\t: %s\r\n", cfg.devmode == true ? "enabled" : "disabled");
+  Serial.printf("Sensor sample time \t: %d\r\n", stime);
+  Serial.printf("UART sensor model \t: %s\r\n", sensors.getSensorName((SENSORS)stype));
+  Serial.printf("UART sensor TX pin\t: %d\r\n", sTX == -1 ? PMS_TX : sTX);
+  Serial.printf("UART sensor RX pin\t: %d\r\n", sRX == -1 ? PMS_RX : sRX);
+  Serial.printf("Current debug mode\t: %s\r\n", devmode == true ? "enabled" : "disabled");
 
   wcli_klist("basic");
 
@@ -256,7 +258,7 @@ void wcli_reboot(String opts) {
 void wcli_clear(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   String deviceId = operands.first();
-  if (deviceId.equals(cfg.getAnaireDeviceId())) {
+  if (deviceId.equals(getAnaireDeviceId())) {
     Serial.println("Clearing device to defaults..");
     wcli.clearSettings();
     cfg.clear();
@@ -294,7 +296,7 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
   }
 
   void onNewWifi(String ssid, String passw){
-    cfg.saveWifi(ssid,passw);
+    saveWifi(ssid,passw);
   }
 };
 

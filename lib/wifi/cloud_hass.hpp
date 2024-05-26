@@ -1,3 +1,8 @@
+#include <WiFi.h>
+#include <MQTT.h>
+#include <Sensors.hpp>
+#include "Batterylib.hpp"
+#include "mqtt_config.h"
 
 #define HPREFIX "homeassistant/"
 #define HCOMP "sensor/"

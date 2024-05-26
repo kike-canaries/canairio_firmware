@@ -1,3 +1,9 @@
+#include <WiFi.h>
+#include <MQTT.h>
+#include <Sensors.hpp>
+#include "Batterylib.hpp"
+#include "mqtt_config.h"
+
 #define ANAIRE_HOST "mqtt.anaire.org"
 #define ANAIRE_TOPIC "measurement"
 #define ANAIRE_PORT 80

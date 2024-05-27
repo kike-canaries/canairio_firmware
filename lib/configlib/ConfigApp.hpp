@@ -2,8 +2,8 @@
 #define CanfigApp_hpp
 
 #include <ArduinoJson.h>
-#include "EasyPreferences.hpp"
 #include <Geohash.hpp>
+#include <EasyPreferences.hpp>
 
 class RemoteConfigCallbacks;
 

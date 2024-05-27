@@ -10,6 +10,7 @@
 #include <Sensors.hpp>
 #include <InfluxDbClient.h>
 #include <MQTT.h>
+#include "ConfigApp.hpp"
 #include "GUILib.hpp"
 #include "Watchdog.hpp"
 #include "OTAHandler.h"

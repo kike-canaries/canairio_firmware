@@ -45,6 +45,7 @@ RemoteConfigCallbacks* mRemoteConfigCallBacks = nullptr;
 void init(const char app_name[]) {
     _app_name = new char[strlen(app_name) + 1];
     strcpy(_app_name, app_name);
+    cfg.init(_app_name);
     chipid = ESP.getEfuseMac();
     deviceId = getDeviceId();
     reload();
@@ -57,7 +58,7 @@ void init(const char app_name[]) {
 
 void reload() {
     // device name or station name
-    dname = cfg.getString("dname", "");
+    // dname = cfg.getString("dname", "");
     // wifi settings
     wifi_enable = cfg.getBool(CONFKEYS::KBWIFIEN, false);
     ssid = cfg.getString(CONFKEYS::KSSID, "");

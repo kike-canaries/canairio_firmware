@@ -1,4 +1,5 @@
 #include <logmem.hpp>
+#include "ConfigApp.hpp"
 
 uint32_t heap_size = 0;
 

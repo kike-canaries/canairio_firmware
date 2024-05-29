@@ -117,7 +117,8 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
             saveSampleTime(time);
             reload();
 
-            if (FAMILY != "ESP32-C3") bleServerConfigRefresh();
+            // if (FAMILY != "ESP32-C3") bleServerConfigRefresh();
+            bleServerConfigRefresh();
 
             sensors.setSampleTime(stime);
         }

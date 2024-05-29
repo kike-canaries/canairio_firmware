@@ -57,17 +57,15 @@ void init(const char app_name[]) {
 }
 
 void reload() {
-    // device name or station name
-    // dname = cfg.getString("dname", "");
     // wifi settings
-    wifi_enable = cfg.getBool(CONFKEYS::KBWIFIEN, false);
+    wifi_enable = cfg.getBool(CONFKEYS::KWIFIEN, false);
     ssid = cfg.getString(CONFKEYS::KSSID, "");
     pass = cfg.getString(CONFKEYS::KPASS, "");
     // influx db optional settings
-    ifxdb_enable = cfg.getBool(CONFKEYS::KBIFXENB, false);
-    ifx.db = cfg.getString(CONFKEYS::KSIFXDB, ifx.db);
-    ifx.ip = cfg.getString(CONFKEYS::KSIFXIP, ifx.ip);
-    ifx.pt = cfg.getInt(CONFKEYS::KIIFXPT, ifx.pt);
+    ifxdb_enable = cfg.getBool(CONFKEYS::KIFXENB, false);
+    ifx.db = cfg.getString(CONFKEYS::KIFXDB, ifx.db);
+    ifx.ip = cfg.getString(CONFKEYS::KIFXIP, ifx.ip);
+    ifx.pt = cfg.getInt(CONFKEYS::KIFXPT, ifx.pt);
     // station and sensor settings
     lat = cfg.getDouble("lat", 0);
     lon = cfg.getDouble("lon", 0);
@@ -76,36 +74,35 @@ void reload() {
     stype = cfg.getInt("stype", 0);
     sTX = cfg.getInt("sTX", -1);
     sRX = cfg.getInt("sRX", -1);
-    toffset = cfg.getFloat("toffset", 0.0);
-    altoffset = cfg.getFloat("altoffset", 0.0);
-    sealevel = cfg.getFloat("sealevel", 1013.25);
-    devmode = cfg.getBool("debugEnable", false);
-    pax_enable = cfg.getBool(CONFKEYS::KBPAXENB, true);
-    i2conly = cfg.getBool("i2conly", false);
-    solarmode = cfg.getBool("solarEnable", false);
-    deepSleep = cfg.getInt("deepSleep", 0);
-    hassip = cfg.getString("hassip", "");
-    hasspt = cfg.getInt("hasspt", 1883);
-    hassusr = cfg.getString("hassusr", "");
-    hasspsw = cfg.getString("hasspsw", "");
+    toffset = cfg.getFloat(CONFKEYS::KTOFFST, 0.0);
+    altoffset = cfg.getFloat(CONFKEYS::KALTOFST, 0.0);
+    sealevel = cfg.getFloat(CONFKEYS::KSEALVL, 1013.25);
+    devmode = cfg.getBool(CONFKEYS::KDEBUG, false);
+    pax_enable = cfg.getBool(CONFKEYS::KPAXENB, true);
+    i2conly = cfg.getBool(CONFKEYS::KI2CONLY, false);
+    solarmode = cfg.getBool(CONFKEYS::KSOLAREN, false);
+    deepSleep = cfg.getInt(CONFKEYS::KDEEPSLP, 0);
+    hassip = cfg.getString(CONFKEYS::KHASSIP, "");
+    hasspt = cfg.getInt(CONFKEYS::KHASSPT, 1883);
+    hassusr = cfg.getString(CONFKEYS::KHASSUSR, "");
+    hasspsw = cfg.getString(CONFKEYS::KHASSPW, "");
 }
 
 String getCurrentConfig() {
     StaticJsonDocument<1000> doc;
-    doc["dname"] = cfg.getString("dname", "");       // device or station name
     doc["stime"] = cfg.getInt("stime", 5);           // sensor measure time
     doc["stype"] = cfg.getInt("stype", 0);           // sensor UART type;
     doc["sRX"] = cfg.getInt("sRX", -1);           // sensor UART type;
     doc["sTX"] = cfg.getInt("sTX", -1);           // sensor UART type;
-    doc["wenb"] = cfg.getBool(CONFKEYS::KBWIFIEN, false);  // wifi on/off
+    doc["wenb"] = cfg.getBool(CONFKEYS::KWIFIEN, false);  // wifi on/off
     doc["ssid"] = cfg.getString("ssid", "");         // influxdb database name
-    doc["ienb"] = cfg.getBool(CONFKEYS::KBIFXENB, false);   // ifxdb on/off
+    doc["ienb"] = cfg.getBool(CONFKEYS::KIFXENB, false);   // ifxdb on/off
     doc["ifxdb"] = cfg.getString("ifxdb", ifx.db);   // influxdb database name
     doc["ifxip"] = cfg.getString("ifxip", ifx.ip);   // influxdb database ip
     doc["ifxpt"] = cfg.getInt("ifxpt", ifx.pt);     // influxdb sensor tags
     doc["geo"] = cfg.getString("geo", "");           // influxdb GeoHash tag
     doc["denb"] = cfg.getBool("debugEnable", false); // debug mode enable
-    doc["penb"] = cfg.getBool(CONFKEYS::KBPAXENB, true);    // PaxCounter enable
+    doc["penb"] = cfg.getBool(CONFKEYS::KPAXENB, true);    // PaxCounter enable
     doc["i2conly"] = cfg.getBool("i2conly", false);  // force only i2c sensors
     doc["sse"] = cfg.getBool("solarEnable", false);  // Enable solar station
     doc["deepSleep"] = cfg.getInt("deepSleep", 0);  // deep sleep time in seconds
@@ -133,21 +130,6 @@ String getCurrentConfig() {
 #endif
     return output;
 }
-
-
-
-// /**
-//  * @brief DEPRECATED
-//  */ 
-// bool saveDeviceName(String name) {
-//     if (name.length() > 0) {
-//         saveString("dname",name);
-//         Serial.println("-->[CONF] set device name to: " + name);
-//         return true;
-//     }
-//     DEBUG("[E][CONF] device name is empty!");
-//     return false;
-// }
 
 bool saveSampleTime(int time) {
     if (time >= 5) {
@@ -241,7 +223,7 @@ bool saveWifi(String ssid, String pass){
     if (ssid.length() > 0) {
         cfg.saveString("ssid", ssid);
         cfg.saveString("pass", pass);
-        cfg.saveBool(CONFKEYS::KBWIFIEN, true);
+        cfg.saveBool(CONFKEYS::KWIFIEN, true);
         wifi_enable = true;
         isNewWifi = true;  // for execute wifi reconnect
         Serial.println("-->[CONF] WiFi credentials saved!");
@@ -257,7 +239,7 @@ bool saveInfluxDb(String db, String ip, int pt) {
         cfg.saveString("ifxdb", db);
         cfg.saveString("ifxip", ip);
         if (pt > 0) cfg.saveInt("ifxpt", pt);
-        cfg.saveBool(CONFKEYS::KBIFXENB, true);
+        cfg.saveBool(CONFKEYS::KIFXENB, true);
         ifxdb_enable = true;
         Serial.printf("-->[CONF] influxdb: %s@%s:%i\r\n",db.c_str(),ip.c_str(),pt);
         Serial.println("-->[CONF] influxdb config saved.");
@@ -296,14 +278,14 @@ bool saveGeo(String geo){
 }
 
 bool wifiEnable(bool enable) {
-    cfg.saveBool(CONFKEYS::KBWIFIEN, enable);
+    cfg.saveBool(CONFKEYS::KWIFIEN, enable);
     wifi_enable = enable;
     Serial.println("-->[CONF] updating WiFi state\t: " + String(enable));
     return true;
 }
 
 bool ifxdbEnable(bool enable) {
-    cfg.saveBool(CONFKEYS::KBIFXENB, enable);
+    cfg.saveBool(CONFKEYS::KIFXENB, enable);
     ifxdb_enable = enable;
     Serial.println("-->[CONF] updating InfluxDB state\t: " + String(enable));
     return true;
@@ -317,28 +299,28 @@ bool debugEnable(bool enable) {
 }
 
 bool paxEnable(bool enable) {
-    cfg.saveBool(CONFKEYS::KBPAXENB, enable);
+    cfg.saveBool(CONFKEYS::KPAXENB, enable);
     pax_enable = enable;
     Serial.println("-->[CONF] new PaxCounter mode\t: " + String(enable));
     return true;
 }
 
 bool solarEnable(bool enable) {
-    cfg.saveBool(CONFKEYS::KBSOLARE, enable);
+    cfg.saveBool(CONFKEYS::KSOLAREN, enable);
     solarmode = enable;
     Serial.println("-->[CONF] Solar Station mode\t: " + String(enable));
     return true;
 }
 
 bool saveDeepSleep(int seconds){
-    cfg.saveInt(CONFKEYS::KIDEEPSL, seconds);
+    cfg.saveInt(CONFKEYS::KDEEPSLP, seconds);
     deepSleep = seconds;
     Serial.printf("-->[CONF] deep sleep time to\t: %d\r\n", seconds);
     return true;
 }
 
 bool saveI2COnly(bool enable) {
-    cfg.saveBool(CONFKEYS::KBI2COLY, enable);
+    cfg.saveBool(CONFKEYS::KI2CONLY, enable);
     i2conly = enable;
     Serial.println("-->[CONF] forced only i2c sensors\t: " + String(enable));
     return true;

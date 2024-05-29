@@ -46,7 +46,8 @@ void wcli_klist(String opts) {
   Serial.printf("\n%11s \t%s \t%s \r\n", "=======", "=======", "=====");
 
   for (int i = 0; i < key_count; i++) {
-    if(i==KBASIC) continue;
+    if (i == KBASIC) continue;
+    if (i == PKEYS::KPASS) continue;
     String key = cfg.getKey((CONFKEYS)i);
     bool isDefined = cfg.isKey(key);
     String defined = isDefined ? "custom " : "default";

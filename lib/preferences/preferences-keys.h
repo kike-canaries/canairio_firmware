@@ -1,27 +1,27 @@
 #define CONFIG_KEYS_LIST            \
-  X(KBWIFIEN, "wifiEnable", BOOL)   \
+  X(KWIFIEN, "wifiEnable", BOOL)   \
   X(KSSID, "ssid", STRING)   \
   X(KPASS, "pass", STRING)   \
-  X(KBPAXENB, "paxEnable", BOOL)    \
+  X(KPAXENB, "paxEnable", BOOL)    \
   X(KEMOTICO, "emoEnable", BOOL)    \
-  X(KBI2COLY, "i2conly", BOOL)      \
-  X(KFALTFST, "altoffset", FLOAT)   \
-  X(KFTOFFST, "toffset", FLOAT)     \
+  X(KI2CONLY, "i2conly", BOOL)      \
+  X(KALTOFST, "altoffset", FLOAT)   \
+  X(KTOFFST, "toffset", FLOAT)     \
   X(KTEMPUNT, "tunit", INT)         \
   X(KBASIC, "-----", UNKNOWN)       \
   X(KDEBUG, "debugEnable", BOOL)    \
   X(KFLIPV, "flipVEnable", BOOL)    \
-  X(KBHOMEAS, "homeaEnable", BOOL)  \
-  X(KBANAIRE, "anaireEnable", BOOL) \
-  X(KBIFXENB, "ifxEnable", BOOL)    \
-  X(KSIFXDB, "ifxdb", STRING)       \
-  X(KSIFXIP, "ifxip", STRING)       \
-  X(KIIFXPT, "ifxpt", INT)          \
-  X(KSHASSIP, "hassip", STRING)     \
-  X(KSHASSU, "hassusr", STRING)     \
-  X(KSHASSPW, "hasspsw", STRING)    \
-  X(KIHASSPT, "hasspt", INT)        \
-  X(KFSEALV, "sealevel", FLOAT)     \
+  X(KHOMEAS, "homeaEnable", BOOL)  \
+  X(KANAIRE, "anaireEnable", BOOL) \
+  X(KIFXENB, "ifxEnable", BOOL)    \
+  X(KIFXDB, "ifxdb", STRING)       \
+  X(KIFXIP, "ifxip", STRING)       \
+  X(KIFXPT, "ifxpt", INT)          \
+  X(KHASSIP, "hassip", STRING)     \
+  X(KHASSUSR, "hassusr", STRING)     \
+  X(KHASSPW, "hasspsw", STRING)    \
+  X(KHASSPT, "hasspt", INT)        \
+  X(KSEALVL, "sealevel", FLOAT)     \
   X(KSTIME, "stime", INT)           \
   X(KBATVMX, "battVmax", FLOAT)     \
   X(KBATVMI, "battVmin", FLOAT)     \
@@ -29,7 +29,7 @@
   X(KCHRVMI, "chrgVmax", FLOAT)     \
   X(KFAILSAFE, "fsafeEnable", BOOL) \
   X(KWKUPRST, "wkrstEnable", BOOL)  \
-  X(KBSOLARE, "solarEnable", BOOL)  \
-  X(KIDEEPSL, "deepSleep", INT)     \
+  X(KSOLAREN, "solarEnable", BOOL)  \
+  X(KDEEPSLP, "deepSleep", INT)     \
   X(KGEIGERP, "geigerPin", INT)     \
   X(KCOUNT, "KCOUNT", UNKNOWN)

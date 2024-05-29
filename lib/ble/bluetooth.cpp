@@ -59,7 +59,7 @@ void bleServerDataRefresh(){
 }
 
 void bleServerConfigRefresh(){
-    if (FAMILY == "ESP32-C3") return;
+    // if (FAMILY == "ESP32-C3") return;
     setWifiConnected(WiFi.isConnected());  // for notify on each write
     pCharactConfig->setValue(getCurrentConfig().c_str());
 }
@@ -67,7 +67,7 @@ void bleServerConfigRefresh(){
 // Config BLE callbacks
 class MyConfigCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
-        if (FAMILY == "ESP32-C3") return;
+        // if (FAMILY == "ESP32-C3") return;
         std::string value = pCharacteristic->getValue();
         if (value.length() > 0) {
             if (save(value.c_str())) {
@@ -91,7 +91,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
     };
 
     void onRead(BLECharacteristic* pCharacteristic) {
-        if (FAMILY == "ESP32-C3") return;
+        // if (FAMILY == "ESP32-C3") return;
         bleServerConfigRefresh();
     }
 };
@@ -99,7 +99,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
 // Status BLE callbacks
 class MyStatusCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
-        if (FAMILY == "ESP32-C3") return;
+        // if (FAMILY == "ESP32-C3") return;
         std::string value = pCharacteristic->getValue();
         if (value.length() > 0 && getTrackStatusValues(value.c_str())) {
             log_v("[E][BTLE][STATUS] "+String(value.c_str()));

@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include <Geohash.hpp>
 #include <EasyPreferences.hpp>
+#include "Watchdog.hpp"
 
 class RemoteConfigCallbacks;
 
@@ -27,7 +28,8 @@ extern ifxdbValues ifx;
 
 extern uint64_t chipid;
 extern String deviceId;
-extern String dname;
+extern bool devmode;
+extern char* _app_name;
 
 extern int stime;
 extern int stype;
@@ -39,14 +41,15 @@ extern String geo;
 
 extern String ssid;
 extern String pass;
+extern bool isNewWifi;
+extern bool wifi_enable;
+extern bool wifi_connected;
 
 extern String hassip;
 extern String hassusr;
 extern String hasspsw;
 extern int16_t hasspt;
 
-extern bool isNewWifi;
-extern bool devmode;
 extern bool i2conly;
 extern bool pax_enable; 
 extern bool solarmode;
@@ -54,16 +57,7 @@ extern uint32_t deepSleep;
 extern float toffset;
 extern float altoffset;
 extern float sealevel;
-
-/// preferences main key
-extern char* _app_name;
-/// device wifi on/off
-extern bool wifi_enable;
-/// InfluxDB cloud publication on/off
 extern bool ifxdb_enable;
-/// WiFi state
-extern bool wifi_connected;
-
 extern Geohash geohash;
 
 extern RemoteConfigCallbacks* mRemoteConfigCallBacks;
@@ -71,7 +65,6 @@ extern RemoteConfigCallbacks* mRemoteConfigCallBacks;
 void init(const char app_name[]);
 void reload();
 bool save(const char* json);
-// bool saveDeviceName(String name);
 bool saveSampleTime(int time);
 bool saveSensorType(int type);
 bool saveSensorPins(int tx, int rx);
@@ -104,8 +97,8 @@ String getStationName();
 String getAnaireDeviceId();
 String getVersion();
 int getSensorType();
-// void clear();
-// void reboot();
+void clear();
+void reboot();
 void saveBrightness(int value);
 int32_t getBrightness();
 void colorsInvertedEnable(bool enable);
@@ -114,11 +107,8 @@ bool saveTempOffset(float offset);
 bool saveAltitudeOffset(float offset);
 bool saveSeaLevel(float hpa);
 void setRemoteConfigCallbacks(RemoteConfigCallbacks* pCallbacks);
-
-// void setLastKeySaved(String key);
 bool saveI2COnly(bool enable);
 void performCO2Calibration();
-// void DEBUG(const char* text, const char* textb = "");
 
 class RemoteConfigCallbacks {
 public:

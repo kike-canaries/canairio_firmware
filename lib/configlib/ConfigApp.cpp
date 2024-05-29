@@ -90,29 +90,6 @@ void reload() {
 
 String getCurrentConfig() {
     StaticJsonDocument<1000> doc;
-    doc["stime"] = cfg.getInt("stime", 5);           // sensor measure time
-    doc["stype"] = cfg.getInt("stype", 0);           // sensor UART type;
-    doc["sRX"] = cfg.getInt("sRX", -1);           // sensor UART type;
-    doc["sTX"] = cfg.getInt("sTX", -1);           // sensor UART type;
-    doc["wenb"] = cfg.getBool(CONFKEYS::KWIFIEN, false);  // wifi on/off
-    doc["ssid"] = cfg.getString("ssid", "");         // influxdb database name
-    doc["ienb"] = cfg.getBool(CONFKEYS::KIFXENB, false);   // ifxdb on/off
-    doc["ifxdb"] = cfg.getString("ifxdb", ifx.db);   // influxdb database name
-    doc["ifxip"] = cfg.getString("ifxip", ifx.ip);   // influxdb database ip
-    doc["ifxpt"] = cfg.getInt("ifxpt", ifx.pt);     // influxdb sensor tags
-    doc["geo"] = cfg.getString("geo", "");           // influxdb GeoHash tag
-    doc["denb"] = cfg.getBool("debugEnable", false); // debug mode enable
-    doc["penb"] = cfg.getBool(CONFKEYS::KPAXENB, true);    // PaxCounter enable
-    doc["i2conly"] = cfg.getBool("i2conly", false);  // force only i2c sensors
-    doc["sse"] = cfg.getBool("solarEnable", false);  // Enable solar station
-    doc["deepSleep"] = cfg.getInt("deepSleep", 0);  // deep sleep time in seconds
-    doc["toffset"] = cfg.getFloat("toffset", 0.0);   // temperature offset
-    doc["altoffset"] = cfg.getFloat("altoffset",0.0);// altitude offset
-    doc["sealevel"] = cfg.getFloat("sealevel",1013.25);// altitude offset
-    doc["hassip"] = cfg.getString("hassip", "");     // Home Assistant MQTT server ip
-    doc["hasspt"] = cfg.getInt("hasspt", 1883);      // Home Assistant MQTT server port
-    doc["hassusr"] = cfg.getString("hassusr", "");   // Home Assistant MQTT user
-    // doc["hasspsw"] = cfg.getString("hasspsw", "");// Home Assistant MQTT password
     doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
     doc["anaireid"] =  getStationName();                     // deviceId for Anaire cloud
     doc["wsta"] = wifi_connected;                            // current wifi state 
@@ -394,7 +371,7 @@ bool save(const char *json) {
         if (act.equals("i2c")) return saveI2COnly(doc["i2conly"].as<bool>());
         if (act.equals("pst")) return paxEnable(doc["penb"].as<bool>());
         if (act.equals("sse")) return solarEnable(doc["sse"].as<bool>());
-        // if (act.equals("cls")) clear();
+        if (act.equals("cls")) clear();
         // if (act.equals("rbt")) reboot();
         if (act.equals("clb")) performCO2Calibration();
         return true;
@@ -481,18 +458,18 @@ bool isWifiConnected() {
     return wifi_connected;
 }
 
-// void clear() {
-//     cfg.clear();
-//     Serial.println("-->[CONF] clear settings!");
-//     delay(200);
-//     reboot();
-// }
+void clear() {
+    cfg.clear();
+    Serial.println("-->[CONF] clear settings!");
+    delay(200);
+    reboot();
+}
 
-// void reboot() {
-//     Serial.println("-->[CONF] reboot..");
-//     delay(100);
-//     wd.execute();  // ESP and WiFi reboot
-// }
+void reboot() {
+    Serial.println("-->[CONF] reboot..");
+    delay(100);
+    wd.execute();  // ESP and WiFi reboot
+}
 
 void performCO2Calibration() {
     if(mRemoteConfigCallBacks!=nullptr) mRemoteConfigCallBacks->onCO2Calibration();

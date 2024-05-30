@@ -1,3 +1,4 @@
+#ifndef DISABLE_BLE
 #include <bluetooth.hpp>
 #include "ConfigApp.hpp"
 
@@ -190,3 +191,4 @@ void bleLoop() {
 bool bleIsConnected(){
     return deviceConnected;
 }
+#endif

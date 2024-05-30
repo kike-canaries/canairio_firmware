@@ -1,5 +1,4 @@
 #include <cloud_anaire.hpp>
-#include "ConfigApp.hpp"
 
 /******************************************************************************
 *  A N A I R E   M Q T T   M E T H O D S

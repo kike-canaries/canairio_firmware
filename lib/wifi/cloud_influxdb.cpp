@@ -1,7 +1,5 @@
 #include <InfluxDbClient.h>
-#include "ConfigApp.hpp"
 #include "cloud_influxdb.hpp"
-#include "wifi.hpp"
 #include "power.hpp"
 
 /******************************************************************************

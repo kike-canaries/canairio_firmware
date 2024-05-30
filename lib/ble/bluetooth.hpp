@@ -1,3 +1,5 @@
+#ifndef DISABLE_BLE
+
 #include <Arduino.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
@@ -17,3 +19,4 @@ void bleLoop();
 void bleServerInit();
 bool bleIsConnected();
 void bleServerConfigRefresh();
+#endif

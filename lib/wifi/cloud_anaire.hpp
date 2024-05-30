@@ -3,6 +3,7 @@
 #include <Sensors.hpp>
 #include "Batterylib.hpp"
 #include "mqtt_config.h"
+#include "ConfigApp.hpp"
 
 #define ANAIRE_HOST "mqtt.anaire.org"
 #define ANAIRE_TOPIC "measurement"

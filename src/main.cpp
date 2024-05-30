@@ -8,7 +8,6 @@
 
 #include <Arduino.h>
 #include <Sensors.hpp>
-#include <InfluxDbClient.h>
 #include <MQTT.h>
 #include "ConfigApp.hpp"
 #include "GUILib.hpp"
@@ -18,6 +17,7 @@
 #include "wifi.hpp"
 #include "bluetooth.hpp"
 #include "logmem.hpp"
+#include "sniffer.hpp"
 
 #ifndef DISABLE_CLI
 #include "cli.hpp"
@@ -117,9 +117,9 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
             saveSampleTime(time);
             reload();
 
-            // if (FAMILY != "ESP32-C3") bleServerConfigRefresh();
+#ifndef DISABLE_BLE
             bleServerConfigRefresh();
-
+#endif
             sensors.setSampleTime(stime);
         }
     };
@@ -329,11 +329,13 @@ void setup() {
     Serial.printf("-->[INFO] WiFi current config\t: %s\r\n", isWifiEnable() ? "enabled" : "disabled");
     gui.welcomeAddMessage("WiFi: "+String(isIfxEnable() ? "On" : "Off"));
     gui.welcomeAddMessage("Influx: "+String(isIfxEnable() ? "On" : "Off"));
- 
+
+#ifndef DISABLE_BLE
     // Bluetooth low energy init (GATT server for device config)
     bleServerInit();
     logMemory("BLE ");
     gui.welcomeAddMessage("Bluetooth ready.");
+#endif
 
     // wifi status 
     if (WiFi.isConnected())
@@ -373,21 +375,20 @@ void setup() {
 }
 
 void loop() {
-    sensors.loop();  // read sensor data and showed it
-    bleLoop();       // notify data to connected devices
-    otaLoop();       // check for firmware updates
-    snifferLoop();   // pax counter calc (only when WiFi is Off)
-    wifiLoop();      // check wifi and reconnect it
-    wd.loop();       // watchdog for check loop blockers
-                     // update GUI flags:
-    gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
-    gui.loop();      // Only for OLED
-
-    battery.loop();  // refresh battery level and voltage
-
-    #ifdef LORADEVKIT
-    os_runloop_once();
-    #endif
-    
-    powerLoop();     // check power status and manage power saving
+  sensors.loop(); // read sensor data and showed it
+  otaLoop();      // check for firmware updates
+  snifferLoop();  // pax counter calc (only when WiFi is Off)
+  wifiLoop();     // check wifi and reconnect it
+  wd.loop();      // watchdog for check loop blockers
+#ifndef DISABLE_BLE
+  bleLoop();      // notify data to connected devices
+  gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
+#endif
+  gui.setGUIStatusFlags(WiFi.isConnected(), true, false);
+  gui.loop();     // Only for OLED
+  battery.loop(); // refresh battery level and voltage
+#ifdef LORADEVKIT
+  os_runloop_once();
+#endif
+  powerLoop();    // check power status and manage power saving
 }

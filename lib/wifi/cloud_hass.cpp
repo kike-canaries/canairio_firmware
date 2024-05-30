@@ -1,6 +1,4 @@
 #include <cloud_hass.hpp>
-#include "wifi.hpp"
-#include "ConfigApp.hpp"
 
 /******************************************************************************
 *  H A S S   M Q T T   M E T H O D S

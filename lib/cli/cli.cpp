@@ -100,6 +100,10 @@ void wcli_kset(String opts) {
 
 void wcli_uartpins(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+  if (operands.first().isEmpty() || operands.second().isEmpty()) {
+    Serial.printf("current TX/RX configured: %i/%i\r\n", sTX, sRX);
+    return;
+  }
   int sTX = operands.first().toInt();
   int sRX = operands.second().toInt();
   if (sTX >= 0 && sRX >= 0) {

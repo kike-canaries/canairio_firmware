@@ -9,6 +9,9 @@
 #elif TTGO_T7S3
     #define ADC_PIN 2
     int channel_atten = ADC1_CHANNEL_1;
+#elif ESP32C3_AIRGRADIENT
+    #define ADC_PIN 4
+    int channel_atten = ADC1_CHANNEL_1;
 #else
     #define ADC_PIN 34
     int channel_atten = 0;

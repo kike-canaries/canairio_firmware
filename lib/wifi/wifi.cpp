@@ -75,8 +75,8 @@ void wifiCloudsInit() {
   influxDbInit();
   if (cfg.getBool(CONFKEYS::KANAIRE,false)) anaireInit();
   if (cfg.getBool(CONFKEYS::KHOMEAS,false)) hassInit();
-  else return;
   if (anaireIsConnected()) Serial.printf("-->[MQTT] %s\t: connected!\r\n", ANAIRE_HOST);
+  if (hassIsConnected()) Serial.printf("-->[MQTT] Home Assistant  \t: connected!\r\n");
 }
 
 void wifiConnect(const char* ssid, const char* pass) {

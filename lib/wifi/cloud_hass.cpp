@@ -59,7 +59,7 @@ void hassPubSensorPayload() {
     size_t n = serializeJson(doc, buffer);
  
     if (clientHass.publish(getStateTopic().c_str(), buffer, n)) {
-        if(devmode) Serial.printf ("-->[MQTT] HA local published\t: payload size: %d\r\n", n);
+        if(devmode) Serial.printf ("-->[MQTT] HA local published\t: payload size: %d\t:)\r\n", n);
     } else {
         Serial.printf("[E][MQTT] HA publish state error\t: %d\r\n",clientHass.lastError());
     }
@@ -142,7 +142,7 @@ static uint_fast64_t mqttHassDelayedStamp = 0;
 void hassConnect() {
     if (!(isWifiEnable() && WiFi.isConnected())) return;
     if (millis() - mqttHassDelayedStamp > MQTT_DELAYED_TIME * 1000) {
-        Serial.printf("-->[MQTT] %s\t: ", hassip.c_str());
+        if(devmode) Serial.printf("-->[MQTT] %s\t: ", hassip.c_str());
         int mqtt_try = 0;
         while (mqtt_try++ < MQTT_RETRY_CONNECTION && !hassAuth()) {
             delay(100);
@@ -151,11 +151,11 @@ void hassConnect() {
             mqttHassDelayedStamp = millis();
             hassSubscribed = false;
             hassConfigured = false;
-            Serial.println("connection failed!");
-            if (devmode) Serial.printf("-->[MQTT] %s\r\n",hassusr.c_str());
+            if(devmode) Serial.println("connection failed!");
+            if(devmode) Serial.printf("-->[MQTT] %s\r\n",hassusr.c_str());
             return;
         }
-        Serial.println("connected!");
+        if(devmode) Serial.println("connected!");
         mqttHassDelayedStamp = millis();
     }
 }

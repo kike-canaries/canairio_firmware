@@ -190,7 +190,6 @@ void onSensorDataError(const char * msg){
 }
 
 void printSensorsDetected() {
-    Serial.println("-->[INFO] Sensors detected\t: " + String(sensors.getSensorsRegisteredCount()));
     gui.welcomeAddMessage("Sensors: " + String(sensors.getSensorsRegisteredCount()));
     int i = 0;
     while (sensors.getSensorsRegistered()[i++] != 0) {
@@ -231,7 +230,6 @@ void startingSensors() {
         printSensorsDetected();    
     }
 
-    Serial.printf("-->[INFO] registering units\t:\r\n");
     delay(500);
     sensors.readAllSensors();                       // only to force to register all sensors
     delay(500);

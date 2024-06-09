@@ -10,8 +10,8 @@ bool first_run = true;
 
 TaskHandle_t xCliHandle;
 
-void wcli_debug(String opts) {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void wcli_debug(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   String param = operands.first();
   param.toUpperCase();
   bool dbgmode = param.equals("ON") || param.equals("1");
@@ -37,8 +37,8 @@ String getValue(String key) {
   return "";
 }
 
-void wcli_klist(String opts) {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void wcli_klist(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   String opt = operands.first();
   int key_count = KCOUNT;                       // Show all keys to configure 
   if (opt.equals("basic")) key_count = KBASIC; // Only show the basic keys to configure
@@ -82,8 +82,8 @@ void saveString(String key, String v) {
   Serial.printf("saved: %s:%s\r\n",key.c_str(),v.c_str());
 }
 
-void wcli_kset(String opts) {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void wcli_kset(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   String key = operands.first();
   String v = operands.second();
   if(isValidKey(key)){
@@ -98,8 +98,8 @@ void wcli_kset(String opts) {
   }
 }
 
-void wcli_uartpins(String opts) {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void wcli_uartpins(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   if (operands.first().isEmpty() || operands.second().isEmpty()) {
     Serial.printf("current TX/RX configured: %i/%i\r\n", sTX, sRX);
     return;
@@ -117,8 +117,8 @@ bool validBattLimits(float min, float max){
   return (min >= 3.0 && min <= 5.0 && max <=5.0 && max >= 3.0);
 }
 
-void wcli_battvLimits(String opts) {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void wcli_battvLimits(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   float battMin = operands.first().toFloat();
   float battMax = operands.second().toFloat();
   if (validBattLimits(battMin, battMax)) {
@@ -133,8 +133,8 @@ void wcli_battvLimits(String opts) {
   }
 }
 
-void wcli_chargLimits(String opts) {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void wcli_chargLimits(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   float battMin = operands.first().toFloat();
   float battMax = operands.second().toFloat();
   if (validBattLimits(battMin, battMax)) {
@@ -149,8 +149,8 @@ void wcli_chargLimits(String opts) {
   }
 }
 
-void wcli_stime(String opts) {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void wcli_stime(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   int stime = operands.first().toInt();
   if (stime >= 5) {
     saveSampleTime(stime);
@@ -165,8 +165,8 @@ void wcli_stype_error(){
   for (int i=0; i<=7 ;i++)Serial.printf("%i\t%s\r\n",i,sensors.getSensorName((SENSORS)i));
 }
 
-void wcli_stype(String opts) {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void wcli_stype(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   String stype = operands.first();
   if(stype.length()==0){
     wcli_stype_error();
@@ -181,8 +181,8 @@ void wcli_stype(String opts) {
   }
 }
 
-void wcli_sgeoh (String opts) {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void wcli_sgeoh (char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   String geoh = operands.first();
   if (geoh.length() > 5) {
     geoh.toLowerCase(); 
@@ -222,19 +222,19 @@ void wcli_sensors_values() {
     }
 }
 
-void wcli_info(String opts) {
+void wcli_info(char *args, Stream *response) {
   Serial.println();
   Serial.print(getDeviceInfo());
   wcli_sensors();
   wcli_sensors_values();
 }
 
-void wcli_exit(String opts) {
+void wcli_exit(char *args, Stream *response) {
   setup_time = 0;
   setup_mode = false;
 }
 
-void wcli_setup(String opts) {
+void wcli_setup(char *args, Stream *response) {
   setup_mode = true;
   Serial.println("\r\nSetup Mode. Main presets:\r\n");
   String canAirIOname = "Please set your geohash with \"sgeoh\" cmd";
@@ -249,19 +249,19 @@ void wcli_setup(String opts) {
   Serial.printf("UART sensor RX pin\t: %d\r\n", sRX == -1 ? PMS_RX : sRX);
   Serial.printf("Current debug mode\t: %s\r\n", devmode == true ? "enabled" : "disabled");
 
-  wcli_klist("basic");
+  wcli_klist((char *)"basic",response);
 
   Serial.printf("\r\nType \"klist\" for advanced settings\r\n");
   Serial.printf("Type \"help\" for available commands details\r\n");
   Serial.printf("Type \"exit\" for leave the safe mode\r\n");
 }
 
-void wcli_reboot(String opts) {
+void wcli_reboot(char *args, Stream *response) {
   wd.execute();
 }
 
-void wcli_clear(String opts) {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void wcli_clear(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   String deviceId = operands.first();
   if (deviceId.equals(getAnaireDeviceId())) {
     Serial.println("Clearing device to defaults..");
@@ -338,22 +338,23 @@ void cliInit() {
   wcli.setCallback(new mESP32WifiCLICallbacks());
   wcli.setSilentMode(true);
   wcli.disableConnectInBoot();
-  wcli.begin();
   // Main Commands:
-  wcli.term->add("reboot", &wcli_reboot, "\tperform a ESP32 reboot");
-  wcli.term->add("clear", &wcli_clear, "\tfactory settings reset. (needs confirmation)");
-  wcli.term->add("debug", &wcli_debug, "\tenable debug mode");
-  wcli.term->add("stime", &wcli_stime, "\tset the sample time (seconds)");
-  wcli.term->add("stype", &wcli_stype, "\tset the sensor type (UART)");
-  wcli.term->add("sgeoh", &wcli_sgeoh, "\tset geohash. Type help for more details.");
-  wcli.term->add("spins", &wcli_uartpins, "\tset the UART pins TX RX");
-  wcli.term->add("battv", &wcli_battvLimits, "\tset battery min/max voltage");
-  wcli.term->add("charg", &wcli_chargLimits, "\tset battery charging min/max voltage");
-  wcli.term->add("kset", &wcli_kset, "\tset preference key (e.g on/off or 1/0 or text)");
-  wcli.term->add("klist", &wcli_klist, "\tlist valid preference keys");
-  wcli.term->add("info", &wcli_info, "\tget device information");
-  wcli.term->add("exit", &wcli_exit, "\texit of the setup mode. AUTO EXIT in 10 seg! :)");
-  wcli.term->add("setup", &wcli_setup, "\tTYPE THIS WORD to enter to SAFE MODE setup\n");
+  wcli.add("reboot", &wcli_reboot, "\tperform a ESP32 reboot");
+  wcli.add("clear", &wcli_clear, "\tfactory settings reset. (needs confirmation)");
+  wcli.add("debug", &wcli_debug, "\tenable debug mode");
+  wcli.add("stime", &wcli_stime, "\tset the sample time (seconds)");
+  wcli.add("stype", &wcli_stype, "\tset the sensor type (UART)");
+  wcli.add("sgeoh", &wcli_sgeoh, "\tset geohash. Type help for more details.");
+  wcli.add("spins", &wcli_uartpins, "\tset the UART pins TX RX");
+  wcli.add("battv", &wcli_battvLimits, "\tset battery min/max voltage");
+  wcli.add("charg", &wcli_chargLimits, "\tset battery charging min/max voltage");
+  wcli.add("kset", &wcli_kset, "\tset preference key (e.g on/off or 1/0 or text)");
+  wcli.add("klist", &wcli_klist, "\tlist valid preference keys");
+  wcli.add("info", &wcli_info, "\tget device information");
+  wcli.add("exit", &wcli_exit, "\texit of the setup mode. AUTO EXIT in 10 seg! :)");
+  wcli.add("setup", &wcli_setup, "\tTYPE THIS WORD to enter to SAFE MODE setup\n");
+  
+  wcli.begin();
   // Configuration loop:
   // 10 seconds for reconfiguration or first use case.
   // for reconfiguration type disconnect and switch the "output" mode

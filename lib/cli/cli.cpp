@@ -260,7 +260,7 @@ void wcli_reboot(char *args, Stream *response) {
   wd.execute();
 }
 
-void wcli_clear(char *args, Stream *response) {
+void wcli_swipe(char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
   String deviceId = operands.first();
   if (deviceId.equals(getAnaireDeviceId())) {
@@ -269,40 +269,20 @@ void wcli_clear(char *args, Stream *response) {
     cfg.clear();
   }
   else {
-    Serial.println("\nPlease type clear and the factory device id to confirm.");
+    Serial.println("\nPlease type clear and the factory device id. (showed in setup command)");
   }
 }
 
+void wcli_clear(char *args, Stream *response){
+  wcli.shell->clear();
+}
+
 class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
-  void onWifiStatus(bool isConnected) {
-    
-  }
+  void onWifiStatus(bool isConnected) {}
 
-  void onHelpShow() {
-    // Enter your custom help here:
-    Serial.println("\r\nCanAirIO Commands:\r\n");
-    Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
-    Serial.println("clear\t\t\tfactory settings reset. (needs confirmation)");
-    Serial.println("debug\t<on/off>\tto enable debug mode");
-    Serial.println("stime\t<time>\t\tset the sample time in seconds");
-    Serial.println("stype\t<sensor_type>\tset the UART sensor type. Integer.");
-    Serial.println("sgeoh\t<GeohashId>\tset geohash id. Choose it here http://bit.ly/geohashe");
-    Serial.println("spins\t<TX> <RX>\tset the UART pins");
-    Serial.println("battv\t<Vmin> <Vmax>\tset battery min/max voltage");
-    Serial.println("charg\t<Vmin> <Vmax>\tset battery charging min/max voltage");
-    Serial.println("kset\t<key> <value>\tset preference key value (e.g on/off or 1/0 or text)");
-    Serial.println("klist\t\t\tlist valid preference keys");
-    Serial.println("info\t\t\tget the device information");
-    Serial.println("exit\t\t\texit of the initial setup mode");
-    Serial.println("setup\t\t\ttype this to start the configuration");
+  void onHelpShow() {}
 
-    if(first_run) Serial.println("\n\nEnter the word: \"setup\" to configure the device");
-    first_run = false;
-  }
-
-  void onNewWifi(String ssid, String passw){
-    saveWifi(ssid,passw);
-  }
+  void onNewWifi(String ssid, String passw) { saveWifi(ssid, passw); }
 };
 
 void cliTask(void *param) {
@@ -331,16 +311,6 @@ int32_t cliTaskStackFree(){
     return uxTaskGetStackHighWaterMark(xCliHandle);
 }
 
-// const char logo[] =
-// "┏┓    ┏┓•  ┳┏┓\r\n"
-// "┃ ┏┓┏┓┣┫┓┏┓┃┃┃\r\n"
-// "┗┛┗┻┛┗┛┗┗┛ ┻┗┛\r\n"
-// "              \r\n"
-// "\r\n"
-// "\r\n"
-// ""
-// ;
-
 const char logo[] =
 " .d8888b.                           d8888 d8b         8888888  .d88888b.  \r\n"
 "d88P  Y88b                         d88888 Y8P           888   d88P\" \"Y88b \r\n"
@@ -367,7 +337,7 @@ void cliInit() {
   wcli.disableConnectInBoot();
   // Main Commands:
   wcli.add("reboot", &wcli_reboot, "\tperform a ESP32 reboot");
-  wcli.add("clear", &wcli_clear, "\tfactory settings reset. (needs confirmation)");
+  wcli.add("swipe", &wcli_swipe, "\tfactory settings reset. (needs confirmation)");
   wcli.add("debug", &wcli_debug, "\tenable debug mode");
   wcli.add("stime", &wcli_stime, "\tset the sample time (seconds)");
   wcli.add("stype", &wcli_stype, "\tset the sensor type (UART)");
@@ -379,6 +349,7 @@ void cliInit() {
   wcli.add("klist", &wcli_klist, "\tlist valid preference keys");
   wcli.add("info", &wcli_info, "\tget device information");
   wcli.add("exit", &wcli_exit, "\texit of the setup mode. AUTO EXIT in 10 seg! :)");
+  wcli.add("clear", &wcli_clear, "\tclear shell");
   wcli.add("setup", &wcli_setup, "\tTYPE THIS WORD to enter to SAFE MODE setup");
   
   wcli.begin();

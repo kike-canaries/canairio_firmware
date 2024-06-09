@@ -265,6 +265,7 @@ void initBattery() {
 
 void initCLIFailsafe() {
   if (cfg.getBool(CONFKEYS::KFAILSAFE, true)) {
+    delay(2000); // wait for new S3 and C3 CDC serial
     gui.welcomeAddMessage("wait for setup..");
     Serial.println("\n-->[INFO] == Waiting for safe mode setup (10s)  ==");
 #ifndef DISABLE_CLI
@@ -276,10 +277,10 @@ void initCLIFailsafe() {
 
 void initCLI() {
 #ifndef DISABLE_CLI
-  if (!cfg.getBool(CONFKEYS::KFAILSAFE, true)) cliInit();
-  logMemory("CLITASK");
   Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
+  if (!cfg.getBool(CONFKEYS::KFAILSAFE, true)) cliInit();
   cliTaskInit();
+  logMemory("CLI ");
 #else
   Serial.println("\n==>[INFO] Setup End. ===\r\n");
 #endif

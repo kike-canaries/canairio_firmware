@@ -331,10 +331,37 @@ int32_t cliTaskStackFree(){
     return uxTaskGetStackHighWaterMark(xCliHandle);
 }
 
+// const char logo[] =
+// "┏┓    ┏┓•  ┳┏┓\r\n"
+// "┃ ┏┓┏┓┣┫┓┏┓┃┃┃\r\n"
+// "┗┛┗┻┛┗┛┗┗┛ ┻┗┛\r\n"
+// "              \r\n"
+// "\r\n"
+// "\r\n"
+// ""
+// ;
+
+const char logo[] =
+" .d8888b.                           d8888 d8b         8888888  .d88888b.  \r\n"
+"d88P  Y88b                         d88888 Y8P           888   d88P\" \"Y88b \r\n"
+"888    888                        d88P888               888   888     888 \r\n"
+"888         8888b.  88888b.      d88P 888 888 888d888   888   888     888 \r\n"
+"888            \"88b 888 \"88b    d88P  888 888 888P\"     888   888     888 \r\n"
+"888    888 .d888888 888  888   d88P   888 888 888       888   888     888 \r\n"
+"Y88b  d88P 888  888 888  888  d8888888888 888 888       888   Y88b. .d88P \r\n"
+" \"Y8888P\"  \"Y888888 888  888 d88P     888 888 888     8888888  \"Y88888P\"  \r\n"
+"                                                                          \r\n"
+"\r\n"
+""
+;
+
 /**
  * @brief WiFi CLI init and CanAirIO custom commands
  **/
 void cliInit() {
+
+  wcli.shell->attachLogo(logo);
+
   wcli.setCallback(new mESP32WifiCLICallbacks());
   wcli.setSilentMode(true);
   wcli.disableConnectInBoot();
@@ -352,9 +379,10 @@ void cliInit() {
   wcli.add("klist", &wcli_klist, "\tlist valid preference keys");
   wcli.add("info", &wcli_info, "\tget device information");
   wcli.add("exit", &wcli_exit, "\texit of the setup mode. AUTO EXIT in 10 seg! :)");
-  wcli.add("setup", &wcli_setup, "\tTYPE THIS WORD to enter to SAFE MODE setup\n");
+  wcli.add("setup", &wcli_setup, "\tTYPE THIS WORD to enter to SAFE MODE setup");
   
   wcli.begin();
+
   // Configuration loop:
   // 10 seconds for reconfiguration or first use case.
   // for reconfiguration type disconnect and switch the "output" mode

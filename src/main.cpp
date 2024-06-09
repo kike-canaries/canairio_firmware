@@ -263,6 +263,28 @@ void initBattery() {
   }
 }
 
+void initCLIFailsafe() {
+  if (cfg.getBool(CONFKEYS::KFAILSAFE, true)) {
+    gui.welcomeAddMessage("wait for setup..");
+    Serial.println("\n-->[INFO] == Waiting for safe mode setup (10s)  ==");
+#ifndef DISABLE_CLI
+    cliInit();
+    logMemory("CLI ");
+#endif
+  }
+}
+
+void initCLI() {
+#ifndef DISABLE_CLI
+  if (!cfg.getBool(CONFKEYS::KFAILSAFE, true)) cliInit();
+  logMemory("CLITASK");
+  Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
+  cliTaskInit();
+#else
+  Serial.println("\n==>[INFO] Setup End. ===\r\n");
+#endif
+}
+
 /******************************************************************************
 *  M A I N
 ******************************************************************************/
@@ -289,14 +311,7 @@ void setup() {
     gui.showWelcome();
     logMemory("GLIB");
     // CanAirIO CLI init and first setup (safe mode)
-    if (cfg.getBool(CONFKEYS::KFAILSAFE, true)) {
-      gui.welcomeAddMessage("wait for setup..");
-      Serial.println("\n-->[INFO] == Waiting for safe mode setup (10s)  ==");
-    }
-    #ifndef DISABLE_CLI
-    cliInit();
-    logMemory("CLI ");
-    #endif
+    initCLIFailsafe(); 
     // init battery monitor
     initBattery(); 
     logMemory("BATT");
@@ -364,14 +379,7 @@ void setup() {
     LoRaWANSetup();
     logMemory("LORAWAN");    
     #endif
-
-    #ifndef DISABLE_CLI
-    cliTaskInit();
-    logMemory("CLITASK");
-    Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
-    #else
-    Serial.println("\n==>[INFO] Setup End. ===\r\n");
-    #endif
+    initCLI();
 }
 
 void loop() {

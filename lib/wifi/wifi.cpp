@@ -151,7 +151,9 @@ int getWifiRSSI() {
   else
     return 0;
 }
-
+/**
+ * @brief get the general info on reduced width for TFT screens and CLI.
+*/
 String getDeviceInfo() {
   String info = getHostId() + "\r\n";
   info = info + "Rev" + String(REVISION) + " v" + String(VERSION) + "\r\n";
@@ -162,9 +164,6 @@ String getDeviceInfo() {
   info = info + "==================\r\n";
   info = info + "MEM: " + String(ESP.getFreeHeap() / 1024) + "Kb\r\n";
   info = info + "GUI: " + String(gui.getStackFree() / 1024) + "Kb\r\n";
-#ifndef DISABLE_CLI
-  info = info + "CLI: " + String(cliTaskStackFree() / 1024) + "Kb\r\n";
-#endif
   #ifdef CONFIG_IDF_TARGET_ESP32S3
   info = info + "CPU: " + String(powerESP32TempRead()) + "°C\r\n";
   #endif

@@ -76,7 +76,7 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
 
       pax_count = listOfMAC.size();
       if (pax_count != last_pax_count) {
-          if(cfg.devmode) Serial.printf("-->[WIFI] new PAX count found\t: %d\r\n",pax_count);
+          if(devmode) Serial.printf("-->[WIFI] new PAX count found\t: %d\r\n",pax_count);
           last_pax_count = pax_count;
       }
       delay(10);
@@ -121,11 +121,11 @@ void snifferStop () {
 
 void snifferLoop() {
     static uint32_t snifferTimeStamp = 0;                                  // timestamp for sensor loop check data
-    if ((millis() - snifferTimeStamp > cfg.stime / 5 * (uint32_t)500)) {  // sample time for each capture
+    if ((millis() - snifferTimeStamp > stime / 5 * (uint32_t)500)) {  // sample time for each capture
         snifferTimeStamp = millis();
-        if (!cfg.isWifiEnable() && cfg.isPaxEnable() && !sniffer_start) snifferInit();
-        else if (!cfg.isWifiEnable() && cfg.isPaxEnable() && sniffer_start) wifiScanChannels();
-        else if (!cfg.isWifiEnable() && !cfg.isPaxEnable() && sniffer_start) snifferStop();
+        if (!isWifiEnable() && isPaxEnable() && !sniffer_start) snifferInit();
+        else if (!isWifiEnable() && isPaxEnable() && sniffer_start) wifiScanChannels();
+        else if (!isWifiEnable() && !isPaxEnable() && sniffer_start) snifferStop();
     }
 }
 

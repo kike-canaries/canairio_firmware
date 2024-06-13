@@ -1,5 +1,14 @@
-#include <bluetooth.hpp>
 #include <wifi.hpp>
+#include "OTAHandler.h"
+#ifndef DISABLE_CLI
+#include "cli.hpp"
+#endif
+#include "ConfigApp.hpp"
+#include "cloud_influxdb.hpp"
+#include "cloud_hass.hpp"
+#include "cloud_anaire.hpp"
+#include "Watchdog.hpp"
+#include "power.hpp"
 
 /******************************************************************************
 *   W I F I   M E T H O D S
@@ -49,7 +58,7 @@ void onUpdateMessage(const char* msg) {
 }
 
 String getHostId() {
-  return "CanAirIO" + cfg.getDeviceIdShort();
+  return "CanAirIO" + getDeviceIdShort();
 }
 
 void otaInit() {
@@ -64,10 +73,10 @@ void otaInit() {
 
 void wifiCloudsInit() {
   influxDbInit();
-  if (cfg.getBool(CONFKEYS::KBANAIRE,false)) anaireInit();
-  if (cfg.getBool(CONFKEYS::KBHOMEAS,false)) hassInit();
-  else return;
+  if (cfg.getBool(CONFKEYS::KANAIRE,false)) anaireInit();
+  if (cfg.getBool(CONFKEYS::KHOMEAS,false)) hassInit();
   if (anaireIsConnected()) Serial.printf("-->[MQTT] %s\t: connected!\r\n", ANAIRE_HOST);
+  if (hassIsConnected()) Serial.printf("-->[MQTT] Home Assistant  \t: connected!\r\n");
 }
 
 void wifiConnect(const char* ssid, const char* pass) {
@@ -84,7 +93,7 @@ void wifiConnect(const char* ssid, const char* pass) {
   }
   delay(500);
   if (WiFi.isConnected()) {
-    cfg.isNewWifi = false;  // flag for config via BLE
+    isNewWifi = false;  // flag for config via BLE
     #ifndef DISABLE_CLI
     if(!wcli.isSSIDSaved(ssid))wcli.saveNetwork(ssid, pass);
     #endif
@@ -95,13 +104,13 @@ void wifiConnect(const char* ssid, const char* pass) {
 }
 
 void wifiInit() {
-  if (!WiFi.isConnected() && cfg.isWifiEnable() && cfg.ssid.length() > 0) {
-    wifiConnect(cfg.ssid.c_str(), cfg.pass.c_str());
+  if (!WiFi.isConnected() && isWifiEnable() && ssid.length() > 0) {
+    wifiConnect(ssid.c_str(), pass.c_str());
   }
   if(WiFi.isConnected()) {
     Serial.print("-->[WIFI] device network IP\t: ");
     Serial.println(WiFi.localIP());
-    Serial.println("-->[WIFI] publish interval \t: " + String(cfg.stime * 2) + " sec.");
+    Serial.println("-->[WIFI] publish interval \t: " + String(stime * 2) + " sec.");
     otaInit();
     wifiCloudsInit();
   }
@@ -124,16 +133,16 @@ void wifiLoop() {
   static uint_least64_t wifiTimeStamp = 0;
   if (millis() - wifiTimeStamp > 5000) {
     wifiTimeStamp = millis();
-    if (cfg.isWifiEnable() && cfg.ssid.length() > 0 && !WiFi.isConnected()) {
+    if (!WiFi.isConnected()) return;
+    setWifiConnected(WiFi.isConnected());
+    if (isWifiEnable() && ssid.length() > 0 && !WiFi.isConnected()) {
       wifiInit();
     }
     influxDbInit();
-    cfg.setWifiConnected(WiFi.isConnected());
+    influxDbLoop();  // influxDB publication
+    if (cfg.getBool(CONFKEYS::KANAIRE, false)) anaireLoop();
+    if (cfg.getBool(CONFKEYS::KHOMEAS, false)) hassLoop();
   }
-  if (!WiFi.isConnected()) return;
-  influxDbLoop();  // influxDB publication
-  if (cfg.getBool(CONFKEYS::KBANAIRE,false)) anaireLoop();
-  if (cfg.getBool(CONFKEYS::KBHOMEAS,false)) hassLoop();
 }
 
 int getWifiRSSI() {
@@ -142,18 +151,19 @@ int getWifiRSSI() {
   else
     return 0;
 }
-
+/**
+ * @brief get the general info on reduced width for TFT screens and CLI.
+*/
 String getDeviceInfo() {
   String info = getHostId() + "\r\n";
   info = info + "Rev" + String(REVISION) + " v" + String(VERSION) + "\r\n";
-  info = info + "" + cfg.getStationName() + "\r\n";
+  info = info + "" + getStationName() + "\r\n";
   info = info + String(FLAVOR) + "\r\n";
   info = info + "IP: " + WiFi.localIP().toString() + "\r\n";
   info = info + "OTA: " + String(TARGET) + " channel\r\n";
   info = info + "==================\r\n";
   info = info + "MEM: " + String(ESP.getFreeHeap() / 1024) + "Kb\r\n";
   info = info + "GUI: " + String(gui.getStackFree() / 1024) + "Kb\r\n";
-  info = info + "CLI: " + String(cliTaskStackFree() / 1024) + "Kb\r\n";
   #ifdef CONFIG_IDF_TARGET_ESP32S3
   info = info + "CPU: " + String(powerESP32TempRead()) + "°C\r\n";
   #endif
@@ -162,5 +172,5 @@ String getDeviceInfo() {
 }
 
 void printWifiRSSI(){
-  if (cfg.devmode) Serial.println("-->[WIFI] AP RSSI signal \t: " + String(getWifiRSSI()) + " dBm");
+  if (devmode) Serial.println("-->[WIFI] AP RSSI signal \t: " + String(getWifiRSSI()) + " dBm");
 }

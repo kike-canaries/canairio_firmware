@@ -4,7 +4,9 @@
 
 void prepairShutdown() {
     #ifndef M5STICKCPLUS
+    #ifndef DISABLE_BATT
     digitalWrite(ADC_EN, LOW);
+    #endif
     delay(10);
     //rtc_gpio_init(GPIO_NUM_14);
     //rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
@@ -106,6 +108,7 @@ float powerESP32TempRead(){
 }
 
 void powerLoop() {
+  #ifndef DISABLE_BATT
   static uint32_t powerTimeStamp = 0;             // timestamp for check low power
   if ((millis() - powerTimeStamp > 30 * 1000)) {  // check it every 5 seconds
     powerTimeStamp = millis();
@@ -122,4 +125,5 @@ void powerLoop() {
   #endif
     log_i("[HEAP] Min:%d Max:%d\t: %d\r\n", ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), ESP.getFreeHeap());
   }
+  #endif
 }

@@ -1,3 +1,4 @@
+#ifndef DISABLE_BATT
 #ifndef Batterylib_hpp
 #define Batterylib_hpp
 
@@ -15,4 +16,5 @@
   #endif
 #endif
 
+#endif
 #endif

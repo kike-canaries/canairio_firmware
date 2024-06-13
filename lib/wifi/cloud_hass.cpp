@@ -48,8 +48,10 @@ void hassPubSensorPayload() {
     doc["pm4"]  = String(sensors.getPM4());
     doc["pm10"] = String(sensors.getPM10());
     doc["signal_strength"] = String(getWifiRSSI());
+    #ifndef DISABLE_BATT
     doc["battery"] = String(battery.getCharge());
     doc["voltage"] = String(battery.getVoltage());
+    #endif
     doc["cpm"] = String(sensors.getGeigerCPM());
     doc["usvh"] = String(sensors.getGeigerMicroSievertHour());
     doc["co"] = String(sensors.getCO());

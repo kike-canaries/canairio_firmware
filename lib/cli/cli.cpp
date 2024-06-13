@@ -21,29 +21,13 @@ void wcli_debug(char *args, Stream *response) {
   battery.debug = dbgmode;
 }
 
-bool isValidKey(String key) {
-  for (int i = 0; i < KCOUNT; i++) {
-    if (key.equals(cfg.getKey((CONFKEYS)i))) return true;
-  }
-  return false;
-}
-
-String getValue(String key) {
-  ConfKeyType type = cfg.getKeyType(key);
-  if (type == ConfKeyType::BOOL) return cfg.getBool(key, false) ? "true" : "false";
-  if (type == ConfKeyType::FLOAT) return String(cfg.getFloat(key, false));
-  if (type == ConfKeyType::INT) return String(cfg.getInt(key, false));
-  if (type == ConfKeyType::STRING) return cfg.getString(key, "");
-  return "";
-}
-
 void wcli_klist(char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
   String opt = operands.first();
   int key_count = KCOUNT;                       // Show all keys to configure 
   if (opt.equals("basic")) key_count = KBASIC; // Only show the basic keys to configure
-  Serial.printf("\n%11s \t%s \t%s \r\n", "KEYNAME", "DEFINED", "VALUE");
-  Serial.printf("\n%11s \t%s \t%s \r\n", "=======", "=======", "=====");
+  response->printf("\n%11s \t%s \t%s \r\n", "KEYNAME", "DEFINED", "VALUE");
+  response->printf("\n%11s \t%s \t%s \r\n", "=======", "=======", "=====");
 
   for (int i = 0; i < key_count; i++) {
     if (i == KBASIC) continue;
@@ -52,56 +36,26 @@ void wcli_klist(char *args, Stream *response) {
     bool isDefined = cfg.isKey(key);
     String defined = isDefined ? "custom " : "default";
     String value = "";
-    if (isDefined) value = getValue(key);
-    Serial.printf("%11s \t%s \t%s \r\n", key, defined.c_str(), value.c_str());
+    if (isDefined) value = cfg.getValue(key);
+    response->printf("%11s \t%s \t%s \r\n", key, defined.c_str(), value.c_str());
   }
 
-  Serial.printf("\r\nMore info: https://canair.io/docs/cli\r\n");
-}
-
-void saveInteger(String key, String v) {
-  int32_t value = v.toInt();
-  cfg.saveInt(key, value);
-  Serial.printf("saved: %s:%i\r\n",key.c_str(),value);
-}
-
-void saveFloat(String key, String v) {
-  float value = v.toFloat();
-  cfg.saveFloat(key, value);
-  Serial.printf("saved: %s:%.5f\r\n",key.c_str(),value);
-}
-
-void saveBoolean(String key, String v) {
-  v.toLowerCase();
-  cfg.saveBool(key, v.equals("on") || v.equals("1") || v.equals("enable") || v.equals("true"));
-  Serial.printf("saved: %s:%s\r\n", key.c_str(), cfg.getBool(key, false) ? "true" : "false");
-}
-
-void saveString(String key, String v) {
-  cfg.saveString(key, v);
-  Serial.printf("saved: %s:%s\r\n",key.c_str(),v.c_str());
+  response->printf("\r\nMore info: https://canair.io/docs/cli\r\n");
 }
 
 void wcli_kset(char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
   String key = operands.first();
   String v = operands.second();
-  if(isValidKey(key)){
-    if(cfg.getKeyType(key) == ConfKeyType::BOOL) saveBoolean(key,v);
-    else if(cfg.getKeyType(key) == ConfKeyType::FLOAT) saveFloat(key,v);
-    else if(cfg.getKeyType(key) == ConfKeyType::INT) saveInteger(key,v);
-    else if(cfg.getKeyType(key) == ConfKeyType::STRING) saveString(key,v);
-    else Serial.println("Invalid key action for: " + key);
-  }
-  else {
-    Serial.printf("invalid key: %s\r\nPlease see the valid keys with klist command.\r\n",key.c_str());
+  if(cfg.saveAuto(key,v)){
+    response->printf("saved key %s\t: %s\r\n", key, v);
   }
 }
 
 void wcli_uartpins(char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
   if (operands.first().isEmpty() || operands.second().isEmpty()) {
-    Serial.printf("current TX/RX configured: %i/%i\r\n", sTX, sRX);
+    response->printf("current TX/RX configured: %i/%i\r\n", sTX, sRX);
     return;
   }
   int sTX = operands.first().toInt();
@@ -110,7 +64,7 @@ void wcli_uartpins(char *args, Stream *response) {
     saveSensorPins(sTX, sRX);
   }
   else
-    Serial.println("invalid pins values");
+    response->println("invalid pins values");
 }
 
 bool validBattLimits(float min, float max){
@@ -122,13 +76,13 @@ void wcli_battvLimits(char *args, Stream *response) {
   float battMin = operands.first().toFloat();
   float battMax = operands.second().toFloat();
   if (validBattLimits(battMin, battMax)) {
-    Serial.printf("Battery limits: Vmin: %2.2f Vmax: %2.2f\r\n", battMin, battMax);
+    response->printf("Battery limits: Vmin: %2.2f Vmax: %2.2f\r\n", battMin, battMax);
     battery.setBattLimits(battMin, battMax);
     cfg.saveFloat(CONFKEYS::KBATVMI,battMin);
     cfg.saveFloat(CONFKEYS::KBATVMX,battMax);
   }
   else {
-    Serial.println("-->[BATT] !invalid battery value! Current values:");
+    response->println("-->[BATT] !invalid battery value! Current values:");
     battery.printLimits();
   }
 }
@@ -138,13 +92,13 @@ void wcli_chargLimits(char *args, Stream *response) {
   float battMin = operands.first().toFloat();
   float battMax = operands.second().toFloat();
   if (validBattLimits(battMin, battMax)) {
-    Serial.printf("Battery charging limits: Vmin: %2.2f Vmax: %2.2f\r\n", battMin, battMax);
+    response->printf("Battery charging limits: Vmin: %2.2f Vmax: %2.2f\r\n", battMin, battMax);
     battery.setChargLimits(battMin, battMax);
     cfg.saveFloat(CONFKEYS::KCHRVMI,battMin);
     cfg.saveFloat(CONFKEYS::KCHRVMX,battMax);
   }
   else {
-    Serial.println("-->[BATT] !invalid battery value! Current values:");
+    response->println("-->[BATT] !invalid battery value! Current values:");
     battery.printLimits();
   }
 }
@@ -157,27 +111,27 @@ void wcli_stime(char *args, Stream *response) {
     sensors.setSampleTime(stime);
   }
   else 
-    Serial.println("invalid sample time");
+    response->println("invalid sample time");
 }
 
-void wcli_stype_error(){
-  Serial.println("invalid UART sensor type! Choose one into 0-7:");
-  for (int i=0; i<=7 ;i++)Serial.printf("%i\t%s\r\n",i,sensors.getSensorName((SENSORS)i));
+void wcli_stype_error(Stream *response) {
+  response->println("invalid UART sensor type! Choose one into 0-7:");
+  for (int i = 0; i <= 7; i++) response->printf("%i\t%s\r\n", i, sensors.getSensorName((SENSORS)i));
 }
 
 void wcli_stype(char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
   String stype = operands.first();
   if(stype.length()==0){
-    wcli_stype_error();
+    wcli_stype_error(response);
     return;
   }
   int type = stype.toInt();
-  if (type > 7 || type < 0) wcli_stype_error();
+  if (type > 7 || type < 0) wcli_stype_error(response);
   else {
     saveSensorType(type);
-    Serial.printf("\nselected UART sensor model\t: %s\r\n", sensors.getSensorName((SENSORS)type));
-    Serial.println("Please reboot to changes apply");
+    response->printf("\nselected UART sensor model\t: %s\r\n", sensors.getSensorName((SENSORS)type));
+    response->println("Please reboot to changes apply");
   }
 }
 
@@ -189,44 +143,45 @@ void wcli_sgeoh (char *args, Stream *response) {
     saveGeo(geoh);
     ifxdbEnable(true);
   } else {
-    Serial.println("\nInvalid Geohash. (Precision should be > to 5).\r\n");
-    Serial.println("Please visit: http://bit.ly/geohashe");
-    Serial.println("\nand select one of your fixed station.");
+    response->println("\nInvalid Geohash. (Precision should be > to 5).\r\n");
+    response->println("Please visit: http://bit.ly/geohashe");
+    response->println("\nand select one of your fixed station.");
   }
 }
 
-void wcli_sensors() {
-    Serial.printf("\r\nCanAirIO Sensorslib\t: %s\r\n",sensors.getLibraryVersion().c_str());
+void wcli_sensors(Stream *response) {
+    response->printf("\r\nCanAirIO Sensorslib\t: %s\r\n",sensors.getLibraryVersion().c_str());
     int i = 0;
     int count = sensors.getSensorsRegisteredCount();
-    Serial.printf("Sensors count  \t\t: %i (", count);
+    response->printf("Sensors count  \t\t: %i (", count);
     if (count > 0 && sensors.getSensorsRegistered()[0] == SENSORS::Auto) {
-      Serial.printf("%s,", sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[0]));
+      response->printf("%s,", sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[0]));
       i = 1;
     }
     while (sensors.getSensorsRegistered()[i++] != 0) {
-      Serial.printf("%s,", sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i-1]));
+      response->printf("%s,", sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i-1]));
     }
-    Serial.println(")");
+    response->println(")");
 }
 
-void wcli_sensors_values() {
-    Serial.println("\r\nCurrent sensors values:");
+void wcli_sensors_values(Stream *response) {
+    response->println("\r\nCurrent sensors values:");
     UNIT unit = sensors.getNextUnit();
     while(unit != UNIT::NUNIT) {
         String uName = sensors.getUnitName(unit);
         float uValue = sensors.getUnitValue(unit);
         String uSymb = sensors.getUnitSymbol(unit);
-        Serial.printf(" %s:\t%02.1f\t%s\r\n", uName.c_str(), uValue, uSymb.c_str());
+        response->printf(" %s:\t%02.1f\t%s\r\n", uName.c_str(), uValue, uSymb.c_str());
         unit = sensors.getNextUnit();
     }
 }
 
 void wcli_info(char *args, Stream *response) {
-  Serial.println();
-  Serial.print(getDeviceInfo());
-  wcli_sensors();
-  wcli_sensors_values();
+  response->println();
+  response->print(getDeviceInfo());
+  wcli.status(response);
+  wcli_sensors(response);
+  wcli_sensors_values(response);
 }
 
 void wcli_exit(char *args, Stream *response) {
@@ -236,24 +191,24 @@ void wcli_exit(char *args, Stream *response) {
 
 void wcli_setup(char *args, Stream *response) {
   setup_mode = true;
-  Serial.println("\r\nSetup Mode. Main presets:\r\n");
+  response->println("\r\nSetup Mode. Main presets:\r\n");
   String canAirIOname = "Please set your geohash with \"sgeoh\" cmd";
   if(geo.length()>5)canAirIOname = getStationName();
-  Serial.printf("CanAirIO device id\t: %s\r\n", canAirIOname.c_str());
-  Serial.printf("Device factory id\t: %s\r\n", getAnaireDeviceId().c_str());
-  Serial.printf("Sensor geohash id\t: %s\r\n", geo.length() == 0 ? "undefined" : geo.c_str());
-  Serial.printf("WiFi current status\t: %s\r\n", WiFi.status() == WL_CONNECTED ? "connected" : "disconnected");
-  Serial.printf("Sensor sample time \t: %d\r\n", stime);
-  Serial.printf("UART sensor model \t: %s\r\n", sensors.getSensorName((SENSORS)stype));
-  Serial.printf("UART sensor TX pin\t: %d\r\n", sTX == -1 ? PMS_TX : sTX);
-  Serial.printf("UART sensor RX pin\t: %d\r\n", sRX == -1 ? PMS_RX : sRX);
-  Serial.printf("Current debug mode\t: %s\r\n", devmode == true ? "enabled" : "disabled");
+  response->printf("CanAirIO device id\t: %s\r\n", canAirIOname.c_str());
+  response->printf("Device factory id\t: %s\r\n", getAnaireDeviceId().c_str());
+  response->printf("Sensor geohash id\t: %s\r\n", geo.length() == 0 ? "undefined" : geo.c_str());
+  response->printf("WiFi current status\t: %s\r\n", WiFi.status() == WL_CONNECTED ? "connected" : "disconnected");
+  response->printf("Sensor sample time \t: %d\r\n", stime);
+  response->printf("UART sensor model \t: %s\r\n", sensors.getSensorName((SENSORS)stype));
+  response->printf("UART sensor TX pin\t: %d\r\n", sTX == -1 ? PMS_TX : sTX);
+  response->printf("UART sensor RX pin\t: %d\r\n", sRX == -1 ? PMS_RX : sRX);
+  response->printf("Current debug mode\t: %s\r\n", devmode == true ? "enabled" : "disabled");
 
   wcli_klist((char *)"basic",response);
 
-  Serial.printf("\r\nType \"klist\" for advanced settings\r\n");
-  Serial.printf("Type \"help\" for available commands details\r\n");
-  Serial.printf("Type \"exit\" for leave the safe mode\r\n");
+  response->printf("\r\nType \"klist\" for advanced settings\r\n");
+  response->printf("Type \"help\" for available commands details\r\n");
+  response->printf("Type \"info\" for sytem and sensors details\r\n");
 }
 
 void wcli_reboot(char *args, Stream *response) {
@@ -264,12 +219,12 @@ void wcli_swipe(char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
   String deviceId = operands.first();
   if (deviceId.equals(getAnaireDeviceId())) {
-    Serial.println("Clearing device to defaults..");
+    response->println("Clearing device to defaults..");
     wcli.clearSettings();
     cfg.clear();
   }
   else {
-    Serial.println("\nPlease type clear and the factory device id. (showed in setup command)");
+    response->println("\nPlease type clear and the factory device id. (showed in setup command)");
   }
 }
 
@@ -288,7 +243,7 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
 void cliTask(void *param) {
   for ( ; ; ) {
     wcli.loop();
-    vTaskDelay(120 / portTICK_PERIOD_MS);
+    vTaskDelay(60 / portTICK_PERIOD_MS);
   }
   vTaskDelete( NULL );
 }
@@ -312,6 +267,7 @@ int32_t cliTaskStackFree(){
 }
 
 const char logo[] =
+"                                                                          \r\n"
 " .d8888b.                           d8888 d8b         8888888  .d88888b.  \r\n"
 "d88P  Y88b                         d88888 Y8P           888   d88P\" \"Y88b \r\n"
 "888    888                        d88P888               888   888     888 \r\n"
@@ -352,8 +308,12 @@ void cliInit() {
   wcli.add("clear", &wcli_clear, "\tclear shell");
   wcli.add("setup", &wcli_setup, "\tTYPE THIS WORD to enter to SAFE MODE setup");
   
-  wcli.begin();
+  wcli.begin("CanAirIO");
 
+#ifndef DISABLE_CLI_TELNET 
+  wcli.enableTelnet();
+  wcli.shellTelnet->attachLogo(logo);
+#endif
   // Configuration loop:
   // 10 seconds for reconfiguration or first use case.
   // for reconfiguration type disconnect and switch the "output" mode

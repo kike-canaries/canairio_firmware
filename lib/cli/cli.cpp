@@ -18,7 +18,9 @@ void wcli_debug(char *args, Stream *response) {
   debugEnable(dbgmode);
   devmode = dbgmode;
   sensors.setDebugMode(dbgmode);
+  #ifndef DISABLE_BATT
   battery.debug = dbgmode;
+  #endif
 }
 
 void wcli_klist(char *args, Stream *response) {
@@ -72,6 +74,7 @@ bool validBattLimits(float min, float max){
 }
 
 void wcli_battvLimits(char *args, Stream *response) {
+  #ifndef DISABLE_BATT
   Pair<String, String> operands = wcli.parseCommand(args);
   float battMin = operands.first().toFloat();
   float battMax = operands.second().toFloat();
@@ -85,9 +88,11 @@ void wcli_battvLimits(char *args, Stream *response) {
     response->println("-->[BATT] !invalid battery value! Current values:");
     battery.printLimits();
   }
+  #endif
 }
 
 void wcli_chargLimits(char *args, Stream *response) {
+  #ifndef DISABLE_BATT
   Pair<String, String> operands = wcli.parseCommand(args);
   float battMin = operands.first().toFloat();
   float battMax = operands.second().toFloat();
@@ -101,6 +106,7 @@ void wcli_chargLimits(char *args, Stream *response) {
     response->println("-->[BATT] !invalid battery value! Current values:");
     battery.printLimits();
   }
+  #endif
 }
 
 void wcli_stime(char *args, Stream *response) {

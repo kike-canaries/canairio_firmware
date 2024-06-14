@@ -51,8 +51,10 @@ void influxDbParseFields() {
     sensor.addField("alt",sensors.getAltitude());
     sensor.addField("cpm",sensors.getGeigerCPM());
     sensor.addField("usvh",sensors.getGeigerMicroSievertHour());
+    #ifndef DISABLE_BATT
     sensor.addField("bat",battery.getCharge());
     sensor.addField("vbat",battery.getVoltage());
+    #endif
     sensor.addField("rssi",getWifiRSSI());
     sensor.addField("heap",ESP.getFreeHeap());
     sensor.addField("name",getStationName().c_str());

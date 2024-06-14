@@ -171,11 +171,13 @@ class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
     }
 };
 
+#ifndef DISABLE_BATT
 class MyBatteryUpdateCallbacks : public BatteryUpdateCallbacks {
     void onBatteryUpdate(float voltage, int charge, bool charging) {
         gui.setBatteryStatus(voltage, charge, charging);
     };
 };
+#endif
 
 /// sensors data callback
 void onSensorDataOk() {
@@ -249,18 +251,20 @@ void startingSensors() {
 }
 
 void initBattery() {
+#ifndef DISABLE_BATT
   if (FAMILY != "ESP32-C3") {
-      battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
-      battery.init(devmode);
-      if(cfg.isKey(CONFKEYS::KBATVMX)) {
-        battery.setBattLimits(cfg.getFloat(CONFKEYS::KBATVMI),cfg.getFloat(CONFKEYS::KBATVMX));
-      }
-      if(cfg.isKey(CONFKEYS::KCHRVMX)) {
-        battery.setChargLimits(cfg.getFloat(CONFKEYS::KCHRVMI),cfg.getFloat(CONFKEYS::KCHRVMX));
-      }
-      if(devmode) battery.printLimits();
-      battery.update();
+    battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
+    battery.init(devmode);
+    if (cfg.isKey(CONFKEYS::KBATVMX)) {
+      battery.setBattLimits(cfg.getFloat(CONFKEYS::KBATVMI), cfg.getFloat(CONFKEYS::KBATVMX));
+    }
+    if (cfg.isKey(CONFKEYS::KCHRVMX)) {
+      battery.setChargLimits(cfg.getFloat(CONFKEYS::KCHRVMI), cfg.getFloat(CONFKEYS::KCHRVMX));
+    }
+    if (devmode) battery.printLimits();
+    battery.update();
   }
+#endif
 }
 
 void initCLIFailsafe() {
@@ -395,7 +399,9 @@ void loop() {
 #endif
   gui.setGUIStatusFlags(WiFi.isConnected(), true, false);
   gui.loop();     // Only for OLED
-  battery.loop(); // refresh battery level and voltage
+#ifndef DISABLE_BATT
+  battery.loop();  // refresh battery level and voltage
+#endif
 #ifdef LORADEVKIT
   os_runloop_once();
 #endif

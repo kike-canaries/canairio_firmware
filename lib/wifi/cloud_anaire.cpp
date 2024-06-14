@@ -37,8 +37,10 @@ void anairePublish() {
         doc["cpm"] = String(sensors.getGeigerCPM());
         doc["usvh"] = String(sensors.getGeigerMicroSievertHour());
         doc["geo"] = geo;
+        #ifndef DISABLE_BATT
         doc["battery"] = String(battery.getCharge());
         doc["VBat"] = String(battery.getVoltage());
+        #endif
         doc["co"] = String(sensors.getCO());
         doc["nh3"] = String(sensors.getNH3());
         doc["no2"] = String(sensors.getNO2());

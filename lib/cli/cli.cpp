@@ -10,6 +10,7 @@ bool first_run = true;
 
 TaskHandle_t xCliHandle;
 
+
 void wcli_debug(char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
   String param = operands.first();
@@ -238,14 +239,6 @@ void wcli_clear(char *args, Stream *response){
   wcli.shell->clear();
 }
 
-class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
-  void onWifiStatus(bool isConnected) {}
-
-  void onHelpShow() {}
-
-  void onNewWifi(String ssid, String passw) { saveWifi(ssid, passw); }
-};
-
 void cliTask(void *param) {
   for ( ; ; ) {
     wcli.loop();
@@ -256,15 +249,7 @@ void cliTask(void *param) {
 
 void cliTaskInit() {
 #ifndef DISABLE_CLI
-  xTaskCreatePinnedToCore(
-      cliTask,     // Function to implement the task
-      "cliTask ",  // Name of the task
-      4000,        // Stack size in words
-      NULL,        // Task input parameter
-      1,           // Priority of the task
-      &xCliHandle,        // Task handle.
-      1            // Core where the task should run
-  );
+  xTaskCreatePinnedToCore(cliTask, "cliTask ", 4000, NULL, 1, &xCliHandle, 1);
 #endif
 }
 
@@ -287,39 +272,53 @@ const char logo[] =
 ""
 ;
 
+void initRemoteShell(){
+#ifndef DISABLE_CLI_TELNET 
+  if (wcli.isTelnetEnable()) wcli.shellTelnet->attachLogo(logo);
+#endif
+}
+
+class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
+  void onWifiStatus(bool isConnected) {}
+
+  void onHelpShow() {}
+
+  void onNewWifi(String ssid, String passw) { saveWifi(ssid, passw); }
+};
+
+void initShell(){
+  wcli.shell->attachLogo(logo);
+  wcli.setCallback(new mESP32WifiCLICallbacks());
+  wcli.setSilentMode(true);
+  wcli.disableConnectInBoot(); // the old manager do that
+  // Main Commands:
+  wcli.add("reboot",&wcli_reboot,       "\tperform a ESP32 reboot");
+  wcli.add("swipe", &wcli_swipe,        "\t\tfactory settings reset. (needs confirmation)");
+  wcli.add("debug", &wcli_debug,        "\t\tenable debug mode");
+  wcli.add("stime", &wcli_stime,        "\t\tset the sample time (seconds)");
+  wcli.add("stype", &wcli_stype,        "\t\tset the sensor type (UART)");
+  wcli.add("sgeoh", &wcli_sgeoh,        "\t\tset geohash. Type help for more details.");
+  wcli.add("spins", &wcli_uartpins,     "\t\tset the UART pins TX RX");
+  wcli.add("battv", &wcli_battvLimits,  "\t\tset battery min/max voltage");
+  wcli.add("charg", &wcli_chargLimits,  "\t\tset battery charging min/max voltage");
+  wcli.add("kset",  &wcli_kset,         "\t\tset preference key (e.g on/off or 1/0 or text)");
+  wcli.add("klist", &wcli_klist,        "\t\tlist valid preference keys");
+  wcli.add("info",  &wcli_info,         "\t\tget device information");
+  wcli.add("exit",  &wcli_exit,         "\t\texit of the setup mode. AUTO EXIT in 10 seg! :)");
+  wcli.add("clear", &wcli_clear,        "\t\tclear shell");
+  wcli.add("setup", &wcli_setup,        "\t\tTYPE THIS WORD to enter to SAFE MODE setup");
+  
+  wcli.begin("CanAirIO");
+}
+
 /**
  * @brief WiFi CLI init and CanAirIO custom commands
  **/
 void cliInit() {
 
-  wcli.shell->attachLogo(logo);
-
-  wcli.setCallback(new mESP32WifiCLICallbacks());
-  wcli.setSilentMode(true);
-  wcli.disableConnectInBoot();
-  // Main Commands:
-  wcli.add("reboot", &wcli_reboot, "\tperform a ESP32 reboot");
-  wcli.add("swipe", &wcli_swipe, "\tfactory settings reset. (needs confirmation)");
-  wcli.add("debug", &wcli_debug, "\tenable debug mode");
-  wcli.add("stime", &wcli_stime, "\tset the sample time (seconds)");
-  wcli.add("stype", &wcli_stype, "\tset the sensor type (UART)");
-  wcli.add("sgeoh", &wcli_sgeoh, "\tset geohash. Type help for more details.");
-  wcli.add("spins", &wcli_uartpins, "\tset the UART pins TX RX");
-  wcli.add("battv", &wcli_battvLimits, "\tset battery min/max voltage");
-  wcli.add("charg", &wcli_chargLimits, "\tset battery charging min/max voltage");
-  wcli.add("kset", &wcli_kset, "\tset preference key (e.g on/off or 1/0 or text)");
-  wcli.add("klist", &wcli_klist, "\tlist valid preference keys");
-  wcli.add("info", &wcli_info, "\tget device information");
-  wcli.add("exit", &wcli_exit, "\texit of the setup mode. AUTO EXIT in 10 seg! :)");
-  wcli.add("clear", &wcli_clear, "\tclear shell");
-  wcli.add("setup", &wcli_setup, "\tTYPE THIS WORD to enter to SAFE MODE setup");
+  initShell();         // shell config and launched via Serial
+  initRemoteShell();   // if it is enable, launched via Telnet
   
-  wcli.begin("CanAirIO");
-
-#ifndef DISABLE_CLI_TELNET 
-  wcli.enableTelnet();
-  wcli.shellTelnet->attachLogo(logo);
-#endif
   // Configuration loop:
   // 10 seconds for reconfiguration or first use case.
   // for reconfiguration type disconnect and switch the "output" mode

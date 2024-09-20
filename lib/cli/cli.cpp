@@ -122,8 +122,9 @@ void wcli_stime(char *args, Stream *response) {
 }
 
 void wcli_stype_error(Stream *response) {
-  response->println("invalid UART sensor type! Choose one into 0-7:");
-  for (int i = 0; i <= 7; i++) response->printf("%i\t%s\r\n", i, sensors.getSensorName((SENSORS)i));
+  // SENSORS::SSCD30-1 is the seperator (see Sensors.hpp)
+  response->printf("invalid UART sensor type! Choose one into 0-%i:\r\n",SENSORS::SSCD30-1);
+  for (int i = 0; i <= SENSORS::SSCD30-1; i++) response->printf("%i\t%s\r\n", i, sensors.getSensorName((SENSORS)i));
 }
 
 void wcli_stype(char *args, Stream *response) {
@@ -134,7 +135,7 @@ void wcli_stype(char *args, Stream *response) {
     return;
   }
   int type = stype.toInt();
-  if (type > 7 || type < 0) wcli_stype_error(response);
+  if (type > SENSORS::SSCD30-1 || type < 0) wcli_stype_error(response); // SENSORS::SSCD30-1 is the seperator (see Sensors.hpp) 
   else {
     saveSensorType(type);
     response->printf("\nselected UART sensor model\t: %s\r\n", sensors.getSensorName((SENSORS)type));

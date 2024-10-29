@@ -27,13 +27,13 @@ void wcli_debug(char *args, Stream *response) {
 void wcli_klist(char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
   String opt = operands.first();
-  int key_count = KCOUNT;                       // Show all keys to configure 
-  if (opt.equals("basic")) key_count = KBASIC; // Only show the basic keys to configure
+  int key_count = PKEYS::KCOUNT;                       // Show all keys to configure 
+  if (opt.equals("basic")) key_count = PKEYS::KBASIC; // Only show the basic keys to configure
   response->printf("\n%11s \t%s \t%s \r\n", "KEYNAME", "DEFINED", "VALUE");
   response->printf("\n%11s \t%s \t%s \r\n", "=======", "=======", "=====");
 
   for (int i = 0; i < key_count; i++) {
-    if (i == KBASIC) continue;
+    if (i == PKEYS::KBASIC) continue;
     if (i == PKEYS::KPASS) continue;
     String key = cfg.getKey((CONFKEYS)i);
     bool isDefined = cfg.isKey(key);

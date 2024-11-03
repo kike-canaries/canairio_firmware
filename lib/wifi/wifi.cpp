@@ -93,7 +93,6 @@ void wifiConnect(const char* ssid, const char* pass) {
   }
   delay(500);
   if (WiFi.isConnected()) {
-    isNewWifi = false;  // flag for config via BLE
     #ifndef DISABLE_CLI
     if(!wcli.isSSIDSaved(ssid))wcli.saveNetwork(ssid, pass);
     #endif

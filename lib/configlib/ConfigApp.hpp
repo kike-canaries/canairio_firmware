@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include <Geohash.hpp>
 #include <EasyPreferences.hpp>
+#include <ESP32WifiCLI.hpp>
 #include "Watchdog.hpp"
 
 class RemoteConfigCallbacks;

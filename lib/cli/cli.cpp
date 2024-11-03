@@ -291,6 +291,7 @@ void initShell(){
   wcli.shell->attachLogo(logo);
   wcli.setCallback(new mESP32WifiCLICallbacks());
   wcli.setSilentMode(true);
+  wcli.disableAutoConnect();
   // Main Commands:
   wcli.add("reboot",&wcli_reboot,       "\tperform a ESP32 reboot");
   wcli.add("swipe", &wcli_swipe,        "\t\tfactory settings reset. (needs confirmation)");

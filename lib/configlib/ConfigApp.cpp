@@ -196,19 +196,24 @@ bool saveSSID(String ssid){
     return false;
 }
 
-bool saveWifi(String ssid, String pass){
-    if (ssid.length() > 0) {
-        cfg.saveString("ssid", ssid);
-        cfg.saveString("pass", pass);
-        cfg.saveBool(CONFKEYS::KWIFIEN, true);
-        wifi_enable = true;
-        isNewWifi = true;  // for execute wifi reconnect
-        Serial.println("-->[CONF] WiFi credentials saved!");
-        log_i("[CONF] ssid:%s pass:%s",ssid,pass);
-        return true;
+bool saveWifi(String ssid, String pass) {
+  if (ssid.length() > 0) {
+    if (!wcli.isSSIDSaved(ssid)) {
+      wcli.setSSID(ssid);
+      wcli.setPASW(pass);
+      wcli.wifiAPConnect(true);
     }
-    // DEBUG("[W][CONF] empty Wifi SSID");
-    return false;
+    // DEPRECATED
+    cfg.saveString("ssid", ssid);
+    cfg.saveString("pass", pass);
+    cfg.saveBool(CONFKEYS::KWIFIEN, true);
+    wifi_enable = true;
+    Serial.println("-->[CONF] WiFi credentials saved!");
+    log_i("[CONF] ssid:%s pass:%s", ssid, pass);
+    return true;
+  }
+  // DEBUG("[W][CONF] empty Wifi SSID");
+  return false;
 }
 
 bool saveInfluxDb(String db, String ip, int pt) {

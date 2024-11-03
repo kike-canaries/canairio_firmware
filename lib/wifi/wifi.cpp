@@ -133,11 +133,11 @@ void wifiLoop() {
   static uint_least64_t wifiTimeStamp = 0;
   if (millis() - wifiTimeStamp > 5000) {
     wifiTimeStamp = millis();
-    if (!WiFi.isConnected()) return;
     setWifiConnected(WiFi.isConnected());
     if (isWifiEnable() && ssid.length() > 0 && !WiFi.isConnected()) {
       wifiInit();
     }
+    if (!WiFi.isConnected()) return;
     influxDbInit();
     influxDbLoop();  // influxDB publication
     if (cfg.getBool(CONFKEYS::KANAIRE, false)) anaireLoop();

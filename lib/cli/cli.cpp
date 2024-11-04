@@ -200,7 +200,7 @@ void wcli_exit(char *args, Stream *response) {
 void wcli_setup(char *args, Stream *response) {
   setup_mode = true;
   response->println("\r\nSetup Mode. Main presets:\r\n");
-  String canAirIOname = "Please set your geohash with \"sgeoh\" cmd";
+  String canAirIOname = "Please set your geohash with \"sgeoh\" command";
   if(geo.length()>5)canAirIOname = getStationName();
   response->printf("CanAirIO device id\t: %s\r\n", canAirIOname.c_str());
   response->printf("Device factory id\t: %s\r\n", getAnaireDeviceId().c_str());
@@ -293,7 +293,7 @@ void initShell(){
   wcli.setSilentMode(true);
   wcli.disableAutoConnect();
   // Main Commands:
-  wcli.add("reboot",&wcli_reboot,       "\tperform a ESP32 reboot");
+  wcli.add("reboot",&wcli_reboot,       "\tperform an ESP32 reboot");
   wcli.add("swipe", &wcli_swipe,        "\t\tfactory settings reset. (needs confirmation)");
   wcli.add("debug", &wcli_debug,        "\t\tenable debug mode");
   wcli.add("stime", &wcli_stime,        "\t\tset the sample time (seconds)");

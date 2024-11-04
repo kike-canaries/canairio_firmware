@@ -198,21 +198,35 @@ bool saveSSID(String ssid){
 
 bool saveWifi(String ssid, String pass) {
   if (ssid.length() > 0) {
-    if (!wcli.isSSIDSaved(ssid)) {
-      wcli.setSSID(ssid);
-      wcli.setPASW(pass);
-      wcli.wifiAPConnect(true);
-    }
-    // DEPRECATED
-    cfg.saveString("ssid", ssid);
-    cfg.saveString("pass", pass);
     cfg.saveBool(CONFKEYS::KWIFIEN, true);
     wifi_enable = true;
-    Serial.println("-->[CONF] WiFi credentials saved!");
-    log_i("[CONF] ssid:%s pass:%s", ssid, pass);
-    return true;
+    bool saved_wifi = false;
+
+    bool new_wifi = !wcli.isSSIDSaved(ssid); 
+    if (new_wifi) {
+      wcli.setSSID(ssid);
+      wcli.setPASW(pass);
+      wcli.wifiAPConnect(true); 
+    }
+    if (!wcli.wifiValidation()) {
+      if (new_wifi) wcli.loadAP(wcli.getDefaultAP());
+      if (!new_wifi) wcli.loadAP(ssid);
+      ssid = wcli.getCurrentSSID();
+      pass = wcli.getCurrentPASW(); 
+      log_w("[CONF] restored ssid:%s pass:%s", ssid, pass);
+      saved_wifi = false;
+    }
+    else if (new_wifi) {
+      Serial.println("-->[CONF] WiFi credentials saved!");
+      log_i("[CONF] new ssid:%s pass:%s", ssid, pass);
+      saved_wifi = true;
+    }
+    log_i("[CONF] restored ssid:%s pass:%s", ssid, pass);
+    cfg.saveString("ssid", ssid);
+    cfg.saveString("pass", pass);
+    return saved_wifi;
   }
-  // DEBUG("[W][CONF] empty Wifi SSID");
+  log_w("[W][CONF] empty Wifi SSID");
   return false;
 }
 

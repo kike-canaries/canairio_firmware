@@ -79,32 +79,25 @@ void wifiCloudsInit() {
   if (hassIsConnected()) Serial.printf("-->[MQTT] Home Assistant  \t: connected!\r\n");
 }
 
-void wifiConnect(const char* ssid, const char* pass) {
+void wifiConnect() {
+  if (!wcli.getCurrentSSID().equals(ssid)){
+    saveWifi(ssid, pass);
+    return;
+  }
   Serial.print("-->[WIFI] connecting to wifi\t: ");
   Serial.print(ssid);
-  int wifi_retry = 0;
-  WiFi.begin(ssid, pass);
+  wcli.wifiAPConnect(false);
 
-  if (FAMILY == "ESP32-C3") WiFi.setTxPower(WIFI_POWER_8_5dBm);
-
-  while (!WiFi.isConnected() && wifi_retry++ <= WIFI_RETRY_CONNECTION) {
-    Serial.print(".");
-    delay(500);  // increment this delay on possible reconnect issues
-  }
-  delay(500);
   if (WiFi.isConnected()) {
-    #ifndef DISABLE_CLI
-    if(!wcli.isSSIDSaved(ssid))wcli.saveNetwork(ssid, pass);
-    #endif
     Serial.println(" done."); 
   } else {
-    Serial.println("fail!\r\n[E][WIFI] disconnected!");
+    Serial.println("fail!");
   }
 }
 
 void wifiInit() {
   if (!WiFi.isConnected() && isWifiEnable() && ssid.length() > 0) {
-    wifiConnect(ssid.c_str(), pass.c_str());
+    wifiConnect();
   }
   if(WiFi.isConnected()) {
     Serial.print("-->[WIFI] device network IP\t: ");

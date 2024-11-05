@@ -80,7 +80,7 @@ void wifiCloudsInit() {
 }
 
 void wifiConnect() {
-  if (!wcli.getCurrentSSID().equals(ssid)){
+  if (!(wcli.getCurrentSSID().compareTo(ssid)==0)){
     saveWifi(ssid, pass);
     return;
   }
@@ -90,9 +90,7 @@ void wifiConnect() {
 
   if (WiFi.isConnected()) {
     Serial.println(" done."); 
-  } else {
-    Serial.println("fail!");
-  }
+  } 
 }
 
 void wifiInit() {
@@ -123,7 +121,7 @@ void wifiRestart() {
 
 void wifiLoop() {
   static uint_least64_t wifiTimeStamp = 0;
-  if (millis() - wifiTimeStamp > 5000) {
+  if (millis() - wifiTimeStamp > 10000) {
     wifiTimeStamp = millis();
     setWifiConnected(WiFi.isConnected());
     if (isWifiEnable() && ssid.length() > 0 && !WiFi.isConnected()) {

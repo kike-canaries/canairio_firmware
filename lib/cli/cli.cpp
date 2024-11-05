@@ -147,13 +147,12 @@ void wcli_sgeoh (char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
   String geoh = operands.first();
   if (geoh.length() > 5) {
-    geoh.toLowerCase(); 
-    saveGeo(geoh);
-    ifxdbEnable(true);
+    geoh.toLowerCase();
+    if (saveGeo(geoh)) ifxdbEnable(true);
   } else {
-    response->println("\nInvalid Geohash. (Precision should be > to 5).\r\n");
-    response->println("Please visit: http://bit.ly/geohashe");
-    response->println("\nand select one of your fixed station.");
+    response->println("\nInvalid localization. (Precision should be > to 5 chars).\r\n");
+    response->println("Please visit:\033[0;33m http://bit.ly/geohashe\033[0m and please");
+    response->println("\nchoose a geohash code of your fixed station position.");
   }
 }
 
@@ -199,8 +198,8 @@ void wcli_exit(char *args, Stream *response) {
 
 void wcli_setup(char *args, Stream *response) {
   setup_mode = true;
-  response->println("\r\nSetup Mode. Main presets:\r\n");
-  String canAirIOname = "Please set your geohash with \"sgeoh\" command";
+  response->println("\r\nMain presets:\r\n");
+  String canAirIOname = "Please first set your position (using \"sgeoh\" command)";
   if(geo.length()>5)canAirIOname = getStationName();
   response->printf("CanAirIO device id\t: %s\r\n", canAirIOname.c_str());
   response->printf("Device factory id\t: %s\r\n", getAnaireDeviceId().c_str());
@@ -275,7 +274,7 @@ const char logo[] =
 
 void initRemoteShell(){
 #ifndef DISABLE_CLI_TELNET 
-  if (wcli.isTelnetEnable()) wcli.shellTelnet->attachLogo(logo);
+  if (wcli.isTelnetRunning()) wcli.shellTelnet->attachLogo(logo);
 #endif
 }
 
@@ -291,7 +290,7 @@ void initShell(){
   wcli.shell->attachLogo(logo);
   wcli.setCallback(new mESP32WifiCLICallbacks());
   wcli.setSilentMode(true);
-  wcli.disableAutoConnect();
+  // wcli.disableAutoConnect();
   // Main Commands:
   wcli.add("reboot",&wcli_reboot,       "\tperform an ESP32 reboot");
   wcli.add("swipe", &wcli_swipe,        "\t\tfactory settings reset. (needs confirmation)");
@@ -316,7 +315,6 @@ void initShell(){
  * @brief WiFi CLI init and CanAirIO custom commands
  **/
 void cliInit() {
-
   initShell();         // shell config and launched via Serial
   initRemoteShell();   // if it is enable, launched via Telnet
   
@@ -326,7 +324,9 @@ void cliInit() {
   uint32_t start = millis();
   if (cfg.getBool(CONFKEYS::KFAILSAFE, true))
   {
+    wcli.shell->setBannerText("setup");
     while (setup_mode || (millis() - start < setup_time)) wcli.loop();
+    wcli.shell->setBannerText("CanAirIO");
     Serial.println();
     if (setup_time == 0)
       Serial.println("==>[INFO] Settings saved. Booting..\r\n");

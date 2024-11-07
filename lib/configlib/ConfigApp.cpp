@@ -78,7 +78,7 @@ void reload() {
     altoffset = cfg.getFloat(CONFKEYS::KALTOFST, 0.0);
     sealevel = cfg.getFloat(CONFKEYS::KSEALVL, 1013.25);
     devmode = cfg.getBool(CONFKEYS::KDEBUG, false);
-    pax_enable = cfg.getBool(CONFKEYS::KPAXENB, true);
+    pax_enable = cfg.getBool(CONFKEYS::KPAXENB, false);
     i2conly = cfg.getBool(CONFKEYS::KI2CONLY, false);
     solarmode = cfg.getBool(CONFKEYS::KSOLAREN, false);
     deepSleep = cfg.getInt(CONFKEYS::KDEEPSLP, 0);
@@ -90,13 +90,20 @@ void reload() {
 
 String getCurrentConfig() {
     StaticJsonDocument<1000> doc;
-    doc["wmac"] = (uint16_t)(chipid >> 32);                  // chipid calculated in init
-    doc["anaireid"] =  getStationName();                     // deviceId for Anaire cloud
-    doc["wsta"] = wifi_connected;                            // current wifi state 
+    doc["wmac"] = (uint16_t)(chipid >> 32);  // chipid calculated in init
+    doc["anaireid"] = getStationName();      // deviceId for Anaire cloud
+    doc["wsta"] = wifi_connected;            // current wifi state
     doc["vrev"] = REVISION;
     doc["vflv"] = FLAVOR;
     doc["vtag"] = TARGET;
     doc["vmac"] = getDeviceId();
+    doc["wenb"] = cfg.getBool(CONFKEYS::KWIFIEN, false);      // wifi on/off
+    doc["ienb"] = cfg.getBool(CONFKEYS::KIFXENB, false);      // ifxdb on/off
+    doc["denb"] = cfg.getBool(CONFKEYS::KDEBUG, false);       // debug mode enable
+    doc["sse"] = cfg.getBool(CONFKEYS::KSOLAREN, false);      // Enable solar station
+    doc["geo"] = cfg.getString("geo", "");                    // influxdb GeoHash tag
+    doc["i2conly"] = cfg.getBool(CONFKEYS::KI2CONLY, false);  // force only i2c sensors
+    doc["toffset"] = cfg.getFloat(CONFKEYS::KTOFFST, 0.0);    // temperature offset
     String output;
     serializeJson(doc, output);
 #if CORE_DEBUG_LEVEL >= 3
@@ -106,6 +113,37 @@ String getCurrentConfig() {
     Serial.println("");
 #endif
     return output;
+
+//     StaticJsonDocument<1000> doc;
+//     doc["dname"] = preferences.getString("dname", "");       // device or station name
+//     doc["stime"] = preferences.getInt("stime", 5);           // sensor measure time
+//     doc["stype"] = preferences.getInt("stype", 0);           // sensor UART type;
+//     doc["sRX"] = preferences.getInt("sRX", -1);           // sensor UART type;
+//     doc["sTX"] = preferences.getInt("sTX", -1);           // sensor UART type;
+//     doc["ssid"] = preferences.getString("ssid", "");         // influxdb database name
+//     doc["ifxdb"] = preferences.getString("ifxdb", ifx.db);   // influxdb database name
+//     doc["ifxip"] = preferences.getString("ifxip", ifx.ip);   // influxdb database ip
+//     doc["ifxpt"] = preferences.getInt("ifxpt", ifx.pt);     // influxdb sensor tags
+//     doc["penb"] = preferences.getBool(getKey(CONFKEYS::KBPAXENB).c_str(), true);    // PaxCounter enable
+//     doc["deepSleep"] = preferences.getInt("deepSleep", 0);  // deep sleep time in seconds
+//     doc["altoffset"] = preferences.getFloat("altoffset",0.0);// altitude offset
+//     doc["sealevel"] = preferences.getFloat("sealevel",1013.25);// altitude offset
+//     doc["hassip"] = preferences.getString("hassip", "");     // Home Assistant MQTT server ip
+//     doc["hasspt"] = preferences.getInt("hasspt", 1883);      // Home Assistant MQTT server port
+//     doc["hassusr"] = preferences.getString("hassusr", "");   // Home Assistant MQTT user
+//     // doc["hasspsw"] = preferences.getString("hasspsw", "");// Home Assistant MQTT password
+//     doc["lskey"] = lastKeySaved;                             // last key saved
+//     doc["anaireid"] =  getStationName();                     // deviceId for Anaire cloud
+//     preferences.end();
+//     String output;
+//     serializeJson(doc, output);
+// #if CORE_DEBUG_LEVEL >= 3
+//     char buf[1000];
+//     serializeJsonPretty(doc, buf, 1000);
+//     Serial.printf("-->[CONF] response: %s", buf);
+//     Serial.println("");
+// #endif
+//     return output;
 }
 
 bool saveSampleTime(int time) {
@@ -186,29 +224,43 @@ bool saveSeaLevel(float hpa) {
     return true;
 }
 
+// @deprecated
 bool saveSSID(String ssid){
     if (ssid.length() > 0) {
-        cfg.saveString("ssid", ssid);
-        Serial.println("-->[CONF] WiFi SSID saved!");
+        cfg.saveString(CONFKEYS::KSSID, ssid);
         return true;
     }
-    // DEBUG("[W][CONF] empty Wifi SSID");
     return false;
 }
 
-bool saveWifi(String ssid, String pass){
-    if (ssid.length() > 0) {
-        cfg.saveString("ssid", ssid);
-        cfg.saveString("pass", pass);
-        cfg.saveBool(CONFKEYS::KWIFIEN, true);
-        wifi_enable = true;
-        isNewWifi = true;  // for execute wifi reconnect
-        Serial.println("-->[CONF] WiFi credentials saved!");
-        log_i("[CONF] ssid:%s pass:%s",ssid,pass);
-        return true;
+bool saveWifi(String ssid, String pass) {
+  if (ssid.length() > 0) {
+    cfg.saveBool(CONFKEYS::KWIFIEN, true);
+    wifi_enable = true;
+    bool new_wifi = !wcli.isSSIDSaved(ssid); 
+    if (new_wifi) {
+      wcli.setSSID(ssid);
+      wcli.setPASW(pass);
+      wcli.wifiAPConnect(true); 
     }
-    // DEBUG("[W][CONF] empty Wifi SSID");
-    return false;
+    else
+      wcli.wifiAPConnect(false);
+    delay(2000);
+
+    if (!wcli.wifiValidation()) {
+      if (new_wifi) wcli.loadAP(wcli.getDefaultAP());
+      if (!new_wifi) wcli.loadAP(ssid);
+      ssid = wcli.getCurrentSSID();
+      pass = wcli.getCurrentPASW(); 
+      log_w("[CONF] restored ssid:%s pass:%s", ssid, pass);
+    }
+    log_i("[CONF] ssid:%s pass:%s", ssid, pass);
+    cfg.saveString(CONFKEYS::KSSID, ssid);
+    cfg.saveString(CONFKEYS::KPASS, pass);
+    return true; // backward compatibility with the Android app
+  }
+  log_w("[W][CONF] empty Wifi SSID");
+  return false;
 }
 
 bool saveInfluxDb(String db, String ip, int pt) {
@@ -222,35 +274,35 @@ bool saveInfluxDb(String db, String ip, int pt) {
         Serial.println("-->[CONF] influxdb config saved.");
         return true;
     }
-    // DEBUG("[W][CONF] wrong InfluxDb params!");
+    log_w("[W][CONF] wrong InfluxDb params!");
     return false;
 }
 
-bool saveGeo(double lat, double lon, String geo){
-    if (lat != 0 && lon != 0) {
-        cfg.saveDouble("lat", lat);
-        cfg.saveDouble("lon", lon);
-        cfg.saveString("geo", geo);
-        lat = lat;
-        lon = lon;
-        geo = geo;
-        Serial.printf("-->[CONF] New Geohash: %s \t: (%.4f,%.4f)\r\n",geo,lat,lon);
+bool saveGeo(double latitude, double longitude, String geohash){
+    if (latitude != 0 && longitude != 0) {
+        cfg.saveDouble("lat", latitude);
+        cfg.saveDouble("lon", longitude);
+        cfg.saveString("geo", geohash);
+        lat = latitude;
+        lon = longitude;
+        geo = geohash;
+        Serial.printf("-->[CONF] New Geohash: %s \t: (%.4f,%.4f)\r\n", geo, lat, lon);
         return true;
     }
-    // DEBUG("[W][CONF] wrong GEO params!");
+    log_w("[W][CONF] wrong GEO params!");
     return false;
 }
 
-bool saveGeo(String geo){
-    if (geo.length() > 5) {
-        float lat;
-        float lon;
-        geohash.decode(geo.c_str(),geo.length(),&lon,&lat);
-        log_i("[CONF] Geohash decoder: %s (%.4f,%.4f)\r\n",geo,lat,lon);
-        saveGeo(lat,lon, geo);
+bool saveGeo(String geoh){
+    if (geoh.length() > 5) {
+        float latitude;
+        float longitude;
+        geohash.decode(geoh.c_str(),geoh.length(),&longitude,&latitude);
+        log_i("[CONF] Geohash decoder: %s (%.4f,%.4f)\r\n", geoh, latitude, longitude);
+        saveGeo(latitude,longitude, geoh);
         return true;
     }
-    // DEBUG("[W][CONF] wrong GEO params!");
+    log_w("[W][CONF] wrong GEO params!");
     return false;
 }
 

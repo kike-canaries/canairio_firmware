@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include <Geohash.hpp>
 #include <EasyPreferences.hpp>
+#include <ESP32WifiCLI.hpp>
 #include "Watchdog.hpp"
 
 class RemoteConfigCallbacks;
@@ -74,7 +75,7 @@ bool saveSSID(String ssid);
 bool saveWifi(String ssid, String pass);
 bool saveInfluxDb(String db, String ip, int pt);
 bool saveGeo(String geo);
-bool saveGeo(double lat, double lon, String geo);
+bool saveGeo(double latitude, double longitude, String geohash);
 bool wifiEnable(bool enable);
 bool ifxdbEnable(bool enable);
 bool debugEnable(bool enable);

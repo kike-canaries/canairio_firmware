@@ -86,7 +86,7 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
                 if(sensors.devmode != devmode) sensors.setDebugMode(devmode);
             }
             else{
-                Serial.println("[E][BTLE][CONFIG] saving error!");
+                log_w("[W][BTLE][CONFIG] save return false with %s",value.c_str());
             }
         }
     };

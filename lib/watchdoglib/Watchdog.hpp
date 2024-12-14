@@ -29,6 +29,8 @@ class Watchdog
 
    void execute();
 
+   void feed();
+
    void loop();
 
   private:

@@ -27,5 +27,5 @@ jobs:
           platformio update
       - name: Build test
         run: |
-          pio run -e TTGO_T7 -e ESP32DEVKIT -e TTGO_TDISPLAY -e M5STICKCPLUS -e ESP32C3LOLIN
+          pio run -e TTGO_T7 -e TTGO_TDISPLAY -e ESP32C3LOLIN
 

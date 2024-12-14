@@ -1,9 +1,24 @@
+<h1 align="center">CanAirIO Project</h1>
 
-[![PlatformIO](https://github.com/kike-canaries/canairio_firmware/workflows/PlatformIO/badge.svg)](https://github.com/kike-canaries/canairio_firmware/actions/) ![ViewCount](https://views.whatilearened.today/views/github/kike-canaries/canairio_firmware.svg) [![Liberapay Status](http://img.shields.io/liberapay/receives/CanAirIO.svg?logo=liberapay)](https://liberapay.com/CanAirIO) [![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fcanairio)](https://t.me/canairio)
+<p align="center">
+    <a href="https://github.com/kike-canaries/canairio_firmware/actions/"><img alt="Discord" src="https://github.com/kike-canaries/canairio_firmware/workflows/PlatformIO/badge.svg"/></a>
+    <a href="https://t.me/canairio"> <img src="https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fcanairio" alt="Support Group"/></a>
+    <a href="https://github.com/kike-canaries/canairio_firmware"><img src="https://views.whatilearened.today/views/github/kike-canaries/canairio_firmware.svg" alt="Visitors"/></a>
+    <a href="https://liberapay.com/CanAirIO/"><img alt="Liberapay patrons" src="https://img.shields.io/liberapay/patrons/CanAirIO"></a>
+    <a href="https://canair.io/docs"><img src="https://img.shields.io/badge/user-docs-white.svg" alt="CanAirIO Documentation"/></a>
+    <a href="LICENSE"><img src="https://img.shields.io/static/v1?label=license&message=GPLv3&color=white&style=flat" alt="License"/></a>
+    <br>
+    <br><a href="https://canair.io">CanAirIO</a>‎ ‎ |‎ ‎ <a href="https://canair.io/docs/">Documentation</a><br>
+</p>
 
-# CanAirIO firmware
+> [!NOTE]
+> **CanAirIO 0.7.0** is almost here.
+>
+> Please help test the [development branch](https://github.com/kike-canaries/canairio_firmware/tree/devel) and share your experience in our [Telegram Group](https://t.me/canairio). Please install the "testing version" from the [CanAirIO installer](https://canair.io/installer), configure your WiFi, and you'll receive the latest version soon.
 
-![CanAirIO Community](/images/canairio_collage_community.jpg)
+<br>
+
+<img alt="CanAirIO AirQuality Project" src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/canairio_collage_community.jpg">
 
 <a href="https://play.google.com/store/apps/details?id=hpsaturn.pollutionreporter" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/android-hpma115s0/master/assets/googleplay/gplayicon.png" align="left" style="margin: 2px" width="140" ></a>
 
@@ -16,6 +31,9 @@ A citizen science project that employs both mobile and fixed sensors to measure 
 		</td>
 	</tr>
 </table>
+
+> [!NOTE]
+> **CanAirIO Android App is down now!** sorry, we are working on that, please download a signed version of our [GitHub](https://github.com/kike-canaries/canairio_android/releases)
 
 ## Features
 

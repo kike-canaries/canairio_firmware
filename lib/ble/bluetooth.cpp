@@ -14,7 +14,7 @@ bool oldDeviceConnected = false;
 *************************************************************************/
 
 String getNotificationData() {
-    StaticJsonDocument<40> doc;   // notification capacity is reduced, only main value
+    JsonDocument doc;   // notification capacity is reduced, only main value
     int deviceType = sensors.getUARTDeviceTypeSelected();
     if (deviceType <= 3) {
         doc["P25"] = sensors.getPM25();  
@@ -27,7 +27,7 @@ String getNotificationData() {
 }
 
 String getSensorData() {
-    StaticJsonDocument<512> doc;
+    JsonDocument doc;
     
     doc["P1"] = sensors.getPM1();
     doc["P25"] = sensors.getPM25();

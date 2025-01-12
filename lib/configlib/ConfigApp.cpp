@@ -89,7 +89,7 @@ void reload() {
 }
 
 String getCurrentConfig() {
-    StaticJsonDocument<1000> doc;
+    JsonDocument doc;
     doc["wmac"] = (uint16_t)(chipid >> 32);  // chipid calculated in init
     doc["anaireid"] = getStationName();      // deviceId for Anaire cloud
     doc["wsta"] = wifi_connected;            // current wifi state
@@ -381,7 +381,7 @@ bool saveHassPassword(String passw) {
 }
 
 bool save(const char *json) {
-    StaticJsonDocument<1000> doc;
+    JsonDocument doc;
     auto error = deserializeJson(doc, json);
     if (error) {
         Serial.print(F("[E][CONF] deserialize Json failed with code "));
@@ -400,20 +400,20 @@ bool save(const char *json) {
     String act = doc["act"] | "";
 
     // if (doc.containsKey("dname")) return saveDeviceName(doc["dname"] | "");
-    if (doc.containsKey("stime")) return saveSampleTime(doc["stime"] | 0);
-    if (doc.containsKey("stype")) return saveSensorType(doc["stype"] | 0);
-    if (doc.containsKey("ifxdb")) return saveInfluxDb(doc["ifxdb"] | "", doc["ifxip"] | "", doc["ifxpt"] | 0);
-    if (doc.containsKey("pass") && doc.containsKey("ssid")) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
-    if (doc.containsKey("ssid")) return saveSSID(doc["ssid"] | "");
-    if (doc.containsKey("lat")) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
-    if (doc.containsKey("toffset")) return saveTempOffset(doc["toffset"].as<float>());
-    if (doc.containsKey("altoffset")) return saveAltitudeOffset(doc["altoffset"].as<float>());
-    if (doc.containsKey("sealevel")) return saveSeaLevel(doc["sealevel"].as<float>());
-    if (doc.containsKey("hassip")) return saveHassIP(doc["hassip"] | "");
-    if (doc.containsKey("hasspt")) return saveHassPort(doc["hasspt"] | 1883);
-    if (doc.containsKey("hassusr")) return saveHassUser(doc["hassusr"] | "");
-    if (doc.containsKey("hasspsw")) return saveHassPassword(doc["hasspsw"] | "");
-    if (doc.containsKey("deepSleep")) return saveDeepSleep(doc["deepSleep"] | 0);
+    if (doc["stime"].is<int>()) return saveSampleTime(doc["stime"] | 0);
+    if (doc["stype"].is<int>()) return saveSensorType(doc["stype"] | 0);
+    if (doc["ifxdb"].is<int>()) return saveInfluxDb(doc["ifxdb"] | "", doc["ifxip"] | "", doc["ifxpt"] | 0);
+    if (doc["pass"].is<int>() && doc["ssid"].is<int>()) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
+    if (doc["ssid"].is<int>()) return saveSSID(doc["ssid"] | "");
+    if (doc["lat"].is<int>()) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
+    if (doc["toffset"].is<int>()) return saveTempOffset(doc["toffset"].as<float>());
+    if (doc["altoffset"].is<int>()) return saveAltitudeOffset(doc["altoffset"].as<float>());
+    if (doc["sealevel"].is<int>()) return saveSeaLevel(doc["sealevel"].as<float>());
+    if (doc["hassip"].is<int>()) return saveHassIP(doc["hassip"] | "");
+    if (doc["hasspt"].is<int>()) return saveHassPort(doc["hasspt"] | 1883);
+    if (doc["hassusr"].is<int>()) return saveHassUser(doc["hassusr"] | "");
+    if (doc["hasspsw"].is<int>()) return saveHassPassword(doc["hasspsw"] | "");
+    if (doc["deepSleep"].is<int>()) return saveDeepSleep(doc["deepSleep"] | 0);
     
     // some actions with chopid validation (for security reasons)
     if (cmd == ((uint16_t)(chipid >> 32)) && act.length() > 0) {
@@ -434,18 +434,18 @@ bool save(const char *json) {
 }
 
 bool getTrackStatusValues(const char *json) {
-    StaticJsonDocument<200> doc;
+    JsonDocument doc;
     auto error = deserializeJson(doc, json);
     if (error) {
         Serial.print(F("[E][CONF] deserialize Json failed with code "));
         Serial.println(error.c_str());
         return false;
     }
-    if (doc.containsKey("spd")) track.spd = doc["spd"] | 0.0;
-    if (doc.containsKey("kms")) track.kms = doc["kms"] | 0.0;
-    if (doc.containsKey("hrs")) track.hrs = doc["hrs"] | 0;
-    if (doc.containsKey("min")) track.min = doc["min"] | 0;
-    if (doc.containsKey("seg")) track.seg = doc["seg"] | 0;
+    if (doc["spd"].is<int>()) track.spd = doc["spd"] | 0.0;
+    if (doc["kms"].is<int>()) track.kms = doc["kms"] | 0.0;
+    if (doc["hrs"].is<int>()) track.hrs = doc["hrs"] | 0;
+    if (doc["min"].is<int>()) track.min = doc["min"] | 0;
+    if (doc["seg"].is<int>()) track.seg = doc["seg"] | 0;
 
     return true;
 }

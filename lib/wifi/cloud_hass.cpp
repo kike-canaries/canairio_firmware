@@ -34,7 +34,7 @@ void hassPubSensorPayload() {
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();
     
-    StaticJsonDocument<MQTT_BUFFER_SIZE> doc;
+    JsonDocument doc;
     char buffer[MQTT_BUFFER_SIZE];
 
     doc["carbon_dioxide"] = String(sensors.getCO2());
@@ -68,14 +68,14 @@ void hassPubSensorPayload() {
 }
 
 bool publishDiscoveryPayload(String name, String dclass, String unit) {
-    StaticJsonDocument<MQTT_BUFFER_SIZE> doc;
+    JsonDocument doc;
     doc["name"] = getHostId()+name; // name of the entity
-    JsonObject device = doc.createNestedObject("device");
+    JsonObject device = doc["device"].to<JsonObject>();
     device["manufacturer"] = "CanAirIO";
     device["model"] = ""+String(FLAVOR);
     device["name"] = getHostId();  // name of the device
     device["sw_version"] = "v"+String(VERSION)+" rev"+String(REVISION);
-    JsonArray identifiers = device.createNestedArray("identifiers");
+    JsonArray identifiers = device["identifiers"].to<JsonArray>();
     identifiers.add(getHostId()); // name of the device
     doc["state_topic"] = getStateTopic();
     doc["state_class"] = "measurement",

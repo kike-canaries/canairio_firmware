@@ -20,7 +20,7 @@ void anairePublish() {
         float temp = sensors.getTemperature();
         if (temp == 0.0) temp = sensors.getCO2temp();
 
-        StaticJsonDocument<MQTT_BUFFER_SIZE> doc;
+        JsonDocument doc;
         char buffer[MQTT_BUFFER_SIZE];
 
         doc["id"] = getStationName();

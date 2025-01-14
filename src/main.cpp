@@ -202,25 +202,27 @@ void printSensorsDetected() {
 void startingSensors() {
     Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)stype));
     gui.welcomeAddMessage("Init sensors..");
-    int geigerPin = cfg.getInt(CONFKEYS::KGEIGERP, -1);    // Geiger sensor pin (config it via CLI) 
-    int tunit = cfg.getInt(CONFKEYS::KTEMPUNT, 0);         // Temperature unit (defaulut celsius)
-    sensors.setOnDataCallBack(&onSensorDataOk);            // all data read callback
-    sensors.setOnErrorCallBack(&onSensorDataError);        // on data error callback
+    int geigerPin = cfg.getInt(CONFKEYS::KGEIGERP, -1);// Geiger sensor pin (config it via CLI) 
+    int tunit = cfg.getInt(CONFKEYS::KTEMPUNT, 0);     // Temperature unit (defaulut celsius)
+    sensors.setOnDataCallBack(&onSensorDataOk);        // all data read callback
+    sensors.setOnErrorCallBack(&onSensorDataError);    // on data error callback
     sensors.setDebugMode(devmode);                     // debugging mode 
     sensors.setSampleTime(stime);                      // config sensors sample time (first use)
     sensors.setTempOffset(toffset);                    // temperature compensation
     sensors.setCO2AltitudeOffset(altoffset);           // CO2 altitude compensation
     sensors.detectI2COnly(i2conly);                    // force only i2c sensors
-    sensors.enableGeigerSensor(geigerPin);                 // Geiger sensor init
-    sensors.setTemperatureUnit((TEMPUNIT)tunit);           // Config temperature unit (K,C or F)
+    sensors.enableGeigerSensor(geigerPin);             // Geiger sensor init
+    sensors.setTemperatureUnit((TEMPUNIT)tunit);       // Config temperature unit (K,C or F)
     int mUART = stype;                                 // optional UART sensor choosed on the Android app
     int mTX = sTX;                                     // UART TX defined via setup
     int mRX = sRX;                                     // UART RX defined via setup
 
-    if (sTX == -1 && sRX == -1)
+    if (sTX == -1 && sRX == -1) {
         sensors.init(mUART);                        // start all sensors (board predefined pins)
-    else
+    }
+    else {
         sensors.init(mUART, mRX, mTX);              // start all sensors and custom pins via setup.
+    }
                                                     // For more information about the supported sensors,
                                                     // please see the canairio_sensorlib documentation.
     if(sensors.getSensorsRegisteredCount()==0){
@@ -271,7 +273,7 @@ void initCLIFailsafe() {
   if (cfg.getBool(CONFKEYS::KFAILSAFE, true)) {
     delay(2000); // wait for new S3 and C3 CDC serial
     gui.welcomeAddMessage("wait for setup..");
-    Serial.println("\n-->[INFO] == Waiting for safe mode setup (10s)  ==");
+    Serial.println("\n-->[INFO] == Type \"setup\" for enter in safe mode (over in 10seg!) ==");
 #ifndef DISABLE_CLI
     cliInit();
     logMemory("CLI ");
@@ -281,7 +283,7 @@ void initCLIFailsafe() {
 
 void initCLI() {
 #ifndef DISABLE_CLI
-  Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
+  Serial.println("\n==>[INFO] Setup end. CLI enable. Press ENTER  ===\r\n");
   if (!cfg.getBool(CONFKEYS::KFAILSAFE, true)) cliInit();
   cliTaskInit();
   logMemory("CLI ");

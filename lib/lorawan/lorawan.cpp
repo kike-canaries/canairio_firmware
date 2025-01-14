@@ -28,7 +28,7 @@ bool GO_DEEP_SLEEP = false;
 
 RTC_DATA_ATTR lmic_t RTC_LMIC;
 
-DynamicJsonDocument jsonBuffer(4096);
+JsonDocument jsonBuffer;
 CayenneLPP lpp(160);
 //JsonObject root = jsonBuffer.to<JsonObject>();
 JsonObject LORA_DATA = jsonBuffer.to<JsonObject>();

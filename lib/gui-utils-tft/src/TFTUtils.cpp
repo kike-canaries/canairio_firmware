@@ -31,8 +31,17 @@ void TFTUtils::displayInit() {
     pinMode(BUTTON_L, INPUT_PULLUP);
     pinMode(BUTTON_R, INPUT);
     #ifdef M5STICKCPLUS
-    M5.begin(true,true,false);       // Initialize M5Stack without serial messages
-    M5.Beep.end();
+    auto cfg = M5.config();
+    M5.begin(cfg);
+    M5.Display.setBrightness(50);
+    int w = M5.Display.width();
+    int h = M5.Display.height();
+    tft.createSprite(w, h);
+    // tft.fillRect(0, 0, w, 20, tft.color565(50, 50, 50));
+    // tft.pushSprite(&M5.Display, 0, 0);
+
+    // M5.begin(true,true,false);       // Initialize M5Stack without serial messages
+    // M5.Beep.end();
     pinMode(36, INPUT);              // UART port alternative for this board
     gpio_pulldown_dis(GPIO_NUM_25);  // 36 and 25 pins share the same port
     gpio_pullup_dis(GPIO_NUM_25);    // https://docs.m5stack.com/en/core/m5stickc_plus
@@ -250,7 +259,8 @@ void TFTUtils::updateBrightness() {
 
 void TFTUtils::invertScreen(){
     inv = !inv;
-    tft.invertDisplay(inv);
+    M5.Display.invertDisplay(inv);
+    // tft.invertDisplay(inv);
     updateInvertValue();
     if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onColorsInverted(inv);
 }
@@ -453,7 +463,7 @@ void TFTUtils::suspend() {
     welcomeAddMessage("Suspending..");
     delay(2000);
     #ifdef M5STICKCPLUS
-    M5.Axp.PowerOff();
+    M5.Power.powerOff();
     #else
     int r = digitalRead(TFT_BL);
     digitalWrite(TFT_BL, !r);
@@ -862,7 +872,8 @@ void TFTUtils::setBrightness(uint32_t value) {
 
 void TFTUtils::notifyBrightness() {
     #ifdef M5STICKCPLUS
-    M5.Axp.ScreenBreath(brightness);
+    // M5.Axp.ScreenBreath(brightness);
+    M5.Display.setBrightness(brightness);
     #else
     ledcWrite(pwmLedChannelTFT, brightness);
     #endif

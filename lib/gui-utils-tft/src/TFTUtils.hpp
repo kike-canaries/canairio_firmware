@@ -3,7 +3,7 @@
 
 #include <SPI.h>
 #ifdef M5STICKCPLUS
-#include <M5StickCPlus.h>
+#include <M5Unified.h>
 #else
 #include <TFT_eSPI.h>
 #endif
@@ -50,9 +50,11 @@ class GUIUserPreferencesCallbacks;
 class TFTUtils {
    public:
     TFTUtils(void){};
-
+#ifndef M5STICKCPLUS
     TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
-
+#else
+    M5GFX tft;
+#endif
     enum WIFI_MODE { WIFI_OFF, WIFI_ON };
 
     void displayInit();
@@ -132,8 +134,7 @@ class TFTUtils {
     const int pwmLedChannelTFT = 0;
 
 #ifdef M5STICKCPLUS
-    int backlight[5] = {5, 20, 30, 50, 80};
-
+    int backlight[5] = {60, 65, 70, 90, 120};
 #else
     int backlight[5] = {10, 30, 60, 120, 220};
 #endif

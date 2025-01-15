@@ -56,8 +56,8 @@ void TFTUtils::displayInit() {
 void TFTUtils::showWelcome() {
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
+    tft.setFreeFont(&Orbitron_Medium_20);
     tft.setCursor(2,20);
-    tft.setFont(&Orbitron_Medium_20);
     tft.print("CanAirIO ");
     tft.setTextFont(2);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);

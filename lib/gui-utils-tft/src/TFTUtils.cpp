@@ -33,15 +33,9 @@ void TFTUtils::displayInit() {
     #ifdef M5STICKCPLUS
     auto cfg = M5.config();
     M5.begin(cfg);
-    M5.Display.setBrightness(50);
-    int w = M5.Display.width();
-    int h = M5.Display.height();
-    tft.createSprite(w, h);
-    // tft.fillRect(0, 0, w, 20, tft.color565(50, 50, 50));
-    // tft.pushSprite(&M5.Display, 0, 0);
-
-    // M5.begin(true,true,false);       // Initialize M5Stack without serial messages
-    // M5.Beep.end();
+    tft = M5.Display;
+    tft.setBrightness(80);
+    M5.update();
     pinMode(36, INPUT);              // UART port alternative for this board
     gpio_pulldown_dis(GPIO_NUM_25);  // 36 and 25 pins share the same port
     gpio_pullup_dis(GPIO_NUM_25);    // https://docs.m5stack.com/en/core/m5stickc_plus
@@ -62,8 +56,8 @@ void TFTUtils::displayInit() {
 void TFTUtils::showWelcome() {
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_GREENYELLOW, TFT_BLACK);
-    tft.setFreeFont(&Orbitron_Medium_20);
     tft.setCursor(2,20);
+    tft.setFont(&Orbitron_Medium_20);
     tft.print("CanAirIO ");
     tft.setTextFont(2);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -106,18 +100,19 @@ void TFTUtils::showStatus() {
 
 void TFTUtils::showMain() {
     showStatus();
-    tft.setCursor(RCOLSTART, 204, 1);
+    tft.setTextFont(1);
+    tft.setCursor(RCOLSTART, 204);
     tft.println("BATT:");
     updateBatteryValue();
-
-    tft.setCursor(RCOLSTART, 152, 2);
+    tft.setTextFont(2);
+    tft.setCursor(RCOLSTART, 152);
     tft.println("HEALTH:");
 
     tft.setTextColor(TFT_WHITE, lightblue);
-    tft.setCursor(4, 152, 2);
+    tft.setCursor(4, 152);
     tft.println("TEMP:");
 
-    tft.setCursor(4, 192, 2);
+    tft.setCursor(4, 192);
     tft.println("HUM: ");
 
     tft.fillRect(68, 152, 1, 74, TFT_GREY);
@@ -140,18 +135,20 @@ void TFTUtils::showWindowBike(){
     holdR = 0;
     delay(100);
     showStatus();
-    tft.setCursor(80, 204, 1);
+    tft.setTextFont(1);
+    tft.setCursor(80, 204);
     tft.println("BATT:");
     updateBatteryValue();
 
-    tft.setCursor(80, 152, 2);
+    tft.setTextFont(2);
+    tft.setCursor(80, 152);
     tft.println("HEALTH:");
 
     tft.setTextColor(TFT_WHITE, lightblue);
-    tft.setCursor(4, 152, 2);
+    tft.setCursor(4, 152);
     tft.println("KM:");
 
-    tft.setCursor(4, 192, 2);
+    tft.setCursor(4, 192);
     tft.println("TIME: ");
 
     tft.fillRect(68, 152, 1, 74, TFT_GREY);
@@ -183,7 +180,7 @@ void TFTUtils::refreshInfoWindow() {
     tft.setTextFont(2);
     tft.setTextPadding(5);
     tft.setTextDatum(CR_DATUM);
-    tft.setCursor(0, 50, 2);
+    tft.setCursor(0, 50);
     tft.println(_info);
 }
 
@@ -198,26 +195,27 @@ void TFTUtils::showSetup() {
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.drawLine(18,44,117,44,TFT_GREY);
 
+    tft.setTextFont(2);
     tft.setTextColor(TFT_WHITE, lightblue);
-    tft.setCursor(MARGINL, SSTART, 2);
+    tft.setCursor(MARGINL, SSTART);
     tft.println("BRIGHT:");
     
-    tft.setCursor(MARGINL, SSTART+PRESETH, 2);
+    tft.setCursor(MARGINL, SSTART+PRESETH);
     tft.println("COLORS:");
 
-    tft.setCursor(MARGINL, SSTART+PRESETH*2, 2);
+    tft.setCursor(MARGINL, SSTART+PRESETH*2);
     tft.println("WiFi:");
 
-    tft.setCursor(MARGINL, SSTART+PRESETH*3, 2);
+    tft.setCursor(MARGINL, SSTART+PRESETH*3);
     tft.println("STIME:");
 
-    tft.setCursor(MARGINL, SSTART+PRESETH*4, 2);
+    tft.setCursor(MARGINL, SSTART+PRESETH*4);
     tft.println("CALIBRT:");
 
-    tft.setCursor(MARGINL, SSTART+PRESETH*5, 2);
+    tft.setCursor(MARGINL, SSTART+PRESETH*5);
     tft.println("INFO:");
 
-    tft.setCursor(MARVALL, SSTART+PRESETH*5, 2);
+    tft.setCursor(MARVALL, SSTART+PRESETH*5);
     tft.println(String(VERSION));
 
     updateInvertValue();
@@ -259,8 +257,7 @@ void TFTUtils::updateBrightness() {
 
 void TFTUtils::invertScreen(){
     inv = !inv;
-    M5.Display.invertDisplay(inv);
-    // tft.invertDisplay(inv);
+    tft.invertDisplay(inv);
     updateInvertValue();
     if(mGUICallBacks != nullptr) getInstance()->mGUICallBacks->onColorsInverted(inv);
 }
@@ -268,7 +265,8 @@ void TFTUtils::invertScreen(){
 void TFTUtils::updateInvertValue(){
     tft.fillRect(MARVALL, SSTART+PRESETH, 54, 13, TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setCursor(MARVALL, SSTART+PRESETH, 2);
+    tft.setTextFont(2);
+    tft.setCursor(MARVALL, SSTART+PRESETH);
     if(inv) tft.println("normal");
     else tft.println("inverted");
 }
@@ -312,7 +310,8 @@ void TFTUtils::updateWifiMode(){
     if (state < 1) return;
     tft.fillRect(MARVALL, SSTART+PRESETH*2, 54, 13, TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setCursor(MARVALL, SSTART+PRESETH*2, 2);
+    tft.setTextFont(2);
+    tft.setCursor(MARVALL, SSTART+PRESETH*2);
     if(_wifi_enable) tft.println("On");
     else if (_pax_enable) tft.println("PAX");
     else tft.println("Off");
@@ -334,7 +333,8 @@ void TFTUtils::updateSampleTime() {
     if (state < 1) return;
     tft.fillRect(MARVALL, SSTART + PRESETH * 3, 54, 13, TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setCursor(MARVALL, SSTART + PRESETH * 3, 2);
+    tft.setTextFont(2);
+    tft.setCursor(MARVALL, SSTART + PRESETH * 3);
     tft.println("" + String(_sample_time) + "s");
 }
 
@@ -344,7 +344,8 @@ void TFTUtils::updateCalibrationField(){
         calibretts = millis();
         tft.fillRect(MARVALL, SSTART + PRESETH * 4, 54, 13, TFT_BLACK);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.setCursor(MARVALL, SSTART + PRESETH * 4, 2);
+        tft.setTextFont(2);
+        tft.setCursor(MARVALL, SSTART + PRESETH * 4);
         if (_calibration_counter > 0){
             log_i("[TGUI] coundown to calibration: %i",_calibration_counter);
             tft.println("" + String(_calibration_counter--) + "s");
@@ -493,7 +494,7 @@ void TFTUtils::displayMainUnit(String uName, String uSymbol) {
 void TFTUtils::displayBottomLine(String msg) {
     tft.setTextFont(1);
     tft.fillRect(1, 230, 99, 8, TFT_BLACK);
-    tft.setCursor(2, 232, 1);
+    tft.setCursor(2, 232);
     tft.println(msg.substring(0,16).c_str());
 }
 

@@ -3,7 +3,7 @@
 
 #include <SPI.h>
 #ifdef M5STICKCPLUS
-#include <M5StickCPlus.h>
+#include <M5Unified.h>
 #else
 #include <TFT_eSPI.h>
 #endif
@@ -50,9 +50,11 @@ class GUIUserPreferencesCallbacks;
 class TFTUtils {
    public:
     TFTUtils(void){};
-
+#ifndef M5STICKCPLUS
     TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
-
+#else
+    M5Canvas tft;
+#endif
     enum WIFI_MODE { WIFI_OFF, WIFI_ON };
 
     void displayInit();

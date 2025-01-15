@@ -231,7 +231,7 @@ void wcli_swipe(char *args, Stream *response) {
     cfg.clear();
   }
   else {
-    response->println("\nPlease type clear and the factory device id. (showed in setup command)");
+    response->println("\nPlease type \"swipe\" and the factory device id to confirm. (it showed in setup command)");
   }
 }
 

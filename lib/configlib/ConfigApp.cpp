@@ -101,11 +101,19 @@ String getCurrentConfig() {
     doc["ienb"] = cfg.getBool(CONFKEYS::KIFXENB, false);      // ifxdb on/off
     doc["denb"] = cfg.getBool(CONFKEYS::KDEBUG, false);       // debug mode enable
     doc["sse"] = cfg.getBool(CONFKEYS::KSOLAREN, false);      // Enable solar station
+    doc["ssid"] = cfg.getString(CONFKEYS::KSSID, "");         // influxdb database name
     doc["geo"] = cfg.getString("geo", "");                    // influxdb GeoHash tag
     doc["i2conly"] = cfg.getBool(CONFKEYS::KI2CONLY, false);  // force only i2c sensors
     doc["toffset"] = cfg.getFloat(CONFKEYS::KTOFFST, 0.0);    // temperature offset
     doc["stime"] = cfg.getInt(CONFKEYS::KSTIME, 5);           // sensor measure time
     doc["stype"] = cfg.getInt(CONFKEYS::KSTYPE, 0);           // sensor measure time
+    doc["ifxdb"] = cfg.getString(CONFKEYS::KIFXDB, ifx.db);   // influxdb database name
+    doc["ifxip"] = cfg.getString(CONFKEYS::KIFXIP, ifx.ip);   // influxdb database ip
+    doc["ifxpt"] = cfg.getInt(CONFKEYS::KIFXPT, ifx.pt);     // influxdb sensor tags
+    doc["hassip"] = cfg.getString(CONFKEYS::KHASSPW, "");     // Home Assistant MQTT server ip
+    doc["hasspt"] = cfg.getInt(CONFKEYS::KHASSPT, 1883);      // Home Assistant MQTT server port
+    doc["hassusr"] = cfg.getString(CONFKEYS::KHASSUSR, "");   // Home Assistant MQTT user
+    // doc["hasspsw"] = cfg.getString("hasspsw", "");// Home Assistant MQTT password
     String output;
     serializeJson(doc, output);
 #if CORE_DEBUG_LEVEL >= 3
@@ -120,18 +128,11 @@ String getCurrentConfig() {
 //     doc["dname"] = cfg.getString("dname", "");       // device or station name
 //     doc["sRX"] = cfg.getInt("sRX", -1);           // sensor UART type;
 //     doc["sTX"] = cfg.getInt("sTX", -1);           // sensor UART type;
-//     doc["ssid"] = cfg.getString("ssid", "");         // influxdb database name
-//     doc["ifxdb"] = cfg.getString("ifxdb", ifx.db);   // influxdb database name
-//     doc["ifxip"] = cfg.getString("ifxip", ifx.ip);   // influxdb database ip
-//     doc["ifxpt"] = cfg.getInt("ifxpt", ifx.pt);     // influxdb sensor tags
+
 //     doc["penb"] = cfg.getBool(getKey(CONFKEYS::KBPAXENB).c_str(), true);    // PaxCounter enable
 //     doc["deepSleep"] = cfg.getInt("deepSleep", 0);  // deep sleep time in seconds
 //     doc["altoffset"] = cfg.getFloat("altoffset",0.0);// altitude offset
 //     doc["sealevel"] = cfg.getFloat("sealevel",1013.25);// altitude offset
-//     doc["hassip"] = cfg.getString("hassip", "");     // Home Assistant MQTT server ip
-//     doc["hasspt"] = cfg.getInt("hasspt", 1883);      // Home Assistant MQTT server port
-//     doc["hassusr"] = cfg.getString("hassusr", "");   // Home Assistant MQTT user
-//     // doc["hasspsw"] = cfg.getString("hasspsw", "");// Home Assistant MQTT password
 //     doc["lskey"] = lastKeySaved;                             // last key saved
 //     doc["anaireid"] =  getStationName();                     // deviceId for Anaire cloud
 //     preferences.end();

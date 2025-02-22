@@ -71,7 +71,7 @@ void reload() {
     lon = cfg.getDouble("lon", 0);
     geo = cfg.getString("geo", "");
     stime = cfg.getInt("stime", 5);
-    stype = cfg.getInt("stype", 0);
+    stype = cfg.getInt(CONFKEYS::KSTYPE, 0);
     sTX = cfg.getInt("sTX", -1);
     sRX = cfg.getInt("sRX", -1);
     toffset = cfg.getFloat(CONFKEYS::KTOFFST, 0.0);
@@ -104,6 +104,8 @@ String getCurrentConfig() {
     doc["geo"] = cfg.getString("geo", "");                    // influxdb GeoHash tag
     doc["i2conly"] = cfg.getBool(CONFKEYS::KI2CONLY, false);  // force only i2c sensors
     doc["toffset"] = cfg.getFloat(CONFKEYS::KTOFFST, 0.0);    // temperature offset
+    doc["stime"] = cfg.getInt(CONFKEYS::KSTIME, 5);           // sensor measure time
+    doc["stype"] = cfg.getInt(CONFKEYS::KSTYPE, 0);           // sensor measure time
     String output;
     serializeJson(doc, output);
 #if CORE_DEBUG_LEVEL >= 3
@@ -115,23 +117,21 @@ String getCurrentConfig() {
     return output;
 
 //     StaticJsonDocument<1000> doc;
-//     doc["dname"] = preferences.getString("dname", "");       // device or station name
-//     doc["stime"] = preferences.getInt("stime", 5);           // sensor measure time
-//     doc["stype"] = preferences.getInt("stype", 0);           // sensor UART type;
-//     doc["sRX"] = preferences.getInt("sRX", -1);           // sensor UART type;
-//     doc["sTX"] = preferences.getInt("sTX", -1);           // sensor UART type;
-//     doc["ssid"] = preferences.getString("ssid", "");         // influxdb database name
-//     doc["ifxdb"] = preferences.getString("ifxdb", ifx.db);   // influxdb database name
-//     doc["ifxip"] = preferences.getString("ifxip", ifx.ip);   // influxdb database ip
-//     doc["ifxpt"] = preferences.getInt("ifxpt", ifx.pt);     // influxdb sensor tags
-//     doc["penb"] = preferences.getBool(getKey(CONFKEYS::KBPAXENB).c_str(), true);    // PaxCounter enable
-//     doc["deepSleep"] = preferences.getInt("deepSleep", 0);  // deep sleep time in seconds
-//     doc["altoffset"] = preferences.getFloat("altoffset",0.0);// altitude offset
-//     doc["sealevel"] = preferences.getFloat("sealevel",1013.25);// altitude offset
-//     doc["hassip"] = preferences.getString("hassip", "");     // Home Assistant MQTT server ip
-//     doc["hasspt"] = preferences.getInt("hasspt", 1883);      // Home Assistant MQTT server port
-//     doc["hassusr"] = preferences.getString("hassusr", "");   // Home Assistant MQTT user
-//     // doc["hasspsw"] = preferences.getString("hasspsw", "");// Home Assistant MQTT password
+//     doc["dname"] = cfg.getString("dname", "");       // device or station name
+//     doc["sRX"] = cfg.getInt("sRX", -1);           // sensor UART type;
+//     doc["sTX"] = cfg.getInt("sTX", -1);           // sensor UART type;
+//     doc["ssid"] = cfg.getString("ssid", "");         // influxdb database name
+//     doc["ifxdb"] = cfg.getString("ifxdb", ifx.db);   // influxdb database name
+//     doc["ifxip"] = cfg.getString("ifxip", ifx.ip);   // influxdb database ip
+//     doc["ifxpt"] = cfg.getInt("ifxpt", ifx.pt);     // influxdb sensor tags
+//     doc["penb"] = cfg.getBool(getKey(CONFKEYS::KBPAXENB).c_str(), true);    // PaxCounter enable
+//     doc["deepSleep"] = cfg.getInt("deepSleep", 0);  // deep sleep time in seconds
+//     doc["altoffset"] = cfg.getFloat("altoffset",0.0);// altitude offset
+//     doc["sealevel"] = cfg.getFloat("sealevel",1013.25);// altitude offset
+//     doc["hassip"] = cfg.getString("hassip", "");     // Home Assistant MQTT server ip
+//     doc["hasspt"] = cfg.getInt("hasspt", 1883);      // Home Assistant MQTT server port
+//     doc["hassusr"] = cfg.getString("hassusr", "");   // Home Assistant MQTT user
+//     // doc["hasspsw"] = cfg.getString("hasspsw", "");// Home Assistant MQTT password
 //     doc["lskey"] = lastKeySaved;                             // last key saved
 //     doc["anaireid"] =  getStationName();                     // deviceId for Anaire cloud
 //     preferences.end();
@@ -163,7 +163,7 @@ bool saveSampleTime(int time) {
  * @return true (compatibility)
  */
 bool saveSensorType(int type) {
-    cfg.saveInt("stype", type);
+    cfg.saveInt(CONFKEYS::KSTYPE, type);
     Serial.printf("-->[CONF] sensor device type\t: %d\r\n", type);
     return true;
 }

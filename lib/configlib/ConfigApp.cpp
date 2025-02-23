@@ -403,17 +403,17 @@ bool save(const char *json) {
     // if (doc.containsKey("dname")) return saveDeviceName(doc["dname"] | "");
     if (doc["stime"].is<int>()) return saveSampleTime(doc["stime"] | 0);
     if (doc["stype"].is<int>()) return saveSensorType(doc["stype"] | 0);
-    if (doc["ifxdb"].is<int>()) return saveInfluxDb(doc["ifxdb"] | "", doc["ifxip"] | "", doc["ifxpt"] | 0);
-    if (doc["pass"].is<int>() && doc["ssid"].is<int>()) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
-    if (doc["ssid"].is<int>()) return saveSSID(doc["ssid"] | "");
-    if (doc["lat"].is<int>()) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
-    if (doc["toffset"].is<int>()) return saveTempOffset(doc["toffset"].as<float>());
-    if (doc["altoffset"].is<int>()) return saveAltitudeOffset(doc["altoffset"].as<float>());
-    if (doc["sealevel"].is<int>()) return saveSeaLevel(doc["sealevel"].as<float>());
-    if (doc["hassip"].is<int>()) return saveHassIP(doc["hassip"] | "");
+    if (doc["ifxdb"].is<String>()) return saveInfluxDb(doc["ifxdb"] | "", doc["ifxip"] | "", doc["ifxpt"] | 0);
+    if (doc["pass"].is<String>() && doc["ssid"].is<String>()) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
+    if (doc["ssid"].is<String>()) return saveSSID(doc["ssid"] | "");
+    if (doc["lat"].is<double>()) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
+    if (doc["toffset"].is<float>()) return saveTempOffset(doc["toffset"].as<float>());
+    if (doc["altoffset"].is<float>()) return saveAltitudeOffset(doc["altoffset"].as<float>());
+    if (doc["sealevel"].is<float>()) return saveSeaLevel(doc["sealevel"].as<float>());
+    if (doc["hassip"].is<String>()) return saveHassIP(doc["hassip"] | "");
     if (doc["hasspt"].is<int>()) return saveHassPort(doc["hasspt"] | 1883);
-    if (doc["hassusr"].is<int>()) return saveHassUser(doc["hassusr"] | "");
-    if (doc["hasspsw"].is<int>()) return saveHassPassword(doc["hasspsw"] | "");
+    if (doc["hassusr"].is<String>()) return saveHassUser(doc["hassusr"] | "");
+    if (doc["hasspsw"].is<String>()) return saveHassPassword(doc["hasspsw"] | "");
     if (doc["deepSleep"].is<int>()) return saveDeepSleep(doc["deepSleep"] | 0);
     
     // some actions with chopid validation (for security reasons)
@@ -442,8 +442,8 @@ bool getTrackStatusValues(const char *json) {
         Serial.println(error.c_str());
         return false;
     }
-    if (doc["spd"].is<int>()) track.spd = doc["spd"] | 0.0;
-    if (doc["kms"].is<int>()) track.kms = doc["kms"] | 0.0;
+    if (doc["spd"].is<float>()) track.spd = doc["spd"] | 0.0;
+    if (doc["kms"].is<float>()) track.kms = doc["kms"] | 0.0;
     if (doc["hrs"].is<int>()) track.hrs = doc["hrs"] | 0;
     if (doc["min"].is<int>()) track.min = doc["min"] | 0;
     if (doc["seg"].is<int>()) track.seg = doc["seg"] | 0;

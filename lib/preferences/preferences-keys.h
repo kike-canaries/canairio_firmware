@@ -10,6 +10,7 @@
   X(KTEMPUNT, "tunit", INT)         \
   X(KBASIC, "-----", UNKNOWN)       \
   X(KDEBUG, "debugEnable", BOOL)    \
+  X(KSTYPE, "stype", INT)           \
   X(KFLIPV, "flipVEnable", BOOL)    \
   X(KHOMEAS, "homeaEnable", BOOL)   \
   X(KANAIRE, "anaireEnable", BOOL)  \

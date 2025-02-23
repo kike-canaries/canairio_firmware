@@ -100,7 +100,7 @@ String getCurrentConfig() {
     doc["wenb"] = cfg.getBool(CONFKEYS::KWIFIEN, false);      // wifi on/off
     doc["ienb"] = cfg.getBool(CONFKEYS::KIFXENB, false);      // ifxdb on/off
     doc["denb"] = cfg.getBool(CONFKEYS::KDEBUG, false);       // debug mode enable
-    doc["sse"] = cfg.getBool(CONFKEYS::KSOLAREN, false);      // Enable solar station
+    
     doc["ssid"] = cfg.getString(CONFKEYS::KSSID, "");         // influxdb database name
     doc["geo"] = cfg.getString("geo", "");                    // influxdb GeoHash tag
     doc["i2conly"] = cfg.getBool(CONFKEYS::KI2CONLY, false);  // force only i2c sensors
@@ -109,11 +109,15 @@ String getCurrentConfig() {
     doc["stype"] = cfg.getInt(CONFKEYS::KSTYPE, 0);           // sensor measure time
     doc["ifxdb"] = cfg.getString(CONFKEYS::KIFXDB, ifx.db);   // influxdb database name
     doc["ifxip"] = cfg.getString(CONFKEYS::KIFXIP, ifx.ip);   // influxdb database ip
-    doc["ifxpt"] = cfg.getInt(CONFKEYS::KIFXPT, ifx.pt);     // influxdb sensor tags
+    doc["ifxpt"] = cfg.getInt(CONFKEYS::KIFXPT, ifx.pt);      // influxdb sensor tags
     doc["hassip"] = cfg.getString(CONFKEYS::KHASSPW, "");     // Home Assistant MQTT server ip
     doc["hasspt"] = cfg.getInt(CONFKEYS::KHASSPT, 1883);      // Home Assistant MQTT server port
     doc["hassusr"] = cfg.getString(CONFKEYS::KHASSUSR, "");   // Home Assistant MQTT user
-    // doc["hasspsw"] = cfg.getString("hasspsw", "");// Home Assistant MQTT password
+    doc["sealevel"] = cfg.getFloat(CONFKEYS::KSEALVL,1013.25);// sea level reference
+    doc["altoffset"] = cfg.getFloat(CONFKEYS::KALTOFST,0.0);  // CO2 altitude offset
+
+    doc["sse"] = cfg.getBool(CONFKEYS::KSOLAREN, false);      // Enable solar station
+    doc["deepSleep"] = cfg.getInt(CONFKEYS::KDEEPSLP, 0);     // deep sleep time in seconds
     String output;
     serializeJson(doc, output);
 #if CORE_DEBUG_LEVEL >= 3
@@ -124,27 +128,14 @@ String getCurrentConfig() {
 #endif
     return output;
 
-//     StaticJsonDocument<1000> doc;
 //     doc["dname"] = cfg.getString("dname", "");       // device or station name
+//     doc["hasspsw"] = cfg.getString("hasspsw", "");// Home Assistant MQTT password
 //     doc["sRX"] = cfg.getInt("sRX", -1);           // sensor UART type;
 //     doc["sTX"] = cfg.getInt("sTX", -1);           // sensor UART type;
-
 //     doc["penb"] = cfg.getBool(getKey(CONFKEYS::KBPAXENB).c_str(), true);    // PaxCounter enable
-//     doc["deepSleep"] = cfg.getInt("deepSleep", 0);  // deep sleep time in seconds
-//     doc["altoffset"] = cfg.getFloat("altoffset",0.0);// altitude offset
-//     doc["sealevel"] = cfg.getFloat("sealevel",1013.25);// altitude offset
 //     doc["lskey"] = lastKeySaved;                             // last key saved
 //     doc["anaireid"] =  getStationName();                     // deviceId for Anaire cloud
-//     preferences.end();
-//     String output;
-//     serializeJson(doc, output);
-// #if CORE_DEBUG_LEVEL >= 3
-//     char buf[1000];
-//     serializeJsonPretty(doc, buf, 1000);
-//     Serial.printf("-->[CONF] response: %s", buf);
-//     Serial.println("");
-// #endif
-//     return output;
+
 }
 
 bool saveSampleTime(int time) {
@@ -206,20 +197,20 @@ int getUnitSelected(){
 }
 
 bool saveTempOffset(float offset) {
-    cfg.saveFloat("toffset", offset);
+    cfg.saveFloat(CONFKEYS::KTOFFST, offset);
     Serial.printf("-->[CONF] sensor temp offset\t: %0.2f\r\n", offset);
     return true;
 }
 
 bool saveAltitudeOffset(float offset) {
-    cfg.saveFloat("altoffset", offset);
+    cfg.saveFloat(CONFKEYS::KALTOFST, offset);
     Serial.printf("-->[CONF] sensor altitude offset\t: %0.2f\r\n", offset);
     if(mRemoteConfigCallBacks!=nullptr) mRemoteConfigCallBacks->onAltitudeOffset(offset);
     return true;
 }
 
 bool saveSeaLevel(float hpa) {
-    cfg.saveFloat("sealevel", hpa);
+    cfg.saveFloat(CONFKEYS::KSEALVL, hpa);
     Serial.printf("-->[CONF] sea level pressure\t: %0.2f\r\n", hpa);
     if(mRemoteConfigCallBacks!=nullptr) mRemoteConfigCallBacks->onSeaLevelPressure(hpa);
     return true;
@@ -425,7 +416,7 @@ bool save(const char *json) {
         if (act.equals("pst")) return paxEnable(doc["penb"].as<bool>());
         if (act.equals("sse")) return solarEnable(doc["sse"].as<bool>());
         if (act.equals("cls")) clear();
-        // if (act.equals("rbt")) reboot();
+        if (act.equals("rbt")) reboot();
         if (act.equals("clb")) performCO2Calibration();
         return true;
     } else {

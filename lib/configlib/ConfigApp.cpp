@@ -71,7 +71,7 @@ void reload() {
     lon = cfg.getDouble("lon", 0);
     geo = cfg.getString("geo", "");
     stime = cfg.getInt("stime", 5);
-    stype = cfg.getInt("stype", 0);
+    stype = cfg.getInt(CONFKEYS::KSTYPE, 0);
     sTX = cfg.getInt("sTX", -1);
     sRX = cfg.getInt("sRX", -1);
     toffset = cfg.getFloat(CONFKEYS::KTOFFST, 0.0);
@@ -100,10 +100,24 @@ String getCurrentConfig() {
     doc["wenb"] = cfg.getBool(CONFKEYS::KWIFIEN, false);      // wifi on/off
     doc["ienb"] = cfg.getBool(CONFKEYS::KIFXENB, false);      // ifxdb on/off
     doc["denb"] = cfg.getBool(CONFKEYS::KDEBUG, false);       // debug mode enable
-    doc["sse"] = cfg.getBool(CONFKEYS::KSOLAREN, false);      // Enable solar station
+    
+    doc["ssid"] = cfg.getString(CONFKEYS::KSSID, "");         // influxdb database name
     doc["geo"] = cfg.getString("geo", "");                    // influxdb GeoHash tag
     doc["i2conly"] = cfg.getBool(CONFKEYS::KI2CONLY, false);  // force only i2c sensors
     doc["toffset"] = cfg.getFloat(CONFKEYS::KTOFFST, 0.0);    // temperature offset
+    doc["stime"] = cfg.getInt(CONFKEYS::KSTIME, 5);           // sensor measure time
+    doc["stype"] = cfg.getInt(CONFKEYS::KSTYPE, 0);           // sensor measure time
+    doc["ifxdb"] = cfg.getString(CONFKEYS::KIFXDB, ifx.db);   // influxdb database name
+    doc["ifxip"] = cfg.getString(CONFKEYS::KIFXIP, ifx.ip);   // influxdb database ip
+    doc["ifxpt"] = cfg.getInt(CONFKEYS::KIFXPT, ifx.pt);      // influxdb sensor tags
+    doc["hassip"] = cfg.getString(CONFKEYS::KHASSPW, "");     // Home Assistant MQTT server ip
+    doc["hasspt"] = cfg.getInt(CONFKEYS::KHASSPT, 1883);      // Home Assistant MQTT server port
+    doc["hassusr"] = cfg.getString(CONFKEYS::KHASSUSR, "");   // Home Assistant MQTT user
+    doc["sealevel"] = cfg.getFloat(CONFKEYS::KSEALVL,1013.25);// sea level reference
+    doc["altoffset"] = cfg.getFloat(CONFKEYS::KALTOFST,0.0);  // CO2 altitude offset
+
+    doc["sse"] = cfg.getBool(CONFKEYS::KSOLAREN, false);      // Enable solar station
+    doc["deepSleep"] = cfg.getInt(CONFKEYS::KDEEPSLP, 0);     // deep sleep time in seconds
     String output;
     serializeJson(doc, output);
 #if CORE_DEBUG_LEVEL >= 3
@@ -114,36 +128,14 @@ String getCurrentConfig() {
 #endif
     return output;
 
-//     StaticJsonDocument<1000> doc;
-//     doc["dname"] = preferences.getString("dname", "");       // device or station name
-//     doc["stime"] = preferences.getInt("stime", 5);           // sensor measure time
-//     doc["stype"] = preferences.getInt("stype", 0);           // sensor UART type;
-//     doc["sRX"] = preferences.getInt("sRX", -1);           // sensor UART type;
-//     doc["sTX"] = preferences.getInt("sTX", -1);           // sensor UART type;
-//     doc["ssid"] = preferences.getString("ssid", "");         // influxdb database name
-//     doc["ifxdb"] = preferences.getString("ifxdb", ifx.db);   // influxdb database name
-//     doc["ifxip"] = preferences.getString("ifxip", ifx.ip);   // influxdb database ip
-//     doc["ifxpt"] = preferences.getInt("ifxpt", ifx.pt);     // influxdb sensor tags
-//     doc["penb"] = preferences.getBool(getKey(CONFKEYS::KBPAXENB).c_str(), true);    // PaxCounter enable
-//     doc["deepSleep"] = preferences.getInt("deepSleep", 0);  // deep sleep time in seconds
-//     doc["altoffset"] = preferences.getFloat("altoffset",0.0);// altitude offset
-//     doc["sealevel"] = preferences.getFloat("sealevel",1013.25);// altitude offset
-//     doc["hassip"] = preferences.getString("hassip", "");     // Home Assistant MQTT server ip
-//     doc["hasspt"] = preferences.getInt("hasspt", 1883);      // Home Assistant MQTT server port
-//     doc["hassusr"] = preferences.getString("hassusr", "");   // Home Assistant MQTT user
-//     // doc["hasspsw"] = preferences.getString("hasspsw", "");// Home Assistant MQTT password
+//     doc["dname"] = cfg.getString("dname", "");       // device or station name
+//     doc["hasspsw"] = cfg.getString("hasspsw", "");// Home Assistant MQTT password
+//     doc["sRX"] = cfg.getInt("sRX", -1);           // sensor UART type;
+//     doc["sTX"] = cfg.getInt("sTX", -1);           // sensor UART type;
+//     doc["penb"] = cfg.getBool(getKey(CONFKEYS::KBPAXENB).c_str(), true);    // PaxCounter enable
 //     doc["lskey"] = lastKeySaved;                             // last key saved
 //     doc["anaireid"] =  getStationName();                     // deviceId for Anaire cloud
-//     preferences.end();
-//     String output;
-//     serializeJson(doc, output);
-// #if CORE_DEBUG_LEVEL >= 3
-//     char buf[1000];
-//     serializeJsonPretty(doc, buf, 1000);
-//     Serial.printf("-->[CONF] response: %s", buf);
-//     Serial.println("");
-// #endif
-//     return output;
+
 }
 
 bool saveSampleTime(int time) {
@@ -163,7 +155,7 @@ bool saveSampleTime(int time) {
  * @return true (compatibility)
  */
 bool saveSensorType(int type) {
-    cfg.saveInt("stype", type);
+    cfg.saveInt(CONFKEYS::KSTYPE, type);
     Serial.printf("-->[CONF] sensor device type\t: %d\r\n", type);
     return true;
 }
@@ -205,20 +197,20 @@ int getUnitSelected(){
 }
 
 bool saveTempOffset(float offset) {
-    cfg.saveFloat("toffset", offset);
+    cfg.saveFloat(CONFKEYS::KTOFFST, offset);
     Serial.printf("-->[CONF] sensor temp offset\t: %0.2f\r\n", offset);
     return true;
 }
 
 bool saveAltitudeOffset(float offset) {
-    cfg.saveFloat("altoffset", offset);
+    cfg.saveFloat(CONFKEYS::KALTOFST, offset);
     Serial.printf("-->[CONF] sensor altitude offset\t: %0.2f\r\n", offset);
     if(mRemoteConfigCallBacks!=nullptr) mRemoteConfigCallBacks->onAltitudeOffset(offset);
     return true;
 }
 
 bool saveSeaLevel(float hpa) {
-    cfg.saveFloat("sealevel", hpa);
+    cfg.saveFloat(CONFKEYS::KSEALVL, hpa);
     Serial.printf("-->[CONF] sea level pressure\t: %0.2f\r\n", hpa);
     if(mRemoteConfigCallBacks!=nullptr) mRemoteConfigCallBacks->onSeaLevelPressure(hpa);
     return true;
@@ -402,17 +394,17 @@ bool save(const char *json) {
     // if (doc.containsKey("dname")) return saveDeviceName(doc["dname"] | "");
     if (doc["stime"].is<int>()) return saveSampleTime(doc["stime"] | 0);
     if (doc["stype"].is<int>()) return saveSensorType(doc["stype"] | 0);
-    if (doc["ifxdb"].is<int>()) return saveInfluxDb(doc["ifxdb"] | "", doc["ifxip"] | "", doc["ifxpt"] | 0);
-    if (doc["pass"].is<int>() && doc["ssid"].is<int>()) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
-    if (doc["ssid"].is<int>()) return saveSSID(doc["ssid"] | "");
-    if (doc["lat"].is<int>()) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
-    if (doc["toffset"].is<int>()) return saveTempOffset(doc["toffset"].as<float>());
-    if (doc["altoffset"].is<int>()) return saveAltitudeOffset(doc["altoffset"].as<float>());
-    if (doc["sealevel"].is<int>()) return saveSeaLevel(doc["sealevel"].as<float>());
-    if (doc["hassip"].is<int>()) return saveHassIP(doc["hassip"] | "");
+    if (doc["ifxdb"].is<String>()) return saveInfluxDb(doc["ifxdb"] | "", doc["ifxip"] | "", doc["ifxpt"] | 0);
+    if (doc["pass"].is<String>() && doc["ssid"].is<String>()) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
+    if (doc["ssid"].is<String>()) return saveSSID(doc["ssid"] | "");
+    if (doc["lat"].is<double>()) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
+    if (doc["toffset"].is<float>()) return saveTempOffset(doc["toffset"].as<float>());
+    if (doc["altoffset"].is<float>()) return saveAltitudeOffset(doc["altoffset"].as<float>());
+    if (doc["sealevel"].is<float>()) return saveSeaLevel(doc["sealevel"].as<float>());
+    if (doc["hassip"].is<String>()) return saveHassIP(doc["hassip"] | "");
     if (doc["hasspt"].is<int>()) return saveHassPort(doc["hasspt"] | 1883);
-    if (doc["hassusr"].is<int>()) return saveHassUser(doc["hassusr"] | "");
-    if (doc["hasspsw"].is<int>()) return saveHassPassword(doc["hasspsw"] | "");
+    if (doc["hassusr"].is<String>()) return saveHassUser(doc["hassusr"] | "");
+    if (doc["hasspsw"].is<String>()) return saveHassPassword(doc["hasspsw"] | "");
     if (doc["deepSleep"].is<int>()) return saveDeepSleep(doc["deepSleep"] | 0);
     
     // some actions with chopid validation (for security reasons)
@@ -424,7 +416,7 @@ bool save(const char *json) {
         if (act.equals("pst")) return paxEnable(doc["penb"].as<bool>());
         if (act.equals("sse")) return solarEnable(doc["sse"].as<bool>());
         if (act.equals("cls")) clear();
-        // if (act.equals("rbt")) reboot();
+        if (act.equals("rbt")) reboot();
         if (act.equals("clb")) performCO2Calibration();
         return true;
     } else {
@@ -441,8 +433,8 @@ bool getTrackStatusValues(const char *json) {
         Serial.println(error.c_str());
         return false;
     }
-    if (doc["spd"].is<int>()) track.spd = doc["spd"] | 0.0;
-    if (doc["kms"].is<int>()) track.kms = doc["kms"] | 0.0;
+    if (doc["spd"].is<float>()) track.spd = doc["spd"] | 0.0;
+    if (doc["kms"].is<float>()) track.kms = doc["kms"] | 0.0;
     if (doc["hrs"].is<int>()) track.hrs = doc["hrs"] | 0;
     if (doc["min"].is<int>()) track.min = doc["min"] | 0;
     if (doc["seg"].is<int>()) track.seg = doc["seg"] | 0;

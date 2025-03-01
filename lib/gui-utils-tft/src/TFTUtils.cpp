@@ -27,7 +27,7 @@ void TFTUtils::setupGUITask() {
         1);             // Core where the task should run
 }
 
-void TFTUtils::displayInit() {
+void TFTUtils::displayInit(int ssd1306_typy) {
     pinMode(BUTTON_L, INPUT_PULLUP);
     pinMode(BUTTON_R, INPUT);
     #ifdef M5STICKCPLUS

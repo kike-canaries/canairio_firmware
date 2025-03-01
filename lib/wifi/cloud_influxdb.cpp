@@ -1,4 +1,5 @@
 #include <InfluxDbClient.h>
+#include "bluetooth.hpp"
 #include "cloud_influxdb.hpp"
 #include "power.hpp"
 
@@ -73,7 +74,11 @@ bool influxDbWrite() {
 }
 
  void suspendDevice() {
-    // if (!bleIsConnected()) {
+    #ifndef DISABLE_BLE
+    if (!bleIsConnected()) {
+    #else
+    if (true) {
+    #endif
          if (solarmode && deepSleep > 0) { // sleep mode and ECO mode on
              powerDeepSleepTimer(deepSleep);
          }
@@ -81,7 +86,7 @@ bool influxDbWrite() {
              powerDisableSensors();
              enable_sensors = false;
          }
-    /** }*/ else {
+    } else {
          if (!enable_sensors && !solarmode && deepSleep == 0) { // restore to normal mode
              powerEnableSensors();
              enable_sensors = true;

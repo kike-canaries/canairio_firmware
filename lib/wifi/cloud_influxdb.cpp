@@ -1,4 +1,5 @@
 #include <InfluxDbClient.h>
+#include "bluetooth.hpp"
 #include "cloud_influxdb.hpp"
 #include "power.hpp"
 
@@ -72,57 +73,61 @@ bool influxDbWrite() {
     return true;
 }
 
-// void suspendDevice() {
-//     if (!bleIsConnected()) {
-//         if (solarmode && deepSleep > 0) { // sleep mode and ECO mode on
-//             powerDeepSleepTimer(deepSleep);
-//         }
-//         else if (deepSleep > 0) {  // sleep mode, ECO mode off
-//             powerDisableSensors();
-//             enable_sensors = false;
-//         }
-//     } else {
-//         if (!enable_sensors && !solarmode && deepSleep == 0) { // restore to normal mode
-//             powerEnableSensors();
-//             enable_sensors = true;
-//             sensors.setSampleTime(stime);
-//         }
-//         if (devmode) Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));
-//     }
-// }
+ void suspendDevice() {
+    #ifndef DISABLE_BLE
+    if (!bleIsConnected()) {
+    #else
+    if (true) {
+    #endif
+         if (solarmode && deepSleep > 0) { // sleep mode and ECO mode on
+             powerDeepSleepTimer(deepSleep);
+         }
+         else if (deepSleep > 0) {  // sleep mode, ECO mode off
+             powerDisableSensors();
+             enable_sensors = false;
+         }
+    } else {
+         if (!enable_sensors && !solarmode && deepSleep == 0) { // restore to normal mode
+             powerEnableSensors();
+             enable_sensors = true;
+             sensors.setSampleTime(stime);
+         }
+         if (devmode) Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));
+     }
+ }
 
-// void enableSensors() {
-//     if (!enable_sensors) {
-//         powerEnableSensors();
-//         sensors.setSampleTime(deepSleep);
-//         sensors.init();
-//         enable_sensors = true;
-//         Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\r\n", sizeof(sensors));
-//     }
-// }
+ void enableSensors() {
+     if (!enable_sensors) {
+         powerEnableSensors();
+         sensors.setSampleTime(deepSleep);
+         sensors.init();
+         enable_sensors = true;
+         Serial.printf("-->[HEAP] sizeof sensors\t: %04ub\r\n", sizeof(sensors));
+     }
+ }
 
 void influxDbLoop() {
     static uint_fast64_t timeStamp = 0;
     uint32_t ptime = stime;
     if (ptime<MIN_PUBLISH_INTERVAL) ptime = MIN_PUBLISH_INTERVAL;   // minimum publish interval validation
-    // if (solarmode) ptime = MIN_PUBLISH_INTERVAL;
-    // if(!solarmode && deepSleep > 0) {
-    //     ptime = deepSleep;
-    //     if (millis() - timeStamp > (ptime - WAIT_FOR_PM_SENSOR) * 1000) { 
-    //         enableSensors(); // enable sensors before publish
-    //     } 
-    // }
-    // if ((solarmode || deepSleep > 0 ) && millis() - timeStamp > (ptime - 2) * 1000) {  
-    //     sensors.readAllSensors(); // read sensors after stabilization
-    //     delay(500);
-    // }
+     if (solarmode) ptime = MIN_PUBLISH_INTERVAL;
+     if(!solarmode && deepSleep > 0) {
+         ptime = deepSleep;
+         if (millis() - timeStamp > (ptime - WAIT_FOR_PM_SENSOR) * 1000) { 
+             enableSensors(); // enable sensors before publish
+         } 
+     }
+     if ((solarmode || deepSleep > 0 ) && millis() - timeStamp > (ptime - 2) * 1000) {  
+         sensors.readAllSensors(); // read sensors after stabilization
+         delay(500);
+     }
     if (millis() - timeStamp > ptime * 1000) {
         timeStamp = millis();
         if (ifx_ready && sensors.isDataReady() && WiFi.isConnected() && isIfxEnable()) {
             if (influxDbWrite()){
                 if(devmode) Serial.printf ("-->[IFDB] CanAirIO published \t: payload size: %d\t:)\r\n", sizeof(sensor));
                 gui.displayDataOnIcon();
-                // suspendDevice();
+                suspendDevice();
                 ifx_error_count = 0;
             }
             else {

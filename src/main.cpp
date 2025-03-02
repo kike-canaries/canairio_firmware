@@ -312,7 +312,7 @@ void setup() {
     gui.setPaxMode(isPaxEnable());
     gui.setSampleTime(stime);
     gui.setEmoticons(cfg.getBool(CONFKEYS::KEMOTICO,true));
-    gui.displayInit();
+    gui.displayInit(cfg.getInt(CONFKEYS::KOLEDTYPE, 0));
     gui.flipVertical(cfg.getBool(CONFKEYS::KFLIPV,false));
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();

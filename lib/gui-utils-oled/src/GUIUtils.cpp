@@ -1,4 +1,5 @@
 #include "GUIUtils.hpp"
+#ifndef DISABLE_OLED
 #include "GUIIcons.h"
 
 /******************************************************************************
@@ -517,36 +518,25 @@ void GUIUtils::pageEnd() {
     u8g2->nextPage();
 }
 
-void GUIUtils::setBrightness(uint32_t value) {
-}
+void GUIUtils::setBrightness(uint32_t value) {}
 
-void GUIUtils::setWifiMode(bool enable) {
-}
+void GUIUtils::setWifiMode(bool enable) {}
 
-void GUIUtils::setPaxMode(bool enable) {
-}
+void GUIUtils::setPaxMode(bool enable) {}
 
-void GUIUtils::setSampleTime(int time) {
-}
+void GUIUtils::setSampleTime(int time) {}
 
-void GUIUtils::setTrackValues(float speed, float distance) {
-}
+void GUIUtils::setTrackValues(float speed, float distance) {}
 
-void GUIUtils::setTrackTime(int h, int m, int s) {
-}
+void GUIUtils::setTrackTime(int h, int m, int s) {}
 
-void GUIUtils::suspendTaskGUI() {
-}
+void GUIUtils::suspendTaskGUI() {}
 
-void GUIUtils::resumeTaskGUI() {
-}
+void GUIUtils::resumeTaskGUI() {}
 
-int32_t GUIUtils::getStackFree() {
-  return 0;
-}
+int32_t GUIUtils::getStackFree() { return 0; }
 
-void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks) {
-}
+void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks) {}
 
 void GUIUtils::loop(){
     static uint_least64_t guiTimeStamp = 0;
@@ -572,4 +562,107 @@ String GUIUtils::getFirmwareVersionCode() {
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_GUIHANDLER)
 GUIUtils gui;
+#endif
+
+#else  // DISABLE_OLED for T7S3
+
+void GUIUtils::displayInit(int ssd1306_type) {}
+
+void GUIUtils::showWelcome() {}
+
+void GUIUtils::setPowerSave() {}
+
+void GUIUtils::setEmoticons(bool enable) {}
+
+void GUIUtils::flipVertical(bool enable) {}
+
+void GUIUtils::showMain() {}
+
+void GUIUtils::showProgress(unsigned int progress, unsigned int total) {}
+
+void GUIUtils::welcomeAddMessage(String msg) {}
+
+void GUIUtils::welcomeRepeatMessage(String msg) {}
+
+void GUIUtils::displayUnit() {}
+
+void GUIUtils::displayCenterBig(String msg) {}
+
+void GUIUtils::displayBottomLine(String msg) {}
+
+void GUIUtils::displayEmoticonLabel(int cursor, String msg) {}
+
+void GUIUtils::displayBigEmoticon(String msg) {}
+
+void GUIUtils::displayBigLabel(int cursor, String msg) {}
+
+void GUIUtils::displayAQIColor(int average) {}
+
+void GUIUtils::displaySensorAverage(int average) {}
+
+void GUIUtils::displayWifiIcon() {}
+
+void GUIUtils::displayBatteryIcon() {}
+
+void GUIUtils::displayStatusBar() {}
+
+void GUIUtils::displayMainValues() {}
+
+void GUIUtils::setSensorData(GUIData data) {}
+
+void GUIUtils::setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair) {}
+
+void GUIUtils::setInfoData(String info) {}
+
+void GUIUtils::setBatteryStatus(float volts, int charge, bool isCharging) {}
+
+void GUIUtils::displayGUIStatusFlags() {}
+
+void GUIUtils::displayDataOnIcon() {}
+
+void GUIUtils::displaySensorLiveIcon() {}
+
+void GUIUtils::displayPreferenceSaveIcon() {}
+
+void GUIUtils::pageStart() {}
+
+void GUIUtils::pageEnd() {}
+
+void GUIUtils::setBrightness(uint32_t value) {}
+
+void GUIUtils::setWifiMode(bool enable) {}
+
+void GUIUtils::setPaxMode(bool enable) {}
+
+void GUIUtils::setSampleTime(int time) {}
+
+void GUIUtils::setTrackValues(float speed, float distance) {}
+
+void GUIUtils::setTrackTime(int h, int m, int s) {}
+
+void GUIUtils::suspendTaskGUI() {}
+
+void GUIUtils::resumeTaskGUI() {}
+
+int32_t GUIUtils::getStackFree() { return 0; }
+
+void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks) {}
+
+void GUIUtils::loop() {}
+
+/// Firmware version from platformio.ini
+String GUIUtils::getFirmwareVersionCode() {
+  String VERSION_CODE = "r";
+#ifdef REVISION
+  int VCODE = REVISION;
+#else
+  int VCODE = 0;
+#endif
+  return String(VERSION_CODE + VCODE);
+}
+
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_GUIHANDLER)
+GUIUtils gui;
+#endif
+
 #endif

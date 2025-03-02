@@ -57,7 +57,7 @@ class TFTUtils {
 #endif
     enum WIFI_MODE { WIFI_OFF, WIFI_ON };
 
-    void displayInit();
+    void displayInit(int ssd1306_type = 0);
 
     void setCallbacks(GUIUserPreferencesCallbacks* pCallbacks);
 

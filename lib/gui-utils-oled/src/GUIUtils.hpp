@@ -24,7 +24,7 @@ class GUIUtils {
    public:
     GUIUtils(void){};
 
-    void displayInit();
+    void displayInit(int ssd1306_type = 0);
 
     void setCallbacks(GUIUserPreferencesCallbacks* pCallbacks);
 
@@ -102,7 +102,7 @@ class GUIUtils {
 
     bool sensorLive;
 
-    U8G2 u8g2;
+    U8G2 *u8g2;
 
     int dw = 0;  // display width
 

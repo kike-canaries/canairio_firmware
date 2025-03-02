@@ -9,4 +9,3 @@
 
 void influxDbInit();
 void influxDbLoop();
-

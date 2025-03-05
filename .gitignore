@@ -55,7 +55,7 @@ esptool.py
 md5output.txt
 releases/manifest
 releases/installer/rev*
-
+lib/easy-preferences
 # IDE
 .travis.yml
 extensions.json

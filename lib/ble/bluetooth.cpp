@@ -1,4 +1,14 @@
+#ifndef DISABLE_BLE
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
 #include <bluetooth.hpp>
+#include "Sensors.hpp"
+#include "GUILib.hpp"
+#include "Batterylib.hpp"
+#include "ConfigApp.hpp"
+#include "sniffer.hpp"
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharactData = NULL;
@@ -12,7 +22,7 @@ bool oldDeviceConnected = false;
 *************************************************************************/
 
 String getNotificationData() {
-    StaticJsonDocument<40> doc;   // notification capacity is reduced, only main value
+    JsonDocument doc;   // notification capacity is reduced, only main value
     int deviceType = sensors.getUARTDeviceTypeSelected();
     if (deviceType <= 3) {
         doc["P25"] = sensors.getPM25();  
@@ -25,7 +35,7 @@ String getNotificationData() {
 }
 
 String getSensorData() {
-    StaticJsonDocument<512> doc;
+    JsonDocument doc;
     
     doc["P1"] = sensors.getPM1();
     doc["P25"] = sensors.getPM25();
@@ -40,8 +50,10 @@ String getSensorData() {
     doc["pre"] = sensors.getPressure();
     doc["nh3"] = sensors.getNH3();
     doc["co"] = sensors.getCO();
+    #ifndef DISABLE_BATT
     doc["bat"] = battery.getCharge();
     doc["vol"] = battery.getVoltage();
+    #endif
     doc["PAX"] = getPaxCount();
     doc["dsl"] = sensors.getSensorName((SENSORS) sensors.getUARTDeviceTypeSelected());
     String json;
@@ -58,39 +70,39 @@ void bleServerDataRefresh(){
 }
 
 void bleServerConfigRefresh(){
-    if (FAMILY == "ESP32-C3") return;
-    cfg.setWifiConnected(WiFi.isConnected());  // for notify on each write
-    pCharactConfig->setValue(cfg.getCurrentConfig().c_str());
+    // if (FAMILY == "ESP32-C3") return;
+    setWifiConnected(WiFi.isConnected());  // for notify on each write
+    pCharactConfig->setValue(getCurrentConfig().c_str());
 }
 
 // Config BLE callbacks
 class MyConfigCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
-        if (FAMILY == "ESP32-C3") return;
+        // if (FAMILY == "ESP32-C3") return;
         std::string value = pCharacteristic->getValue();
         if (value.length() > 0) {
-            if (cfg.save(value.c_str())) {
-                cfg.reload();
+            if (save(value.c_str())) {
+                reload();
                 gui.displayPreferenceSaveIcon();
                 
-                gui.setWifiMode(cfg.isWifiEnable());
-                if (!cfg.isWifiEnable()) wifiStop();
+                gui.setWifiMode(isWifiEnable());
+                if (!isWifiEnable()) wifiStop();
                 
-                if(sensors.sample_time != cfg.stime) {
-                    sensors.setSampleTime(cfg.stime);
-                    gui.setSampleTime(cfg.stime);
+                if(sensors.sample_time != stime) {
+                    sensors.setSampleTime(stime);
+                    gui.setSampleTime(stime);
                 }
-                if(sensors.toffset != cfg.toffset) sensors.setTempOffset(cfg.toffset);
-                if(sensors.devmode != cfg.devmode) sensors.setDebugMode(cfg.devmode);
+                if(sensors.toffset != toffset) sensors.setTempOffset(toffset);
+                if(sensors.devmode != devmode) sensors.setDebugMode(devmode);
             }
             else{
-                Serial.println("[E][BTLE][CONFIG] saving error!");
+                log_w("[W][BTLE][CONFIG] save return false with %s",value.c_str());
             }
         }
     };
 
     void onRead(BLECharacteristic* pCharacteristic) {
-        if (FAMILY == "ESP32-C3") return;
+        // if (FAMILY == "ESP32-C3") return;
         bleServerConfigRefresh();
     }
 };
@@ -98,12 +110,12 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
 // Status BLE callbacks
 class MyStatusCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
-        if (FAMILY == "ESP32-C3") return;
+        // if (FAMILY == "ESP32-C3") return;
         std::string value = pCharacteristic->getValue();
-        if (value.length() > 0 && cfg.getTrackStatusValues(value.c_str())) {
+        if (value.length() > 0 && getTrackStatusValues(value.c_str())) {
             log_v("[E][BTLE][STATUS] "+String(value.c_str()));
-            gui.setTrackValues(cfg.track.spd,cfg.track.kms);
-            gui.setTrackTime(cfg.track.hrs,cfg.track.min,cfg.track.seg);
+            gui.setTrackValues(track.spd,track.kms);
+            gui.setTrackTime(track.hrs,track.min,track.seg);
         }
         else {
             Serial.println("[E][BTLE][STATUS] write error!");
@@ -164,7 +176,7 @@ void bleServerInit() {
 void bleLoop() {
     static uint_fast64_t bleTimeStamp = 0;
     // notify changed value
-    if (deviceConnected && (millis() - bleTimeStamp > cfg.stime * 1000)) {  // each 5 secs
+    if (deviceConnected && (millis() - bleTimeStamp > stime * 1000)) {  // each 5 secs
         log_i("[BTLE] sending notification..");
         log_d("[BTLE] %s",getNotificationData().c_str());
         bleTimeStamp = millis();
@@ -189,3 +201,4 @@ void bleLoop() {
 bool bleIsConnected(){
     return deviceConnected;
 }
+#endif

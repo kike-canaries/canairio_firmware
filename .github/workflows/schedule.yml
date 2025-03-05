@@ -1,11 +1,8 @@
-name: PlatformIO
+name: Scheduled
 
 on:
-  pull_request:
-    branches:
-      - devel
-    paths-ignore:
-      - '**/README.md'
+  schedule:
+    - cron:  '30 10 * * 4' 
 
 jobs:
   build:
@@ -13,7 +10,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v3
@@ -31,7 +28,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -U platformio
           pio pkg update
-      - name: Devel Build Test
+      - name: PlatformIO Build Test
         run: |
-          pio run -e TTGO_T7 -e TTGO_TDISPLAY -e ESP32C3LOLIN
-    
+          pio run -e TTGO_T7 -e ESP32DEVKIT -e TTGO_TDISPLAY -e M5STICKCPLUS -e ESP32C3LOLIN

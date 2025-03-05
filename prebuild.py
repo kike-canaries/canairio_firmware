@@ -32,7 +32,7 @@ target = config.get("common", "target")
 
 chipFamily = "ESP32"
 
-if flavor == "ESP32C3" or flavor == "ESP32C3OIPLUS" or flavor == "ESP32C3LOLIN" or flavor == "ESP32C3SEEDX":
+if flavor == "ESP32C3" or flavor == "ESP32C3OIPLUS" or flavor == "ESP32C3LOLIN" or flavor == "ESP32C3SEEDX" or flavor == "AG_OPENAIR":
     chipFamily = "ESP32-C3"
 
 if flavor == "ESP32S3" or flavor == "TTGO_T7S3":

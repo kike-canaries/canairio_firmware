@@ -4,7 +4,9 @@
 
 void prepairShutdown() {
     #ifndef M5STICKCPLUS
+    #ifndef DISABLE_BATT
     digitalWrite(ADC_EN, LOW);
+    #endif
     delay(10);
     //rtc_gpio_init(GPIO_NUM_14);
     //rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
@@ -27,7 +29,7 @@ void powerCompleteShutdown(){
     esp_deep_sleep_start();
     #endif
     #ifdef M5STICKCPLUS
-    M5.Axp.PowerOff();
+    M5.Power.powerOff();
     #endif
 }
 
@@ -46,7 +48,7 @@ void powerDeepSleepTimer(int seconds) {
     Serial.flush();
     prepairShutdown();
     #ifdef M5STICKCPLUS
-    M5.Axp.DeepSleep(seconds*1000000);
+    M5.Power.deepSleep(seconds*1000000);
     #endif
     esp_sleep_enable_timer_wakeup(seconds * 1000000ULL);
     #ifdef TTGO_TDISPLAY
@@ -63,12 +65,12 @@ void powerLightSleepTimer(int seconds) {
     esp_light_sleep_start();
     #endif
     #ifdef M5STICKCPLUS
-    M5.Axp.LightSleep(seconds*1000000);
+    M5.Power.lightSleep(seconds*1000000);
     #endif
 }
 
 void powerEnableSensors() {
-    if(cfg.devmode) Serial.println("-->[POWR] == enable sensors ==");
+    if(devmode) Serial.println("-->[POWR] == enable sensors ==");
     // init all sensors (step-up to 5V with enable pin)
     pinMode(MAIN_HW_EN_PIN, OUTPUT);
     digitalWrite(MAIN_HW_EN_PIN, HIGH);  // step-up on
@@ -81,7 +83,7 @@ void powerEnableSensors() {
 }
 
 void powerDisableSensors() {
-    if(cfg.devmode) Serial.println("-->[POWR] == disable sensors ==");
+    if(devmode) Serial.println("-->[POWR] == disable sensors ==");
     digitalWrite(MAIN_HW_EN_PIN, LOW);  // step-up off
 }
 
@@ -112,20 +114,22 @@ float powerESP32TempRead(){
 }
 
 void powerLoop() {
+  #ifndef DISABLE_BATT
   static uint32_t powerTimeStamp = 0;             // timestamp for check low power
   if ((millis() - powerTimeStamp > 30 * 1000)) {  // check it every 5 seconds
     powerTimeStamp = millis();
     float vbat = battery.getVoltage();
     if (vbat > 3.0 && vbat < BATTERY_MIN_V) {
       Serial.println("-->[POWR] Goto DeepSleep (VBat too low)");
-      if (cfg.solarmode)
-        powerDeepSleepTimer(cfg.deepSleep);
+      if (solarmode)
+        powerDeepSleepTimer(deepSleep);
       else
         powerCompleteShutdown();
     }
   #ifdef CONFIG_IDF_TARGET_ESP32S3
-    if (cfg.devmode) Serial.printf("-->[POWR] CPU Temperature\t: %02.1f°C\r\n", powerESP32TempRead());
+    if (devmode) Serial.printf("-->[POWR] CPU Temperature\t: %02.1f°C\r\n", powerESP32TempRead());
   #endif
     log_i("[HEAP] Min:%d Max:%d\t: %d\r\n", ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), ESP.getFreeHeap());
   }
+  #endif
 }

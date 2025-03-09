@@ -113,7 +113,7 @@ class MyStatusCallbacks : public BLECharacteristicCallbacks {
         // if (FAMILY == "ESP32-C3") return;
         std::string value = pCharacteristic->getValue();
         if (value.length() > 0 && getTrackStatusValues(value.c_str())) {
-            log_v("[E][BTLE][STATUS] "+String(value.c_str()));
+            log_v("[E][BTLE][STATUS] %s", value.c_str());
             gui.setTrackValues(track.spd,track.kms);
             gui.setTrackTime(track.hrs,track.min,track.seg);
         }

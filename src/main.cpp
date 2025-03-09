@@ -298,8 +298,9 @@ void initCLI() {
 
 void setup() {
     Serial.begin(115200);
-    delay(500);
+    delay(4000);
     Serial.flush();
+    checkCoreDumpPartition();
     Serial.println("\n== CanAirIO Setup ==\r\n");
     logMemory("INIT");
     powerInit();

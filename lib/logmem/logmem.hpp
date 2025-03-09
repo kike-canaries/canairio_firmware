@@ -3,3 +3,4 @@
  
 void logMemory(const char* msg);
 void logMemoryObjects();
+void checkCoreDumpPartition();

@@ -1,6 +1,6 @@
-#ifndef DISABLE_BATT
 #ifndef Batterylib_hpp
 #define Batterylib_hpp
+#ifndef DISABLE_BATT
 
 #ifdef TTGO_TDISPLAY
 #include <battery_tft.hpp>
@@ -16,5 +16,12 @@
   #endif
 #endif
 
+#else
+void init(bool debug = false);
+float getVoltage();
+bool isCharging();
+int getCharge();
+void printValues();
+void update();
 #endif
 #endif

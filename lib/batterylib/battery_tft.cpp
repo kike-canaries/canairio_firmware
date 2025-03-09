@@ -1,3 +1,4 @@
+#ifndef DISABLE_BATT
 #include <battery_tft.hpp>
 
 void Battery_TFT::setupBattADC() {
@@ -72,4 +73,5 @@ void Battery_TFT::printValues() {
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTBATTERY)
 Battery_TFT battery;
+#endif
 #endif

@@ -19,8 +19,10 @@ void prepairShutdown() {
 void powerCompleteShutdown(){
     Serial.println("-->[POWR] Complete shutdown..");
     #ifndef M5STICKCPLUS
+    #ifndef DISABLE_BLE
     esp_bluedroid_disable();
     esp_bt_controller_disable();
+    #endif
     esp_wifi_stop();
     esp_deep_sleep_disable_rom_logging();
     //esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);

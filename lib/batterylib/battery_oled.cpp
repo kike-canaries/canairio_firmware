@@ -1,3 +1,4 @@
+#ifndef DISABLE_BATT
 #include <battery_oled.hpp>
 
 #ifdef M5PICOD4
@@ -95,4 +96,5 @@ int Battery_OLED::getCharge() {
         Battery_OLED battery;
         #endif
     #endif
+#endif
 #endif

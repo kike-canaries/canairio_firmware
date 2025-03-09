@@ -68,7 +68,7 @@ int Battery_TFT::getCharge() {
 
 void Battery_TFT::printValues() {
     if (!debug) return;
-    Serial.printf("-->[BATT] Battery voltage  \t: %.3fv vref: %i Charge:%i\r\n", curv, vref, getCharge());  //Output voltage and current of Bat
+    Serial.printf("-->[BATT] Battery voltage  \t: %.3fv vref: %i Charge: %i\r\n", curv, vref, getCharge());  //Output voltage and current of Bat
 }
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTBATTERY)

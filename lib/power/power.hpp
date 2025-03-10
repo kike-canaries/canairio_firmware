@@ -8,6 +8,11 @@
 
 #include <Batterylib.hpp>
 
+#ifdef M5AIRQ
+#define POWER_HOLD 46
+#define SEN55_POWER_EN 10
+#endif
+
 float powerESP32TempRead();
 void powerCompleteShutdown();
 void powerDeepSleepButton();

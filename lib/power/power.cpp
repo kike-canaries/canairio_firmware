@@ -74,6 +74,12 @@ void powerEnableSensors() {
     // init all sensors (step-up to 5V with enable pin)
     pinMode(MAIN_HW_EN_PIN, OUTPUT);
     digitalWrite(MAIN_HW_EN_PIN, HIGH);  // step-up on
+
+    #ifdef M5AIRQ
+    log_i("[POWR] Turn on SEN55 power");
+    pinMode(SEN55_POWER_EN, OUTPUT);
+    digitalWrite(SEN55_POWER_EN, LOW);
+    #endif
 }
 
 void powerDisableSensors() {

@@ -1,6 +1,5 @@
 #include <WiFi.h>
 #include <Sensors.hpp>
-#include <Batterylib.hpp>
 #include "wifi.hpp"
 #include "ConfigApp.hpp"
 

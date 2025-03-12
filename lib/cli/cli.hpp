@@ -2,7 +2,9 @@
 
 #include <ESP32WifiCLI.hpp>
 #include <Sensors.hpp>
+#ifndef DISABLE_BATT
 #include <Batterylib.hpp>
+#endif
 #include "logmem.hpp"
 #include "Watchdog.hpp"
 

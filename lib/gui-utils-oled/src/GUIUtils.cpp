@@ -549,6 +549,8 @@ void GUIUtils::loop(){
     }
 }
 
+void GUIUtils::clearScreen() {}
+
 /// Firmware version from platformio.ini
 String GUIUtils::getFirmwareVersionCode() {
     String VERSION_CODE = "r";
@@ -650,6 +652,8 @@ void GUIUtils::setCallbacks(GUIUserPreferencesCallbacks* pCallBacks) {}
 
 void GUIUtils::loop() {}
 
+void GUIUtils::clearScreen() {}
+
 /// Firmware version from platformio.ini
 String GUIUtils::getFirmwareVersionCode() {
   String VERSION_CODE = "r";
@@ -666,3 +670,4 @@ GUIUtils gui;
 #endif
 
 #endif
+

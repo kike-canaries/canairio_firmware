@@ -1,5 +1,5 @@
-#ifndef DISABLE_BATT
 #include <battery_oled.hpp>
+#ifndef DISABLE_BATT
 
 #ifdef M5PICOD4
     #define ADC_PIN 36
@@ -89,6 +89,15 @@ int Battery_OLED::getCharge() {
         return calcPercentage(curv, btDiscVMax, btDiscVMin);
     }
 }
+#endif
+#ifdef DISABLE_BATT
+void init(bool debug = false) {}
+float getVoltage() { return 0.0; }
+bool isCharging() { return false; }
+int getCharge()   { return 0; }
+void printValues() {}
+void update() {}
+#endif
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_OLEDBATTERY)
     #ifndef M5STICKCPLUS
@@ -96,5 +105,4 @@ int Battery_OLED::getCharge() {
         Battery_OLED battery;
         #endif
     #endif
-#endif
 #endif

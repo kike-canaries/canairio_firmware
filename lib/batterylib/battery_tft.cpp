@@ -1,5 +1,5 @@
-#ifndef DISABLE_BATT
 #include <battery_tft.hpp>
+#ifndef DISABLE_BATT
 
 void Battery_TFT::setupBattADC() {
     // TODO: all here is deprecated we need review the documentation
@@ -70,8 +70,17 @@ void Battery_TFT::printValues() {
     if (!debug) return;
     Serial.printf("-->[BATT] Battery voltage  \t: %.3fv vref: %i Charge: %i\r\n", curv, vref, getCharge());  //Output voltage and current of Bat
 }
+#endif
+
+#ifdef DISABLE_BATT
+void init(bool debug = false) {}
+float getVoltage() { return 0.0; }
+bool isCharging() { return false; }
+int getCharge()   { return 0; }
+void printValues() {}
+void update() {}
+#endif
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTBATTERY)
 Battery_TFT battery;
-#endif
 #endif

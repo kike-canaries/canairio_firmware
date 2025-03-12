@@ -12,7 +12,6 @@ void checkCoreDumpPartition() {
   if (summary) {
     esp_err_t err = esp_core_dump_get_summary(summary);
     if (err == ESP_OK) {
-      Serial.println("-->[INFO] Getting core dump summary ok.");
       log_i("Getting core dump summary ok.");
 
     } else {
@@ -23,7 +22,6 @@ void checkCoreDumpPartition() {
     free(summary);
   }
   else {
-    Serial.println("[E][INFO] Failed core dump summary malloc");
     log_e("Failed core dump summary malloc");
   }
 }

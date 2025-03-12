@@ -1,15 +1,16 @@
+class BatteryUpdateCallbacks {
+ public:
+  virtual ~BatteryUpdateCallbacks(){};
+  virtual void onBatteryUpdate(float voltage, int charge, bool charging);
+};
+
+#ifndef DISABLE_BATT
 #include <Arduino.h>
 #include <CircularBuffer.h>
 
 #define SLOW_RATE 5000  // time into updates for visualization in ms
 #define FAST_RATE 500   // time into samples for catpure initial buffer
 #define SAMPLES 60      // # of samples on buffer (sample time = SAMPLES*FAST_RATE)
-
-class BatteryUpdateCallbacks {
- public:
-  virtual ~BatteryUpdateCallbacks(){};
-  virtual void onBatteryUpdate(float voltage, int charge, bool charging);
-};
 
 class Battery {
  public:
@@ -144,3 +145,7 @@ class Battery {
     return (int)percentage;
   }
 };
+#endif
+#ifdef DISABLE_BATT
+class Battery {};
+#endif

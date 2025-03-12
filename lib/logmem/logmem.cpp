@@ -5,7 +5,7 @@
 uint32_t heap_size = 0;
 
 void checkCoreDumpPartition() {
-  Serial.println("-->[INFO] Check core dump partition..");
+  #if (defined ESP32S3 || defined ESP32C3)
   esp_core_dump_init();
   esp_core_dump_summary_t *summary =
       static_cast<esp_core_dump_summary_t *>(malloc(sizeof(esp_core_dump_summary_t)));
@@ -24,6 +24,7 @@ void checkCoreDumpPartition() {
   else {
     log_e("Failed core dump summary malloc");
   }
+  #endif
 }
 
 void logMemory(const char* msg) {

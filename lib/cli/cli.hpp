@@ -1,8 +1,11 @@
 #ifndef DISABLE_CLI
 
 #include <ESP32WifiCLI.hpp>
+#include <wifi.hpp>
 #include <Sensors.hpp>
-#include "Batterylib.hpp"
+#ifndef DISABLE_BATT
+#include <Batterylib.hpp>
+#endif
 #include "logmem.hpp"
 #include "Watchdog.hpp"
 

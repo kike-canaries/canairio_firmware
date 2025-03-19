@@ -1,6 +1,6 @@
 #include <battery_m5stack.hpp>
-
 #ifdef M5STICKCPLUS
+#ifndef DISABLE_BATT
 
 void Battery_M5STACK::init(bool debug) {
     this->debug = debug;
@@ -38,9 +38,17 @@ void Battery_M5STACK::printValues() {
     // Serial.printf("-->[BATT] AXP 5V  Volts  \t: %.3fv  \tI: %.3fma\r\n", M5.Axp.GetVinVoltage(), M5.Axp.GetVinCurrent());
     // Serial.printf("-->[BATT] AXP Bat power  \t: %.3fmw\r\n", M5.Axp.GetBatPower());
 }
+#endif
+#ifdef DISABLE_BATT
+void init(bool debug = false) {}
+float getVoltage() { return 0.0; }
+bool isCharging() { return false; }
+int getCharge()   { return 0; }
+void printValues() {}
+void update() {}
+#endif
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_M5STACKBATTERY)
 Battery_M5STACK battery;
 #endif
-
 #endif

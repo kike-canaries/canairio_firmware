@@ -270,15 +270,15 @@ void initBattery() {
 }
 
 void initCLIFailsafe() {
+#ifndef DISABLE_CLI
   if (cfg.getBool(CONFKEYS::KFAILSAFE, true)) {
     delay(2000); // wait for new S3 and C3 CDC serial
     gui.welcomeAddMessage("wait for setup..");
     Serial.println("\n-->[INFO] == Type \"setup\" for enter in safe mode (over in 10seg!) ==");
-#ifndef DISABLE_CLI
     cliInit();
     logMemory("CLI ");
-#endif
   }
+#endif
 }
 
 void initCLI() {
@@ -305,10 +305,11 @@ void setup() {
     logMemory("INIT");
     // init app preferences and load settings
     init("canairio");
-    powerInit();
+    // powerInit();
     Serial.setDebugOutput(devmode);
     logMemory("CONF"); 
     // init graphic user interface
+    Wire.begin(13, 14);
     gui.setBrightness(getBrightness());
     gui.setWifiMode(isWifiEnable());
     gui.setPaxMode(isPaxEnable());

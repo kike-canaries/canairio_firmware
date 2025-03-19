@@ -49,10 +49,6 @@ void init(const char app_name[]) {
     chipid = ESP.getEfuseMac();
     deviceId = getDeviceId();
     reload();
-    // override with debug INFO level (>=3)
-#if CORE_DEBUG_LEVEL >= 1
-    devmode = true;
-#endif
     if (devmode) Serial.println("-->[CONF] debug is enable.");
 }
 

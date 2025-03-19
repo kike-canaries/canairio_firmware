@@ -300,11 +300,13 @@ void setup() {
     Serial.begin(115200);
     delay(500);
     Serial.flush();
+    checkCoreDumpPartition();
     Serial.println("\n== CanAirIO Setup ==\r\n");
     logMemory("INIT");
-    powerInit();
     // init app preferences and load settings
     init("canairio");
+    powerInit();
+    Serial.setDebugOutput(devmode);
     logMemory("CONF"); 
     // init graphic user interface
     gui.setBrightness(getBrightness());

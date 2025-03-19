@@ -1,6 +1,5 @@
 #ifndef DISABLE_CLI
 #include "cli.hpp"
-#include <wifi.hpp>
 #include "cloud_influxdb.hpp"
 #include "ConfigApp.hpp"
 
@@ -9,7 +8,6 @@ int setup_time = 10000;
 bool first_run = true;
 
 TaskHandle_t xCliHandle;
-
 
 void wcli_debug(char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
@@ -290,7 +288,7 @@ void initShell(){
   wcli.shell->attachLogo(logo);
   wcli.setCallback(new mESP32WifiCLICallbacks());
   wcli.setSilentMode(true);
-  // wcli.disableAutoConnect();
+  // wcli.disableAutoConnect();         // the firmware side handle the wifi connection
   // Main Commands:
   wcli.add("reboot",&wcli_reboot,       "\tperform an ESP32 reboot");
   wcli.add("swipe", &wcli_swipe,        "\t\tfactory settings reset. (needs confirmation)");
@@ -299,8 +297,10 @@ void initShell(){
   wcli.add("stype", &wcli_stype,        "\t\tset the sensor type (UART)");
   wcli.add("sgeoh", &wcli_sgeoh,        "\t\tset geohash. Type help for more details.");
   wcli.add("spins", &wcli_uartpins,     "\t\tset the UART pins TX RX");
+  #ifndef DISABLE_BATT
   wcli.add("battv", &wcli_battvLimits,  "\t\tset battery min/max voltage");
   wcli.add("charg", &wcli_chargLimits,  "\t\tset battery charging min/max voltage");
+  #endif
   wcli.add("kset",  &wcli_kset,         "\t\tset preference key (e.g on/off or 1/0 or text)");
   wcli.add("klist", &wcli_klist,        "\t\tlist valid preference keys");
   wcli.add("info",  &wcli_info,         "\t\tget device information");

@@ -305,11 +305,11 @@ void setup() {
     logMemory("INIT");
     // init app preferences and load settings
     init("canairio");
-    // powerInit();
+    powerInit();
     Serial.setDebugOutput(devmode);
     logMemory("CONF"); 
     // init graphic user interface
-    Wire.begin(13, 14);
+    sensors.startI2C(); // start I2C shared bus with OLED
     gui.setBrightness(getBrightness());
     gui.setWifiMode(isWifiEnable());
     gui.setPaxMode(isPaxEnable());

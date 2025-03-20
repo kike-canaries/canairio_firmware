@@ -33,7 +33,7 @@ void Battery_TFT::init(bool debug) {
     delay(10);                         // suggested by @ygator user in issue #2
     setupBattADC();
     delay(10);                         // suggested by @ygator user in issue #2
-    setLimits(BATTERY_MIN_V, BATTERY_MAX_V, BATTCHARG_MIN_V, BATTCHARG_MAX_V);
+    // setLimits(BATTERY_MIN_V, BATTERY_MAX_V, BATTCHARG_MIN_V, BATTCHARG_MAX_V);
 }
 
 float Battery_TFT::getVoltage () {

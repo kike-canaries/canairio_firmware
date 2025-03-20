@@ -5,7 +5,7 @@
 void Battery_M5STACK::init(bool debug) {
     this->debug = debug;
     // M5.Axp.EnableCoulombcounter();  // Enable Coulomb counter.
-    setLimits(BATTERY_MIN_V, BATTERY_MAX_V, BATTCHARG_MIN_V, BATTCHARG_MAX_V);
+    // setLimits(BATTERY_MIN_V, BATTERY_MAX_V, BATTCHARG_MIN_V, BATTCHARG_MAX_V);
 }
 
 float Battery_M5STACK::getVoltage() {

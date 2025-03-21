@@ -1,7 +1,7 @@
 /**
  * @file main.cpp
  * @author Antonio Vanegas @hpsaturn
- * @date June 2018 - 2020
+ * @date June 2018 - 2025
  * @brief Particle meter sensor on ESP32 with bluetooth GATT notify server
  * @license GPL3
  */
@@ -321,7 +321,7 @@ void setup() {
     Serial.setDebugOutput(devmode);
     logMemory("CONF"); 
     // init graphic user interface
-    sensors.startI2C(); // start I2C shared bus with OLED
+    sensors.startI2C(); // I2C shared bus with OLED (ESP32S3 issue)
     gui.setBrightness(getBrightness());
     gui.setWifiMode(isWifiEnable());
     gui.setPaxMode(isPaxEnable());

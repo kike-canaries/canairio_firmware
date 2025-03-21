@@ -28,7 +28,11 @@ void GUIUtils::displayInit(int ssd1306_type) {
       u8g2 = new U8G2_SSD1306_128X64_NONAME_F_HW_I2C(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
     }
 #endif
-    u8g2->setBusClock(100000);
+    if (FAMILY != "ESP32-S2") {
+      u8g2->setBusClock(100000);
+    } else {
+      u8g2->setBusClock(4000000);
+    }
     u8g2->begin();
     u8g2->setFont(u8g2_font_6x10_tf);
     u8g2->setContrast(128);

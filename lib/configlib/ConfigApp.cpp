@@ -65,7 +65,6 @@ void reload() {
     // station and sensor settings
     lat = cfg.getDouble("lat", 0);
     lon = cfg.getDouble("lon", 0);
-    geo = cfg.getString("geo", "");
     stime = cfg.getInt("stime", 5);
     stype = cfg.getInt(CONFKEYS::KSTYPE, 0);
     sTX = cfg.getInt("sTX", -1);
@@ -266,15 +265,15 @@ bool saveInfluxDb(String db, String ip, int pt) {
     return false;
 }
 
-bool saveGeo(double latitude, double longitude, String geohash){
+bool saveGeo(double latitude, double longitude, String geoh){
     if (latitude != 0 && longitude != 0) {
         cfg.saveDouble("lat", latitude);
         cfg.saveDouble("lon", longitude);
-        cfg.saveString("geo", geohash);
+        cfg.saveString("geo", geoh);
         lat = latitude;
         lon = longitude;
-        geo = geohash;
-        Serial.printf("-->[CONF] New Geohash: %s \t: (%.4f,%.4f)\r\n", geo, lat, lon);
+        geo = geoh;
+        Serial.printf("-->[CONF] New Geohash: %s \t: (%.4f,%.4f)\r\n", geo.c_str(), lat, lon);
         return true;
     }
     log_w("[W][CONF] wrong GEO params!");
@@ -393,7 +392,7 @@ bool save(const char *json) {
     if (doc["ifxdb"].is<String>()) return saveInfluxDb(doc["ifxdb"] | "", doc["ifxip"] | "", doc["ifxpt"] | 0);
     if (doc["pass"].is<String>() && doc["ssid"].is<String>()) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
     if (doc["ssid"].is<String>()) return saveSSID(doc["ssid"] | "");
-    if (doc["lat"].is<double>()) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
+    if (doc["geo"].is<String>()) return saveGeo(doc["geo"] | "");
     if (doc["toffset"].is<float>()) return saveTempOffset(doc["toffset"].as<float>());
     if (doc["altoffset"].is<float>()) return saveAltitudeOffset(doc["altoffset"].as<float>());
     if (doc["sealevel"].is<float>()) return saveSeaLevel(doc["sealevel"].as<float>());

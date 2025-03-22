@@ -38,7 +38,6 @@ extern int sTX;
 extern int sRX;
 extern double lat;
 extern double lon;
-extern String geo;
 
 extern String ssid;
 extern String pass;

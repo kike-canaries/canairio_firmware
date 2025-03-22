@@ -4,11 +4,7 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <bluetooth.hpp>
-#include "Sensors.hpp"
-#include "GUILib.hpp"
-#include "Batterylib.hpp"
-#include "ConfigApp.hpp"
-#include "sniffer.hpp"
+#include <sniffer.h>
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharactData = NULL;

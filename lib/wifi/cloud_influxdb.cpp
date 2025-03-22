@@ -14,15 +14,15 @@ bool enable_sensors;
 int ifx_error_count;
 
 bool influxDbIsConfigured() {
-    if(ifx.db.length() > 0 && ifx.ip.length() > 0 && geo.length()==0) {
+    if(ifx.db.length() > 0 && ifx.ip.length() > 0 && cfg.getString("geo", "").length()==0) {
         Serial.println("[W][IFDB] ifxdb is configured but Location (GeoHash) is missing!");
     }
-    return ifx.db.length() > 0 && ifx.ip.length() > 0 && geo.length() > 0;
+    return ifx.db.length() > 0 && ifx.ip.length() > 0 && cfg.getString("geo", "").length() > 0;
 }
 
 void influxDbAddTags() {
     sensor.addTag("mac",deviceId.c_str());
-    sensor.addTag("geo3",geo.substring(0,3).c_str());
+    sensor.addTag("geo3",cfg.getString("geo", "").substring(0,3).c_str());
     sensor.addTag("name",getStationName().c_str());
     sensor.addTag("rev",getVersion());
 }
@@ -43,7 +43,7 @@ void influxDbParseFields() {
     sensor.addField("co2tmp",sensors.getCO2temp());
     sensor.addField("tmp",temp);
     sensor.addField("hum",humi);
-    sensor.addField("geo",geo.c_str());
+    sensor.addField("geo",cfg.getString("geo", "").c_str());
     sensor.addField("prs",sensors.getPressure());
     sensor.addField("gas",sensors.getGas());
     sensor.addField("nh3",sensors.getNH3());

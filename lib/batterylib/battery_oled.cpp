@@ -43,12 +43,14 @@ void Battery_OLED::init(bool debug) {
     If the USB port is used for power supply, it is turned on by default.
     If it is powered by battery, it needs to be set to high level
     */
+  #ifndef TTGO_T7S3
   pinMode(ADC_EN, OUTPUT);
   digitalWrite(ADC_EN, HIGH);
+  #endif
   delay(10);  // suggested by @ygator user in issue #2
   setupBattADC();
   delay(10);  // suggested by @ygator user in issue #2
-  setLimits(BATTERY_MIN_V, BATTERY_MAX_V, BATTCHARG_MIN_V, BATTCHARG_MAX_V);
+  // setLimits(BATTERY_MIN_V, BATTERY_MAX_V, BATTCHARG_MIN_V, BATTCHARG_MAX_V);
 }
 
 float Battery_OLED::getVoltage() {

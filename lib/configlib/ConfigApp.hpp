@@ -36,8 +36,6 @@ extern int stime;
 extern int stype;
 extern int sTX;
 extern int sRX;
-extern double lat;
-extern double lon;
 
 extern String ssid;
 extern String pass;

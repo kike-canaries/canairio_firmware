@@ -36,7 +36,7 @@ void anairePublish() {
         doc["pm10"] = sensors.getPM10();
         doc["cpm"] = String(sensors.getGeigerCPM());
         doc["usvh"] = String(sensors.getGeigerMicroSievertHour());
-        doc["geo"] = geo;
+        doc["geo"] = cfg.getString("geo", "");
         #ifndef DISABLE_BATT
         doc["battery"] = String(battery.getCharge());
         doc["VBat"] = String(battery.getVoltage());

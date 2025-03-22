@@ -17,7 +17,7 @@
 #include "wifi.hpp"
 #include "bluetooth.hpp"
 #include "logmem.hpp"
-#include "sniffer.hpp"
+#include "sniffer.h"
 
 #ifndef DISABLE_CLI
 #include "cli.hpp"
@@ -362,7 +362,8 @@ void setup() {
     logMemory("WIFI");
     Serial.printf("-->[INFO] InfluxDb cloud \t: %s\r\n", isIfxEnable()  ? "enabled" : "disabled");
     Serial.printf("-->[INFO] WiFi current config\t: %s\r\n", isWifiEnable() ? "enabled" : "disabled");
-    String sname = !geo.isEmpty() ? getStationName() : "not configured yet\t:(";
+
+    String sname = !(cfg.getString("geo", "")).isEmpty() ? getStationName() : "not configured yet\t:(";
     Serial.printf("-->[INFO] CanAirIO station name\t: %s\r\n", sname.c_str());
     gui.welcomeAddMessage("WiFi: "+String(isIfxEnable() ? "On" : "Off"));
     gui.welcomeAddMessage("Influx: "+String(isIfxEnable() ? "On" : "Off"));

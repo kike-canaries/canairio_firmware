@@ -11,9 +11,6 @@ int stime;
 int stype;
 int sTX;
 int sRX;
-double lat;
-double lon;
-String geo;
 
 String ssid;
 String pass;
@@ -63,8 +60,6 @@ void reload() {
     ifx.ip = cfg.getString(CONFKEYS::KIFXIP, ifx.ip);
     ifx.pt = cfg.getInt(CONFKEYS::KIFXPT, ifx.pt);
     // station and sensor settings
-    lat = cfg.getDouble("lat", 0);
-    lon = cfg.getDouble("lon", 0);
     stime = cfg.getInt("stime", 5);
     stype = cfg.getInt(CONFKEYS::KSTYPE, 0);
     sTX = cfg.getInt("sTX", -1);
@@ -270,10 +265,7 @@ bool saveGeo(double latitude, double longitude, String geoh){
         cfg.saveDouble("lat", latitude);
         cfg.saveDouble("lon", longitude);
         cfg.saveString("geo", geoh);
-        lat = latitude;
-        lon = longitude;
-        geo = geoh;
-        Serial.printf("-->[CONF] New Geohash: %s \t: (%.4f,%.4f)\r\n", geo.c_str(), lat, lon);
+        log_i("[CONF] New Geohash: %s \t: (%.4f,%.4f)\r\n", geoh.c_str(), latitude, longitude);
         return true;
     }
     log_w("[W][CONF] wrong GEO params!");
@@ -461,8 +453,8 @@ String getDeviceIdShort() {
 }
 
 String getStationName() {
-    if (geo.isEmpty()) return getAnaireDeviceId();
-    String name = ""+geo.substring(0,3);          // GeoHash ~70km https://en.wikipedia.org/wiki/Geohash
+    if (cfg.getString("geo", "").isEmpty()) return getAnaireDeviceId();
+    String name = ""+cfg.getString("geo", "").substring(0,3);          // GeoHash ~70km https://en.wikipedia.org/wiki/Geohash
     String flavor = String(FLAVOR);
     if(flavor.length() > 6) flavor = flavor.substring(0,7); // validation possible issue with HELTEC
     name = name + flavor;                         // Flavor short, firmware name (board)

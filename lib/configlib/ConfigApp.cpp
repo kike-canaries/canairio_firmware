@@ -1,7 +1,10 @@
 #include "ConfigApp.hpp"
 
+// std::mutex conf_mtx;
+
 uint64_t chipid;
 String deviceId;
+String efuseDevId;
 String dname;
 
 trackStatus track;
@@ -39,12 +42,19 @@ Geohash geohash;
 
 RemoteConfigCallbacks* mRemoteConfigCallBacks = nullptr;
 
+String calcEfuseDeviceId() {
+  uint32_t chipId = 0;
+  for (int i = 0; i < 17; i = i + 8) chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+  return String(chipId, HEX);
+}
+
 void init(const char app_name[]) {
     _app_name = new char[strlen(app_name) + 1];
     strcpy(_app_name, app_name);
     cfg.init(_app_name);
     chipid = ESP.getEfuseMac();
     deviceId = getDeviceId();
+    efuseDevId = calcEfuseDeviceId();
     reload();
     if (devmode) Serial.println("-->[CONF] debug is enable.");
 }
@@ -78,7 +88,12 @@ void reload() {
     hasspsw = cfg.getString(CONFKEYS::KHASSPW, "");
 }
 
+bool on_read_config = false;
+
 String getCurrentConfig() {
+    // std::lock_guard<std::mutex> lck(conf_mtx);
+    if (on_read_config) return "";
+    on_read_config = true;
     JsonDocument doc;
     doc["wmac"] = (uint16_t)(chipid >> 32);  // chipid calculated in init
     doc["anaireid"] = getStationName();      // deviceId for Anaire cloud
@@ -92,7 +107,7 @@ String getCurrentConfig() {
     doc["denb"] = cfg.getBool(CONFKEYS::KDEBUG, false);       // debug mode enable
     
     doc["ssid"] = cfg.getString(CONFKEYS::KSSID, "");         // influxdb database name
-    doc["geo"] = cfg.getString("geo", "");                    // influxdb GeoHash tag
+    doc["geo"] = cfg.getString("geo", "");           // influxdb GeoHash tag
     doc["i2conly"] = cfg.getBool(CONFKEYS::KI2CONLY, false);  // force only i2c sensors
     doc["toffset"] = cfg.getFloat(CONFKEYS::KTOFFST, 0.0);    // temperature offset
     doc["stime"] = cfg.getInt(CONFKEYS::KSTIME, 5);           // sensor measure time
@@ -113,9 +128,9 @@ String getCurrentConfig() {
 #if CORE_DEBUG_LEVEL >= 3
     char buf[1000];
     serializeJsonPretty(doc, buf, 1000);
-    Serial.printf("-->[CONF] response: %s", buf);
-    Serial.println("");
+    Serial.printf("-->[CONF] respons@e: %s\r\n", buf);
 #endif
+    on_read_config = false;
     return output;
 
 //     doc["dname"] = cfg.getString("dname", "");       // device or station name
@@ -371,8 +386,7 @@ bool save(const char *json) {
 #if CORE_DEBUG_LEVEL >= 3
     char output[1000];
     serializeJsonPretty(doc, output, 1000);
-    Serial.printf("-->[CONF] request: %s", output);
-    Serial.println("");
+    Serial.printf("-->[CONF] request: %s\r\n", output);
 #endif
 
     uint16_t cmd = doc["cmd"].as<uint16_t>();
@@ -439,10 +453,8 @@ String getDeviceId() {
     return String(baseMacChr);
 }
 
-String getAnaireDeviceId() { 
-    uint32_t chipId = 0;
-    for (int i = 0; i < 17; i = i + 8) chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
-    return String(chipId, HEX);
+String getEfuseDeviceId() { 
+  return efuseDevId; 
 }
 
 String getDeviceIdShort() {
@@ -453,7 +465,7 @@ String getDeviceIdShort() {
 }
 
 String getStationName() {
-    if (cfg.getString("geo", "").isEmpty()) return getAnaireDeviceId();
+    if (cfg.getString("geo", "").isEmpty()) return efuseDevId;
     String name = ""+cfg.getString("geo", "").substring(0,3);          // GeoHash ~70km https://en.wikipedia.org/wiki/Geohash
     String flavor = String(FLAVOR);
     if(flavor.length() > 6) flavor = flavor.substring(0,7); // validation possible issue with HELTEC

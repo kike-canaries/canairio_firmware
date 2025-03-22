@@ -11,7 +11,7 @@
   X(KBASIC, "-----", UNKNOWN)       \
   X(KDEBUG, "debugEnable", BOOL)    \
   X(KSTYPE, "stype", INT)           \
-  X(KOLEDTYPE, "oledType", INT)    \
+  X(KOLEDTYPE, "oledType", INT)     \
   X(KFLIPV, "flipVEnable", BOOL)    \
   X(KHOMEAS, "homeaEnable", BOOL)   \
   X(KANAIRE, "anaireEnable", BOOL)  \

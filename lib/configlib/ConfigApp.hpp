@@ -6,7 +6,7 @@
 #include <EasyPreferences.hpp>
 #include <ESP32WifiCLI.hpp>
 #include "Watchdog.hpp"
-// #include <mutex>
+#include <mutex>
 
 class RemoteConfigCallbacks;
 
@@ -31,25 +31,15 @@ extern ifxdbValues ifx;
 extern uint64_t chipid;
 extern String deviceId;
 extern bool devmode;
-extern char* _app_name;
 
 extern int stime;
 extern int stype;
 extern int sTX;
 extern int sRX;
 
-extern String ssid;
-extern String pass;
-extern bool isNewWifi;
 extern bool wifi_enable;
 extern bool wifi_connected;
 
-extern String hassip;
-extern String hassusr;
-extern String hasspsw;
-extern int16_t hasspt;
-
-extern bool i2conly;
 extern bool pax_enable; 
 extern bool solarmode;
 extern uint32_t deepSleep;

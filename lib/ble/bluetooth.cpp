@@ -66,7 +66,6 @@ void bleServerDataRefresh(){
 }
 
 void bleServerConfigRefresh(){
-    // if (FAMILY == "ESP32-C3") return;
     setWifiConnected(WiFi.isConnected());  // for notify on each write
     pCharactConfig->setValue(getCurrentConfig().c_str());
     delay(100);
@@ -99,7 +98,6 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
     };
 
     void onRead(BLECharacteristic* pCharacteristic) {
-        // if (FAMILY == "ESP32-C3") return;
         bleServerConfigRefresh();
     }
 };

@@ -73,28 +73,28 @@ bool influxDbWrite() {
     return true;
 }
 
- void suspendDevice() {
-    #ifndef DISABLE_BLE
-    if (!bleIsConnected()) {
-    #else
-    if (true) {
-    #endif
-         if (solarmode && deepSleep > 0) { // sleep mode and ECO mode on
-             powerDeepSleepTimer(deepSleep);
-         }
-         else if (deepSleep > 0) {  // sleep mode, ECO mode off
-             powerDisableSensors();
-             enable_sensors = false;
-         }
-    } else {
-         if (!enable_sensors && !solarmode && deepSleep == 0) { // restore to normal mode
-             powerEnableSensors();
-             enable_sensors = true;
-             sensors.setSampleTime(stime);
-         }
-         if (devmode) Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));
-     }
- }
+void suspendDevice() {
+  bool bleConnected = false;
+#ifndef DISABLE_BLE
+  bleConnected = bleIsConnected();
+#endif
+  if (!bleConnected) {
+    if (solarmode && deepSleep > 0) {  // sleep mode and ECO mode on
+      powerDeepSleepTimer(deepSleep);
+    } else if (deepSleep > 0) {  // sleep mode, ECO mode off
+      powerDisableSensors();
+      enable_sensors = false;
+    }
+  } else {
+    if (!enable_sensors && !solarmode && deepSleep == 0) {  // restore to normal mode
+      powerEnableSensors();
+      enable_sensors = true;
+      sensors.setSampleTime(stime);
+    }
+    if (devmode && (solarmode || deepSleep > 0))
+      Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));
+  }
+}
 
  void enableSensors() {
      if (!enable_sensors) {

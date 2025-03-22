@@ -5,7 +5,6 @@
 uint64_t chipid;
 String deviceId;
 String efuseDevId;
-String dname;
 
 trackStatus track;
 ifxdbValues ifx;
@@ -15,17 +14,7 @@ int stype;
 int sTX;
 int sRX;
 
-String ssid;
-String pass;
-
-String hassip;
-String hassusr;
-String hasspsw;
-int16_t hasspt;
-
-bool isNewWifi;
 bool devmode;
-bool i2conly;
 bool pax_enable; 
 bool solarmode;
 uint32_t deepSleep;
@@ -33,7 +22,6 @@ float toffset;
 float altoffset;
 float sealevel;
 
-char* _app_name;
 bool wifi_enable;
 bool ifxdb_enable;
 bool wifi_connected;
@@ -49,7 +37,7 @@ String calcEfuseDeviceId() {
 }
 
 void init(const char app_name[]) {
-    _app_name = new char[strlen(app_name) + 1];
+    char* _app_name = new char[strlen(app_name) + 1];
     strcpy(_app_name, app_name);
     cfg.init(_app_name);
     chipid = ESP.getEfuseMac();
@@ -62,8 +50,6 @@ void init(const char app_name[]) {
 void reload() {
     // wifi settings
     wifi_enable = cfg.getBool(CONFKEYS::KWIFIEN, false);
-    ssid = cfg.getString(CONFKEYS::KSSID, "");
-    pass = cfg.getString(CONFKEYS::KPASS, "");
     // influx db optional settings
     ifxdb_enable = cfg.getBool(CONFKEYS::KIFXENB, false);
     ifx.db = cfg.getString(CONFKEYS::KIFXDB, ifx.db);
@@ -79,13 +65,8 @@ void reload() {
     sealevel = cfg.getFloat(CONFKEYS::KSEALVL, 1013.25);
     devmode = cfg.getBool(CONFKEYS::KDEBUG, false);
     pax_enable = cfg.getBool(CONFKEYS::KPAXENB, false);
-    i2conly = cfg.getBool(CONFKEYS::KI2CONLY, false);
     solarmode = cfg.getBool(CONFKEYS::KSOLAREN, false);
-    deepSleep = cfg.getInt(CONFKEYS::KDEEPSLP, 0);
-    hassip = cfg.getString(CONFKEYS::KHASSIP, "");
-    hasspt = cfg.getInt(CONFKEYS::KHASSPT, 1883);
-    hassusr = cfg.getString(CONFKEYS::KHASSUSR, "");
-    hasspsw = cfg.getString(CONFKEYS::KHASSPW, "");
+    deepSleep = cfg.getInt(CONFKEYS::KDEEPSLP, 0); 
 }
 
 bool on_read_config = false;
@@ -162,6 +143,7 @@ bool saveSampleTime(int time) {
 bool saveSensorType(int type) {
     cfg.saveInt(CONFKEYS::KSTYPE, type);
     Serial.printf("-->[CONF] sensor device type\t: %d\r\n", type);
+    stype = type;
     return true;
 }
 
@@ -242,7 +224,6 @@ bool saveWifi(String ssid, String pass) {
     }
     else
       wcli.wifiAPConnect(false);
-    delay(2000);
 
     if (!wcli.wifiValidation()) {
       if (new_wifi) wcli.loadAP(wcli.getDefaultAP());
@@ -262,6 +243,9 @@ bool saveWifi(String ssid, String pass) {
 
 bool saveInfluxDb(String db, String ip, int pt) {
     if (db.length() > 0 && ip.length() > 0) {
+        ifx.db = db;
+        ifx.ip = ip;
+        ifx.pt = pt;
         cfg.saveString("ifxdb", db);
         cfg.saveString("ifxip", ip);
         if (pt > 0) cfg.saveInt("ifxpt", pt);
@@ -303,14 +287,14 @@ bool saveGeo(String geoh){
 bool wifiEnable(bool enable) {
     cfg.saveBool(CONFKEYS::KWIFIEN, enable);
     wifi_enable = enable;
-    Serial.println("-->[CONF] updating WiFi state\t: " + String(enable));
+    Serial.println("-->[CONF] update WiFi state\t: " + String(enable));
     return true;
 }
 
 bool ifxdbEnable(bool enable) {
     cfg.saveBool(CONFKEYS::KIFXENB, enable);
     ifxdb_enable = enable;
-    Serial.println("-->[CONF] updating InfluxDB state\t: " + String(enable));
+    Serial.println("-->[CONF] update InfluxDB state\t: " + String(enable));
     return true;
 }
 
@@ -344,7 +328,6 @@ bool saveDeepSleep(int seconds){
 
 bool saveI2COnly(bool enable) {
     cfg.saveBool(CONFKEYS::KI2CONLY, enable);
-    i2conly = enable;
     Serial.println("-->[CONF] forced only i2c sensors\t: " + String(enable));
     return true;
 }

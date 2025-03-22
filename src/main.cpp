@@ -204,6 +204,7 @@ void startingSensors() {
     gui.welcomeAddMessage("Init sensors..");
     int geigerPin = cfg.getInt(CONFKEYS::KGEIGERP, -1);// Geiger sensor pin (config it via CLI) 
     int tunit = cfg.getInt(CONFKEYS::KTEMPUNT, 0);     // Temperature unit (defaulut celsius)
+    bool i2conly = cfg.getBool(CONFKEYS::KI2CONLY, false);
     sensors.setOnDataCallBack(&onSensorDataOk);        // all data read callback
     sensors.setOnErrorCallBack(&onSensorDataError);    // on data error callback
     sensors.setDebugMode(devmode);                     // debugging mode 
@@ -266,7 +267,7 @@ void startingSensors() {
 
 void initBattery() {
 #ifndef DISABLE_BATT
-  if (FAMILY != "ESP32-C3") {
+  if (strcmp(FAMILY, "ESP32-C3") != 0) {
     battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
     battery.setBattLimits(
       cfg.getFloat(CONFKEYS::KBATVMI, BATT_MIN_V),
@@ -377,7 +378,7 @@ void setup() {
 
     // wifi status 
     if (WiFi.isConnected())
-        gui.welcomeAddMessage("WiFi:" + ssid);
+        gui.welcomeAddMessage("WiFi:" + cfg.getString(CONFKEYS::KSSID, ""));
     else
         gui.welcomeAddMessage("WiFi: disabled.");
 

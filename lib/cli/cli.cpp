@@ -200,7 +200,7 @@ void wcli_setup(char *args, Stream *response) {
   String canAirIOname = "Please first set your position (using \"sgeoh\" command)";
   if(cfg.getString("geo", "").length()>5)canAirIOname = getStationName();
   response->printf("CanAirIO device id\t: %s\r\n", canAirIOname.c_str());
-  response->printf("Device factory id\t: %s\r\n", getAnaireDeviceId().c_str());
+  response->printf("Device factory id\t: %s\r\n", getEfuseDeviceId().c_str());
   response->printf("Sensor geohash id\t: %s\r\n", cfg.getString("geo", "").length() == 0 ? "undefined" : cfg.getString("geo", "").c_str());
   response->printf("WiFi current status\t: %s\r\n", WiFi.status() == WL_CONNECTED ? "connected" : "disconnected");
   response->printf("Sensor sample time \t: %d\r\n", stime);
@@ -223,7 +223,7 @@ void wcli_reboot(char *args, Stream *response) {
 void wcli_swipe(char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
   String deviceId = operands.first();
-  if (deviceId.equals(getAnaireDeviceId())) {
+  if (deviceId.equals(getEfuseDeviceId())) {
     response->println("Clearing device to defaults..");
     wcli.clearSettings();
     cfg.clear();

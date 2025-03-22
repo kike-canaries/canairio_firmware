@@ -136,6 +136,8 @@ void hassPublish() {
 }
 
 bool hassAuth() {
+    String hassusr = cfg.getString(CONFKEYS::KHASSUSR, "");
+    String hasspsw = cfg.getString(CONFKEYS::KHASSPW, "");
     return clientHass.connect(getStationName().c_str(), hassusr.c_str(), hasspsw.c_str());
 }
 
@@ -144,6 +146,7 @@ static uint_fast64_t mqttHassDelayedStamp = 0;
 void hassConnect() {
     if (!(isWifiEnable() && WiFi.isConnected())) return;
     if (millis() - mqttHassDelayedStamp > MQTT_DELAYED_TIME * 1000) {
+        String hassip = cfg.getString(CONFKEYS::KHASSIP, "");
         if(devmode) Serial.printf("-->[MQTT] %s\t: ", hassip.c_str());
         int mqtt_try = 0;
         while (mqtt_try++ < MQTT_RETRY_CONNECTION && !hassAuth()) {
@@ -154,7 +157,6 @@ void hassConnect() {
             hassSubscribed = false;
             hassConfigured = false;
             if(devmode) Serial.println("connection failed!");
-            if(devmode) Serial.printf("-->[MQTT] %s\r\n",hassusr.c_str());
             return;
         }
         if(devmode) Serial.println("connected!");
@@ -163,6 +165,7 @@ void hassConnect() {
 }
 
 bool isHassEnable() {
+    String hassip = cfg.getString(CONFKEYS::KHASSIP, "");
     if (hassip.isEmpty()) {
         hassInited = false;
         hassConfigured = false;
@@ -179,6 +182,8 @@ bool hassIsConnected() {
 
 void hassInit() { 
     if (!isHassEnable()) return;
+    int hasspt = cfg.getInt(CONFKEYS::KHASSPT, 1883);
+    String hassip = cfg.getString(CONFKEYS::KHASSIP, "");
     clientHass.begin(hassip.c_str(), hasspt, netHass);
     clientHass.onMessage(messageReceived);
     mqttHassDelayedStamp = millis() - MQTT_DELAYED_TIME * 1000;

@@ -80,6 +80,8 @@ void wifiCloudsInit() {
 }
 
 void wifiConnect() {
+  String ssid = cfg.getString(CONFKEYS::KSSID, "");
+  String pass = cfg.getString(CONFKEYS::KPASS, "");
   if (!(wcli.getCurrentSSID().compareTo(ssid)==0)){
     saveWifi(ssid, pass);
     return;
@@ -94,6 +96,7 @@ void wifiConnect() {
 }
 
 void wifiInit() {
+  String ssid = cfg.getString(CONFKEYS::KSSID, "");
   if (!WiFi.isConnected() && isWifiEnable() && ssid.length() > 0) {
     wifiConnect();
   }
@@ -124,6 +127,7 @@ void wifiLoop() {
   if (millis() - wifiTimeStamp > 10000) {
     wifiTimeStamp = millis();
     setWifiConnected(WiFi.isConnected());
+    String ssid = cfg.getString(CONFKEYS::KSSID, "");
     if (isWifiEnable() && ssid.length() > 0 && !WiFi.isConnected()) {
       wifiInit();
     }

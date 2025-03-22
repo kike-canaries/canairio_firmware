@@ -115,7 +115,7 @@ void powerLoop() {
   if ((millis() - powerTimeStamp > 30 * 1000)) {  // check it every 5 seconds
     powerTimeStamp = millis();
     float vbat = battery.getVoltage();
-    if (vbat > 3.0 && vbat < BATTERY_MIN_V) {
+    if (vbat > 3.0 && vbat < BATT_MIN_V) {
       Serial.println("-->[POWR] Goto DeepSleep (VBat too low)");
       if (solarmode)
         powerDeepSleepTimer(deepSleep);

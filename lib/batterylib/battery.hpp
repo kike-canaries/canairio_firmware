@@ -12,6 +12,11 @@ class BatteryUpdateCallbacks {
 #define FAST_RATE 500   // time into samples for catpure initial buffer
 #define SAMPLES 60      // # of samples on buffer (sample time = SAMPLES*FAST_RATE)
 
+#define BATT_MIN_V 3.4
+#define BATT_MAX_V 4.5
+#define BCHARG_MIN_V 3.8
+#define BCHARG_MAX_V 4.7
+
 class Battery {
  public:
   float curv = 0.0;

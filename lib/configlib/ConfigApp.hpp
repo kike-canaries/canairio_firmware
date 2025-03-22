@@ -6,6 +6,7 @@
 #include <EasyPreferences.hpp>
 #include <ESP32WifiCLI.hpp>
 #include "Watchdog.hpp"
+// #include <mutex>
 
 class RemoteConfigCallbacks;
 
@@ -92,7 +93,7 @@ bool isWifiConnected();
 String getDeviceId();
 String getDeviceIdShort();
 String getStationName();
-String getAnaireDeviceId();
+String getEfuseDeviceId();
 String getVersion();
 int getSensorType();
 void clear();

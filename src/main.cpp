@@ -1,7 +1,7 @@
 /**
  * @file main.cpp
  * @author Antonio Vanegas @hpsaturn
- * @date June 2018 - 2020
+ * @date June 2018 - 2025
  * @brief Particle meter sensor on ESP32 with bluetooth GATT notify server
  * @license GPL3
  */
@@ -252,33 +252,45 @@ void startingSensors() {
     delay(300);
 }
 
+#if defined(TTGO_T7) || defined(TTGO_T7S3)
+#define BATTERY_MIN_V 3.4
+#define BATTERY_MAX_V 4.28
+#define BATTCHARG_MIN_V 3.8
+#define BATTCHARG_MAX_V 4.34
+#else
+#define BATTERY_MIN_V 3.1
+#define BATTERY_MAX_V 4.04
+#define BATTCHARG_MIN_V 4.06
+#define BATTCHARG_MAX_V 4.198
+#endif
+
 void initBattery() {
 #ifndef DISABLE_BATT
   if (FAMILY != "ESP32-C3") {
     battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
-    battery.init(devmode);
-    if (cfg.isKey(CONFKEYS::KBATVMX)) {
-      battery.setBattLimits(cfg.getFloat(CONFKEYS::KBATVMI), cfg.getFloat(CONFKEYS::KBATVMX));
-    }
-    if (cfg.isKey(CONFKEYS::KCHRVMX)) {
-      battery.setChargLimits(cfg.getFloat(CONFKEYS::KCHRVMI), cfg.getFloat(CONFKEYS::KCHRVMX));
-    }
+    battery.setBattLimits(
+      cfg.getFloat(CONFKEYS::KBATVMI, BATT_MIN_V),
+      cfg.getFloat(CONFKEYS::KBATVMX, BATT_MAX_V));
+    battery.setChargLimits(
+      cfg.getFloat(CONFKEYS::KCHRVMI, BCHARG_MIN_V),
+      cfg.getFloat(CONFKEYS::KCHRVMX, BCHARG_MAX_V));
     if (devmode) battery.printLimits();
+    battery.init(devmode);
     battery.update();
   }
 #endif
 }
 
 void initCLIFailsafe() {
+#ifndef DISABLE_CLI
   if (cfg.getBool(CONFKEYS::KFAILSAFE, true)) {
     delay(2000); // wait for new S3 and C3 CDC serial
     gui.welcomeAddMessage("wait for setup..");
     Serial.println("\n-->[INFO] == Type \"setup\" for enter in safe mode (over in 10seg!) ==");
-#ifndef DISABLE_CLI
     cliInit();
     logMemory("CLI ");
-#endif
   }
+#endif
 }
 
 void initCLI() {
@@ -309,6 +321,7 @@ void setup() {
     Serial.setDebugOutput(devmode);
     logMemory("CONF"); 
     // init graphic user interface
+    sensors.startI2C(); // I2C shared bus with OLED (ESP32S3 issue)
     gui.setBrightness(getBrightness());
     gui.setWifiMode(isWifiEnable());
     gui.setPaxMode(isPaxEnable());

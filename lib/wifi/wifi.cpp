@@ -158,7 +158,8 @@ String getDeviceInfo() {
   info = info + "CPU: " + String(powerESP32TempRead()) + "°C\r\n";
   #endif
   #ifndef DISABLE_BATT
-  info = info + "BAT: " + String(battery.getVoltage()) + "v "+String(battery.getCharge()) +"%\r\n";
+  String charge = battery.isCharging() ? "charging" : "discharging";
+  info = info + "BAT: " + String(battery.getVoltage()) + "v "+String(battery.getCharge()) +"% ("+charge+")\r\n";
   #endif
   return info;
 }

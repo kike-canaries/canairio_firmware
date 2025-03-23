@@ -82,13 +82,30 @@ void wifiCloudsInit() {
 void wifiConnect() {
   String ssid = cfg.getString(CONFKEYS::KSSID, "");
   String pass = cfg.getString(CONFKEYS::KPASS, "");
+  #ifndef DISABLE_CLI
   if (!(wcli.getCurrentSSID().compareTo(ssid)==0)){
     saveWifi(ssid, pass);
     return;
   }
+  #else 
+  if (WiFi.isConnected()) return;
+  #endif
+  Serial.println("-->[WIFI] device network passw\t: " + pass);
   Serial.print("-->[WIFI] connecting to wifi\t: ");
   Serial.print(ssid);
+  #ifndef DISABLE_CLI
   wcli.wifiAPConnect(false);
+  #else
+  WiFi.mode(WIFI_STA); 
+  WiFi.begin(ssid.c_str(), pass.c_str());
+  #if CONFIG_IDF_TARGET_ESP32C3
+  WiFi.setTxPower(WIFI_POWER_8_5dBm);
+  #endif
+  int retry = 0;
+  while (WiFi.status() != WL_CONNECTED && retry++ < WIFI_RETRY_CONNECTION) {  // M5Atom will connect automatically
+    delay(500);
+  }
+  #endif
 
   if (WiFi.isConnected()) {
     Serial.println(" done."); 

@@ -132,8 +132,11 @@ void influxDbLoop() {
             }
             else {
                 Serial.printf("[E][IFDB] write error to %s@%s:%i \r\n",ifx.db.c_str(),ifx.ip.c_str(),ifx.pt);
-                if (solarmode && ifx_error_count++ > IFX_ERROR_COUNT_MAX) {
-                    powerDeepSleepTimer(deepSleep);
+                if (ifx_error_count++ > IFX_ERROR_COUNT_MAX) {
+                    Serial.print("[E][IFDB] reached error count \t: rebooting..");
+                    delay(1000);
+                    if (solarmode) powerDeepSleepTimer(deepSleep);
+                    else ESP.restart();
                 }
             }
         }

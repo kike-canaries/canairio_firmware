@@ -38,7 +38,7 @@ void wcli_klist(char *args, Stream *response) {
     String defined = isDefined ? "custom " : "default";
     String value = "";
     if (isDefined) value = cfg.getValue(key);
-    response->printf("%11s \t%s \t%s \r\n", key, defined.c_str(), value.c_str());
+    response->printf("%11s \t%s \t%s \r\n", key.c_str(), defined.c_str(), value.c_str());
   }
 
   response->printf("\r\nMore info: https://canair.io/docs/cli\r\n");
@@ -49,7 +49,7 @@ void wcli_kset(char *args, Stream *response) {
   String key = operands.first();
   String v = operands.second();
   if(cfg.saveAuto(key,v)){
-    response->printf("saved key %s\t: %s\r\n", key, v);
+    response->printf("saved key %s\t: %s\r\n", key.c_str(), v.c_str());
   }
 }
 
@@ -122,7 +122,7 @@ void wcli_stime(char *args, Stream *response) {
 void wcli_stype_error(Stream *response) {
   // SENSORS::SSCD30-1 is the seperator (see Sensors.hpp)
   response->printf("invalid UART sensor type! Choose one into 0-%i:\r\n",SENSORS::SSCD30-1);
-  for (int i = 0; i <= SENSORS::SSCD30-1; i++) response->printf("%i\t%s\r\n", i, sensors.getSensorName((SENSORS)i));
+  for (int i = 0; i <= SENSORS::SSCD30-1; i++) response->printf("%i\t%s\r\n", i, sensors.getSensorName((SENSORS)i).c_str());
 }
 
 void wcli_stype(char *args, Stream *response) {
@@ -136,7 +136,7 @@ void wcli_stype(char *args, Stream *response) {
   if (type > SENSORS::SSCD30-1 || type < 0) wcli_stype_error(response); // SENSORS::SSCD30-1 is the seperator (see Sensors.hpp) 
   else {
     saveSensorType(type);
-    response->printf("\nselected UART sensor model\t: %s\r\n", sensors.getSensorName((SENSORS)type));
+    response->printf("\nselected UART sensor model\t: %s\r\n", sensors.getSensorName((SENSORS)type).c_str());
     response->println("Please reboot to changes apply");
   }
 }
@@ -160,11 +160,11 @@ void wcli_sensors(Stream *response) {
     int count = sensors.getSensorsRegisteredCount();
     response->printf("Sensors count  \t\t: %i (", count);
     if (count > 0 && sensors.getSensorsRegistered()[0] == SENSORS::Auto) {
-      response->printf("%s,", sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[0]));
+      response->printf("%s,", sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[0]).c_str());
       i = 1;
     }
     while (sensors.getSensorsRegistered()[i++] != 0) {
-      response->printf("%s,", sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i-1]));
+      response->printf("%s,", sensors.getSensorName((SENSORS)sensors.getSensorsRegistered()[i-1]).c_str());
     }
     response->println(")");
 }
@@ -198,13 +198,13 @@ void wcli_setup(char *args, Stream *response) {
   setup_mode = true;
   response->println("\r\nMain presets:\r\n");
   String canAirIOname = "Please first set your position (using \"sgeoh\" command)";
-  if(geo.length()>5)canAirIOname = getStationName();
+  if(cfg.getString("geo", "").length()>5)canAirIOname = getStationName();
   response->printf("CanAirIO device id\t: %s\r\n", canAirIOname.c_str());
-  response->printf("Device factory id\t: %s\r\n", getAnaireDeviceId().c_str());
-  response->printf("Sensor geohash id\t: %s\r\n", geo.length() == 0 ? "undefined" : geo.c_str());
+  response->printf("Device factory id\t: %s\r\n", getEfuseDeviceId().c_str());
+  response->printf("Sensor geohash id\t: %s\r\n", cfg.getString("geo", "").length() == 0 ? "undefined" : cfg.getString("geo", "").c_str());
   response->printf("WiFi current status\t: %s\r\n", WiFi.status() == WL_CONNECTED ? "connected" : "disconnected");
   response->printf("Sensor sample time \t: %d\r\n", stime);
-  response->printf("UART sensor model \t: %s\r\n", sensors.getSensorName((SENSORS)stype));
+  response->printf("UART sensor model \t: %s\r\n", sensors.getSensorName((SENSORS)stype).c_str());
   response->printf("UART sensor TX pin\t: %d\r\n", sTX == -1 ? PMS_TX : sTX);
   response->printf("UART sensor RX pin\t: %d\r\n", sRX == -1 ? PMS_RX : sRX);
   response->printf("Current debug mode\t: %s\r\n", devmode == true ? "enabled" : "disabled");
@@ -223,7 +223,7 @@ void wcli_reboot(char *args, Stream *response) {
 void wcli_swipe(char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
   String deviceId = operands.first();
-  if (deviceId.equals(getAnaireDeviceId())) {
+  if (deviceId.equals(getEfuseDeviceId())) {
     response->println("Clearing device to defaults..");
     wcli.clearSettings();
     cfg.clear();

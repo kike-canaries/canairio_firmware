@@ -1,8 +1,10 @@
 #include "ConfigApp.hpp"
 
+// std::mutex conf_mtx;
+
 uint64_t chipid;
 String deviceId;
-String dname;
+String efuseDevId;
 
 trackStatus track;
 ifxdbValues ifx;
@@ -11,21 +13,8 @@ int stime;
 int stype;
 int sTX;
 int sRX;
-double lat;
-double lon;
-String geo;
 
-String ssid;
-String pass;
-
-String hassip;
-String hassusr;
-String hasspsw;
-int16_t hasspt;
-
-bool isNewWifi;
 bool devmode;
-bool i2conly;
 bool pax_enable; 
 bool solarmode;
 uint32_t deepSleep;
@@ -33,21 +22,28 @@ float toffset;
 float altoffset;
 float sealevel;
 
-char* _app_name;
 bool wifi_enable;
 bool ifxdb_enable;
 bool wifi_connected;
+bool new_wifi = false;
 
 Geohash geohash;
 
 RemoteConfigCallbacks* mRemoteConfigCallBacks = nullptr;
 
+String calcEfuseDeviceId() {
+  uint32_t chipId = 0;
+  for (int i = 0; i < 17; i = i + 8) chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+  return String(chipId, HEX);
+}
+
 void init(const char app_name[]) {
-    _app_name = new char[strlen(app_name) + 1];
+    char* _app_name = new char[strlen(app_name) + 1];
     strcpy(_app_name, app_name);
     cfg.init(_app_name);
     chipid = ESP.getEfuseMac();
     deviceId = getDeviceId();
+    efuseDevId = calcEfuseDeviceId();
     reload();
     if (devmode) Serial.println("-->[CONF] debug is enable.");
 }
@@ -55,17 +51,12 @@ void init(const char app_name[]) {
 void reload() {
     // wifi settings
     wifi_enable = cfg.getBool(CONFKEYS::KWIFIEN, false);
-    ssid = cfg.getString(CONFKEYS::KSSID, "");
-    pass = cfg.getString(CONFKEYS::KPASS, "");
     // influx db optional settings
     ifxdb_enable = cfg.getBool(CONFKEYS::KIFXENB, false);
     ifx.db = cfg.getString(CONFKEYS::KIFXDB, ifx.db);
     ifx.ip = cfg.getString(CONFKEYS::KIFXIP, ifx.ip);
     ifx.pt = cfg.getInt(CONFKEYS::KIFXPT, ifx.pt);
     // station and sensor settings
-    lat = cfg.getDouble("lat", 0);
-    lon = cfg.getDouble("lon", 0);
-    geo = cfg.getString("geo", "");
     stime = cfg.getInt("stime", 5);
     stype = cfg.getInt(CONFKEYS::KSTYPE, 0);
     sTX = cfg.getInt("sTX", -1);
@@ -75,16 +66,16 @@ void reload() {
     sealevel = cfg.getFloat(CONFKEYS::KSEALVL, 1013.25);
     devmode = cfg.getBool(CONFKEYS::KDEBUG, false);
     pax_enable = cfg.getBool(CONFKEYS::KPAXENB, false);
-    i2conly = cfg.getBool(CONFKEYS::KI2CONLY, false);
     solarmode = cfg.getBool(CONFKEYS::KSOLAREN, false);
-    deepSleep = cfg.getInt(CONFKEYS::KDEEPSLP, 0);
-    hassip = cfg.getString(CONFKEYS::KHASSIP, "");
-    hasspt = cfg.getInt(CONFKEYS::KHASSPT, 1883);
-    hassusr = cfg.getString(CONFKEYS::KHASSUSR, "");
-    hasspsw = cfg.getString(CONFKEYS::KHASSPW, "");
+    deepSleep = cfg.getInt(CONFKEYS::KDEEPSLP, 0); 
 }
 
+bool on_read_config = false;
+
 String getCurrentConfig() {
+    // std::lock_guard<std::mutex> lck(conf_mtx);
+    if (on_read_config) return "";
+    on_read_config = true;
     JsonDocument doc;
     doc["wmac"] = (uint16_t)(chipid >> 32);  // chipid calculated in init
     doc["anaireid"] = getStationName();      // deviceId for Anaire cloud
@@ -98,7 +89,7 @@ String getCurrentConfig() {
     doc["denb"] = cfg.getBool(CONFKEYS::KDEBUG, false);       // debug mode enable
     
     doc["ssid"] = cfg.getString(CONFKEYS::KSSID, "");         // influxdb database name
-    doc["geo"] = cfg.getString("geo", "");                    // influxdb GeoHash tag
+    doc["geo"] = cfg.getString("geo", "");           // influxdb GeoHash tag
     doc["i2conly"] = cfg.getBool(CONFKEYS::KI2CONLY, false);  // force only i2c sensors
     doc["toffset"] = cfg.getFloat(CONFKEYS::KTOFFST, 0.0);    // temperature offset
     doc["stime"] = cfg.getInt(CONFKEYS::KSTIME, 5);           // sensor measure time
@@ -119,9 +110,9 @@ String getCurrentConfig() {
 #if CORE_DEBUG_LEVEL >= 3
     char buf[1000];
     serializeJsonPretty(doc, buf, 1000);
-    Serial.printf("-->[CONF] response: %s", buf);
-    Serial.println("");
+    Serial.printf("-->[CONF] respons@e: %s\r\n", buf);
 #endif
+    on_read_config = false;
     return output;
 
 //     doc["dname"] = cfg.getString("dname", "");       // device or station name
@@ -153,6 +144,7 @@ bool saveSampleTime(int time) {
 bool saveSensorType(int type) {
     cfg.saveInt(CONFKEYS::KSTYPE, type);
     Serial.printf("-->[CONF] sensor device type\t: %d\r\n", type);
+    stype = type;
     return true;
 }
 
@@ -225,34 +217,43 @@ bool saveWifi(String ssid, String pass) {
   if (ssid.length() > 0) {
     cfg.saveBool(CONFKEYS::KWIFIEN, true);
     wifi_enable = true;
-    bool new_wifi = !wcli.isSSIDSaved(ssid); 
+    new_wifi = !wcli.isSSIDSaved(ssid);
     if (new_wifi) {
-      wcli.setSSID(ssid);
-      wcli.setPASW(pass);
-      wcli.wifiAPConnect(true); 
+      log_i("[CONF] temp saving ssid:%s pass:%s", ssid, pass);
+      cfg.saveString(CONFKEYS::KSSID, ssid);
+      cfg.saveString(CONFKEYS::KPASS, pass);
     }
-    else
-      wcli.wifiAPConnect(false);
-    delay(2000);
-
-    if (!wcli.wifiValidation()) {
-      if (new_wifi) wcli.loadAP(wcli.getDefaultAP());
-      if (!new_wifi) wcli.loadAP(ssid);
-      ssid = wcli.getCurrentSSID();
-      pass = wcli.getCurrentPASW(); 
-      log_w("[CONF] restored ssid:%s pass:%s", ssid, pass);
-    }
-    log_i("[CONF] ssid:%s pass:%s", ssid, pass);
-    cfg.saveString(CONFKEYS::KSSID, ssid);
-    cfg.saveString(CONFKEYS::KPASS, pass);
     return true; // backward compatibility with the Android app
   }
   log_w("[W][CONF] empty Wifi SSID");
   return false;
 }
 
+bool saveCLIWiFi() {
+  if (new_wifi) {
+    wcli.setSSID(cfg.getString(CONFKEYS::KSSID, ""));
+    wcli.setPASW(cfg.getString(CONFKEYS::KPASS, ""));
+    wcli.wifiAPConnect(true);
+  }
+  delay(200);
+  if (!wcli.wifiValidation()) {
+    if (new_wifi) wcli.loadAP(wcli.getDefaultAP());
+    if (!new_wifi) wcli.loadAP(cfg.getString(CONFKEYS::KSSID, "")); // TODO: check if it's necessary
+    String ssid = wcli.getCurrentSSID();
+    String pass = wcli.getCurrentPASW();
+    log_w("[CONF] restored ssid:%s pass:%s", ssid, pass);
+    new_wifi = false;
+    return false;
+  }
+  new_wifi = false;
+  return true;
+}
+
 bool saveInfluxDb(String db, String ip, int pt) {
     if (db.length() > 0 && ip.length() > 0) {
+        ifx.db = db;
+        ifx.ip = ip;
+        ifx.pt = pt;
         cfg.saveString("ifxdb", db);
         cfg.saveString("ifxip", ip);
         if (pt > 0) cfg.saveInt("ifxpt", pt);
@@ -266,15 +267,12 @@ bool saveInfluxDb(String db, String ip, int pt) {
     return false;
 }
 
-bool saveGeo(double latitude, double longitude, String geohash){
+bool saveGeo(double latitude, double longitude, String geoh){
     if (latitude != 0 && longitude != 0) {
         cfg.saveDouble("lat", latitude);
         cfg.saveDouble("lon", longitude);
-        cfg.saveString("geo", geohash);
-        lat = latitude;
-        lon = longitude;
-        geo = geohash;
-        Serial.printf("-->[CONF] New Geohash: %s \t: (%.4f,%.4f)\r\n", geo, lat, lon);
+        cfg.saveString("geo", geoh);
+        log_i("[CONF] New Geohash: %s \t: (%.4f,%.4f)\r\n", geoh.c_str(), latitude, longitude);
         return true;
     }
     log_w("[W][CONF] wrong GEO params!");
@@ -297,14 +295,14 @@ bool saveGeo(String geoh){
 bool wifiEnable(bool enable) {
     cfg.saveBool(CONFKEYS::KWIFIEN, enable);
     wifi_enable = enable;
-    Serial.println("-->[CONF] updating WiFi state\t: " + String(enable));
+    Serial.println("-->[CONF] update WiFi state\t: " + String(enable));
     return true;
 }
 
 bool ifxdbEnable(bool enable) {
     cfg.saveBool(CONFKEYS::KIFXENB, enable);
     ifxdb_enable = enable;
-    Serial.println("-->[CONF] updating InfluxDB state\t: " + String(enable));
+    Serial.println("-->[CONF] update InfluxDB state\t: " + String(enable));
     return true;
 }
 
@@ -338,7 +336,6 @@ bool saveDeepSleep(int seconds){
 
 bool saveI2COnly(bool enable) {
     cfg.saveBool(CONFKEYS::KI2CONLY, enable);
-    i2conly = enable;
     Serial.println("-->[CONF] forced only i2c sensors\t: " + String(enable));
     return true;
 }
@@ -380,8 +377,7 @@ bool save(const char *json) {
 #if CORE_DEBUG_LEVEL >= 3
     char output[1000];
     serializeJsonPretty(doc, output, 1000);
-    Serial.printf("-->[CONF] request: %s", output);
-    Serial.println("");
+    Serial.printf("-->[CONF] request: %s\r\n", output);
 #endif
 
     uint16_t cmd = doc["cmd"].as<uint16_t>();
@@ -393,7 +389,7 @@ bool save(const char *json) {
     if (doc["ifxdb"].is<String>()) return saveInfluxDb(doc["ifxdb"] | "", doc["ifxip"] | "", doc["ifxpt"] | 0);
     if (doc["pass"].is<String>() && doc["ssid"].is<String>()) return saveWifi(doc["ssid"] | "", doc["pass"] | "");
     if (doc["ssid"].is<String>()) return saveSSID(doc["ssid"] | "");
-    if (doc["lat"].is<double>()) return saveGeo(doc["lat"].as<double>(), doc["lon"].as<double>(), doc["geo"] | "");
+    if (doc["geo"].is<String>()) return saveGeo(doc["geo"] | "");
     if (doc["toffset"].is<float>()) return saveTempOffset(doc["toffset"].as<float>());
     if (doc["altoffset"].is<float>()) return saveAltitudeOffset(doc["altoffset"].as<float>());
     if (doc["sealevel"].is<float>()) return saveSeaLevel(doc["sealevel"].as<float>());
@@ -443,15 +439,13 @@ String getDeviceId() {
     uint8_t baseMac[6];
     // Get MAC address for WiFi station
     esp_read_mac(baseMac, ESP_MAC_WIFI_STA);
-    char baseMacChr[18] = {0};
+    char baseMacChr[19] = {0};
     sprintf(baseMacChr, "%02X:%02X:%02X:%02X:%02X:%02X", baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]+2);
     return String(baseMacChr);
 }
 
-String getAnaireDeviceId() { 
-    uint32_t chipId = 0;
-    for (int i = 0; i < 17; i = i + 8) chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
-    return String(chipId, HEX);
+String getEfuseDeviceId() { 
+  return efuseDevId; 
 }
 
 String getDeviceIdShort() {
@@ -462,8 +456,8 @@ String getDeviceIdShort() {
 }
 
 String getStationName() {
-    if (geo.isEmpty()) return getAnaireDeviceId();
-    String name = ""+geo.substring(0,3);          // GeoHash ~70km https://en.wikipedia.org/wiki/Geohash
+    if (cfg.getString("geo", "").isEmpty()) return efuseDevId;
+    String name = ""+cfg.getString("geo", "").substring(0,3);          // GeoHash ~70km https://en.wikipedia.org/wiki/Geohash
     String flavor = String(FLAVOR);
     if(flavor.length() > 6) flavor = flavor.substring(0,7); // validation possible issue with HELTEC
     name = name + flavor;                         // Flavor short, firmware name (board)

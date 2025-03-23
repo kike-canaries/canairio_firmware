@@ -80,6 +80,8 @@ void wifiCloudsInit() {
 }
 
 void wifiConnect() {
+  String ssid = cfg.getString(CONFKEYS::KSSID, "");
+  String pass = cfg.getString(CONFKEYS::KPASS, "");
   if (!(wcli.getCurrentSSID().compareTo(ssid)==0)){
     saveWifi(ssid, pass);
     return;
@@ -94,6 +96,7 @@ void wifiConnect() {
 }
 
 void wifiInit() {
+  String ssid = cfg.getString(CONFKEYS::KSSID, "");
   if (!WiFi.isConnected() && isWifiEnable() && ssid.length() > 0) {
     wifiConnect();
   }
@@ -108,9 +111,10 @@ void wifiInit() {
 
 void wifiStop() {
   if (WiFi.isConnected()) {
-    Serial.println("-->[WIFI] Disconnecting..");
     WiFi.disconnect(true);
     delay(100);
+    Serial.print("-->[WIFI] disconnecting:  \t: ");
+    Serial.println(WiFi.status() == WL_CONNECTED ? "failed" : "done");
   }
 }
 
@@ -123,9 +127,14 @@ void wifiLoop() {
   static uint_least64_t wifiTimeStamp = 0;
   if (millis() - wifiTimeStamp > 10000) {
     wifiTimeStamp = millis();
+    if (new_wifi) saveCLIWiFi();
     setWifiConnected(WiFi.isConnected());
+    String ssid = cfg.getString(CONFKEYS::KSSID, "");
     if (isWifiEnable() && ssid.length() > 0 && !WiFi.isConnected()) {
       wifiInit();
+    }
+    else if (!isWifiEnable() && WiFi.isConnected()) {
+      wifiStop();
     }
     if (!WiFi.isConnected()) return;
     influxDbInit();

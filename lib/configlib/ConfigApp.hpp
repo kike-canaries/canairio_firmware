@@ -47,6 +47,7 @@ extern float toffset;
 extern float altoffset;
 extern float sealevel;
 extern bool ifxdb_enable;
+extern bool new_wifi;
 extern Geohash geohash;
 
 extern RemoteConfigCallbacks* mRemoteConfigCallBacks;
@@ -61,6 +62,7 @@ bool saveUnitSelected(int unit);
 int getUnitSelected();
 bool saveSSID(String ssid);
 bool saveWifi(String ssid, String pass);
+bool saveCLIWiFi();
 bool saveInfluxDb(String db, String ip, int pt);
 bool saveGeo(String geo);
 bool saveGeo(double latitude, double longitude, String geohash);

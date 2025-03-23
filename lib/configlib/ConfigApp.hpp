@@ -4,7 +4,9 @@
 #include <ArduinoJson.h>
 #include <Geohash.hpp>
 #include <EasyPreferences.hpp>
+#ifndef DISABLE_CLI
 #include <ESP32WifiCLI.hpp>
+#endif
 #include "Watchdog.hpp"
 #include <mutex>
 

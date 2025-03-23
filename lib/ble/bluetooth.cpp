@@ -4,11 +4,7 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <bluetooth.hpp>
-#include "Sensors.hpp"
-#include "GUILib.hpp"
-#include "Batterylib.hpp"
-#include "ConfigApp.hpp"
-#include "sniffer.hpp"
+#include <sniffer.h>
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharactData = NULL;
@@ -70,9 +66,9 @@ void bleServerDataRefresh(){
 }
 
 void bleServerConfigRefresh(){
-    // if (FAMILY == "ESP32-C3") return;
     setWifiConnected(WiFi.isConnected());  // for notify on each write
     pCharactConfig->setValue(getCurrentConfig().c_str());
+    delay(100);
 }
 
 // Config BLE callbacks
@@ -82,12 +78,9 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
         std::string value = pCharacteristic->getValue();
         if (value.length() > 0) {
             if (save(value.c_str())) {
-                reload();
                 gui.displayPreferenceSaveIcon();
-                
                 gui.setWifiMode(isWifiEnable());
-                if (!isWifiEnable()) wifiStop();
-                
+
                 if(sensors.sample_time != stime) {
                     sensors.setSampleTime(stime);
                     gui.setSampleTime(stime);
@@ -102,7 +95,6 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
     };
 
     void onRead(BLECharacteristic* pCharacteristic) {
-        // if (FAMILY == "ESP32-C3") return;
         bleServerConfigRefresh();
     }
 };

@@ -7,7 +7,7 @@ void Battery_TFT::setupBattADC() {
     #ifdef ADC1_CHANNEL_6
     channel_atten = ADC1_CHANNEL_6;
     #endif
-    if (FAMILY == "ESP32-C3") return;
+    if (strcmp(FAMILY, "ESP32-C3") == 0) return;
     esp_adc_cal_characteristics_t adc_chars;
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize((adc_unit_t)ADC_UNIT_1, (adc_atten_t)channel_atten, (adc_bits_width_t)ADC_WIDTH_BIT_12, 1100, &adc_chars);
     //Check type of calibration value used to characterize ADC

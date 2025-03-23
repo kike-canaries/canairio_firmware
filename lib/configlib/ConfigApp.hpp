@@ -6,6 +6,7 @@
 #include <EasyPreferences.hpp>
 #include <ESP32WifiCLI.hpp>
 #include "Watchdog.hpp"
+#include <mutex>
 
 class RemoteConfigCallbacks;
 
@@ -30,28 +31,15 @@ extern ifxdbValues ifx;
 extern uint64_t chipid;
 extern String deviceId;
 extern bool devmode;
-extern char* _app_name;
 
 extern int stime;
 extern int stype;
 extern int sTX;
 extern int sRX;
-extern double lat;
-extern double lon;
-extern String geo;
 
-extern String ssid;
-extern String pass;
-extern bool isNewWifi;
 extern bool wifi_enable;
 extern bool wifi_connected;
 
-extern String hassip;
-extern String hassusr;
-extern String hasspsw;
-extern int16_t hasspt;
-
-extern bool i2conly;
 extern bool pax_enable; 
 extern bool solarmode;
 extern uint32_t deepSleep;
@@ -59,6 +47,7 @@ extern float toffset;
 extern float altoffset;
 extern float sealevel;
 extern bool ifxdb_enable;
+extern bool new_wifi;
 extern Geohash geohash;
 
 extern RemoteConfigCallbacks* mRemoteConfigCallBacks;
@@ -73,6 +62,7 @@ bool saveUnitSelected(int unit);
 int getUnitSelected();
 bool saveSSID(String ssid);
 bool saveWifi(String ssid, String pass);
+bool saveCLIWiFi();
 bool saveInfluxDb(String db, String ip, int pt);
 bool saveGeo(String geo);
 bool saveGeo(double latitude, double longitude, String geohash);
@@ -95,7 +85,7 @@ bool isWifiConnected();
 String getDeviceId();
 String getDeviceIdShort();
 String getStationName();
-String getAnaireDeviceId();
+String getEfuseDeviceId();
 String getVersion();
 int getSensorType();
 void clear();

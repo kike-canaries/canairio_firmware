@@ -14,15 +14,15 @@ bool enable_sensors;
 int ifx_error_count;
 
 bool influxDbIsConfigured() {
-    if(ifx.db.length() > 0 && ifx.ip.length() > 0 && geo.length()==0) {
+    if(ifx.db.length() > 0 && ifx.ip.length() > 0 && cfg.getString("geo", "").length()==0) {
         Serial.println("[W][IFDB] ifxdb is configured but Location (GeoHash) is missing!");
     }
-    return ifx.db.length() > 0 && ifx.ip.length() > 0 && geo.length() > 0;
+    return ifx.db.length() > 0 && ifx.ip.length() > 0 && cfg.getString("geo", "").length() > 0;
 }
 
 void influxDbAddTags() {
     sensor.addTag("mac",deviceId.c_str());
-    sensor.addTag("geo3",geo.substring(0,3).c_str());
+    sensor.addTag("geo3",cfg.getString("geo", "").substring(0,3).c_str());
     sensor.addTag("name",getStationName().c_str());
     sensor.addTag("rev",getVersion());
 }
@@ -43,7 +43,7 @@ void influxDbParseFields() {
     sensor.addField("co2tmp",sensors.getCO2temp());
     sensor.addField("tmp",temp);
     sensor.addField("hum",humi);
-    sensor.addField("geo",geo.c_str());
+    sensor.addField("geo",cfg.getString("geo", "").c_str());
     sensor.addField("prs",sensors.getPressure());
     sensor.addField("gas",sensors.getGas());
     sensor.addField("nh3",sensors.getNH3());
@@ -74,28 +74,28 @@ bool influxDbWrite() {
     return true;
 }
 
- void suspendDevice() {
-    #ifndef DISABLE_BLE
-    if (!bleIsConnected()) {
-    #else
-    if (true) {
-    #endif
-         if (solarmode && deepSleep > 0) { // sleep mode and ECO mode on
-             powerDeepSleepTimer(deepSleep);
-         }
-         else if (deepSleep > 0) {  // sleep mode, ECO mode off
-             powerDisableSensors();
-             enable_sensors = false;
-         }
-    } else {
-         if (!enable_sensors && !solarmode && deepSleep == 0) { // restore to normal mode
-             powerEnableSensors();
-             enable_sensors = true;
-             sensors.setSampleTime(stime);
-         }
-         if (devmode) Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));
-     }
- }
+void suspendDevice() {
+  bool bleConnected = false;
+#ifndef DISABLE_BLE
+  bleConnected = bleIsConnected();
+#endif
+  if (!bleConnected) {
+    if (solarmode && deepSleep > 0) {  // sleep mode and ECO mode on
+      powerDeepSleepTimer(deepSleep);
+    } else if (deepSleep > 0) {  // sleep mode, ECO mode off
+      powerDisableSensors();
+      enable_sensors = false;
+    }
+  } else {
+    if (!enable_sensors && !solarmode && deepSleep == 0) {  // restore to normal mode
+      powerEnableSensors();
+      enable_sensors = true;
+      sensors.setSampleTime(stime);
+    }
+    if (devmode && (solarmode || deepSleep > 0))
+      Serial.println(F("-->[IFDB] BLE client connected\t: skip shutdown"));
+  }
+}
 
  void enableSensors() {
      if (!enable_sensors) {

@@ -25,6 +25,7 @@ float sealevel;
 bool wifi_enable;
 bool ifxdb_enable;
 bool wifi_connected;
+bool new_wifi = false;
 
 Geohash geohash;
 
@@ -216,29 +217,36 @@ bool saveWifi(String ssid, String pass) {
   if (ssid.length() > 0) {
     cfg.saveBool(CONFKEYS::KWIFIEN, true);
     wifi_enable = true;
-    bool new_wifi = !wcli.isSSIDSaved(ssid); 
+    new_wifi = !wcli.isSSIDSaved(ssid);
     if (new_wifi) {
-      wcli.setSSID(ssid);
-      wcli.setPASW(pass);
-      wcli.wifiAPConnect(true); 
+      log_i("[CONF] temp saving ssid:%s pass:%s", ssid, pass);
+      cfg.saveString(CONFKEYS::KSSID, ssid);
+      cfg.saveString(CONFKEYS::KPASS, pass);
     }
-    else
-      wcli.wifiAPConnect(false);
-
-    if (!wcli.wifiValidation()) {
-      if (new_wifi) wcli.loadAP(wcli.getDefaultAP());
-      if (!new_wifi) wcli.loadAP(ssid);
-      ssid = wcli.getCurrentSSID();
-      pass = wcli.getCurrentPASW(); 
-      log_w("[CONF] restored ssid:%s pass:%s", ssid, pass);
-    }
-    log_i("[CONF] ssid:%s pass:%s", ssid, pass);
-    cfg.saveString(CONFKEYS::KSSID, ssid);
-    cfg.saveString(CONFKEYS::KPASS, pass);
     return true; // backward compatibility with the Android app
   }
   log_w("[W][CONF] empty Wifi SSID");
   return false;
+}
+
+bool saveCLIWiFi() {
+  if (new_wifi) {
+    wcli.setSSID(cfg.getString(CONFKEYS::KSSID, ""));
+    wcli.setPASW(cfg.getString(CONFKEYS::KPASS, ""));
+    wcli.wifiAPConnect(true);
+  }
+  delay(200);
+  if (!wcli.wifiValidation()) {
+    if (new_wifi) wcli.loadAP(wcli.getDefaultAP());
+    if (!new_wifi) wcli.loadAP(cfg.getString(CONFKEYS::KSSID, "")); // TODO: check if it's necessary
+    String ssid = wcli.getCurrentSSID();
+    String pass = wcli.getCurrentPASW();
+    log_w("[CONF] restored ssid:%s pass:%s", ssid, pass);
+    new_wifi = false;
+    return false;
+  }
+  new_wifi = false;
+  return true;
 }
 
 bool saveInfluxDb(String db, String ip, int pt) {

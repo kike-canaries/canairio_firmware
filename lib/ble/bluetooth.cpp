@@ -78,12 +78,9 @@ class MyConfigCallbacks : public BLECharacteristicCallbacks {
         std::string value = pCharacteristic->getValue();
         if (value.length() > 0) {
             if (save(value.c_str())) {
-                // reload();
                 gui.displayPreferenceSaveIcon();
-                
                 gui.setWifiMode(isWifiEnable());
-                if (!isWifiEnable()) wifiStop();
-                
+
                 if(sensors.sample_time != stime) {
                     sensors.setSampleTime(stime);
                     gui.setSampleTime(stime);

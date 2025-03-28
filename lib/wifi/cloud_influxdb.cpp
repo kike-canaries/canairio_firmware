@@ -49,6 +49,7 @@ void influxDbParseFields() {
     sensor.addField("nh3",sensors.getNH3());
     sensor.addField("co",sensors.getCO());
     sensor.addField("no2",sensors.getNO2());
+    sensor.addField("o3",sensors.getO3());
     sensor.addField("alt",sensors.getAltitude());
     sensor.addField("cpm",sensors.getGeigerCPM());
     sensor.addField("usvh",sensors.getGeigerMicroSievertHour());

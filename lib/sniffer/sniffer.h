@@ -1,5 +1,6 @@
 #ifndef SNIFFER_H
 #define SNIFFER_H
+#ifndef DISABLE_SNIFFER
 
 #include <wifi.hpp>
 #include <MACPool.hpp>
@@ -10,8 +11,9 @@ using namespace std;
 
 #define WIFI_CHANNEL_MAX 13
 
+#endif
 void snifferInit();
 void snifferStop();
 void snifferLoop();
-uint16_t getPaxCount();
+unsigned int getPaxCount();
 #endif

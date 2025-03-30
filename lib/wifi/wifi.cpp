@@ -103,7 +103,8 @@ void wifiConnect() {
   #endif
   int retry = 0;
   while (WiFi.status() != WL_CONNECTED && retry++ < WIFI_RETRY_CONNECTION) {  // M5Atom will connect automatically
-    delay(500);
+    delay(1000);
+    Serial.print(".");
   }
   #endif
 

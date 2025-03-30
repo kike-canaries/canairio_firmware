@@ -1,12 +1,12 @@
 #include "sniffer.h"
+#ifndef DISABLE_SNIFFER
 
 /******************************************************************************
 *   P A X   C O U N T E R  
 ******************************************************************************/
 
 bool sniffer_start;
-uint_fast16_t pax_count, last_pax_count;
-unsigned int channel;
+unsigned int pax_count, last_pax_count, channel;
 
 vector<MACPool> listOfMAC;
 
@@ -129,6 +129,12 @@ void snifferLoop() {
     }
 }
 
-uint16_t getPaxCount(){
+unsigned int getPaxCount(){
     return pax_count;
 }
+#else
+void snifferInit() {}
+void snifferStop() {}
+void snifferLoop() {}
+unsigned int getPaxCount() { return 0; }
+#endif

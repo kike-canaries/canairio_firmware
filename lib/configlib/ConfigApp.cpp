@@ -289,9 +289,9 @@ bool saveGeo(String geoh){
     if (geoh.length() > 5) {
         float latitude;
         float longitude;
-        geohash.decode(geoh.c_str(),geoh.length(),&longitude,&latitude);
+        geohash.decode(geoh.c_str(), geoh.length(), &longitude, &latitude);
         log_i("[CONF] Geohash decoder: %s (%.4f,%.4f)\r\n", geoh, latitude, longitude);
-        saveGeo(latitude,longitude, geoh);
+        saveGeo(latitude, longitude, geoh);
         return true;
     }
     log_w("[W][CONF] wrong GEO params!");

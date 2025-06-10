@@ -307,6 +307,8 @@ void initShell(){
   wcli.add("exit",  &wcli_exit,         "\t\texit of the setup mode. AUTO EXIT in 10 seg! :)");
   wcli.add("clear", &wcli_clear,        "\t\tclear shell");
   wcli.add("setup", &wcli_setup,        "\t\tTYPE THIS WORD to enter to SAFE MODE setup");
+
+  if (cfg.getBool(CONFKEYS::KFTXPWR, false)) wcli.forceTxPower(); // force the Tx power (C3 issue)
   
   wcli.begin("CanAirIO");
 }

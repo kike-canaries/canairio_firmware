@@ -1,3 +1,4 @@
+#ifndef DISABLE_SNIFFER
 #ifndef MACPool_hpp
 #define MACPool_hpp
 
@@ -19,5 +20,5 @@ class MACPool {
     bool getNewMAC();
     void updateNewMAC(bool);
 };
-
+#endif
 #endif

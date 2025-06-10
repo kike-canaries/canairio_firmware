@@ -1,3 +1,4 @@
+#ifndef DISABLE_SNIFFER
 #include <MACPool.hpp>
 
 MACPool::MACPool(String mac, int signal, unsigned long time, bool newMAC) {
@@ -30,3 +31,4 @@ void MACPool::updateNewMAC(bool nm) {
 bool MACPool::getNewMAC() {
     return this->newMAC;
 }
+#endif

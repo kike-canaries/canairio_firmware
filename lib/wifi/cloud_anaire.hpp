@@ -1,3 +1,4 @@
+#ifdef ENABLE_ANAIRE
 #include <WiFi.h>
 #include <MQTT.h>
 #include <Sensors.hpp>
@@ -7,6 +8,10 @@
 
 #define ANAIRE_HOST "mqtt.anaire.org"
 #define ANAIRE_TOPIC "measurement"
+#define ANAIRE_PORT 80
+#endif
+#define ANAIRE_HOST ""
+#define ANAIRE_TOPIC ""
 #define ANAIRE_PORT 80
 
 void anaireLoop ();

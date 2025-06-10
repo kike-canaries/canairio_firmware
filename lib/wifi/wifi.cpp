@@ -82,17 +82,31 @@ void wifiCloudsInit() {
 void wifiConnect() {
   String ssid = cfg.getString(CONFKEYS::KSSID, "");
   String pass = cfg.getString(CONFKEYS::KPASS, "");
+  #ifndef DISABLE_CLI
   if (!(wcli.getCurrentSSID().compareTo(ssid)==0)){
+    Serial.printf("-->[WIFI] saving wifi ssid\t: %s\r\n", ssid.c_str());
     saveWifi(ssid, pass);
     return;
   }
   Serial.print("-->[WIFI] connecting to wifi\t: ");
   Serial.print(ssid);
   wcli.wifiAPConnect(false);
-
   if (WiFi.isConnected()) {
     Serial.println(" done."); 
-  } 
+  }
+  #else 
+  if (WiFi.isConnected()) return;
+  WiFi.mode(WIFI_STA); 
+  WiFi.begin(ssid.c_str(), pass.c_str());
+  #if CONFIG_IDF_TARGET_ESP32C3
+  WiFi.setTxPower(WIFI_POWER_8_5dBm);
+  #endif
+  int retry = 0;
+  while (WiFi.status() != WL_CONNECTED && retry++ < WIFI_RETRY_CONNECTION) {  // M5Atom will connect automatically
+    delay(1000);
+    Serial.print(".");
+  }
+  #endif 
 }
 
 void wifiInit() {
@@ -127,7 +141,9 @@ void wifiLoop() {
   static uint_least64_t wifiTimeStamp = 0;
   if (millis() - wifiTimeStamp > 10000) {
     wifiTimeStamp = millis();
-    if (new_wifi) saveCLIWiFi();
+    if (new_wifi && saveCLIWiFi()) {
+        Serial.println("-->[WIFI] WiFi connected: " + WiFi.SSID());
+    }
     setWifiConnected(WiFi.isConnected());
     String ssid = cfg.getString(CONFKEYS::KSSID, "");
     if (isWifiEnable() && ssid.length() > 0 && !WiFi.isConnected()) {

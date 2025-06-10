@@ -1,6 +1,8 @@
 #include <WiFi.h>
 #include <esp_wifi.h>
+#ifndef DISABLE_CLI
 #include <ESP32WifiCLI.hpp>
+#endif
 #include "GUILib.hpp"
 
 //#define IFX_RETRY_CONNECTION 5    // influxdb publish retry 

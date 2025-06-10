@@ -1,4 +1,5 @@
 #include <cloud_anaire.hpp>
+#ifdef ENABLE_ANAIRE
 
 /******************************************************************************
 *  A N A I R E   M Q T T   M E T H O D S
@@ -99,3 +100,8 @@ void anaireLoop () {
     if (!client.connected()) anaireConnect(); 
     anairePublish();
 }
+#else
+void anaireLoop() {}
+void anaireInit() {}
+bool anaireIsConnected() { return false; }
+#endif

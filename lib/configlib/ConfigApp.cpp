@@ -217,7 +217,11 @@ bool saveWifi(String ssid, String pass) {
   if (ssid.length() > 0) {
     cfg.saveBool(CONFKEYS::KWIFIEN, true);
     wifi_enable = true;
+    #ifndef DISABLE_CLI
     new_wifi = !wcli.isSSIDSaved(ssid);
+    #else
+    new_wifi = true;
+    #endif
     if (new_wifi) {
       log_i("[CONF] temp saving ssid:%s pass:%s", ssid, pass);
       cfg.saveString(CONFKEYS::KSSID, ssid);
@@ -230,6 +234,7 @@ bool saveWifi(String ssid, String pass) {
 }
 
 bool saveCLIWiFi() {
+  #ifndef DISABLE_CLI
   if (new_wifi) {
     wcli.setSSID(cfg.getString(CONFKEYS::KSSID, ""));
     wcli.setPASW(cfg.getString(CONFKEYS::KPASS, ""));
@@ -246,6 +251,7 @@ bool saveCLIWiFi() {
     return false;
   }
   new_wifi = false;
+  #endif
   return true;
 }
 
@@ -283,9 +289,9 @@ bool saveGeo(String geoh){
     if (geoh.length() > 5) {
         float latitude;
         float longitude;
-        geohash.decode(geoh.c_str(),geoh.length(),&longitude,&latitude);
+        geohash.decode(geoh.c_str(), geoh.length(), &longitude, &latitude);
         log_i("[CONF] Geohash decoder: %s (%.4f,%.4f)\r\n", geoh, latitude, longitude);
-        saveGeo(latitude,longitude, geoh);
+        saveGeo(latitude, longitude, geoh);
         return true;
     }
     log_w("[W][CONF] wrong GEO params!");

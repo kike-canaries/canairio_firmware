@@ -72,15 +72,19 @@ void powerLightSleepTimer(int seconds) {
 }
 
 void powerEnableSensors() {
+    #ifdef MAIN_HW_EN_PIN
     if(devmode) Serial.println("-->[POWR] == enable sensors ==");
     // init all sensors (step-up to 5V with enable pin)
     pinMode(MAIN_HW_EN_PIN, OUTPUT);
     digitalWrite(MAIN_HW_EN_PIN, HIGH);  // step-up on
+    #endif
 }
 
 void powerDisableSensors() {
+    #ifdef MAIN_HW_EN_PIN
     if(devmode) Serial.println("-->[POWR] == disable sensors ==");
     digitalWrite(MAIN_HW_EN_PIN, LOW);  // step-up off
+    #endif
 }
 
 void powerTempSensorInit() {

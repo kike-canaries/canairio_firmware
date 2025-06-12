@@ -8,6 +8,7 @@
 #endif
 #include "logmem.hpp"
 #include "Watchdog.hpp"
+#include "power.hpp"
 
 void cliInit();
 void cliTaskInit();

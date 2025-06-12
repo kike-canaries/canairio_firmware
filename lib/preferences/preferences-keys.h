@@ -34,5 +34,6 @@
   X(KSOLAREN, "solarEnable", BOOL)  \
   X(KDEEPSLP, "deepSleep", INT)     \
   X(KGEIGERP, "geigerPin", INT)     \
+  X(KSENHWENB, "sensorsENPin", INT)     \
   X(KFTXPWR, "forceTxPower", BOOL)  \
   X(KCOUNT, "KCOUNT", UNKNOWN)

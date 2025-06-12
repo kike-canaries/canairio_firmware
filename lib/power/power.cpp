@@ -71,20 +71,37 @@ void powerLightSleepTimer(int seconds) {
     #endif
 }
 
+int powerGetMainHwEnbPin() {
+  int defaultHwEnPin = -1;
+#ifdef MAIN_HW_EN_PIN
+  defaultHwEnPin = MAIN_HW_EN_PIN;  // default pin for step-up enable
+#endif
+  int mainHwEnPin = cfg.getInt(CONFKEYS::KSENHWENB, defaultHwEnPin);
+  if (mainHwEnPin > 0 && mainHwEnPin < 40) {
+    return mainHwEnPin;  // return user configured pin
+  }
+  return defaultHwEnPin;
+}
+
 void powerEnableSensors() {
-    #ifdef MAIN_HW_EN_PIN
-    if(devmode) Serial.println("-->[POWR] == enable sensors ==");
+  int mainHwEnbPin = powerGetMainHwEnbPin();
+  if (mainHwEnbPin > 0) {
+    if (devmode) Serial.println("-->[POWR] == enable sensors ==");
+    if (devmode) Serial.println("-->[POWR] Sensors enable pin\t: " + String(mainHwEnbPin));
     // init all sensors (step-up to 5V with enable pin)
-    pinMode(MAIN_HW_EN_PIN, OUTPUT);
-    digitalWrite(MAIN_HW_EN_PIN, HIGH);  // step-up on
-    #endif
+    pinMode(mainHwEnbPin, OUTPUT);
+    digitalWrite(mainHwEnbPin, HIGH);  // step-up on
+  }
+  else
+    log_i("[POWR] No sensors enable pin configured, Skipping..");
 }
 
 void powerDisableSensors() {
-    #ifdef MAIN_HW_EN_PIN
+  int mainHwEnbPin = powerGetMainHwEnbPin();
+  if (mainHwEnbPin > 0) {
     if(devmode) Serial.println("-->[POWR] == disable sensors ==");
-    digitalWrite(MAIN_HW_EN_PIN, LOW);  // step-up off
-    #endif
+    digitalWrite(mainHwEnbPin, LOW);  // step-up off
+  }
 }
 
 void powerTempSensorInit() {

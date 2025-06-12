@@ -30,17 +30,11 @@ void Watchdog::loop() {
 
 void IRAM_ATTR resetModule() {
   Serial.println("-->[WDOG] Watchdog reached, rebooting..");
-  #ifdef MAIN_HW_EN_PIN
-  digitalWrite(MAIN_HW_EN_PIN, LOW);
-  #endif
   esp_wifi_disconnect();
   delay(200);
   esp_wifi_stop();
   delay(200);
   esp_wifi_deinit();
-  #ifdef MAIN_HW_EN_PIN
-  digitalWrite(MAIN_HW_EN_PIN, HIGH);
-  #endif
   delay(200);
   ESP.restart();
 }

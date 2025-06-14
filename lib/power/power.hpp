@@ -10,12 +10,16 @@
 #include <esp_wifi.h>
 
 
-float powerESP32TempRead();
+
 void powerCompleteShutdown();
 void powerDeepSleepButton();
 void powerDeepSleepTimer(int);
 void powerLightSleepTimer(int);
 void powerEnableSensors();
 void powerDisableSensors();
+
+float powerESP32TempRead();
+int powerGetMainHwEnbPin();
+
 void powerLoop();
 void powerInit();

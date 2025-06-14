@@ -207,6 +207,7 @@ void wcli_setup(char *args, Stream *response) {
   response->printf("UART sensor model \t: %s\r\n", sensors.getSensorName((SENSORS)stype).c_str());
   response->printf("UART sensor TX pin\t: %d\r\n", sTX == -1 ? PMS_TX : sTX);
   response->printf("UART sensor RX pin\t: %d\r\n", sRX == -1 ? PMS_RX : sRX);
+  response->printf("ENABLE HW sensor pin\t: %d\r\n", powerGetMainHwEnbPin());
   response->printf("Current debug mode\t: %s\r\n", devmode == true ? "enabled" : "disabled");
 
   wcli_klist((char *)"basic",response);

@@ -33,6 +33,12 @@ jobs:
           pio pkg update
       - name: Build ESP32WOKWI firmware
         run: |
+          pio run -e ESP32WOKWI
+      - name: Search partition
+        run: |
+          find find . -name "bootloader_dio_40m.bin" -print
+      - name: Setup ESP32WOKWI binaries
+        run: |
           ./build wokwi
       - name: Test CanAirIO execution with Wokwi
         uses: wokwi/wokwi-ci-action@v1

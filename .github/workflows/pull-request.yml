@@ -36,7 +36,7 @@ jobs:
           pio run -e ESP32WOKWI
       - name: Search partition
         run: |
-          find find . -name "bootloader_dio_40m.bin" -print
+          find . -name "bootloader_dio_40m.bin" -print
       - name: Setup ESP32WOKWI binaries
         run: |
           ./build wokwi

@@ -94,6 +94,16 @@ build () {
   echo ""
 }
 
+wokwi_setup () {
+  mkdir -p $RELDIR/wokwi
+  FIRMDIR=$RELDIR/$BINDIR/ESP32WOKWI
+  cp $FIRMDIR/${NAME}_ESP32WOKWI_rev${SRC_REV}_merged.bin $RELDIR/wokwi/firmware.bin 
+  cp $OUTDIR/ESP32WOKWI/firmware.elf $RELDIR/wokwi/firmware.elf
+  du -hs $RELDIR/wokwi/*
+  md5sum $RELDIR/wokwi/firmware.bin
+  md5sum $RELDIR/wokwi/firmware.elf
+}
+
 buildInstaller () {
   echo "***********************************************"
   echo "** Building installer with target: $TARGET"
@@ -191,6 +201,11 @@ else
           build $flavor
       done     
       printOutput
+      ;;
+    
+    wokwi)
+      build ESP32WOKWI
+      wokwi_setup
       ;;
 
     github)

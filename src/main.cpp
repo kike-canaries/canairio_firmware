@@ -365,7 +365,7 @@ void setup() {
 
     String sname = !(cfg.getString("geo", "")).isEmpty() ? getStationName() : "not configured yet\t:(";
     Serial.printf("-->[INFO] CanAirIO station name\t: %s\r\n", sname.c_str());
-    gui.welcomeAddMessage("WiFi: "+String(isIfxEnable() ? "On" : "Off"));
+    gui.welcomeAddMessage("WiFi: "+String(isWifiEnable() ? "On" : "Off"));
     gui.welcomeAddMessage("Influx: "+String(isIfxEnable() ? "On" : "Off"));
 
 #ifndef DISABLE_BLE
@@ -376,10 +376,14 @@ void setup() {
 #endif
 
     // wifi status 
-    if (WiFi.isConnected())
+    if (isWifiEnable() && WiFi.isConnected()) {
+        Serial.printf("-->[INFO] Wifi connected to\t: %s\r\n", WiFi.SSID().c_str());
         gui.welcomeAddMessage("WiFi:" + cfg.getString(CONFKEYS::KSSID, ""));
-    else
+    }
+    else {
+        Serial.printf("-->[INFO] Wifi connected to\t: disabled\r\n");
         gui.welcomeAddMessage("WiFi: disabled.");
+    }
 
     // sensor sample time and publish time (2x)
     gui.welcomeAddMessage("stime: "+String(stime)+ " sec.");

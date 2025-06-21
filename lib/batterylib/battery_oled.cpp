@@ -1,4 +1,5 @@
 #include <battery_oled.hpp>
+#ifndef DISABLE_BATT
 
 #ifdef M5PICOD4
     #define ADC_PIN 36
@@ -8,6 +9,9 @@
     int channel_atten = ADC1_CHANNEL_7;
 #elif TTGO_T7S3
     #define ADC_PIN 2
+    int channel_atten = ADC1_CHANNEL_1;
+#elif ESP32C3_AIRGRADIENT
+    #define ADC_PIN 4
     int channel_atten = ADC1_CHANNEL_1;
 #else
     #define ADC_PIN 34
@@ -39,12 +43,14 @@ void Battery_OLED::init(bool debug) {
     If the USB port is used for power supply, it is turned on by default.
     If it is powered by battery, it needs to be set to high level
     */
+  #ifndef TTGO_T7S3
   pinMode(ADC_EN, OUTPUT);
   digitalWrite(ADC_EN, HIGH);
+  #endif
   delay(10);  // suggested by @ygator user in issue #2
   setupBattADC();
   delay(10);  // suggested by @ygator user in issue #2
-  setLimits(BATTERY_MIN_V, BATTERY_MAX_V, BATTCHARG_MIN_V, BATTCHARG_MAX_V);
+  // setLimits(BATTERY_MIN_V, BATTERY_MAX_V, BATTCHARG_MIN_V, BATTCHARG_MAX_V);
 }
 
 float Battery_OLED::getVoltage() {
@@ -85,6 +91,15 @@ int Battery_OLED::getCharge() {
         return calcPercentage(curv, btDiscVMax, btDiscVMin);
     }
 }
+#endif
+#ifdef DISABLE_BATT
+void init(bool debug = false) {}
+float getVoltage() { return 0.0; }
+bool isCharging() { return false; }
+int getCharge()   { return 0; }
+void printValues() {}
+void update() {}
+#endif
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_OLEDBATTERY)
     #ifndef M5STICKCPLUS

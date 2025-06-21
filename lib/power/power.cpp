@@ -4,7 +4,9 @@
 
 void prepairShutdown() {
     #ifndef M5STICKCPLUS
+    #ifndef DISABLE_BATT
     digitalWrite(ADC_EN, LOW);
+    #endif
     delay(10);
     //rtc_gpio_init(GPIO_NUM_14);
     //rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
@@ -17,8 +19,10 @@ void prepairShutdown() {
 void powerCompleteShutdown(){
     Serial.println("-->[POWR] Complete shutdown..");
     #ifndef M5STICKCPLUS
+    #ifndef DISABLE_BLE
     esp_bluedroid_disable();
     esp_bt_controller_disable();
+    #endif
     esp_wifi_stop();
     esp_deep_sleep_disable_rom_logging();
     //esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
@@ -27,7 +31,7 @@ void powerCompleteShutdown(){
     esp_deep_sleep_start();
     #endif
     #ifdef M5STICKCPLUS
-    M5.Axp.PowerOff();
+    M5.Power.powerOff();
     #endif
 }
 
@@ -46,7 +50,7 @@ void powerDeepSleepTimer(int seconds) {
     Serial.flush();
     prepairShutdown();
     #ifdef M5STICKCPLUS
-    M5.Axp.DeepSleep(seconds*1000000);
+    M5.Power.deepSleep(seconds*1000000);
     #endif
     esp_sleep_enable_timer_wakeup(seconds * 1000000ULL);
     #ifdef TTGO_TDISPLAY
@@ -63,20 +67,41 @@ void powerLightSleepTimer(int seconds) {
     esp_light_sleep_start();
     #endif
     #ifdef M5STICKCPLUS
-    M5.Axp.LightSleep(seconds*1000000);
+    M5.Power.lightSleep(seconds*1000000);
     #endif
 }
 
+int powerGetMainHwEnbPin() {
+  int defaultHwEnPin = -1;
+#ifdef MAIN_HW_EN_PIN
+  defaultHwEnPin = MAIN_HW_EN_PIN;  // default pin for step-up enable
+#endif
+  int mainHwEnPin = cfg.getInt(CONFKEYS::KSENHWENB, defaultHwEnPin);
+  if (mainHwEnPin > 0 && mainHwEnPin < 40) {
+    return mainHwEnPin;  // return user configured pin
+  }
+  return defaultHwEnPin;
+}
+
 void powerEnableSensors() {
-    if(cfg.devmode) Serial.println("-->[POWR] == enable sensors ==");
+  int mainHwEnbPin = powerGetMainHwEnbPin();
+  if (mainHwEnbPin > 0) {
+    if (devmode) Serial.println("-->[POWR] == enable sensors ==");
+    if (devmode) Serial.println("-->[POWR] Sensors enable pin\t: " + String(mainHwEnbPin));
     // init all sensors (step-up to 5V with enable pin)
-    pinMode(MAIN_HW_EN_PIN, OUTPUT);
-    digitalWrite(MAIN_HW_EN_PIN, HIGH);  // step-up on
+    pinMode(mainHwEnbPin, OUTPUT);
+    digitalWrite(mainHwEnbPin, HIGH);  // step-up on
+  }
+  else
+    log_i("[POWR] No sensors enable pin configured, Skipping..");
 }
 
 void powerDisableSensors() {
-    if(cfg.devmode) Serial.println("-->[POWR] == disable sensors ==");
-    digitalWrite(MAIN_HW_EN_PIN, LOW);  // step-up off
+  int mainHwEnbPin = powerGetMainHwEnbPin();
+  if (mainHwEnbPin > 0) {
+    if(devmode) Serial.println("-->[POWR] == disable sensors ==");
+    digitalWrite(mainHwEnbPin, LOW);  // step-up off
+  }
 }
 
 void powerTempSensorInit() {
@@ -106,20 +131,22 @@ float powerESP32TempRead(){
 }
 
 void powerLoop() {
+  #ifndef DISABLE_BATT
   static uint32_t powerTimeStamp = 0;             // timestamp for check low power
   if ((millis() - powerTimeStamp > 30 * 1000)) {  // check it every 5 seconds
     powerTimeStamp = millis();
     float vbat = battery.getVoltage();
-    if (vbat > 3.0 && vbat < BATTERY_MIN_V) {
+    if (vbat > 3.0 && vbat < BATT_MIN_V) {
       Serial.println("-->[POWR] Goto DeepSleep (VBat too low)");
-      if (cfg.solarmode)
-        powerDeepSleepTimer(cfg.deepSleep);
+      if (solarmode)
+        powerDeepSleepTimer(deepSleep);
       else
         powerCompleteShutdown();
     }
   #ifdef CONFIG_IDF_TARGET_ESP32S3
-    if (cfg.devmode) Serial.printf("-->[POWR] CPU Temperature\t: %02.1f°C\r\n", powerESP32TempRead());
+    if (devmode) Serial.printf("-->[POWR] CPU Temperature\t: %02.1f°C\r\n", powerESP32TempRead());
   #endif
     log_i("[HEAP] Min:%d Max:%d\t: %d\r\n", ESP.getMinFreeHeap(), ESP.getMaxAllocHeap(), ESP.getFreeHeap());
   }
+  #endif
 }

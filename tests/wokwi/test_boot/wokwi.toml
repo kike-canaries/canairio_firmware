@@ -1,0 +1,8 @@
+# Wokwi Configuration File
+# Reference: https://docs.wokwi.com/vscode/project-config
+# CanAirIO Project Boot test
+
+[wokwi]
+version = 1
+firmware = '../../../releases/wokwi/firmware.bin'
+elf = '../../../releases/wokwi/firmware.elf'

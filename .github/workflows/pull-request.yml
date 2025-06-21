@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    env:
+      PIO_HOME: /home/runner/.platformio
     strategy:
       max-parallel: 1
       matrix:
@@ -31,7 +33,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -U platformio
           pio pkg update
-      - name: Devel Build Test
+      - name: Build ESP32WOKWI firmware
         run: |
-          pio run -e TTGO_T7 -e TTGO_TDISPLAY -e ESP32C3LOLIN
+          ./build wokwi
+      - name: Test CanAirIO execution with Wokwi
+        uses: wokwi/wokwi-ci-action@v1
+        with:
+          token: ${{ secrets.WOKWI_CLI_TOKEN }}
+          path: tests/wokwi/test_boot
+          timeout: 60000
+          scenario: 'boot_check.yml'
+          serial_log_file: 'log-boot-canairio.txt'
     

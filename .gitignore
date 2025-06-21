@@ -54,8 +54,9 @@ espota.py
 esptool.py
 md5output.txt
 releases/manifest
+releases/wokwi
 releases/installer/rev*
-
+lib/easy-preferences
 # IDE
 .travis.yml
 extensions.json

@@ -3,7 +3,7 @@
 
 #include <battery.hpp>
 #ifdef M5STICKCPLUS 
-#include <M5StickCPlus.h>
+#include <M5Unified.h>
 #endif
 
 #define BATTERY_MIN_V 3.4
@@ -13,7 +13,7 @@
 
 class Battery_M5STACK : public Battery {
   public:
-    float vusb = 0.0;
+    // float vusb = 0.0;
     void init(bool debug = false);
     float getVoltage();
     float getCurrent();

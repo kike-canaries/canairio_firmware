@@ -1,0 +1,8 @@
+name: CanAirIO Boot
+version: 1
+author: Hpsaturn
+
+steps:
+  - wait-serial: '==>[INFO] Setup end. CLI enable. Press ENTER  ==='
+  - delay: 500ms
+

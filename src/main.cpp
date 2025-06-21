@@ -1,20 +1,27 @@
 /**
  * @file main.cpp
  * @author Antonio Vanegas @hpsaturn
- * @date June 2018 - 2020
+ * @date June 2018 - 2025
  * @brief Particle meter sensor on ESP32 with bluetooth GATT notify server
  * @license GPL3
  */
 
 #include <Arduino.h>
-#include <Watchdog.hpp>
-#include <ConfigApp.hpp>
-#include <GUILib.hpp>
 #include <Sensors.hpp>
-#include <bluetooth.hpp>
-#include <power.hpp>
-#include <logmem.hpp>
-#include <wifi.hpp>
+#include <MQTT.h>
+#include "ConfigApp.hpp"
+#include "GUILib.hpp"
+#include "Watchdog.hpp"
+#include "OTAHandler.h"
+#include "power.hpp"
+#include "wifi.hpp"
+#include "bluetooth.hpp"
+#include "logmem.hpp"
+#include "sniffer.h"
+
+#ifndef DISABLE_CLI
+#include "cli.hpp"
+#endif
 
 #ifdef LORADEVKIT
 #include <lorawan.h>
@@ -44,13 +51,13 @@ void loadGUIData() {
     data.humi = humi;
     data.rssi = getWifiRSSI();
 
-    UNIT user_unit = (UNIT) cfg.getUnitSelected();
+    UNIT user_unit = (UNIT) getUnitSelected();
     if (selectUnit != user_unit && sensors.isUnitRegistered(user_unit)) {
         selectUnit = user_unit;
     }
 
     // Main unit selection
-    if (sensors.getUnitsRegisteredCount() == 0 && cfg.isPaxEnable()) {
+    if (sensors.getUnitsRegisteredCount() == 0 && isPaxEnable()) {
         data.mainValue = getPaxCount();
         data.unitName = "PAX";
         data.unitSymbol = "PAX";
@@ -87,32 +94,33 @@ void refreshGUIData(bool onUnitSelection) {
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     void onWifiMode(bool enable) {
         Serial.println("-->[MAIN] Wifi enable changed\t: " + String(enable));
-        cfg.wifiEnable(enable);
-        cfg.reload();
+        wifiEnable(enable);
+        reload();
         if (!enable) wifiStop();
     };
     void onPaxMode(bool enable) {
         Serial.println("-->[MAIN] onPax enable changed\t: " + String(enable));
-        cfg.paxEnable(enable);
-        cfg.reload();
+        paxEnable(enable);
+        reload();
     };
     void onBrightness(int value) {
         Serial.println("-->[MAIN] onBrightness changed\t: " + String(value));
-        cfg.saveBrightness(value);
+        saveBrightness(value);
     };
     void onColorsInverted(bool enable) {
         Serial.println("-->[MAIN] onColors changed    \t: " + String(enable));
-        cfg.colorsInvertedEnable(enable);
+        colorsInvertedEnable(enable);
     };
     void onSampleTime(int time) {
         if (sensors.sample_time != time) {
             Serial.println("-->[MAIN] onSampleTime changed\t: " + String(time));
-            cfg.saveSampleTime(time);
-            cfg.reload();
+            saveSampleTime(time);
+            reload();
 
-            if (FAMILY != "ESP32-C3") bleServerConfigRefresh();
-
-            sensors.setSampleTime(cfg.stime);
+#ifndef DISABLE_BLE
+            bleServerConfigRefresh();
+#endif
+            sensors.setSampleTime(stime);
         }
     };
     void onCalibrationReady() {
@@ -132,7 +140,7 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
         if (nextUnit!=UNIT::NUNIT && nextUnit!=selectUnit) {
             Serial.println(sensors.getUnitName(nextUnit));
             selectUnit = nextUnit;
-            cfg.saveUnitSelected(selectUnit);
+            saveUnitSelected(selectUnit);
         } else {
             Serial.println("NONE");
         }
@@ -163,11 +171,13 @@ class MyRemoteConfigCallBacks : public RemoteConfigCallbacks {
     }
 };
 
+#ifndef DISABLE_BATT
 class MyBatteryUpdateCallbacks : public BatteryUpdateCallbacks {
     void onBatteryUpdate(float voltage, int charge, bool charging) {
         gui.setBatteryStatus(voltage, charge, charging);
     };
 };
+#endif
 
 /// sensors data callback
 void onSensorDataOk() {
@@ -182,7 +192,6 @@ void onSensorDataError(const char * msg){
 }
 
 void printSensorsDetected() {
-    Serial.println("-->[INFO] Sensors detected\t: " + String(sensors.getSensorsRegisteredCount()));
     gui.welcomeAddMessage("Sensors: " + String(sensors.getSensorsRegisteredCount()));
     int i = 0;
     while (sensors.getSensorsRegistered()[i++] != 0) {
@@ -191,27 +200,30 @@ void printSensorsDetected() {
 }
 
 void startingSensors() {
-    Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)cfg.stype));
+    Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)stype));
     gui.welcomeAddMessage("Init sensors..");
-    int geigerPin = cfg.getInt(CONFKEYS::KGEIGERP, -1);    // Geiger sensor pin (config it via CLI) 
-    int tunit = cfg.getInt(CONFKEYS::KTEMPUNT, 0);         // Temperature unit (defaulut celsius)
-    sensors.setOnDataCallBack(&onSensorDataOk);            // all data read callback
-    sensors.setOnErrorCallBack(&onSensorDataError);        // on data error callback
-    sensors.setDebugMode(cfg.devmode);                     // debugging mode 
-    sensors.setSampleTime(cfg.stime);                      // config sensors sample time (first use)
-    sensors.setTempOffset(cfg.toffset);                    // temperature compensation
-    sensors.setCO2AltitudeOffset(cfg.altoffset);           // CO2 altitude compensation
-    sensors.detectI2COnly(cfg.i2conly);                    // force only i2c sensors
-    sensors.enableGeigerSensor(geigerPin);                 // Geiger sensor init
-    sensors.setTemperatureUnit((TEMPUNIT)tunit);           // Config temperature unit (K,C or F)
-    int mUART = cfg.stype;                                 // optional UART sensor choosed on the Android app
-    int mTX = cfg.sTX;                                     // UART TX defined via setup
-    int mRX = cfg.sRX;                                     // UART RX defined via setup
+    int geigerPin = cfg.getInt(CONFKEYS::KGEIGERP, -1);// Geiger sensor pin (config it via CLI) 
+    int tunit = cfg.getInt(CONFKEYS::KTEMPUNT, 0);     // Temperature unit (defaulut celsius)
+    bool i2conly = cfg.getBool(CONFKEYS::KI2CONLY, false);
+    sensors.setOnDataCallBack(&onSensorDataOk);        // all data read callback
+    sensors.setOnErrorCallBack(&onSensorDataError);    // on data error callback
+    sensors.setDebugMode(devmode);                     // debugging mode 
+    sensors.setSampleTime(stime);                      // config sensors sample time (first use)
+    sensors.setTempOffset(toffset);                    // temperature compensation
+    sensors.setCO2AltitudeOffset(altoffset);           // CO2 altitude compensation
+    sensors.detectI2COnly(i2conly);                    // force only i2c sensors
+    sensors.enableGeigerSensor(geigerPin);             // Geiger sensor init
+    sensors.setTemperatureUnit((TEMPUNIT)tunit);       // Config temperature unit (K,C or F)
+    int mUART = stype;                                 // optional UART sensor choosed on the Android app
+    int mTX = sTX;                                     // UART TX defined via setup
+    int mRX = sRX;                                     // UART RX defined via setup
 
-    if (cfg.sTX == -1 && cfg.sRX == -1)
+    if (sTX == -1 && sRX == -1) {
         sensors.init(mUART);                        // start all sensors (board predefined pins)
-    else
+    }
+    else {
         sensors.init(mUART, mRX, mTX);              // start all sensors and custom pins via setup.
+    }
                                                     // For more information about the supported sensors,
                                                     // please see the canairio_sensorlib documentation.
     if(sensors.getSensorsRegisteredCount()==0){
@@ -223,14 +235,13 @@ void startingSensors() {
         printSensorsDetected();    
     }
 
-    Serial.printf("-->[INFO] registering units\t:\r\n");
     delay(500);
     sensors.readAllSensors();                       // only to force to register all sensors
     delay(500);
     sensors.readAllSensors();                       // only to force to register all sensors
     delay(10);
     gui.welcomeAddMessage("Units count: "+String(sensors.getUnitsRegisteredCount()));
-    selectUnit = (UNIT) cfg.getUnitSelected();
+    selectUnit = (UNIT) getUnitSelected();
     Serial.printf("-->[INFO] restored saved unit\t: %s\r\n",sensors.getUnitName(selectUnit).c_str());
     if (!sensors.isUnitRegistered(selectUnit)){
         sensors.resetNextUnit();
@@ -242,19 +253,56 @@ void startingSensors() {
     delay(300);
 }
 
+#if defined(TTGO_T7) || defined(TTGO_T7S3)
+#define BATTERY_MIN_V 3.4
+#define BATTERY_MAX_V 4.28
+#define BATTCHARG_MIN_V 3.8
+#define BATTCHARG_MAX_V 4.34
+#else
+#define BATTERY_MIN_V 3.1
+#define BATTERY_MAX_V 4.04
+#define BATTCHARG_MIN_V 4.06
+#define BATTCHARG_MAX_V 4.198
+#endif
+
 void initBattery() {
-  if (FAMILY != "ESP32-C3") {
-      battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
-      battery.init(cfg.devmode);
-      if(cfg.isKey(CONFKEYS::KBATVMX)) {
-        battery.setBattLimits(cfg.getFloat(CONFKEYS::KBATVMI),cfg.getFloat(CONFKEYS::KBATVMX));
-      }
-      if(cfg.isKey(CONFKEYS::KCHRVMX)) {
-        battery.setChargLimits(cfg.getFloat(CONFKEYS::KCHRVMI),cfg.getFloat(CONFKEYS::KCHRVMX));
-      }
-      if(cfg.devmode) battery.printLimits();
-      battery.update();
+#ifndef DISABLE_BATT
+  if (strcmp(FAMILY, "ESP32-C3") != 0) {
+    battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
+    battery.setBattLimits(
+      cfg.getFloat(CONFKEYS::KBATVMI, BATT_MIN_V),
+      cfg.getFloat(CONFKEYS::KBATVMX, BATT_MAX_V));
+    battery.setChargLimits(
+      cfg.getFloat(CONFKEYS::KCHRVMI, BCHARG_MIN_V),
+      cfg.getFloat(CONFKEYS::KCHRVMX, BCHARG_MAX_V));
+    if (devmode) battery.printLimits();
+    battery.init(devmode);
+    battery.update();
   }
+#endif
+}
+
+void initCLIFailsafe() {
+#ifndef DISABLE_CLI
+  if (cfg.getBool(CONFKEYS::KFAILSAFE, true)) {
+    delay(2000); // wait for new S3 and C3 CDC serial
+    gui.welcomeAddMessage("wait for setup..");
+    Serial.println("\n-->[INFO] == Type \"setup\" for enter in safe mode (over in 10seg!) ==");
+    cliInit();
+    logMemory("CLI ");
+  }
+#endif
+}
+
+void initCLI() {
+#ifndef DISABLE_CLI
+  Serial.println("\n==>[INFO] Setup end. CLI enable. Press ENTER  ===\r\n");
+  if (!cfg.getBool(CONFKEYS::KFAILSAFE, true)) cliInit();
+  cliTaskInit();
+  logMemory("CLI ");
+#else
+  Serial.println("\n==>[INFO] Setup End. ===\r\n");
+#endif
 }
 
 /******************************************************************************
@@ -265,37 +313,33 @@ void setup() {
     Serial.begin(115200);
     delay(500);
     Serial.flush();
+    checkCoreDumpPartition();
     Serial.println("\n== CanAirIO Setup ==\r\n");
     logMemory("INIT");
-    powerInit();
     // init app preferences and load settings
-    cfg.init("canairio");
+    init("canairio");
+    powerInit();
+    Serial.setDebugOutput(devmode);
     logMemory("CONF"); 
     // init graphic user interface
-    gui.setBrightness(cfg.getBrightness());
-    gui.setWifiMode(cfg.isWifiEnable());
-    gui.setPaxMode(cfg.isPaxEnable());
-    gui.setSampleTime(cfg.stime);
+    sensors.startI2C(); // I2C shared bus with OLED (ESP32S3 issue)
+    gui.setBrightness(getBrightness());
+    gui.setWifiMode(isWifiEnable());
+    gui.setPaxMode(isPaxEnable());
+    gui.setSampleTime(stime);
     gui.setEmoticons(cfg.getBool(CONFKEYS::KEMOTICO,true));
-    gui.displayInit();
+    gui.displayInit(cfg.getInt(CONFKEYS::KOLEDTYPE, 0));
     gui.flipVertical(cfg.getBool(CONFKEYS::KFLIPV,false));
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.showWelcome();
     logMemory("GLIB");
     // CanAirIO CLI init and first setup (safe mode)
-    if (cfg.getBool(CONFKEYS::KFAILSAFE, true)) {
-      gui.welcomeAddMessage("wait for setup..");
-      Serial.println("\n-->[INFO] == Waiting for safe mode setup (10s)  ==");
-    }
-    #ifndef DISABLE_CLI
-    cliInit();
-    logMemory("CLI ");
-    #endif
+    initCLIFailsafe(); 
     // init battery monitor
     initBattery(); 
     logMemory("BATT");
     // device wifi mac addres and firmware version
-    Serial.println("-->[INFO] ESP32MAC\t\t: " + cfg.deviceId);
+    Serial.println("-->[INFO] ESP32MAC\t\t: " + deviceId);
     Serial.println("-->[INFO] Hostname\t\t: " + getHostId());
     Serial.println("-->[INFO] Revision\t\t: " + gui.getFirmwareVersionCode());
     Serial.println("-->[INFO] Firmware\t\t: " + String(VERSION));
@@ -305,11 +349,10 @@ void setup() {
     // Sensors library initialization
     Serial.println("-->[INFO] == Detecting Sensors ==");
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
-    Serial.println("-->[INFO] enable hw on GPIO\t: " + String(MAIN_HW_EN_PIN));
     startingSensors();
     logMemory("SLIB");
     // Setting callback for remote commands via Bluetooth config
-    cfg.setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());
+    setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());
     // init watchdog timer for reboot in any loop blocker
     wd.init();
     // WiFi and cloud communication
@@ -317,25 +360,34 @@ void setup() {
     gui.welcomeAddMessage("Connecting..");
     wifiInit();
     logMemory("WIFI");
-    Serial.printf("-->[INFO] InfluxDb cloud \t: %s\r\n", cfg.isIfxEnable()  ? "enabled" : "disabled");
-    Serial.printf("-->[INFO] WiFi current config\t: %s\r\n", cfg.isWifiEnable() ? "enabled" : "disabled");
-    gui.welcomeAddMessage("WiFi: "+String(cfg.isIfxEnable() ? "On" : "Off"));
-    gui.welcomeAddMessage("Influx: "+String(cfg.isIfxEnable() ? "On" : "Off"));
- 
+    Serial.printf("-->[INFO] InfluxDb cloud \t: %s\r\n", isIfxEnable()  ? "enabled" : "disabled");
+    Serial.printf("-->[INFO] WiFi current config\t: %s\r\n", isWifiEnable() ? "enabled" : "disabled");
+
+    String sname = !(cfg.getString("geo", "")).isEmpty() ? getStationName() : "not configured yet\t:(";
+    Serial.printf("-->[INFO] CanAirIO station name\t: %s\r\n", sname.c_str());
+    gui.welcomeAddMessage("WiFi: "+String(isWifiEnable() ? "On" : "Off"));
+    gui.welcomeAddMessage("Influx: "+String(isIfxEnable() ? "On" : "Off"));
+
+#ifndef DISABLE_BLE
     // Bluetooth low energy init (GATT server for device config)
     bleServerInit();
     logMemory("BLE ");
     gui.welcomeAddMessage("Bluetooth ready.");
+#endif
 
     // wifi status 
-    if (WiFi.isConnected())
-        gui.welcomeAddMessage("WiFi:" + cfg.ssid);
-    else
+    if (isWifiEnable() && WiFi.isConnected()) {
+        Serial.printf("-->[INFO] Wifi connected to\t: %s\r\n", WiFi.SSID().c_str());
+        gui.welcomeAddMessage("WiFi:" + cfg.getString(CONFKEYS::KSSID, ""));
+    }
+    else {
+        Serial.printf("-->[INFO] Wifi connected to\t: disabled\r\n");
         gui.welcomeAddMessage("WiFi: disabled.");
+    }
 
     // sensor sample time and publish time (2x)
-    gui.welcomeAddMessage("stime: "+String(cfg.stime)+ " sec.");
-    gui.welcomeAddMessage(cfg.getDeviceId());   // mac address
+    gui.welcomeAddMessage("stime: "+String(stime)+ " sec.");
+    gui.welcomeAddMessage(getDeviceId());   // mac address
     gui.welcomeAddMessage("Watchdog:"+String(WATCHDOG_TIME)); 
     gui.welcomeAddMessage("==SETUP READY==");
     delay(600);
@@ -346,7 +398,7 @@ void setup() {
     Serial.printf("-->[INFO] sensors units count\t: %d\r\n", sensors.getUnitsRegisteredCount());
     Serial.printf("-->[INFO] show unit selected \t: %s\r\n",sensors.getUnitName(selectUnit).c_str()); 
     // testing workaround on init config.
-    cfg.saveString("kdevid",cfg.getDeviceId());
+    cfg.saveString("kdevid",getDeviceId());
     // enabling CLI interface
     logMemoryObjects();
 
@@ -354,32 +406,26 @@ void setup() {
     LoRaWANSetup();
     logMemory("LORAWAN");    
     #endif
-
-    #ifndef DISABLE_CLI
-    cliTaskInit();
-    logMemory("CLITASK");
-    Serial.println("\n==>[INFO] Setup End. CLI enable. Press ENTER  ===\r\n");
-    #else
-    Serial.println("\n==>[INFO] Setup End. ===\r\n");
-    #endif
+    initCLI();
 }
 
 void loop() {
-    sensors.loop();  // read sensor data and showed it
-    bleLoop();       // notify data to connected devices
-    otaLoop();       // check for firmware updates
-    snifferLoop();   // pax counter calc (only when WiFi is Off)
-    wifiLoop();      // check wifi and reconnect it
-    wd.loop();       // watchdog for check loop blockers
-                     // update GUI flags:
-    gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
-    gui.loop();      // Only for OLED
-
-    battery.loop();  // refresh battery level and voltage
-
-    #ifdef LORADEVKIT
-    os_runloop_once();
-    #endif
-    
-    powerLoop();     // check power status and manage power saving
+  sensors.loop(); // read sensor data and showed it
+  otaLoop();      // check for firmware updates
+  snifferLoop();  // pax counter calc (only when WiFi is Off)
+  wifiLoop();     // check wifi and reconnect it
+  wd.loop();      // watchdog for check loop blockers
+#ifndef DISABLE_BLE
+  bleLoop();      // notify data to connected devices
+  gui.setGUIStatusFlags(WiFi.isConnected(), true, bleIsConnected());
+#endif
+  gui.setGUIStatusFlags(WiFi.isConnected(), true, false);
+  gui.loop();     // Only for OLED
+#ifndef DISABLE_BATT
+  battery.loop();  // refresh battery level and voltage
+#endif
+#ifdef LORADEVKIT
+  os_runloop_once();
+#endif
+  powerLoop();    // check power status and manage power saving
 }

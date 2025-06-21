@@ -1,6 +1,4 @@
 #include <cloud_hass.hpp>
-#include <wifi.hpp>
-#include <Batterylib.hpp>
 
 /******************************************************************************
 *  H A S S   M Q T T   M E T H O D S
@@ -36,7 +34,7 @@ void hassPubSensorPayload() {
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();
     
-    StaticJsonDocument<MQTT_BUFFER_SIZE> doc;
+    JsonDocument doc;
     char buffer[MQTT_BUFFER_SIZE];
 
     doc["carbon_dioxide"] = String(sensors.getCO2());
@@ -50,8 +48,10 @@ void hassPubSensorPayload() {
     doc["pm4"]  = String(sensors.getPM4());
     doc["pm10"] = String(sensors.getPM10());
     doc["signal_strength"] = String(getWifiRSSI());
+    #ifndef DISABLE_BATT
     doc["battery"] = String(battery.getCharge());
     doc["voltage"] = String(battery.getVoltage());
+    #endif
     doc["cpm"] = String(sensors.getGeigerCPM());
     doc["usvh"] = String(sensors.getGeigerMicroSievertHour());
     doc["co"] = String(sensors.getCO());
@@ -61,21 +61,21 @@ void hassPubSensorPayload() {
     size_t n = serializeJson(doc, buffer);
  
     if (clientHass.publish(getStateTopic().c_str(), buffer, n)) {
-        if(cfg.devmode) Serial.printf ("-->[MQTT] HA local published\t: payload size: %d\r\n", n);
+        if(devmode) Serial.printf ("-->[MQTT] HA local published\t: payload size: %d\t:)\r\n", n);
     } else {
         Serial.printf("[E][MQTT] HA publish state error\t: %d\r\n",clientHass.lastError());
     }
 }
 
 bool publishDiscoveryPayload(String name, String dclass, String unit) {
-    StaticJsonDocument<MQTT_BUFFER_SIZE> doc;
+    JsonDocument doc;
     doc["name"] = getHostId()+name; // name of the entity
-    JsonObject device = doc.createNestedObject("device");
+    JsonObject device = doc["device"].to<JsonObject>();
     device["manufacturer"] = "CanAirIO";
     device["model"] = ""+String(FLAVOR);
     device["name"] = getHostId();  // name of the device
     device["sw_version"] = "v"+String(VERSION)+" rev"+String(REVISION);
-    JsonArray identifiers = device.createNestedArray("identifiers");
+    JsonArray identifiers = device["identifiers"].to<JsonArray>();
     identifiers.add(getHostId()); // name of the device
     doc["state_topic"] = getStateTopic();
     doc["state_class"] = "measurement",
@@ -124,9 +124,9 @@ bool hassStatusSubscription() {
 void hassPublish() {
     if (!clientHass.connected()) return;
     static uint_fast64_t mqttTimeStamp = 0;
-    uint32_t ptime = cfg.stime;
+    uint32_t ptime = stime;
     if (ptime<MIN_PUBLISH_INTERVAL) ptime = MIN_PUBLISH_INTERVAL-1; // publish before to the last cloud
-    if(!cfg.solarmode && cfg.deepSleep > 0) ptime = cfg.deepSleep;
+    if(!solarmode && deepSleep > 0) ptime = deepSleep;
     if (millis() - mqttTimeStamp > ptime * 1000) {
         mqttTimeStamp = millis(); 
         if (!hassConfigured) hassRegisterSensors();
@@ -136,15 +136,18 @@ void hassPublish() {
 }
 
 bool hassAuth() {
-    return clientHass.connect(cfg.getStationName().c_str(), cfg.hassusr.c_str(), cfg.hasspsw.c_str());
+    String hassusr = cfg.getString(CONFKEYS::KHASSUSR, "");
+    String hasspsw = cfg.getString(CONFKEYS::KHASSPW, "");
+    return clientHass.connect(getStationName().c_str(), hassusr.c_str(), hasspsw.c_str());
 }
 
 static uint_fast64_t mqttHassDelayedStamp = 0;
 
 void hassConnect() {
-    if (!(cfg.isWifiEnable() && WiFi.isConnected())) return;
+    if (!(isWifiEnable() && WiFi.isConnected())) return;
     if (millis() - mqttHassDelayedStamp > MQTT_DELAYED_TIME * 1000) {
-        Serial.printf("-->[MQTT] %s\t: ", cfg.hassip.c_str());
+        String hassip = cfg.getString(CONFKEYS::KHASSIP, "");
+        if(devmode) Serial.printf("-->[MQTT] %s\t: ", hassip.c_str());
         int mqtt_try = 0;
         while (mqtt_try++ < MQTT_RETRY_CONNECTION && !hassAuth()) {
             delay(100);
@@ -153,17 +156,17 @@ void hassConnect() {
             mqttHassDelayedStamp = millis();
             hassSubscribed = false;
             hassConfigured = false;
-            Serial.println("connection failed!");
-            if (cfg.devmode) Serial.printf("-->[MQTT] %s\r\n",cfg.hassusr.c_str());
+            if(devmode) Serial.println("connection failed!");
             return;
         }
-        Serial.println("connected!");
+        if(devmode) Serial.println("connected!");
         mqttHassDelayedStamp = millis();
     }
 }
 
 bool isHassEnable() {
-    if (cfg.hassip.isEmpty()) {
+    String hassip = cfg.getString(CONFKEYS::KHASSIP, "");
+    if (hassip.isEmpty()) {
         hassInited = false;
         hassConfigured = false;
         hassSubscribed = false;
@@ -179,7 +182,9 @@ bool hassIsConnected() {
 
 void hassInit() { 
     if (!isHassEnable()) return;
-    clientHass.begin(cfg.hassip.c_str(), cfg.hasspt, netHass);
+    int hasspt = cfg.getInt(CONFKEYS::KHASSPT, 1883);
+    String hassip = cfg.getString(CONFKEYS::KHASSIP, "");
+    clientHass.begin(hassip.c_str(), hasspt, netHass);
     clientHass.onMessage(messageReceived);
     mqttHassDelayedStamp = millis() - MQTT_DELAYED_TIME * 1000;
     hassInited = true;
@@ -190,7 +195,7 @@ void hassLoop () {
     if(!WiFi.isConnected()) return;
     if (!isHassEnable()) return;
     if (!clientHass.connected()) {
-      anaireInit();
+      hassInit();
       delay(10);
     }
     clientHass.loop();

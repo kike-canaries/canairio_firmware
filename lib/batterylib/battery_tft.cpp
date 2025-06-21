@@ -1,4 +1,5 @@
 #include <battery_tft.hpp>
+#ifndef DISABLE_BATT
 
 void Battery_TFT::setupBattADC() {
     // TODO: all here is deprecated we need review the documentation
@@ -6,7 +7,7 @@ void Battery_TFT::setupBattADC() {
     #ifdef ADC1_CHANNEL_6
     channel_atten = ADC1_CHANNEL_6;
     #endif
-    if (FAMILY == "ESP32-C3") return;
+    if (strcmp(FAMILY, "ESP32-C3") == 0) return;
     esp_adc_cal_characteristics_t adc_chars;
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize((adc_unit_t)ADC_UNIT_1, (adc_atten_t)channel_atten, (adc_bits_width_t)ADC_WIDTH_BIT_12, 1100, &adc_chars);
     //Check type of calibration value used to characterize ADC
@@ -32,7 +33,7 @@ void Battery_TFT::init(bool debug) {
     delay(10);                         // suggested by @ygator user in issue #2
     setupBattADC();
     delay(10);                         // suggested by @ygator user in issue #2
-    setLimits(BATTERY_MIN_V, BATTERY_MAX_V, BATTCHARG_MIN_V, BATTCHARG_MAX_V);
+    // setLimits(BATTERY_MIN_V, BATTERY_MAX_V, BATTCHARG_MIN_V, BATTCHARG_MAX_V);
 }
 
 float Battery_TFT::getVoltage () {
@@ -67,8 +68,18 @@ int Battery_TFT::getCharge() {
 
 void Battery_TFT::printValues() {
     if (!debug) return;
-    Serial.printf("-->[BATT] Battery voltage  \t: %.3fv vref: %i Charge:%i\r\n", curv, vref, getCharge());  //Output voltage and current of Bat
+    Serial.printf("-->[BATT] Battery voltage  \t: %.3fv vref: %i Charge: %i\r\n", curv, vref, getCharge());  //Output voltage and current of Bat
 }
+#endif
+
+#ifdef DISABLE_BATT
+void init(bool debug = false) {}
+float getVoltage() { return 0.0; }
+bool isCharging() { return false; }
+int getCharge()   { return 0; }
+void printValues() {}
+void update() {}
+#endif
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTBATTERY)
 Battery_TFT battery;

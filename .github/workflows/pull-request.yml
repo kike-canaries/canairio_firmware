@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     env:
-      PIO_HOME: ~/.platformio
+      PIO_HOME: /home/runner/.platformio
     strategy:
       max-parallel: 1
       matrix:

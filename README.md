@@ -57,20 +57,21 @@ The [last release](https://github.com/kike-canaries/canairio_firmware/releases) 
 | Firmware Name | Boards supported |   Display  | Config supported | Guide and schematics  |
 | ------------- |:-------------:| :-------------:| :-------------: |:----------------------:|
 | **TTGO_TDISPLAY**     | TTGO T-Display | eTFT | BLE, WiFi, USB | [CanAirIO Bike](https://canair.io/docs/canairio_bike.html),  [CanAirIO Plantower](https://canair.io/docs/canairio_plantower.html) |
-| **TTGO_T7**     | TTGO T7, D1Mini, ** | OLED 64x48 | BLE, WiFi, USB | [CanAirIO v2.1](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647), [CanAirIO IKEA](https://canair.io/docs/canairio_ikea.html) |
+| **TTGO_T7**     | TTGO T7, D1Mini, ** | OLED 64x48/128x64 | BLE, WiFi, USB | [CanAirIO v2.1](https://www.hackster.io/canairio/build-a-low-cost-air-quality-sensor-with-canairio-bbf647), [CanAirIO IKEA](https://canair.io/docs/canairio_ikea.html) |
 | **M5STICKCPLUS** | M5StickC Plus | eTFT | BLE, WiFi, USB |[CanAirIO M5StickC Plus](https://www.youtube.com/watch?v=TdX1AZ4PzBA) |
-| **M5ATOM** | M5Atom Lite | OLED I2C | BLE, WiFi, USB |[M5Atom Lite sample](https://canair.io/docs/canairio_m5stack.html#m5atom-lite)|
+| **M5ATOM** | M5Atom Lite | OLED 64x48/128x64 | BLE, WiFi, USB |[M5Atom Lite sample](https://canair.io/docs/canairio_m5stack.html#m5atom-lite)|
 | **ESP32DevKit** | ESP32DevKit, NodeMCU V3, ** | OLED 128x64 | BLE, WiFi, USB |[HacksterIO](https://www.hackster.io/canairio/build-low-cost-air-quality-sensor-canairio-without-soldering-d87494) |
 | **TTGO_TQ** | TTGO TQ | Builtin OLED  | BLE, WiFi, USB | [TTGO_TQ board](https://de.aliexpress.com/item/10000291636371.html) |
 | **WEMOSOLED** | WemosOLED and similar boards | OLED 128x64 | BLE, WiFi, USB |[ESP32 OLED board](https://de.aliexpress.com/item/33047481007.html) |
 | **HELTEC** |  ESP32 Heltec board |  OLED 128x64 | BLE, WiFi, USB | |
-| **ESP32C3** | M5STAMPC3** | OLED | BLE, WiFi, USB | |
-| **ESP32C3OIPLUS** | TTGO-T-OI-Plus | OLED | BLE, WiFi, USB | |
-| **ESP32C3LOLIN** | LOLIN Mini C3 | OLED | BLE, WiFi, USB | |
-| **ESP32C3SEEDX** | Seeed_xiao_esp32c3 | OLED | BLE, WiFi, USB | |
-| **TTGO T7S3** | LilyGO ESP32S3 T7S3 | OLED | BLE, WiFi, USB | |
-| **ESP32S3** | ESP32S3 CAM Freenove | OLED | BLE, WiFi, USB | |
-| **ESP32S2** | ESP32S2 Lolin Mini | OLED | WiFi, USB | |
+| **ESP32C3** | M5STAMPC3** | OLED 64x48/128x64 | BLE, WiFi, USB | |
+| **AG_OPENAIR** | ESP32C3 AirGradient | OLED 64x48/128x64 | BLE, WiFi, USB | [AirGradient Outdoor](https://www.airgradient.com/outdoor/) |
+| **ESP32C3OIPLUS** | TTGO-T-OI-Plus | OLED 64x48/128x64 | BLE, WiFi, USB | |
+| **ESP32C3LOLIN** | LOLIN Mini C3 | OLED 64x48/128x64 | BLE, WiFi, USB | |
+| **ESP32C3SEEDX** | Seeed_xiao_esp32c3 | OLED 64x48/128x64 | BLE, WiFi, USB | |
+| **TTGO T7S3** | LilyGO ESP32S3 T7S3 | OLED 64x48/128x64 | BLE, WiFi, USB | |
+| **ESP32S3** | ESP32S3 CAM Freenove | OLED 64x48/128x64 | BLE, WiFi, USB | |
+| **ESP32S2** | ESP32S2 Lolin Mini | OLED 64x48/128x64 | WiFi, USB | |
 
 ** is possible that the **current firmware supports more boards** and sensors. Also you can choose the sensor brand or type on the CanAirIO Android app or on the firmware CLI.
 

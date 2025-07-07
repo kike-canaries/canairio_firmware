@@ -8,7 +8,7 @@
     <a href="https://canair.io/docs"><img src="https://img.shields.io/badge/user-docs-white.svg" alt="CanAirIO Documentation"/></a>
     <a href="LICENSE"><img src="https://img.shields.io/static/v1?label=license&message=GPLv3&color=white&style=flat" alt="License"/></a>
     <br>
-    <br><a href="https://canair.io">CanAirIO</a>‎ ‎ |‎ ‎ <a href="https://canair.io/docs/">Documentation</a><br>
+    <br><a href="https://canair.io">CanAirIO</a>‎ ‎ |‎ ‎ <a href="https://canair.io/docs/">Documentation</a> ‎ ‎ |‎ ‎ <a href="https://canair.io/installer">Web Installer</a><br>
 </p>
 
 > [!NOTE]
@@ -149,33 +149,6 @@ CanAirIO offers two channels for remote OTA (Over-The-Air) updates for your devi
 
 If you're interested in the latest testing updates, please go to the releases section and choose and download the development firmware (a zip file with `dev` in its name), then upload it to your board to receive these kind of updates.
 
-# Supporting the project
-
-If you want to contribute to the code or documentation, consider posting a bug report, feature request or a pull request.
-
-When creating a pull request, we recommend that you do the following:
-
-- Clone the repository
-- Create a new branch for your fix or feature. For example, git checkout -b fix/my-fix or git checkout -b feat/my-feature.
-- Run to any clang formatter if it is a code, for example using the `vscode` formatter. We are using Google style. More info [here](https://clang.llvm.org/docs/ClangFormatStyleOptions.html)
-- Document the PR description or code will be great
-- Target your pull request to be merged with `devel` branch
-
-Also you can consider make a donation, be a patron or buy a device:  
-
-
-- Via **Ethereum**:
-- 0x1779cD3b85b6D8Cf1A5886B2CF5C53a0E072C108
-- Be a patron: [Github Sponsors](https://github.com/sponsors/hpsaturn), [LiberaPay](https://liberapay.com/CanAirIO)
-- **Buy a device**: [CanAirIO Bike in Tindie](https://www.tindie.com/products/hpsaturn/canairio-bike/)
-- Inviting us **a coffee**: [buymeacoffee](https://www.buymeacoffee.com/hpsaturn), [Sponsors](https://github.com/sponsors/hpsaturn?frequency=one-time)  
-
-<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" align="left" style="margin: 10px" width="140" ></a>  
-
-**NOTE:**  
-Supporting our Citizen Science Initiative many people be able to fight for air quality rights in many countries with this kind of problems. More info in [CanAir.IO](https://canair.io)  
-
-
 # CanAirIO device HOWTO guide
 
 We have some build guides with different alternatives, please visit our [CanAirIO documentation](https://canair.io/docs).
@@ -198,23 +171,50 @@ We have some build guides with different alternatives, please visit our [CanAirI
 
 The last versions for all box versions, are in the [official repository](https://github.com/kike-canaries/canairio_firmware/tree/master/box) because it is more easy for handling the versions than Thingiverse.
 
-# TODO
+## Contributions
 
-- [X] Enable/Disable APIs from App
-- [X] Locatitation settings via Bluetooth
-- [X] Sensors manager is now a library ([CanAirIO Sensorlib](https://github.com/kike-canaries/canairio_sensorlib#canairio-air-quality-sensors-library))
-- [X] Auto detection of PM sensors (see sensorlib doc)
-- [x] CO2 sensors in chart
-- [X] OTA updates (LAN and WAN) (dev/prod, see releases for details) 
-- [x] Multiple variables in chart (C02,PM2.5,Hum,Temp,etc)
-- [x] Map of each recorded track in details
-- [x] InfluxDB schema (by geohashes)
-- [x] New pax counter variable (People around the device)
-- [x] WiFi SSIDs scanner for have a choose list of it in the app
-- [x] Pax counter disable/enable
-- [x] Home Assistant integration (with zero-config)
-- [x] Anaire cloud integration (Automatic time series of your station)
-- [x] Fahrenheit and Kelvin units supported
-- [x] Geiger sensor supported
-- [ ] Sensor community alternativa for fixed stations
-- [ ] Anonymous authentication
+If you want to contribute to the code or documentation, consider posting a bug report, feature request or a pull request.
+
+When creating a pull request, we recommend that you do the following:
+
+- Clone the repository
+- Create a new branch for your fix or feature. For example, git checkout -b fix/my-fix or git checkout -b feat/my-feature.
+- Run to any clang formatter if it is a code, for example using the `vscode` formatter. We are using Google style. More info [here](https://clang.llvm.org/docs/ClangFormatStyleOptions.html)
+- Document the PR description or code will be great
+- Target your pull request to be merged with `devel` branch
+
+### Donations
+
+Also you can consider make a donation, be a patron or buy a device:  
+
+- Via **Ethereum**:
+- 0x1779cD3b85b6D8Cf1A5886B2CF5C53a0E072C108
+- Be a patron: [Github Sponsors](https://github.com/sponsors/hpsaturn), [LiberaPay](https://liberapay.com/CanAirIO)
+- **Buy a device**: [CanAirIO Bike in Tindie](https://www.tindie.com/products/hpsaturn/canairio-bike/)
+- Inviting us **a coffee**: [buymeacoffee](https://www.buymeacoffee.com/hpsaturn), [Sponsors](https://github.com/sponsors/hpsaturn?frequency=one-time)  
+
+<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" align="left" style="margin: 10px" width="140" ></a>  
+
+**NOTE:**  
+Supporting our Citizen Science Initiative many people be able to fight for air quality rights in many countries with this kind of problems. More info in [CanAir.IO](https://canair.io)  
+
+<br>
+
+
+# Credits
+
+We want to thank the CanAirIO community on [Telegram](https://t.me/canairio) and our social networks for performing tests with our firmware and for contributing new features and guides.
+
+Special thanks also to:
+
+| GitHub Username       |  Key Contributions                                                                 |
+|-----------------------|----------------------------------------------------------------------------------|
+| `@roberbike`          | NH₃/CO/NO₂ sensors, Geiger counter integration, LoRaWAN and Solar station development and testing             |
+| `@jcomas`             | Windows support, Spanish translations, documentation and thrid party libraries development                            |
+| `@iw2lsi`             | Geiger sensor integration and field testing                          |
+| `@markusvankempen`    | IKEA Vindriktning hardware integration, field testing                           |
+| `@melkati`            | CanAirIO Sensors Library contributions |
+| `@lemeit`             | CanAirIO Sensors Library contributions |
+| `@Mac-Tinoco`         | 3D-printed enclosure designs alternative (Bike version) |
+
+

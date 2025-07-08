@@ -132,17 +132,27 @@ pio run -e TTGO_T7 --target upload
 
 ## Via Docker
 
-First build the Docker image using the following command line:
+First, build the Docker image for your system, using the following command line:
 
 ```bash
-docker build -t canairio_pio:master .
+docker build --build-arg DOCKER_USER=$USER --build-arg DOCKER_USERID=$UID -t canairio_pio:master .
 ```
 
-This build a basic compiler image with all PlatformIO stuff. For build the project you only needs now run:
+This will build a basic compiler image with all PlatformIO stuff. You could need perform this, just only one time.
+
+Then, for build the project or default firmware, you only needs run the next command, each time that you need:
 
 ```bash
 ./docker_build run
 ```
+
+Similar, for build and upload to your device, for instance here, we are choosing a specific firmware flavor:
+
+```bash
+./docker_build run -e TTGO_T7 --target upload
+```
+
+if you have issues with the upload port, please edit `docker_build` and change the PORT variable.
 
 ## OTA WAN updates
 

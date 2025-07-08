@@ -1,3 +1,4 @@
 #!/bin/sh
 IMAGE=canairio_pio:master
-exec docker run --rm -i --user="$(id -u):$(id -g)" -v "$PWD":/workspace "$IMAGE" "$@"
+PORT=/dev/ttyUSB0
+exec docker run --rm -i --user="$(id -u):$(id -g)" -v "$PWD":/workspace --device="$PORT" "$IMAGE" "$@"

@@ -13,6 +13,35 @@
 #elif ESP32C3_AIRGRADIENT
     #define ADC_PIN 4
     int channel_atten = ADC1_CHANNEL_1;
+#elif ESP32C3LOLIN
+    #define ADC_PIN 4
+    //int channel_atten = ADC1_CHANNEL_4;
+    #define ADC1_EXAMPLE_CHAN4          ADC1_CHANNEL_4 //ADC Channels
+    static const char *TAG_CH[6][10] = {"ADC1_CH4"};
+    #define ADC_EXAMPLE_ATTEN           ADC_ATTEN_DB_6 //ADC Attenuation
+    #define ADC_EXAMPLE_CALI_SCHEME     ESP_ADC_CAL_VAL_EFUSE_TP //ADC Calibration
+    static int adc_raw[2][10];
+    static const char *TAG = "ADC SINGLE";
+    static esp_adc_cal_characteristics_t adc1_chars;
+  static bool adc_calibration_init(void)
+    {
+        esp_err_t ret;
+        bool cali_enable = false;
+        ret = esp_adc_cal_check_efuse(ADC_EXAMPLE_CALI_SCHEME);
+        if (ret == ESP_ERR_NOT_SUPPORTED) {
+           Serial.println( "Calibration scheme not supported, skip software calibration");
+        } else if (ret == ESP_ERR_INVALID_VERSION) {
+            Serial.println("eFuse not burnt, skip software calibration");
+        } else if (ret == ESP_OK) {
+            cali_enable = true;
+            esp_adc_cal_characterize(ADC_UNIT_1, ADC_EXAMPLE_ATTEN, ADC_WIDTH_BIT_12, 0, &adc1_chars);
+        } else {
+            Serial.println("Invalid arg");
+        }
+
+    return cali_enable;
+  }
+
 #else
     #define ADC_PIN 34
     int channel_atten = 0;
@@ -21,19 +50,38 @@
 float pavg = 0.0;
 
 void Battery_OLED::setupBattADC() {
-  // TODO: all here is deprecated we need review the documentation
-  esp_adc_cal_characteristics_t adc_chars;
-  esp_adc_cal_value_t val_type = esp_adc_cal_characterize((adc_unit_t)ADC_UNIT_1, (adc_atten_t)channel_atten, (adc_bits_width_t)ADC_WIDTH_BIT_12, 1100, &adc_chars);
-  analogReadResolution(12);
-  // Check type of calibration value used to characterize ADC
-  if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
-    log_i("[BATT] ADC eFuse Vref  \t: %u mV\r\n", adc_chars.vref);
-    vref = adc_chars.vref;
-  } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
-    log_i("[BATT] ADC Two Point coeff_a\t: %umV coeff_b:%umV\r\n", adc_chars.coeff_a, adc_chars.coeff_b);
-  } else {
-    log_i("[BATT] ADC Default Vref  \t: %u mV\r\n", vref);
-  }
+#ifdef ESP32C3LOLIN
+    esp_err_t ret = ESP_OK;
+    uint32_t voltage = 0;
+    bool cali_enable = adc_calibration_init();
+    ESP_ERROR_CHECK(adc1_config_width(ADC_WIDTH_BIT_12))
+    ESP_ERROR_CHECK(adc1_config_channel_atten(ADC1_EXAMPLE_CHAN4, ADC_EXAMPLE_ATTEN));
+    while (1) {
+        adc_raw[0][4] = adc1_get_raw(ADC1_EXAMPLE_CHAN4);
+         
+        if (cali_enable) {
+            voltage = esp_adc_cal_raw_to_voltage(adc_raw[0][4], &adc1_chars);
+            Serial.print("channel 4=  ");
+            Serial.println(voltage);   
+        }
+        delay(1000);
+        }
+      
+  #else
+    // TODO: all here is deprecated we need review the documentation
+    esp_adc_cal_characteristics_t adc_chars;
+   esp_adc_cal_value_t val_type = esp_adc_cal_characterize((adc_unit_t)ADC_UNIT_1, (adc_atten_t)channel_atten, (adc_bits_width_t)ADC_WIDTH_BIT_12, 1100, &adc_chars);
+   analogReadResolution(12);
+   // Check type of calibration value used to characterize ADC
+   if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
+      log_i("[BATT] ADC eFuse Vref  \t: %u mV\r\n", adc_chars.vref);
+      vref = adc_chars.vref;
+      }  else if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
+      log_i("[BATT] ADC Two Point coeff_a\t: %umV coeff_b:%umV\r\n", adc_chars.coeff_a, adc_chars.coeff_b);
+      } else {
+          log_i("[BATT] ADC Default Vref  \t: %u mV\r\n", vref);
+    }
+  #endif
 }
 
 void Battery_OLED::init(bool debug) {

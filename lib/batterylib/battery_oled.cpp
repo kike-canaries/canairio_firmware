@@ -54,7 +54,7 @@ void Battery_OLED::setupBattADC() {
     esp_err_t ret = ESP_OK;
     uint32_t voltage = 0;
     bool cali_enable = adc_calibration_init();
-    ESP_ERROR_CHECK(adc1_config_width(ADC_WIDTH_BIT_12))
+    ESP_ERROR_CHECK(adc1_config_width(ADC_WIDTH_BIT_12));
     ESP_ERROR_CHECK(adc1_config_channel_atten(ADC1_EXAMPLE_CHAN4, ADC_EXAMPLE_ATTEN));
     while (1) {
         adc_raw[0][4] = adc1_get_raw(ADC1_EXAMPLE_CHAN4);

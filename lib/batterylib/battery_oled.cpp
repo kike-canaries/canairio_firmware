@@ -56,17 +56,7 @@ void Battery_OLED::setupBattADC() {
     bool cali_enable = adc_calibration_init();
     ESP_ERROR_CHECK(adc1_config_width(ADC_WIDTH_BIT_12));
     ESP_ERROR_CHECK(adc1_config_channel_atten(ADC1_EXAMPLE_CHAN4, ADC_EXAMPLE_ATTEN));
-    while (1) {
-        adc_raw[0][4] = adc1_get_raw(ADC1_EXAMPLE_CHAN4);
-         
-        if (cali_enable) {
-            voltage = esp_adc_cal_raw_to_voltage(adc_raw[0][4], &adc1_chars);
-            Serial.print("channel 4=  ");
-            Serial.println(voltage);   
-        }
-        delay(1000);
-        }
-      
+          
   #else
     // TODO: all here is deprecated we need review the documentation
     esp_adc_cal_characteristics_t adc_chars;
@@ -123,6 +113,19 @@ void Battery_OLED::printValues() {
 void Battery_OLED::update() {
   digitalWrite(ADC_EN, HIGH);
   delay(10);  // suggested by @ygator user in issue #2
+  #ifdef ESP32C3LOLIN
+while (1) {
+        adc_raw[0][4] = adc1_get_raw(ADC1_EXAMPLE_CHAN4);
+         
+      //  if (cali_enable) {
+            uint16_t v = esp_adc_cal_raw_to_voltage(adc_raw[0][4], &adc1_chars);
+            Serial.print("channel 4=  ");
+            Serial.println(v);   
+       // }
+        // delay(1000);
+        }
+       // curv = (v / 4095.0) * 15.83;
+  #endif
   uint16_t v = analogRead(ADC_PIN);
 #if defined(TTGO_T7) || defined(TTGO_T7S3)
   curv = ((float)v / 4095.0) * 7.58;

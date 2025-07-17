@@ -223,6 +223,7 @@ Special thanks also to:
 | `@roberbike`          | NH₃/CO/NO₂/Geiger sensors, LoRaWAN and Solar Station and Community Engagement |
 | `@cedancp`            | [Web Mobile Map](https://github.com/cedancp/mobile_map) for CanAirIO mobile tracks development  |
 | `@sebaxtian`          | Documentation, testing, initiative replication and Community engagement       |
+| `@wes-la`             | Documentation, management and support                                         |
 | `@jcomas`             | Windows support, Spanish translations and thrid party libraries development   |
 | `@ikks`               | Community support and Engagement. Landing page development.                   |
 | `@iw2lsi`             | Geiger sensor integration and field testing                                   |

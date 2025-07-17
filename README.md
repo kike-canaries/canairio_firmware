@@ -218,14 +218,17 @@ We want to thank the CanAirIO community on [Telegram](https://t.me/canairio) and
 
 Special thanks also to:
 
-| GitHub Username       |  Key Contributions                                                                 |
-|-----------------------|----------------------------------------------------------------------------------|
-| `@roberbike`          | NH₃/CO/NO₂ sensors, Geiger counter integration, LoRaWAN and Solar station development and testing             |
-| `@jcomas`             | Windows support, Spanish translations, documentation and thrid party libraries development                            |
-| `@iw2lsi`             | Geiger sensor integration and field testing                          |
-| `@markusvankempen`    | IKEA Vindriktning hardware integration, field testing                           |
-| `@melkati`            | CanAirIO Sensors Library contributions |
-| `@lemeit`             | CanAirIO Sensors Library contributions |
-| `@Mac-Tinoco`         | 3D-printed enclosure designs alternative (Bike version) |
+| GitHub Username       |  Key Contributions                                                            |
+|-----------------------|-------------------------------------------------------------------------------|
+| `@roberbike`          | NH₃/CO/NO₂/Geiger sensors, LoRaWAN and Solar Station and Community Engagement |
+| `@cedancp`            | [Web Mobile Map](https://github.com/cedancp/mobile_map) for CanAirIO mobile tracks development  |
+| `@sebaxtian`          | Documentation, testing, initiative replication and Community engagement       |
+| `@jcomas`             | Windows support, Spanish translations and thrid party libraries development   |
+| `@ikks`               | Community support and Engagement. Landing page development.                   |
+| `@iw2lsi`             | Geiger sensor integration and field testing                                   |
+| `@markusvankempen`    | IKEA Vindriktning hardware integration, field testing                         |
+| `@melkati`            | CanAirIO Sensors Library contributions                                        |
+| `@lemeit`             | CanAirIO Sensors Library contributions                                        |
+| `@Mac-Tinoco`         | 3D-printed enclosure designs alternative (Bike version)                       |
 
 

@@ -4,6 +4,9 @@
 #include <battery.hpp>
 #include <esp_adc_cal.h>
 
+#include "driver/adc_common.h"
+#include "esp_adc_cal.h"
+
 #define ADC_EN 14
 
 class Battery_OLED : public Battery {

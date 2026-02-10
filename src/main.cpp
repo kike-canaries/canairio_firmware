@@ -351,6 +351,10 @@ void setup() {
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
     startingSensors();
     logMemory("SLIB");
+#ifdef CSL_NOISE_SENSOR_SUPPORTED
+    sensors.setNoiseSensorTimeSyncInterval(24UL * 60UL * 60UL * 1000UL);
+    sensors.syncNoiseSensorTime();
+#endif
     // Setting callback for remote commands via Bluetooth config
     setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());
     // init watchdog timer for reboot in any loop blocker
@@ -411,6 +415,9 @@ void setup() {
 
 void loop() {
   sensors.loop(); // read sensor data and showed it
+#ifdef CSL_NOISE_SENSOR_SUPPORTED
+  sensors.syncNoiseSensorTime();
+#endif
   otaLoop();      // check for firmware updates
   snifferLoop();  // pax counter calc (only when WiFi is Off)
   wifiLoop();     // check wifi and reconnect it

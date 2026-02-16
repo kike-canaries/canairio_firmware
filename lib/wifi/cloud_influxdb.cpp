@@ -64,6 +64,10 @@ void influxDbParseFields() {
     sensor.addField("dbMin",sensors.getNoiseMin());
     sensor.addField("dbAvgL",sensors.getNoiseLegalAverage());
     sensor.addField("dbAvgLMx",sensors.getNoiseLegalMaximum());
+    sensor.addField("Ld",sensors.getNoiseLd());
+    sensor.addField("Le",sensors.getNoiseLe());
+    sensor.addField("Ln",sensors.getNoiseLn());
+    sensor.addField("Lden",sensors.getNoiseLden());
     #endif
     sensor.addField("rssi",getWifiRSSI());
     sensor.addField("heap",ESP.getFreeHeap());

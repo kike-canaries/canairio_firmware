@@ -39,7 +39,7 @@ jobs:
       - name: Test CanAirIO execution with Wokwi
         uses: wokwi/wokwi-ci-action@v1
         with:
-          token: ${{ secrets.WOKWI_CLI_TOKEN }}
+          token: ${{ env.WOKWI_CLI_TOKEN }}
           path: tests/wokwi/test_boot
           timeout: 60000
           scenario: 'boot_check.yml'

@@ -44,4 +44,4 @@ jobs:
           timeout: 60000
           scenario: 'boot_check.yml'
           serial_log_file: 'log-boot-canairio.txt'
-    
+          

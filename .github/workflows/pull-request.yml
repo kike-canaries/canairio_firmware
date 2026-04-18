@@ -38,6 +38,8 @@ jobs:
           ./build wokwi
       - name: Test CanAirIO execution with Wokwi
         uses: wokwi/wokwi-ci-action@v1
+        env:
+            WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
         with:
           token: ${{ secrets.WOKWI_CLI_TOKEN }}
           path: tests/wokwi/test_boot

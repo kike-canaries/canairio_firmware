@@ -31,6 +31,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -U platformio
           pio pkg update
-      - name: PlatformIO Build Test
+      - name: Build ESP32WOKWI firmware
         run: |
-          pio run -e TTGO_T7 -e TTGO_TDISPLAY -e ESP32C3LOLIN
+          ./build wokwi
+      - name: CanAirIO execution with Wokwi
+        uses: wokwi/wokwi-ci-action@v1
+        with:
+          token: ${{ secrets.WOKWI_CLI_TOKEN }}
+          path: tests/wokwi/test_boot
+          timeout: 60000
+          scenario: 'boot_check.yml'
+          serial_log_file: 'log-boot-canairio.txt'
+      - name: Testing All Architectures
+        run: |
+          pio run -e TTGO_T7 -e TTGO_TDISPLAY -e ESP32C3LOLIN -e ESP32S2LOLIN -e ESP32S3

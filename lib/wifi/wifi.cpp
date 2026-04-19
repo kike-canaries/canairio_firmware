@@ -9,6 +9,8 @@
 #include "cloud_anaire.hpp"
 #include "Watchdog.hpp"
 #include "power.hpp"
+#include <math.h>
+#include <time.h>
 
 /******************************************************************************
 *   W I F I   M E T H O D S
@@ -39,6 +41,70 @@ class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
     gui.showMain();
   }
 };
+
+namespace {
+static bool isTimeValid(time_t t) {
+  return t > 1609459200;  // 2021-01-01T00:00:00Z
+}
+
+static bool getTimezoneOffsetFromGeo(int32_t &offsetSeconds) {
+  double lat = cfg.getDouble("lat", 0.0);
+  double lon = cfg.getDouble("lon", 0.0);
+  String geo = cfg.getString("geo", "");
+
+  if ((lat == 0.0 || lon == 0.0) && geo.length() > 5) {
+    Geohash gh;
+    float tlat = 0.0f;
+    float tlon = 0.0f;
+    gh.decode(geo.c_str(), geo.length(), &tlon, &tlat);
+    lat = tlat;
+    lon = tlon;
+  }
+
+  if (lat == 0.0 || lon == 0.0) return false;
+
+  int32_t offsetHours = (int32_t)lround(lon / 15.0);
+  if (offsetHours < -12) offsetHours = -12;
+  if (offsetHours > 14) offsetHours = 14;
+  offsetSeconds = offsetHours * 3600;
+  return true;
+}
+
+static void ensureNtpSync() {
+  if (!WiFi.isConnected()) return;
+
+  static bool ntpConfigured = false;
+  static bool ntpSynced = false;
+  static uint32_t lastAttemptMs = 0;
+  static int32_t lastOffsetSeconds = INT32_MIN;
+
+  if (ntpSynced && isTimeValid(time(nullptr))) return;
+
+  if (millis() - lastAttemptMs < 60000) return;  // retry at most every 60s
+  lastAttemptMs = millis();
+
+  int32_t offsetSeconds = 0;
+  if (!getTimezoneOffsetFromGeo(offsetSeconds)) {
+    offsetSeconds = 0;
+  }
+
+  if (!ntpConfigured || offsetSeconds != lastOffsetSeconds) {
+    configTime(offsetSeconds, 0, "pool.ntp.org", "time.nist.gov");
+    ntpConfigured = true;
+    ntpSynced = false;
+    lastOffsetSeconds = offsetSeconds;
+    Serial.printf("-->[WIFI] TZ offset set to\t: %ld sec\r\n", (long)offsetSeconds);
+  }
+
+  time_t now = time(nullptr);
+  if (isTimeValid(now)) {
+    ntpSynced = true;
+    Serial.println("-->[WIFI] NTP sync ok");
+  } else {
+    Serial.println("-->[WIFI] NTP sync pending...");
+  }
+}
+}  // namespace
 
 void otaLoop() {
   if (WiFi.isConnected()) {
@@ -118,6 +184,7 @@ void wifiInit() {
     Serial.print("-->[WIFI] device network IP\t: ");
     Serial.println(WiFi.localIP());
     Serial.println("-->[WIFI] publish interval \t: " + String(stime * 2) + " sec.");
+    ensureNtpSync();
     otaInit();
     wifiCloudsInit();
   }
@@ -153,6 +220,7 @@ void wifiLoop() {
       wifiStop();
     }
     if (!WiFi.isConnected()) return;
+    ensureNtpSync();
     influxDbInit();
     influxDbLoop();  // influxDB publication
     if (cfg.getBool(CONFKEYS::KANAIRE, false)) anaireLoop();

@@ -1,23 +1,23 @@
 {
   "version": 1,
-  "author": "Uri Shaked",
+  "author": "@hpsaturn",
   "editor": "wokwi",
   "parts": [
-    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": -187.16, "attrs": {} },
-    { "type": "board-ssd1306", "id": "oled1", "top": 99.14, "left": 57.83, "attrs": {} },
-    { "type": "board-bmp180", "id": "bmp1", "top": -80.96, "left": 0.26, "attrs": {} }
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 28.8, "left": -263.96, "attrs": {} },
+    { "type": "board-ssd1306", "id": "oled1", "top": -25.66, "left": 182.63, "attrs": {} },
+    { "type": "board-bmp180", "id": "bmp1", "top": -253.76, "left": -124.54, "attrs": {} }
   ],
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
     [ "esp:RX", "$serialMonitor:TX", "", [] ],
-    [ "oled1:SCL", "esp:22", "green", [ "v0" ] ],
-    [ "oled1:SDA", "esp:21", "blue", [ "v-19.2", "h-124.73" ] ],
-    [ "oled1:GND", "esp:GND.2", "black", [ "v-67.2", "h-96" ] ],
+    [ "oled1:SCL", "esp:22", "orange", [ "v-38.4", "h-220.5", "v134.4" ] ],
+    [ "oled1:SDA", "esp:21", "blue", [ "v-28.8", "h-239.93", "v153.6" ] ],
+    [ "oled1:GND", "esp:GND.2", "gray", [ "v-19.2", "h-144", "v96" ] ],
     [ "oled1:VCC", "esp:3V3", "red", [ "v-28.8", "h0.15", "v-76.8", "h-201.75" ] ],
-    [ "bmp1:3.3V", "esp:3V3", "green", [ "h0", "v38.59", "h-57.6" ] ],
-    [ "bmp1:SDA", "esp:21", "green", [ "h0" ] ],
-    [ "bmp1:SCL", "esp:22", "green", [ "h0" ] ],
-    [ "bmp1:GND", "esp:GND.2", "black", [ "h0" ] ]
+    [ "bmp1:SDA", "esp:21", "blue", [ "h19.2", "v326.59" ] ],
+    [ "bmp1:SCL", "esp:22", "orange", [ "h28.8", "v297.79" ] ],
+    [ "bmp1:GND", "esp:GND.2", "gray", [ "h57.6", "v297.79" ] ],
+    [ "bmp1:VCC", "esp:5V", "red", [ "h9.6", "v115.2", "h-220.8", "v364.8" ] ]
   ],
   "dependencies": {}
 }

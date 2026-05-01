@@ -3,9 +3,9 @@
 
 #include <battery.hpp>
 #include <esp_adc_cal.h>
-
+#if defined(TTGO_TDISPLAY)
 #define ADC_EN 14
-
+#endif
 class Battery_OLED : public Battery {
   public:
     void init(bool debug = false);

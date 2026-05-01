@@ -5,7 +5,9 @@
 void prepairShutdown() {
     #ifndef M5STICKCPLUS
     #ifndef DISABLE_BATT
+#ifdef ADC_EN
     digitalWrite(ADC_EN, LOW);
+#endif
     #endif
     delay(10);
     //rtc_gpio_init(GPIO_NUM_14);

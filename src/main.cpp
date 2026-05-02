@@ -351,7 +351,7 @@ void setup() {
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
     startingSensors();
     logMemory("SLIB");
-#ifdef CSL_NOISE_SENSOR_SUPPORTED
+#if (CSL_NOISE_SENSOR_SUPPORTED==1)
     sensors.setNoiseSensorTimeSyncInterval(24UL * 60UL * 60UL * 1000UL);
     sensors.syncNoiseSensorTime();
 #endif
@@ -415,7 +415,7 @@ void setup() {
 
 void loop() {
   sensors.loop(); // read sensor data and showed it
-#ifdef CSL_NOISE_SENSOR_SUPPORTED
+#if (CSL_NOISE_SENSOR_SUPPORTED==1)
   sensors.syncNoiseSensorTime();
 #endif
   otaLoop();      // check for firmware updates

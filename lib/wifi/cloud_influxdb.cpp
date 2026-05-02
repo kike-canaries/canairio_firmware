@@ -57,7 +57,7 @@ void influxDbParseFields() {
     sensor.addField("bat",battery.getCharge());
     sensor.addField("vbat",battery.getVoltage());
     #endif
-    #ifdef CSL_NOISE_SENSOR_SUPPORTED
+    #if (CSL_NOISE_SENSOR_SUPPORTED == 1)
     sensor.addField("db",sensors.getNoise());
     sensor.addField("dbAvg",sensors.getNoiseAverage());
     sensor.addField("dbPk",sensors.getNoisePeak());

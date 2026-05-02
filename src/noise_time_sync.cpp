@@ -1,7 +1,7 @@
 #include <Sensors.hpp>
 #include <time.h>
 
-#ifdef CSL_NOISE_SENSOR_SUPPORTED
+#if (CSL_NOISE_SENSOR_SUPPORTED == 1)
 
 namespace {
 static bool isTimeValid(time_t t) {

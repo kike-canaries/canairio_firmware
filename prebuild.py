@@ -52,21 +52,6 @@ env.Append(BUILD_FLAGS=[
     u'-I \"' + srcdir + '\"'
     ])
 
-# Conditionally enable noise sensor support based on flash size.
-board_cfg = env.BoardConfig()
-flash_size = board_cfg.get("upload.flash_size")
-flash_mb = None
-if isinstance(flash_size, str) and flash_size.lower().endswith("mb"):
-    try:
-        flash_mb = int(flash_size[:-2])
-    except ValueError:
-        flash_mb = None
-
-if flash_mb is not None and flash_mb > 4:
-    env.Append(BUILD_FLAGS=[u'-DCSL_NOISE_SENSOR_SUPPORTED=1'])
-else:
-    print("[WARN] Noise sensor I2C slave disabled: flash_size <= 4MB or unknown.")
-
 manifest_fota = {
     "type":flavor, 
     "version":revision, 

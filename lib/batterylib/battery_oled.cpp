@@ -9,7 +9,7 @@ int channel_atten = ADC1_CHANNEL_6;
 int channel_atten = ADC1_CHANNEL_7;
 #elif TTGO_T7S3
 #define ADC_PIN 2
-int channel_atten = ADC1_CHANNEL_1;
+int channel_atten = ADC_ATTEN_DB_11;  // ESP32-S3: 11dB → 0–3.1V range
 #elif ESP32C3_AIRGRADIENT
 #define ADC_PIN 4
 int channel_atten = ADC1_CHANNEL_1;
@@ -65,8 +65,10 @@ void Battery_OLED::printValues() {
 void Battery_OLED::update() {
   delay(10);
   uint16_t v = analogRead(ADC_PIN);
-#if defined(TTGO_T7) || defined(TTGO_T7S3)
-  curv = ((float)v / 4095.0) * 7.58;
+#if defined(TTGO_T7)
+  curv = ((float)v / 4095.0) * 7.58;   // ESP32: 11dB → ~3.9V, divider 1:2
+#elif defined(TTGO_T7S3)
+  curv = ((float)v / 4095.0) * 6.2;    // ESP32-S3: 11dB → 3.1V, divider 1:2
 #else
   curv = ((float)v / 4095.0) * 15.83;
 #endif

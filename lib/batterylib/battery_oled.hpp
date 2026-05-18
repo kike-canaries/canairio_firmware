@@ -11,7 +11,6 @@ public:
   int getCharge();
   void printValues();
   void update();
-
 private:
   int vref = 1086;
   void setupBattADC();
@@ -22,3 +21,4 @@ extern Battery_OLED battery;
 #endif
 
 #endif
+

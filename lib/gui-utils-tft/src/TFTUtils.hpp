@@ -9,9 +9,8 @@
 #endif
 #include "hal.hpp"
 #include <Orbitron_Medium_20.h>
-#ifndef M5STICKCPLUS
-#include <Orbitron_Light_32.h>  // M5GFX already provides Orbitron_Light_32 via lgfx_fonts.hpp
-#endif
+// Orbitron_Light_32 is provided by M5GFX (lgfx_fonts.hpp) on M5STICKCPLUS
+// and by TFT_eSPI (User_Custom_Fonts.h) on all other targets
 #include "icons.h"
 
 // Main windows

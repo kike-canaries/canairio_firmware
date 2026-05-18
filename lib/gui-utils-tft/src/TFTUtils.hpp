@@ -9,8 +9,8 @@
 #endif
 #include "hal.hpp"
 #include <Orbitron_Medium_20.h>
-#ifdef M5STICKCPLUS
-#include <Orbitron_Light_32.h>  // TFT_eSPI already includes this via User_Custom_Fonts.h
+#ifndef M5STICKCPLUS
+#include <Orbitron_Light_32.h>  // M5GFX already provides Orbitron_Light_32 via lgfx_fonts.hpp
 #endif
 #include "icons.h"
 

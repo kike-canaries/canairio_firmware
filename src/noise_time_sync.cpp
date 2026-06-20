@@ -13,10 +13,6 @@ static bool isTimeValid(time_t t) {
 bool Sensors::sendNoiseSensorTime(uint32_t unixTime) {
   if (!noiseTimeSyncEnabled) return false;
 
-  if (!noiseSensorEnabled) {
-    noiseSensorAutoDetect();
-  }
-
   if (!noiseSensorEnabled) return false;
 
   if (!noiseWireReady) {
@@ -45,11 +41,15 @@ bool Sensors::sendNoiseSensorTime(uint32_t unixTime) {
 }
 
 bool Sensors::syncNoiseSensorTime() {
-  if (!noiseTimeSyncEnabled) return false;
-  if (noiseLastTimeSyncMs != 0 &&
-      (millis() - noiseLastTimeSyncMs) < noiseTimeSyncIntervalMs) {
-    return false;
+  if (!noiseTimeSyncEnabled || !noiseSensorEnabled) return false;
+
+  uint32_t now_ms = millis();
+  if (noiseLastTimeSyncMs != 0) {
+    if ((now_ms - noiseLastTimeSyncMs) < noiseTimeSyncIntervalMs) return false;
+  } else {
+    if ((now_ms - noiseLastSyncAttemptMs) < NOISE_SYNC_RETRY_MS) return false;
   }
+  noiseLastSyncAttemptMs = now_ms;
 
   time_t now = time(nullptr);
   if (!isTimeValid(now)) return false;

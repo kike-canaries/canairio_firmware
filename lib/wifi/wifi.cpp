@@ -48,17 +48,29 @@ static bool isTimeValid(time_t t) {
 }
 
 static bool getTimezoneOffsetFromGeo(int32_t &offsetSeconds) {
+  static int32_t cachedOffset = INT32_MIN;
+  static String cachedGeo = "";
+
   double lat = cfg.getDouble("lat", 0.0);
   double lon = cfg.getDouble("lon", 0.0);
   String geo = cfg.getString("geo", "");
 
   if ((lat == 0.0 || lon == 0.0) && geo.length() > 5) {
-    Geohash gh;
-    float tlat = 0.0f;
-    float tlon = 0.0f;
-    gh.decode(geo.c_str(), geo.length(), &tlon, &tlat);
-    lat = tlat;
-    lon = tlon;
+    if (geo != cachedGeo || cachedOffset == INT32_MIN) {
+      Geohash gh;
+      float tlat = 0.0f;
+      float tlon = 0.0f;
+      gh.decode(geo.c_str(), geo.length(), &tlon, &tlat);
+      lat = tlat;
+      lon = tlon;
+      int32_t h = (int32_t)lround(lon / 15.0);
+      if (h < -12) h = -12;
+      if (h > 14) h = 14;
+      cachedOffset = h * 3600;
+      cachedGeo = geo;
+    }
+    offsetSeconds = cachedOffset;
+    return true;
   }
 
   if (lat == 0.0 || lon == 0.0) return false;

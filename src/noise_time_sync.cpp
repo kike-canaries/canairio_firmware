@@ -1,8 +1,6 @@
 #include <Sensors.hpp>
 #include <time.h>
 
-#if (CSL_NOISE_SENSOR_SUPPORTED == 1)
-
 namespace {
 static bool isTimeValid(time_t t) {
   // 2021-01-01T00:00:00Z to avoid sending the default epoch.
@@ -60,5 +58,3 @@ bool Sensors::syncNoiseSensorTime() {
 void Sensors::setNoiseSensorTimeSyncInterval(uint32_t intervalMs) {
   noiseTimeSyncIntervalMs = intervalMs;
 }
-
-#endif

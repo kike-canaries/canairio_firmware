@@ -10,8 +10,6 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    env:
-      WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
     strategy:
       max-parallel: 1
       matrix:

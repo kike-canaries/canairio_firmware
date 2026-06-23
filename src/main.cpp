@@ -29,7 +29,6 @@
 
 UNIT selectUnit = UNIT::NUNIT;
 UNIT nextUnit = UNIT::NUNIT;
-GUIData data;
 
 AQI_COLOR selectAQIColor() {
     if (selectUnit == UNIT::PM25 || selectUnit == UNIT::PM10 || selectUnit == UNIT::PM1)
@@ -40,16 +39,16 @@ AQI_COLOR selectAQIColor() {
         return AQI_COLOR::AQI_NONE;
 }
 
-void loadGUIData() {
+void loadGUIData(GUIData *data) {
     float humi = sensors.getHumidity();
     if (humi == 0.0) humi = sensors.getCO2humi();
 
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();  // TODO: temp could be 0.0
 
-    data.temp = temp;
-    data.humi = humi;
-    data.rssi = getWifiRSSI();
+    data->temp = temp;
+    data->humi = humi;
+    data->rssi = getWifiRSSI();
 
     UNIT user_unit = (UNIT) getUnitSelected();
     if (selectUnit != user_unit && sensors.isUnitRegistered(user_unit)) {
@@ -58,36 +57,37 @@ void loadGUIData() {
 
     // Main unit selection
     if (sensors.getUnitsRegisteredCount() == 0 && isPaxEnable()) {
-        data.mainValue = getPaxCount();
-        data.unitName = "PAX";
-        data.unitSymbol = "PAX";
-        data.mainUnitId = UNIT::NUNIT;
-        data.color = AQI_COLOR::AQI_PM;
+        data->mainValue = getPaxCount();
+        data->unitName = "PAX";
+        data->unitSymbol = "PAX";
+        data->mainUnitId = UNIT::NUNIT;
+        data->color = AQI_COLOR::AQI_PM;
     } else if (selectUnit != UNIT::NUNIT) {
-        data.mainValue = sensors.getUnitValue(selectUnit);
-        data.unitName = sensors.getUnitName(selectUnit);
-        data.unitSymbol = sensors.getUnitSymbol(selectUnit);
-        data.mainUnitId = selectUnit;
-        data.color = selectAQIColor();
+        data->mainValue = sensors.getUnitValue(selectUnit);
+        data->unitName = sensors.getUnitName(selectUnit);
+        data->unitSymbol = sensors.getUnitSymbol(selectUnit);
+        data->mainUnitId = selectUnit;
+        data->color = selectAQIColor();
     }
     // Minor unit selection
     if (nextUnit != UNIT::NUNIT) {
-        data.minorValue = sensors.getUnitValue(nextUnit);
-        data.unitName = sensors.getUnitName(nextUnit);
-        data.unitSymbol = sensors.getUnitSymbol(nextUnit);
-        data.color = selectAQIColor();
+        data->minorValue = sensors.getUnitValue(nextUnit);
+        data->unitName = sensors.getUnitName(nextUnit);
+        data->unitSymbol = sensors.getUnitSymbol(nextUnit);
+        data->color = selectAQIColor();
     }
-    data.onSelectionUnit = nextUnit;
+    data->onSelectionUnit = nextUnit;
 }
 
 void refreshGUIData(bool onUnitSelection) {
-    loadGUIData();
+    GUIData data;
+    loadGUIData(&data);
     if (!onUnitSelection) {
         gui.displaySensorLiveIcon();  // all sensors read are ok 
         gui.setInfoData(getDeviceInfo());
         printWifiRSSI();
     }
-    gui.setSensorData(data);
+    gui.setSensorData(&data);
     logMemory ("LOOP");
 }
 
@@ -351,10 +351,8 @@ void setup() {
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
     startingSensors();
     logMemory("SLIB");
-#if (CSL_NOISE_SENSOR_SUPPORTED==1)
     sensors.setNoiseSensorTimeSyncInterval(24UL * 60UL * 60UL * 1000UL);
     sensors.syncNoiseSensorTime();
-#endif
     // Setting callback for remote commands via Bluetooth config
     setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());
     // init watchdog timer for reboot in any loop blocker
@@ -415,9 +413,7 @@ void setup() {
 
 void loop() {
   sensors.loop(); // read sensor data and showed it
-#if (CSL_NOISE_SENSOR_SUPPORTED==1)
   sensors.syncNoiseSensorTime();
-#endif
   otaLoop();      // check for firmware updates
   snifferLoop();  // pax counter calc (only when WiFi is Off)
   wifiLoop();     // check wifi and reconnect it

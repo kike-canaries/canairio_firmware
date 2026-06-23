@@ -577,19 +577,19 @@ void TFTUtils::displayMainValues(){
 }
 
 // TODO: separate this function, format/display
-void TFTUtils::setSensorData(GUIData data) {
+void TFTUtils::setSensorData(GUIData *data) {
     suspendTaskGUI();
-    _colorType = data.color;
-    _humi = data.humi;
-    _temp = data.temp;
-    _mainValue = data.mainValue;
-    _mainUnitId = data.mainUnitId;
-    _minorValue = data.minorValue;
-    _unit_symbol = data.unitSymbol;
-    _unit_name = data.unitName;
-    _rssi = abs(data.rssi);
-    if (_unit != data.onSelectionUnit) resetBuffer(bufGraphMinor);
-    _unit = data.onSelectionUnit;
+    _colorType = data->color;
+    _humi = data->humi;
+    _temp = data->temp;
+    _mainValue = data->mainValue;
+    _mainUnitId = data->mainUnitId;
+    _minorValue = data->minorValue;
+    _unit_symbol = data->unitSymbol;
+    _unit_name = data->unitName;
+    _rssi = abs(data->rssi);
+    if (_unit != data->onSelectionUnit) resetBuffer(bufGraphMinor);
+    _unit = data->onSelectionUnit;
     bufGraphMain[MAX_X - 1] = _mainValue;
     bufGraphMinor[MAX_X - 1] = _minorValue;
     isNewData = true;

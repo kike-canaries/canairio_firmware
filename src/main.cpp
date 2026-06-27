@@ -311,7 +311,8 @@ void initCLI() {
 
 void setup() {
     Serial.begin(115200);
-    delay(500);
+    delay(3000);
+    Serial.println("\n\n==> BOOT START <==");
     Serial.flush();
     checkCoreDumpPartition();
     Serial.println("\n== CanAirIO Setup ==\r\n");
@@ -374,6 +375,8 @@ void setup() {
 
 #ifndef DISABLE_BLE
     // Bluetooth low energy init (GATT server for device config)
+    Serial.printf("-->[BLE] Heap libre antes de init: %u\n", ESP.getFreeHeap());
+    Serial.flush();
     bleServerInit();
     logMemory("BLE ");
     gui.welcomeAddMessage("Bluetooth ready.");

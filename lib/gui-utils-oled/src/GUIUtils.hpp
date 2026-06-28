@@ -56,7 +56,7 @@ class GUIUtils {
 
     void clearScreen();
 
-    void setSensorData(GUIData data);
+    void setSensorData(GUIData *data);
 
     void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 

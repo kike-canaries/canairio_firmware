@@ -42,8 +42,14 @@ class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
   }
 };
 
-namespace {
-static bool isTimeValid(time_t t) {
+void printLocalTime() {
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) return;
+  Serial.print("-->[WIFI] NTP sync ok. Time now\t: ");
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+}
+
+bool isTimeValid(time_t t) {
   return t > 1609459200;  // 2021-01-01T00:00:00Z
 }
 
@@ -82,7 +88,7 @@ static bool getTimezoneOffsetFromGeo(int32_t &offsetSeconds) {
   return true;
 }
 
-static void ensureNtpSync() {
+void ensureNtpSync() {
   if (!WiFi.isConnected()) return;
 
   static bool ntpConfigured = false;
@@ -105,18 +111,17 @@ static void ensureNtpSync() {
     ntpConfigured = true;
     ntpSynced = false;
     lastOffsetSeconds = offsetSeconds;
-    Serial.printf("-->[WIFI] TZ offset set to\t: %ld sec\r\n", (long)offsetSeconds);
+    Serial.printf("\r\n-->[WIFI] TZ offset set to\t: %ld sec\r\n", (long)offsetSeconds);
   }
 
   time_t now = time(nullptr);
   if (isTimeValid(now)) {
     ntpSynced = true;
-    Serial.println("-->[WIFI] NTP sync ok");
+    printLocalTime();
   } else {
     Serial.println("-->[WIFI] NTP sync pending...");
   }
 }
-}  // namespace
 
 void otaLoop() {
   if (WiFi.isConnected()) {

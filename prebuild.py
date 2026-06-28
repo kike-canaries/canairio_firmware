@@ -52,7 +52,6 @@ env.Append(BUILD_FLAGS=[
     u'-I \"' + srcdir + '\"'
     ])
 
-
 manifest_fota = {
     "type":flavor, 
     "version":revision, 

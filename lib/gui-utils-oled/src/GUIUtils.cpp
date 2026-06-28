@@ -428,17 +428,17 @@ void GUIUtils::displayMainValues() {
 }
 
 // TODO: separate this function, format/display
-void GUIUtils::setSensorData(GUIData data) {
+void GUIUtils::setSensorData(GUIData *data) {
     suspendTaskGUI();
-    _deviceType = data.color;
-    _humi = data.humi;
-    _temp = data.temp;
-    _mainValue = data.mainValue;
-    _minorValue = data.minorValue;
-    _unit_symbol = data.unitSymbol;
-    _unit_name = data.unitName;
+    _deviceType = data->color;
+    _humi = data->humi;
+    _temp = data->temp;
+    _mainValue = data->mainValue;
+    _minorValue = data->minorValue;
+    _unit_symbol = data->unitSymbol;
+    _unit_name = data->unitName;
     _average = _mainValue;
-    _rssi = abs(data.rssi);
+    _rssi = abs(data->rssi);
     isNewData = true;
     resumeTaskGUI();
 }

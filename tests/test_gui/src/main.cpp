@@ -75,7 +75,7 @@ void setup(void) {
 
     gui.displayInit(1); // 0 for 64x48, 1 for 128x64 displays
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
-    gui.setEmoticons(false);
+    gui.setEmoticons(true);
 
     delay(500);
     gui.showWelcome();

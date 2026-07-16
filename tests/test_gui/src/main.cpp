@@ -4,7 +4,15 @@
  ***/
 
 #include <Arduino.h>
+#include <Wire.h>
 #include <GUILib.hpp>
+
+#ifdef TTGO_T7S3
+#define GROVE_SDA 13
+#define GROVE_SCL 14
+#define I2C1_SDA_PIN 8
+#define I2C1_SCL_PIN 9
+#endif
 
 GUIData data;
 bool toggle;
@@ -67,13 +75,19 @@ void testExtraWelcomeLines() {
     gui.welcomeAddMessage("Line test welcome 4");
 }
 
+void startI2C(){
+#ifdef TTGO_T7S3
+  Wire.begin(GROVE_SDA, GROVE_SCL);
+#endif
+}
+
 void setup(void) {
     Serial.begin(115200);
     delay(2000);
     Serial.flush();
     Serial.println("\n== INIT SETUP ==\n");
-
-    gui.displayInit(1); // 0 for 64x48, 1 for 128x64 displays
+    startI2C();
+    gui.displayInit(0); // 0 for 64x48, 1 for 128x64 displays
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.setEmoticons(true);
 

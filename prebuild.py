@@ -23,9 +23,9 @@ config.read("platformio.ini")
 # get platformio source path
 srcdir = env.get("PROJECTSRC_DIR")
 flavor = env.get("PIOENV")
-revision = config.get("common","revision")
-version = config.get("common", "version")
-target = config.get("common", "target")
+revision = config.get("config","revision")
+version = config.get("config", "version")
+target = config.get("config", "target")
 
 # print ("environment:")
 # print (env.Dump())

@@ -372,6 +372,7 @@ void setup() {
 
 #ifndef DISABLE_BLE
     // Bluetooth low energy init (GATT server for device config)
+    logMemory("BLE_PRE");
     bleServerInit();
     logMemory("BLE ");
     gui.welcomeAddMessage("Bluetooth ready.");

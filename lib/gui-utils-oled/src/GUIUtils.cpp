@@ -23,9 +23,13 @@ void GUIUtils::displayInit(int ssd1306_type) {
     u8g2 = new U8G2_SSD1306_128X64_NONAME_F_SW_I2C (U8G2_R0, 15, 4, 16);
 #else  // display via i2c for TTGO_T7 (old D1MINI) board
     if (ssd1306_type == 0) {
+      // default old OLED D1 mini
       u8g2 = new U8G2_SSD1306_64X48_ER_F_HW_I2C(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
+    } else if (ssd1306_type == 1) {
+      // old OLEDs screens 128x64
+      u8g2 = new U8G2_SSD1306_128X64_NONAME_F_HW_I2C(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
     } else {
-      // u8g2 = new U8G2_SSD1306_128X64_NONAME_F_HW_I2C(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
+      // new OLEDs screens 128x64 with different chip
       u8g2 = new U8G2_SSD1305_128X64_ADAFRUIT_F_HW_I2C(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
     }
 #endif

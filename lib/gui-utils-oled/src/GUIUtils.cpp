@@ -23,9 +23,14 @@ void GUIUtils::displayInit(int ssd1306_type) {
     u8g2 = new U8G2_SSD1306_128X64_NONAME_F_SW_I2C (U8G2_R0, 15, 4, 16);
 #else  // display via i2c for TTGO_T7 (old D1MINI) board
     if (ssd1306_type == 0) {
+      // default old OLED D1 mini
       u8g2 = new U8G2_SSD1306_64X48_ER_F_HW_I2C(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
-    } else {
+    } else if (ssd1306_type == 1) {
+      // old OLEDs screens 128x64
       u8g2 = new U8G2_SSD1306_128X64_NONAME_F_HW_I2C(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
+    } else {
+      // new OLEDs screens 128x64 with different chip
+      u8g2 = new U8G2_SSD1305_128X64_ADAFRUIT_F_HW_I2C(U8G2_R0, U8X8_PIN_NONE, U8X8_PIN_NONE, U8X8_PIN_NONE);
     }
 #endif
     if (strcmp(FAMILY, "ESP32-S2") != 0) {
@@ -35,19 +40,15 @@ void GUIUtils::displayInit(int ssd1306_type) {
     }
     u8g2->begin();
     u8g2->setFont(u8g2_font_6x10_tf);
-    u8g2->setContrast(128);
+    u8g2->setContrast(64);
     u8g2->setFontRefHeightExtendedText();
     u8g2->setDrawColor(1);
     u8g2->setFontPosTop();
     u8g2->setFontDirection(0);
     u8g2->setFontMode(0);
-    this->u8g2 = u8g2;
     dw = u8g2->getDisplayWidth();
     dh = u8g2->getDisplayHeight();
-
-    // init battery (only for some boards)
-    // batteryInit();
-
+    this->u8g2 = u8g2;
     Serial.println("-->[OGUI] display config ready.");
 }
 

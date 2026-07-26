@@ -116,7 +116,9 @@ void powerTempSensorInit() {
 }
 
 void powerInit() {
+  #ifndef XIAO_C6
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);  // Disable Brownout Detector
+  #endif
   // set cpu speed low to save battery
   setCpuFrequencyMhz(240);
   Serial.printf("-->[POWR] CPU Speed:%i MHz\r\n", getCpuFrequencyMhz());

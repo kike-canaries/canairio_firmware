@@ -108,9 +108,12 @@ String getCurrentConfig() {
     String output;
     serializeJson(doc, output);
 #if CORE_DEBUG_LEVEL >= 3
-    char buf[1000];
-    serializeJsonPretty(doc, buf, 1000);
-    Serial.printf("-->[CONF] respons@e: %s\r\n", buf);
+    // NOTE: this runs on the Bluedroid BTC task (3072 bytes of stack) when the
+    // BLE client reads the config characteristic. A 1000 bytes stack buffer
+    // here overflows that stack. Stream straight to Serial instead (no buffer).
+    Serial.print("-->[CONF] response: ");
+    serializeJsonPretty(doc, Serial);
+    Serial.println();
 #endif
     on_read_config = false;
     return output;
@@ -381,9 +384,11 @@ bool save(const char *json) {
     }
 
 #if CORE_DEBUG_LEVEL >= 3
-    char output[1000];
-    serializeJsonPretty(doc, output, 1000);
-    Serial.printf("-->[CONF] request: %s\r\n", output);
+    // NOTE: same as in getCurrentConfig(), save() is reached from the BLE
+    // write callback, which runs on the BTC task. No big stack buffers here.
+    Serial.print("-->[CONF] request: ");
+    serializeJsonPretty(doc, Serial);
+    Serial.println();
 #endif
 
     uint16_t cmd = doc["cmd"].as<uint16_t>();

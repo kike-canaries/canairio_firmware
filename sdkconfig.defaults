@@ -41,8 +41,8 @@ CONFIG_ESPTOOLPY_FLASHFREQ_40M=y
 
 # La tabla de particiones debe existir EN LA RAIZ del proyecto: en este
 # modo no se busca dentro del framework. Copia min_spiffs.csv alli.
-CONFIG_PARTITION_TABLE_CUSTOM=y
-CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="min_spiffs.csv"
+#CONFIG_PARTITION_TABLE_CUSTOM=y
+#CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="min_spiffs.csv"
 
 # --- Bluetooth: solo BLE ---------------------------------------------
 # El sdkconfig precompilado de Arduino trae ademas Bluetooth Clasico,

@@ -32,10 +32,10 @@ CONFIG_MBEDTLS_KEY_EXCHANGE_PSK=y
 # --- Flash and partition table ---------------------------------------
 # In ESP-IDF mode these values are NOT taken from the board definition;
 # they must be declared here. ESP-IDF defaults to 2MB.
-CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
-CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
-CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
-CONFIG_ESPTOOLPY_FLASHFREQ_40M=y
+#CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+#CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
+#CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
+#CONFIG_ESPTOOLPY_FLASHFREQ_40M=y
 
 # --- Bluetooth: BLE only ---------------------------------------------
 # Arduino's precompiled sdkconfig also enables Classic Bluetooth,

@@ -57,6 +57,7 @@ releases/manifest
 releases/wokwi
 releases/installer/rev*
 lib/easy-preferences
+sdkconfig.*
 # IDE
 .travis.yml
 extensions.json

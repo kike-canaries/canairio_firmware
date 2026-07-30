@@ -5,7 +5,7 @@
 uint32_t heap_size = 0;
 
 void checkCoreDumpPartition() {
-  #if (defined ESP32S3 || defined ESP32C3)
+  #if (defined DEBUG_MODE_NO_IDF_RULES)
   esp_core_dump_init();
   esp_core_dump_summary_t *summary =
       static_cast<esp_core_dump_summary_t *>(malloc(sizeof(esp_core_dump_summary_t)));

@@ -1,0 +1,89 @@
+# =====================================================================
+#  CanAirIO - "thin" branch
+#  sdkconfig for Arduino-as-ESP-IDF-component mode
+#  (framework = arduino, espidf)
+#
+#  Goal: reduce binary size WITHOUT disabling any firmware functionality.
+#  Everything removed here is SDK code that CanAirIO never uses.
+# =====================================================================
+
+# --- Mandatory: Arduino-style boot (setup/loop) ----------------------
+CONFIG_AUTOSTART_ARDUINO=y
+CONFIG_FREERTOS_HZ=1000
+
+# --- IRAM: align with Arduino defaults -------------------------------
+# ESP-IDF enables WiFi and lwIP IRAM optimizations by default.
+# Arduino disables ALL of them because they don't fit alongside Bluedroid.
+# Without these lines, linking fails with "region iram0_0_seg overflowed".
+CONFIG_ESP32_WIFI_IRAM_OPT=n
+CONFIG_ESP32_WIFI_RX_IRAM_OPT=n
+CONFIG_ESP_WIFI_SLP_IRAM_OPT=n
+CONFIG_LWIP_IRAM_OPTIMIZATION=n
+
+# --- mbedTLS: PSK required for WiFiClientSecure ----------------------
+# ssl_client.cpp from the framework wraps all its content inside
+#   #if !defined(MBEDTLS_KEY_EXCHANGE_SOME_PSK_ENABLED) ... #else ...
+# If PSK is disabled, the file becomes empty and linking fails with
+# "undefined reference to start_ssl_client / ssl_init / ...".
+# The official espidf-arduino-blink example includes these two lines.
+CONFIG_MBEDTLS_PSK_MODES=y
+CONFIG_MBEDTLS_KEY_EXCHANGE_PSK=y
+
+# --- Flash and partition table ---------------------------------------
+# In ESP-IDF mode these values are NOT taken from the board definition;
+# they must be declared here. ESP-IDF defaults to 2MB.
+#CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+#CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
+#CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
+#CONFIG_ESPTOOLPY_FLASHFREQ_40M=y
+
+# --- Bluetooth: BLE only ---------------------------------------------
+# Arduino's precompiled sdkconfig also enables Classic Bluetooth,
+# A2DP (audio) and SPP (BT serial). CanAirIO only uses BLE (GATT
+# server), so all of that is dead weight. This is the biggest saving.
+CONFIG_BT_ENABLED=y
+CONFIG_BT_BLUEDROID_ENABLED=y
+CONFIG_BT_CLASSIC_ENABLED=n
+CONFIG_BT_A2DP_ENABLE=n
+CONFIG_BT_SPP_ENABLED=n
+CONFIG_BT_HFP_ENABLE=n
+
+# BLE: keep GATTS (server, used by bluetooth.cpp), GATTC and SMP
+# enabled because the Arduino BLE library compiles BLEClient.cpp
+# and BLESecurity.cpp; disabling them causes link errors.
+CONFIG_BT_BLE_ENABLED=y
+CONFIG_BT_GATTS_ENABLE=y
+CONFIG_BT_GATTC_ENABLE=y
+CONFIG_BT_BLE_SMP_ENABLE=y
+
+# BLE 5.0 chips (C3, S3): ESP-IDF splits the GAP API into legacy
+# (4.2) and extended (5.0), enabling only 5.0 by default. The
+# Arduino BLE library uses the 4.2 API (esp_ble_gap_config_adv_data,
+# esp_ble_gap_start_advertising), so both must be enabled.
+# On classic ESP32 these keys do not exist and are ignored.
+CONFIG_BT_BLE_42_FEATURES_SUPPORTED=y
+CONFIG_BT_BLE_50_FEATURES_SUPPORTED=y
+
+# BTC task stack size. Classic ESP32 defaults to 8192; set it
+# explicitly so it does not depend on the target (C3/S3 default
+# is 3072, which caused the stack overflow in PR #347).
+CONFIG_BT_BTC_TASK_STACK_SIZE=8192
+
+# --- Console (relevant on C3: USB-CDC on boot) -----------------------
+# Arduino leaves the IDF console on UART0 and USB Serial JTAG as
+# secondary; Serial is managed by Arduino's HWCDC class.
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+CONFIG_ESP_CONSOLE_SECONDARY_USB_SERIAL_JTAG=y
+
+# --- Compilation trimming (no functional impact) ----------------------
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y
+CONFIG_BOOTLOADER_LOG_LEVEL_NONE=y
+CONFIG_LOG_DEFAULT_LEVEL_ERROR=y
+
+# Human-readable error code table (esp_err_to_name).
+# Only used for printing messages; removing it frees a few KB.
+CONFIG_ESP_ERR_TO_NAME_LOOKUP=n
+
+# Heap poisoning: debug heap checks.
+# Only disable when the firmware is stable.
+CONFIG_HEAP_POISONING_DISABLE=y

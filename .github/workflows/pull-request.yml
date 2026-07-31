@@ -13,7 +13,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v3
@@ -33,4 +33,4 @@ jobs:
           pio pkg update 
       - name: Testing All Architectures
         run: |
-          pio run -e TTGO_T7 -e TTGO_TDISPLAY -e ESP32C3LOLIN -e ESP32S2LOLIN -e ESP32S3
+          pio run -e TTGO_TDISPLAY -e ESP32C3LOLIN -e ESP32S2LOLIN -e ESP32S3

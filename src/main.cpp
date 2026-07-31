@@ -253,28 +253,16 @@ void startingSensors() {
     delay(300);
 }
 
-#if defined(TTGO_T7) || defined(TTGO_T7S3)
-#define BATTERY_MIN_V 3.4
-#define BATTERY_MAX_V 4.28
-#define BATTCHARG_MIN_V 3.8
-#define BATTCHARG_MAX_V 4.34
-#else
-#define BATTERY_MIN_V 3.1
-#define BATTERY_MAX_V 4.04
-#define BATTCHARG_MIN_V 4.06
-#define BATTCHARG_MAX_V 4.198
-#endif
-
 void initBattery() {
 #ifndef DISABLE_BATT
   if (strcmp(FAMILY, "ESP32-C3") != 0) {
     battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
     battery.setBattLimits(
-      cfg.getFloat(CONFKEYS::KBATVMI, BATT_MIN_V),
-      cfg.getFloat(CONFKEYS::KBATVMX, BATT_MAX_V));
+      cfg.getFloat(CONFKEYS::KBATVMI, BATTERY_MIN_V),
+      cfg.getFloat(CONFKEYS::KBATVMX, BATTERY_MAX_V));
     battery.setChargLimits(
-      cfg.getFloat(CONFKEYS::KCHRVMI, BCHARG_MIN_V),
-      cfg.getFloat(CONFKEYS::KCHRVMX, BCHARG_MAX_V));
+      cfg.getFloat(CONFKEYS::KCHRVMI, BATTCHARG_MIN_V),
+      cfg.getFloat(CONFKEYS::KCHRVMX, BATTCHARG_MAX_V));
     if (devmode) battery.printLimits();
     battery.init(devmode);
     battery.update();

@@ -30,4 +30,4 @@ jobs:
           pio pkg update
       - name: PlatformIO Build Test
         run: |
-          pio run -e TTGO_T7 -e ESP32DEVKIT -e TTGO_TDISPLAY -e M5STICKCPLUS -e ESP32C3LOLIN
+          pio run -e TTGO_TDISPLAY -e M5STICKCPLUS -e ESP32C3LOLIN -e ESP32S2LOLIN -e TTGO_T7S3

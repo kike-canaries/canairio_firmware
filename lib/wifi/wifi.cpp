@@ -264,6 +264,14 @@ String getDeviceInfo() {
   info = info + "==================\r\n";
   info = info + "MEM: " + String(ESP.getFreeHeap() / 1024) + "Kb\r\n";
   info = info + "GUI: " + String(gui.getStackFree() / 1024) + "Kb\r\n";
+  
+  struct tm timeinfo;
+  if (getLocalTime(&timeinfo)) {
+    char strftime_buf[64];
+    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    info = info + "NTP: " + String(strftime_buf) + "\r\n";
+  }
+
   #ifdef CONFIG_IDF_TARGET_ESP32S3
   info = info + "CPU: " + String(powerESP32TempRead()) + "°C\r\n";
   #endif

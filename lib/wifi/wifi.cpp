@@ -197,6 +197,10 @@ void wifiInit() {
   if (!WiFi.isConnected() && isWifiEnable() && ssid.length() > 0) {
     wifiConnect();
   }
+  else {
+    log_i("wifiConnect was skipped");
+    log_i("isConnect: %i isWiFiEnable: %i ssidLenght: %i\r\n", WiFi.isConnected(), isWifiEnable(), ssid.length());
+  }
   if(WiFi.isConnected()) {
     Serial.print("-->[WIFI] device network IP\t: ");
     Serial.println(WiFi.localIP());

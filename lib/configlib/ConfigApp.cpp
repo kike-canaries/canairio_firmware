@@ -217,16 +217,19 @@ bool saveSSID(String ssid){
 }
 
 bool saveWifi(String ssid, String pass) {
+  log_i("saving wifi for ssid %s\r\n",ssid.c_str());
   if (ssid.length() > 0) {
     cfg.saveBool(CONFKEYS::KWIFIEN, true);
     wifi_enable = true;
     #ifndef DISABLE_CLI
     new_wifi = !wcli.isSSIDSaved(ssid);
+    log_i("isNewWifi: %i", new_wifi);  // is false when was a new wifi via CLI
     #else
     new_wifi = true;
     #endif
-    if (new_wifi) {
-      log_i("[CONF] temp saving ssid:%s pass:%s", ssid, pass);
+    String ssid_app = cfg.getString(CONFKEYS::KSSID, ""); // if was a new_wifi via CLI
+    if (new_wifi || ssid_app.length() == 0) {
+      log_i("[CONF] (ssid_app: %i) saving ssid:%s", ssid_app.length(), ssid.c_str());
       cfg.saveString(CONFKEYS::KSSID, ssid);
       cfg.saveString(CONFKEYS::KPASS, pass);
     }

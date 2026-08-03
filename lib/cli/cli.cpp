@@ -282,7 +282,11 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
 
   void onHelpShow() {}
 
-  void onNewWifi(String ssid, String passw) { saveWifi(ssid, passw); }
+  void onNewWifi(String ssid, String passw) {
+    saveWifi(ssid, passw); 
+    delay(10);
+    wifiInit();  // for enable FOTA
+  }
 };
 
 void initShell(){

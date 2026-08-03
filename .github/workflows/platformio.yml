@@ -45,3 +45,10 @@ jobs:
       - name: CanAirIO main Architectures test
         run: |
           ./build ci
+      - name: Upload Dev Release artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dev-release
+          path: releases/binaries/**/*merged.bin
+          if-no-files-found: warn

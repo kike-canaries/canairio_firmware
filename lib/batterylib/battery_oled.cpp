@@ -10,9 +10,6 @@
 #elif TTGO_T7S3
 #define ADC_PIN 2
 int channel_atten = ADC_ATTEN_DB_11;  // ESP32-S3: 11dB → 0–3.1V range
-#elif ESP32C3_AIRGRADIENT
-  #define ADC_PIN 4
-  int channel_atten = ADC1_CHANNEL_1;
 #else
   #define ADC_PIN 34
   int channel_atten = 0;

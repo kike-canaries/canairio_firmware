@@ -39,6 +39,17 @@ AQI_COLOR selectAQIColor() {
         return AQI_COLOR::AQI_NONE;
 }
 
+void printNextSteps() {
+  String ssid = cfg.getString(CONFKEYS::KSSID, "");
+  String sgeo = cfg.getString("geo","");
+  if (ssid.length() == 0 && sgeo.length() == 0) {
+    Serial.println("\r\n[ALERT] Next steps: run \"nmcli\" and then \"sgeoh\" commands :D [ALERT]");
+  }
+  else if (sgeo.length() == 0) {
+    Serial.println("\r\n[ALERT] Next step: run \"sgeoh\" command and configure your zone :D [ALERT]");
+  }
+}
+
 void loadGUIData(GUIData *data) {
     float humi = sensors.getHumidity();
     if (humi == 0.0) humi = sensors.getCO2humi();
@@ -200,7 +211,9 @@ void printSensorsDetected() {
 }
 
 void startingSensors() {
+    #ifndef AG_OPENAIR
     Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)stype));
+    #endif
     gui.welcomeAddMessage("Init sensors..");
     int geigerPin = cfg.getInt(CONFKEYS::KGEIGERP, -1);// Geiger sensor pin (config it via CLI) 
     int tunit = cfg.getInt(CONFKEYS::KTEMPUNT, 0);     // Temperature unit (defaulut celsius)
@@ -352,9 +365,7 @@ void setup() {
     logMemory("WIFI");
     Serial.printf("-->[INFO] InfluxDb cloud \t: %s\r\n", isIfxEnable()  ? "enabled" : "disabled");
     Serial.printf("-->[INFO] WiFi current config\t: %s\r\n", isWifiEnable() ? "enabled" : "disabled");
-
-    String sname = !(cfg.getString("geo", "")).isEmpty() ? getStationName() : "not configured yet\t:(";
-    Serial.printf("-->[INFO] CanAirIO station name\t: %s\r\n", sname.c_str());
+ 
     gui.welcomeAddMessage("WiFi: "+String(isWifiEnable() ? "On" : "Off"));
     gui.welcomeAddMessage("Influx: "+String(isIfxEnable() ? "On" : "Off"));
 
@@ -392,6 +403,8 @@ void setup() {
     cfg.saveString("kdevid",getDeviceId());
     // enabling CLI interface
     logMemoryObjects();
+
+    printNextSteps();
 
     #ifdef LORADEVKIT
     LoRaWANSetup();

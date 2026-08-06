@@ -3,7 +3,7 @@
 void Watchdog::feed() {
     log_v("[WDOG] soft watchdog feeded.");
     timerWrite(timer, 0);  // reset timer (feed watchdog)
-#ifdef ESP32C3_AIRGRADIENT
+#ifdef AG_OPENAIR
     log_v("[WDOG] external watchdog feeded.");
     digitalWrite(2, HIGH);
     delay(25);
@@ -47,7 +47,7 @@ void Watchdog::init() {
   timerAlarmEnable(timer);                                 // enable interrupt
 #endif
 
-#ifdef ESP32C3_AIRGRADIENT
+#ifdef AG_OPENAIR
   pinMode(2, OUTPUT);
   feed();
 #endif

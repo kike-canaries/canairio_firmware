@@ -33,4 +33,5 @@ jobs:
           pio pkg update 
       - name: Testing All Architectures
         run: |
-          pio run -e TTGO_TDISPLAY -e ESP32C3LOLIN -e ESP32S2LOLIN -e ESP32S3
+          ./build ci
+        

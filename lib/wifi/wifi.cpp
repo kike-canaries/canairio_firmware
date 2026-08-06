@@ -111,16 +111,13 @@ void ensureNtpSync() {
     ntpConfigured = true;
     ntpSynced = false;
     lastOffsetSeconds = offsetSeconds;
-    Serial.printf("\r\n-->[WIFI] TZ offset set to\t: %ld sec\r\n", (long)offsetSeconds);
   }
 
   time_t now = time(nullptr);
   if (isTimeValid(now)) {
     ntpSynced = true;
     printLocalTime();
-  } else {
-    Serial.println("-->[WIFI] NTP sync pending...");
-  }
+  } 
 }
 
 void otaLoop() {
@@ -197,10 +194,18 @@ void wifiInit() {
   if (!WiFi.isConnected() && isWifiEnable() && ssid.length() > 0) {
     wifiConnect();
   }
+  else {
+    log_i("wifiConnect was skipped");
+    log_i("isConnect: %i isWiFiEnable: %i ssidLenght: %i\r\n", WiFi.isConnected(), isWifiEnable(), ssid.length());
+  }
   if(WiFi.isConnected()) {
     Serial.print("-->[WIFI] device network IP\t: ");
     Serial.println(WiFi.localIP());
     Serial.println("-->[WIFI] publish interval \t: " + String(stime * 2) + " sec.");
+
+    String sname = !(cfg.getString("geo", "")).isEmpty() ? getStationName() : "not configured :(\tRun \"sgeoh\" command ;)";
+    Serial.printf("-->[INFO] CanAirIO station name\t: %s\r\n", sname.c_str());
+
     ensureNtpSync();
     otaInit();
     wifiCloudsInit();
@@ -261,9 +266,6 @@ String getDeviceInfo() {
   info = info + String(FLAVOR) + "\r\n";
   info = info + "IP: " + WiFi.localIP().toString() + "\r\n";
   info = info + "OTA: " + String(TARGET) + " channel\r\n";
-  info = info + "==================\r\n";
-  info = info + "MEM: " + String(ESP.getFreeHeap() / 1024) + "Kb\r\n";
-  info = info + "GUI: " + String(gui.getStackFree() / 1024) + "Kb\r\n";
   
   struct tm timeinfo;
   if (getLocalTime(&timeinfo)) {
@@ -271,6 +273,7 @@ String getDeviceInfo() {
     strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
     info = info + "NTP: " + String(strftime_buf) + "\r\n";
   }
+  info = info + "==================\r\n";
 
   #ifdef CONFIG_IDF_TARGET_ESP32S3
   info = info + "CPU: " + String(powerESP32TempRead()) + "°C\r\n";

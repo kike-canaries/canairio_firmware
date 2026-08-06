@@ -282,7 +282,11 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
 
   void onHelpShow() {}
 
-  void onNewWifi(String ssid, String passw) { saveWifi(ssid, passw); }
+  void onNewWifi(String ssid, String passw) {
+    saveWifi(ssid, passw); 
+    delay(10);
+    wifiInit();  // for enable FOTA
+  }
 };
 
 void initShell(){
@@ -309,7 +313,7 @@ void initShell(){
   wcli.add("clear", &wcli_clear,        "\t\tclear shell");
   wcli.add("setup", &wcli_setup,        "\t\tTYPE THIS WORD to enter to SAFE MODE setup");
 
-  if (cfg.getBool(CONFKEYS::KFTXPWR, false)) wcli.forceTxPower(); // force the Tx power (C3 issue)
+  if (cfg.getBool(CONFKEYS::KFTXPWR, true)) wcli.forceTxPower(); // force the Tx power (C3 issue)
   
   wcli.begin("CanAirIO");
 }

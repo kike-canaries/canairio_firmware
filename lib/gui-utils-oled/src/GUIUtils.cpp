@@ -49,6 +49,7 @@ void GUIUtils::displayInit(int ssd1306_type) {
     dw = u8g2->getDisplayWidth();
     dh = u8g2->getDisplayHeight();
     this->u8g2 = u8g2;
+    Serial.printf("I2C used  SDA:%i SCL:%i\r\n",SDA, SCL);
     Serial.println("-->[OGUI] display config ready.");
 }
 
@@ -571,6 +572,15 @@ String GUIUtils::getFirmwareVersionCode() {
 GUIUtils gui;
 #endif
 
+
+// Default implementations for GUIUserPreferencesCallbacks
+void GUIUserPreferencesCallbacks::onWifiMode(bool enable) {}
+void GUIUserPreferencesCallbacks::onPaxMode(bool enable) {}
+void GUIUserPreferencesCallbacks::onBrightness(int value) {}
+void GUIUserPreferencesCallbacks::onColorsInverted(bool enable) {}
+void GUIUserPreferencesCallbacks::onSampleTime(int time) {}
+void GUIUserPreferencesCallbacks::onCalibrationReady() {}
+
 #else  // DISABLE_OLED for T7S3
 
 void GUIUtils::displayInit(int ssd1306_type) {}
@@ -673,6 +683,15 @@ String GUIUtils::getFirmwareVersionCode() {
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_GUIHANDLER)
 GUIUtils gui;
 #endif
+
+
+// Default implementations for GUIUserPreferencesCallbacks
+void GUIUserPreferencesCallbacks::onWifiMode(bool enable) {}
+void GUIUserPreferencesCallbacks::onPaxMode(bool enable) {}
+void GUIUserPreferencesCallbacks::onBrightness(int value) {}
+void GUIUserPreferencesCallbacks::onColorsInverted(bool enable) {}
+void GUIUserPreferencesCallbacks::onSampleTime(int time) {}
+void GUIUserPreferencesCallbacks::onCalibrationReady() {}
 
 #endif
 

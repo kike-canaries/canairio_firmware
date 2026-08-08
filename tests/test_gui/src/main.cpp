@@ -80,7 +80,7 @@ void setup(void) {
     Serial.flush();
     Serial.println("\n== INIT SETUP ==\n");
     startI2C();
-    gui.displayInit(2); // 0 for 64x48, 1 for 128x64 displays
+    gui.displayInit(0); // 0 for 64x48, 1 for 128x64 displays
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.setEmoticons(true);
     gui.showWelcome();

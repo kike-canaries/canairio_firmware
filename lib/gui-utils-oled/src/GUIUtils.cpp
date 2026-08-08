@@ -49,7 +49,6 @@ void GUIUtils::displayInit(int ssd1306_type) {
     dw = u8g2->getDisplayWidth();
     dh = u8g2->getDisplayHeight();
     this->u8g2 = u8g2;
-    Serial.printf("I2C used  SDA:%i SCL:%i\r\n",SDA, SCL);
     Serial.println("-->[OGUI] display config ready.");
 }
 

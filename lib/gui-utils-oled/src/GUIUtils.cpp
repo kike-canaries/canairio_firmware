@@ -74,8 +74,10 @@ void GUIUtils::setEmoticons(bool enable){
 }
 
 void GUIUtils::flipVertical(bool enable){
+  // Only call setFlipMode when enable is true to avoid changing the
+  // display offset on SSD1305 Adafruit drivers (setFlipMode(0) sends
+  // flip0_seq which changes the display offset from 64 to 32).
   if(enable) u8g2->setFlipMode(1); 
-  else u8g2->setFlipMode(0); 
 }
 
 void GUIUtils::showMain() {
@@ -571,6 +573,15 @@ String GUIUtils::getFirmwareVersionCode() {
 GUIUtils gui;
 #endif
 
+
+// Default implementations for GUIUserPreferencesCallbacks
+void GUIUserPreferencesCallbacks::onWifiMode(bool enable) {}
+void GUIUserPreferencesCallbacks::onPaxMode(bool enable) {}
+void GUIUserPreferencesCallbacks::onBrightness(int value) {}
+void GUIUserPreferencesCallbacks::onColorsInverted(bool enable) {}
+void GUIUserPreferencesCallbacks::onSampleTime(int time) {}
+void GUIUserPreferencesCallbacks::onCalibrationReady() {}
+
 #else  // DISABLE_OLED for T7S3
 
 void GUIUtils::displayInit(int ssd1306_type) {}
@@ -673,6 +684,15 @@ String GUIUtils::getFirmwareVersionCode() {
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_GUIHANDLER)
 GUIUtils gui;
 #endif
+
+
+// Default implementations for GUIUserPreferencesCallbacks
+void GUIUserPreferencesCallbacks::onWifiMode(bool enable) {}
+void GUIUserPreferencesCallbacks::onPaxMode(bool enable) {}
+void GUIUserPreferencesCallbacks::onBrightness(int value) {}
+void GUIUserPreferencesCallbacks::onColorsInverted(bool enable) {}
+void GUIUserPreferencesCallbacks::onSampleTime(int time) {}
+void GUIUserPreferencesCallbacks::onCalibrationReady() {}
 
 #endif
 

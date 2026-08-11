@@ -1,4 +1,5 @@
 #include <battery_oled.hpp>
+#if !defined(TTGO_TDISPLAY) && !defined(M5STICKCPLUS)
 #ifndef DISABLE_BATT
 
 #ifdef M5PICOD4
@@ -94,4 +95,6 @@ void update() {}
 Battery_OLED battery;
 #endif
 #endif
+#endif
+
 #endif

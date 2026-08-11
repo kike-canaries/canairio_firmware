@@ -40,10 +40,12 @@ void IRAM_ATTR resetModule() {
 }
 
 void Watchdog::init() {
+#ifndef XIAO_C6
   timer = timerBegin(0, 80, true);                         // timer 0, div 80
   timerAttachInterrupt(timer, &resetModule, true);         // setting callback
   timerAlarmWrite(timer, WATCHDOG_TIME * 1000000, false);  // set time in us
   timerAlarmEnable(timer);                                 // enable interrupt
+#endif
 
 #ifdef AG_OPENAIR
   pinMode(2, OUTPUT);
@@ -60,11 +62,15 @@ void Watchdog::init() {
 }
 
 void Watchdog::pause() {
+#ifndef XIAO_C6
   timerAlarmDisable(timer);  // disable interrupt
+#endif
 }
 
 void Watchdog::resume() {
+#ifndef XIAO_C6
   timerAlarmEnable(timer);  // enable interrupt
+#endif
 }
 
 void Watchdog::execute() { resetModule(); }

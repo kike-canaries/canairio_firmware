@@ -41,6 +41,9 @@ if flavor == "ESP32C3" or flavor == "ESP32C3OIPLUS" or flavor == "ESP32C3LOLIN" 
 if flavor == "ESP32S3" or flavor == "TTGO_T7S3":
     chipFamily = "ESP32-S3"
 
+if flavor == "XIAO_C6":
+    chipFamily = "ESP32-C6"
+
 # get runtime credentials and put them to compiler directive
 env.Append(BUILD_FLAGS=[
     u'-DREVISION=' + revision + '',

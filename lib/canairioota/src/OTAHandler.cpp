@@ -60,7 +60,9 @@ void OTAHandler::checkRemoteOTA(bool notify) {
         if(_onUpdateMsgCb != nullptr) 
             _onUpdateMsgCb(String(fota.getPayloadVersion()).c_str());
         delay(100);
+        #ifndef XIAO_C6
         esp_task_wdt_init(120,0); 
+        #endif
         fota.execOTA();
     } else if (notify)
         Serial.println("-->[FOTA] remote OTA update \t: not need update");

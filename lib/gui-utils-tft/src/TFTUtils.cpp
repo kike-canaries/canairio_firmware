@@ -941,3 +941,16 @@ String TFTUtils::getFirmwareVersionCode() {
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_GUIHANDLER)
 TFTUtils gui;
 #endif
+
+
+// Default implementations for GUIUserPreferencesCallbacks
+void GUIUserPreferencesCallbacks::onWifiMode(bool enable) {}
+void GUIUserPreferencesCallbacks::onPaxMode(bool enable) {}
+void GUIUserPreferencesCallbacks::onBrightness(int value) {}
+void GUIUserPreferencesCallbacks::onColorsInverted(bool enable) {}
+void GUIUserPreferencesCallbacks::onSampleTime(int time) {}
+void GUIUserPreferencesCallbacks::onCalibrationReady() {}
+void GUIUserPreferencesCallbacks::onPowerOff() {}
+void GUIUserPreferencesCallbacks::onUnitSelectionToggle() {}
+void GUIUserPreferencesCallbacks::onUnitSelectionConfirm() {}
+

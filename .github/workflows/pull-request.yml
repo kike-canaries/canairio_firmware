@@ -29,8 +29,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -U platformio
-          pio pkg update 
+          pip install -U platformio rich-click intelhex
+          pio pkg update
       - name: Testing All Architectures
         run: |
           ./build ci

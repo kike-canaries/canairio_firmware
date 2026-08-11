@@ -36,13 +36,6 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     void onPaxMode(bool enable){
         Serial.println("-->[SETUP] onPaxMode changed: "+String(enable));
     };
-    void onUnitSelectionToggle() {
-        Serial.println("-->[SETUP] onUnitSelectionToggle");
-    };
-    void onUnitSelectionConfirm() {
-    };
-    void onPowerOff(){
-    };
 };
 
 void testSensorLiveIcon() {
@@ -90,8 +83,6 @@ void setup(void) {
     gui.displayInit(0); // 0 for 64x48, 1 for 128x64 displays
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
     gui.setEmoticons(true);
-
-    delay(500);
     gui.showWelcome();
     // gui.displayBottomLine("CanAirIOAF4");
     // delay(500);

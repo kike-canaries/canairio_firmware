@@ -106,9 +106,9 @@ void performCO2Calibration();
 class RemoteConfigCallbacks {
 public:
     virtual ~RemoteConfigCallbacks () {};
-    virtual void onCO2Calibration();
-    virtual void onAltitudeOffset(float altitude);
-    virtual void onSeaLevelPressure(float hpa);
+    virtual void onCO2Calibration() = 0;
+    virtual void onAltitudeOffset(float altitude) = 0;
+    virtual void onSeaLevelPressure(float hpa) = 0;
 };
 
 #endif

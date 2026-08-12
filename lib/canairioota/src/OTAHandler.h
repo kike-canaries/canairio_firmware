@@ -37,12 +37,12 @@ class OTAHandler {
 };
 
 class OTAHandlerCallbacks {
-public:
-    virtual ~OTAHandlerCallbacks() {};
-    virtual void onStart();
-	virtual void onProgress(unsigned int progress, unsigned int total);
-    virtual void onEnd();
-    virtual void onError();
+ public:
+  virtual ~OTAHandlerCallbacks(){};
+  virtual void onStart() = 0;
+  virtual void onProgress(unsigned int progress, unsigned int total) = 0;
+  virtual void onEnd() = 0;
+  virtual void onError() = 0;
 };
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_OTAHANDLER)

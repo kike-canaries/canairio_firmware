@@ -248,7 +248,11 @@ void cliTask(void *param) {
 
 void cliTaskInit() {
 #ifndef DISABLE_CLI
+#ifdef XIAO_C6
+  xTaskCreate(cliTask, "cliTask", 4000, NULL, 1, &xCliHandle);
+#else
   xTaskCreatePinnedToCore(cliTask, "cliTask ", 4000, NULL, 1, &xCliHandle, 1);
+#endif
 #endif
 }
 

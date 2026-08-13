@@ -245,6 +245,7 @@ void wifiLoop() {
     ensureNtpSync();
     influxDbInit();
     influxDbLoop();  // influxDB publication
+    if (!ota.isConfigured()) otaInit();
     if (cfg.getBool(CONFKEYS::KANAIRE, false)) anaireLoop();
     if (cfg.getBool(CONFKEYS::KHOMEAS, false)) hassLoop();
   }

@@ -1,3 +1,6 @@
+#ifndef wifi_hpp
+#define wifi_hpp
+
 #include <WiFi.h>
 #include <esp_wifi.h>
 #ifndef DISABLE_CLI
@@ -20,3 +23,4 @@ int  getWifiRSSI();
 void printWifiRSSI();
 String getDeviceInfo();
 String getHostId();
+#endif

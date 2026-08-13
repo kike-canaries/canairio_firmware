@@ -1,4 +1,0 @@
-# Este archivo va en src/CMakeLists.txt
-# src/ solo contiene main.cpp; las carpetas de lib/ las sigue
-# gestionando el Library Dependency Finder de PlatformIO.
-idf_component_register(SRCS "main.cpp" INCLUDE_DIRS ".")

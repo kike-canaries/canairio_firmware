@@ -29,7 +29,6 @@
 
 UNIT selectUnit = UNIT::NUNIT;
 UNIT nextUnit = UNIT::NUNIT;
-GUIData data;
 
 AQI_COLOR selectAQIColor() {
     if (selectUnit == UNIT::PM25 || selectUnit == UNIT::PM10 || selectUnit == UNIT::PM1)
@@ -40,16 +39,27 @@ AQI_COLOR selectAQIColor() {
         return AQI_COLOR::AQI_NONE;
 }
 
-void loadGUIData() {
+void printNextSteps() {
+  String ssid = cfg.getString(CONFKEYS::KSSID, "");
+  String sgeo = cfg.getString("geo","");
+  if (ssid.length() == 0 && sgeo.length() == 0) {
+    Serial.println("\r\n[ALERT] Next steps: run \"nmcli\" and then \"sgeoh\" commands :D [ALERT]");
+  }
+  else if (sgeo.length() == 0) {
+    Serial.println("\r\n[ALERT] Next step: run \"sgeoh\" command and configure your zone :D [ALERT]");
+  }
+}
+
+void loadGUIData(GUIData *data) {
     float humi = sensors.getHumidity();
     if (humi == 0.0) humi = sensors.getCO2humi();
 
     float temp = sensors.getTemperature();
     if (temp == 0.0) temp = sensors.getCO2temp();  // TODO: temp could be 0.0
 
-    data.temp = temp;
-    data.humi = humi;
-    data.rssi = getWifiRSSI();
+    data->temp = temp;
+    data->humi = humi;
+    data->rssi = getWifiRSSI();
 
     UNIT user_unit = (UNIT) getUnitSelected();
     if (selectUnit != user_unit && sensors.isUnitRegistered(user_unit)) {
@@ -58,36 +68,37 @@ void loadGUIData() {
 
     // Main unit selection
     if (sensors.getUnitsRegisteredCount() == 0 && isPaxEnable()) {
-        data.mainValue = getPaxCount();
-        data.unitName = "PAX";
-        data.unitSymbol = "PAX";
-        data.mainUnitId = UNIT::NUNIT;
-        data.color = AQI_COLOR::AQI_PM;
+        data->mainValue = getPaxCount();
+        data->unitName = "PAX";
+        data->unitSymbol = "PAX";
+        data->mainUnitId = UNIT::NUNIT;
+        data->color = AQI_COLOR::AQI_PM;
     } else if (selectUnit != UNIT::NUNIT) {
-        data.mainValue = sensors.getUnitValue(selectUnit);
-        data.unitName = sensors.getUnitName(selectUnit);
-        data.unitSymbol = sensors.getUnitSymbol(selectUnit);
-        data.mainUnitId = selectUnit;
-        data.color = selectAQIColor();
+        data->mainValue = sensors.getUnitValue(selectUnit);
+        data->unitName = sensors.getUnitName(selectUnit);
+        data->unitSymbol = sensors.getUnitSymbol(selectUnit);
+        data->mainUnitId = selectUnit;
+        data->color = selectAQIColor();
     }
     // Minor unit selection
     if (nextUnit != UNIT::NUNIT) {
-        data.minorValue = sensors.getUnitValue(nextUnit);
-        data.unitName = sensors.getUnitName(nextUnit);
-        data.unitSymbol = sensors.getUnitSymbol(nextUnit);
-        data.color = selectAQIColor();
+        data->minorValue = sensors.getUnitValue(nextUnit);
+        data->unitName = sensors.getUnitName(nextUnit);
+        data->unitSymbol = sensors.getUnitSymbol(nextUnit);
+        data->color = selectAQIColor();
     }
-    data.onSelectionUnit = nextUnit;
+    data->onSelectionUnit = nextUnit;
 }
 
 void refreshGUIData(bool onUnitSelection) {
-    loadGUIData();
+    GUIData data;
+    loadGUIData(&data);
     if (!onUnitSelection) {
         gui.displaySensorLiveIcon();  // all sensors read are ok 
         gui.setInfoData(getDeviceInfo());
         printWifiRSSI();
     }
-    gui.setSensorData(data);
+    gui.setSensorData(&data);
     logMemory ("LOOP");
 }
 
@@ -200,7 +211,9 @@ void printSensorsDetected() {
 }
 
 void startingSensors() {
+    #ifndef AG_OPENAIR
     Serial.println("-->[INFO] config UART sensor\t: "+sensors.getSensorName((SENSORS)stype));
+    #endif
     gui.welcomeAddMessage("Init sensors..");
     int geigerPin = cfg.getInt(CONFKEYS::KGEIGERP, -1);// Geiger sensor pin (config it via CLI) 
     int tunit = cfg.getInt(CONFKEYS::KTEMPUNT, 0);     // Temperature unit (defaulut celsius)
@@ -253,28 +266,16 @@ void startingSensors() {
     delay(300);
 }
 
-#if defined(TTGO_T7) || defined(TTGO_T7S3)
-#define BATTERY_MIN_V 3.4
-#define BATTERY_MAX_V 4.28
-#define BATTCHARG_MIN_V 3.8
-#define BATTCHARG_MAX_V 4.34
-#else
-#define BATTERY_MIN_V 3.1
-#define BATTERY_MAX_V 4.04
-#define BATTCHARG_MIN_V 4.06
-#define BATTCHARG_MAX_V 4.198
-#endif
-
 void initBattery() {
 #ifndef DISABLE_BATT
   if (strcmp(FAMILY, "ESP32-C3") != 0) {
     battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
     battery.setBattLimits(
-      cfg.getFloat(CONFKEYS::KBATVMI, BATT_MIN_V),
-      cfg.getFloat(CONFKEYS::KBATVMX, BATT_MAX_V));
+      cfg.getFloat(CONFKEYS::KBATVMI, BATTERY_MIN_V),
+      cfg.getFloat(CONFKEYS::KBATVMX, BATTERY_MAX_V));
     battery.setChargLimits(
-      cfg.getFloat(CONFKEYS::KCHRVMI, BCHARG_MIN_V),
-      cfg.getFloat(CONFKEYS::KCHRVMX, BCHARG_MAX_V));
+      cfg.getFloat(CONFKEYS::KCHRVMI, BATTCHARG_MIN_V),
+      cfg.getFloat(CONFKEYS::KCHRVMX, BATTCHARG_MAX_V));
     if (devmode) battery.printLimits();
     battery.init(devmode);
     battery.update();
@@ -351,6 +352,8 @@ void setup() {
     Serial.println("-->[INFO] Sensorslib version\t: " + sensors.getLibraryVersion());
     startingSensors();
     logMemory("SLIB");
+    sensors.setNoiseSensorTimeSyncInterval(24UL * 60UL * 60UL * 1000UL);
+    sensors.syncNoiseSensorTime();
     // Setting callback for remote commands via Bluetooth config
     setRemoteConfigCallbacks(new MyRemoteConfigCallBacks());
     // init watchdog timer for reboot in any loop blocker
@@ -362,14 +365,13 @@ void setup() {
     logMemory("WIFI");
     Serial.printf("-->[INFO] InfluxDb cloud \t: %s\r\n", isIfxEnable()  ? "enabled" : "disabled");
     Serial.printf("-->[INFO] WiFi current config\t: %s\r\n", isWifiEnable() ? "enabled" : "disabled");
-
-    String sname = !(cfg.getString("geo", "")).isEmpty() ? getStationName() : "not configured yet\t:(";
-    Serial.printf("-->[INFO] CanAirIO station name\t: %s\r\n", sname.c_str());
+ 
     gui.welcomeAddMessage("WiFi: "+String(isWifiEnable() ? "On" : "Off"));
     gui.welcomeAddMessage("Influx: "+String(isIfxEnable() ? "On" : "Off"));
 
 #ifndef DISABLE_BLE
     // Bluetooth low energy init (GATT server for device config)
+    logMemory("BLE_PRE");
     bleServerInit();
     logMemory("BLE ");
     gui.welcomeAddMessage("Bluetooth ready.");
@@ -402,6 +404,8 @@ void setup() {
     // enabling CLI interface
     logMemoryObjects();
 
+    printNextSteps();
+
     #ifdef LORADEVKIT
     LoRaWANSetup();
     logMemory("LORAWAN");    
@@ -411,6 +415,7 @@ void setup() {
 
 void loop() {
   sensors.loop(); // read sensor data and showed it
+  sensors.syncNoiseSensorTime();
   otaLoop();      // check for firmware updates
   snifferLoop();  // pax counter calc (only when WiFi is Off)
   wifiLoop();     // check wifi and reconnect it

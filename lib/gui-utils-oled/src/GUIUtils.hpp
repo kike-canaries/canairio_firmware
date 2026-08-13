@@ -9,12 +9,12 @@ enum AQI_COLOR { AQI_NONE, AQI_PM, AQI_CO2 };
 typedef struct GUIData {
     uint8_t mainUnitId;
     uint8_t onSelectionUnit;
-    uint16_t mainValue;
-    uint16_t minorValue;
+    uint16_t mainValue = 0;
+    uint16_t minorValue = 0;
     String unitName;
     String unitSymbol;
-    float humi;
-    float temp;
+    float humi = 0;
+    float temp = 0;
     int rssi;
     AQI_COLOR color;
 } gdata;
@@ -56,7 +56,7 @@ class GUIUtils {
 
     void clearScreen();
 
-    void setSensorData(GUIData data);
+    void setSensorData(GUIData *data);
 
     void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 

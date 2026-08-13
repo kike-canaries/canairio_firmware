@@ -4,10 +4,18 @@
  ***/
 
 #include <Arduino.h>
+#include <Wire.h>
 #include <GUILib.hpp>
 
-bool toggle;
+#ifdef TTGO_T7S3
+#define GROVE_SDA 13
+#define GROVE_SCL 14
+#define I2C1_SDA_PIN 8
+#define I2C1_SCL_PIN 9
+#endif
+
 GUIData data;
+bool toggle;
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     void onWifiMode(bool enable){
@@ -27,13 +35,6 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
     };
     void onPaxMode(bool enable){
         Serial.println("-->[SETUP] onPaxMode changed: "+String(enable));
-    };
-    void onUnitSelectionToggle() {
-        Serial.println("-->[SETUP] onUnitSelectionToggle");
-    };
-    void onUnitSelectionConfirm() {
-    };
-    void onPowerOff(){
     };
 };
 
@@ -67,29 +68,37 @@ void testExtraWelcomeLines() {
     gui.welcomeAddMessage("Line test welcome 4");
 }
 
+void startI2C(){
+#ifdef TTGO_T7S3
+  Wire.begin(GROVE_SDA, GROVE_SCL);
+#endif
+}
+
 void setup(void) {
     Serial.begin(115200);
-    delay(100);
+    delay(2000);
+    Serial.flush();
     Serial.println("\n== INIT SETUP ==\n");
-
-    gui.displayInit();
+    startI2C();
+    gui.displayInit(0); // 0 for 64x48, 1 for 128x64 displays
     gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
-
+    gui.setEmoticons(true);
     gui.showWelcome();
-    // delay(500);
-    gui.displayBottomLine("CanAirIOAF4");
+    // gui.displayBottomLine("CanAirIOAF4");
     // delay(500);
     gui.welcomeAddMessage("Sensor ready..");
-    // delay(500);
+    delay(500);
     gui.welcomeAddMessage("GATT server..");
-    // delay(500);
+    delay(500);
     gui.welcomeAddMessage("WiFi with long SSID12345678");
-    // delay(500);
+    delay(500);
     gui.welcomeAddMessage("GATT server.........ok");
-    // testExtraWelcomeLines();
+    testExtraWelcomeLines();
     gui.welcomeAddMessage("==SETUP READY==");
 
     randomSeed(A0);
+
+    // while(1) delay(1);
 
     delay(500);
     gui.showMain();
@@ -113,9 +122,11 @@ void loop(void) {
     data.unitName = "PAX";
     data.unitSymbol = "PAX";
     data.mainUnitId = 0;
+    data.humi = 96;
+    data.temp = 28;
     data.color = AQI_COLOR::AQI_PM;
 
-    if (count % 5 == 0) gui.setSensorData(data);
+    if (count % 5 == 0) gui.setSensorData(&data);
 
     gui.setGUIStatusFlags(true, true, true);
 
@@ -126,6 +137,8 @@ void loop(void) {
     // gui.displayStatus(getBoolean(), true, getBoolean());
 
     count++;
+
+    gui.loop();
 
     delay(500);
 }

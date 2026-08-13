@@ -29,8 +29,26 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -U platformio
+          pip install -U platformio rich-click intelhex
           pio pkg update
-      - name: PlatformIO Build Test
+      - name: CanAirIO ESP32WOKWI firmware build
         run: |
-          pio run -e TTGO_T7 -e TTGO_TDISPLAY -e ESP32C3LOLIN
+          ./build wokwi
+      - name: CanAirIO ESP32WOKWI execution test
+        uses: wokwi/wokwi-ci-action@v1
+        with:
+          token: ${{ secrets.WOKWI_CLI_TOKEN }}
+          path: tests/wokwi/test_boot
+          timeout: 60000
+          scenario: 'boot_check.yml'
+          serial_log_file: 'log-boot-canairio.txt'
+      - name: CanAirIO main Architectures test
+        run: |
+          ./build ci
+      - name: Upload Dev Release artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dev-release
+          path: releases/binaries/**/*merged.bin
+          if-no-files-found: warn

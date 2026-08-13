@@ -176,7 +176,7 @@ void wcli_sensors_values(Stream *response) {
         String uName = sensors.getUnitName(unit);
         float uValue = sensors.getUnitValue(unit);
         String uSymb = sensors.getUnitSymbol(unit);
-        response->printf(" %s:\t%02.1f\t%s\r\n", uName.c_str(), uValue, uSymb.c_str());
+        response->printf(" %s:\t%02.2f\t%s\r\n", uName.c_str(), uValue, uSymb.c_str());
         unit = sensors.getNextUnit();
     }
 }
@@ -248,7 +248,11 @@ void cliTask(void *param) {
 
 void cliTaskInit() {
 #ifndef DISABLE_CLI
+#ifdef XIAO_C6
+  xTaskCreate(cliTask, "cliTask", 4000, NULL, 1, &xCliHandle);
+#else
   xTaskCreatePinnedToCore(cliTask, "cliTask ", 4000, NULL, 1, &xCliHandle, 1);
+#endif
 #endif
 }
 
@@ -282,7 +286,11 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
 
   void onHelpShow() {}
 
-  void onNewWifi(String ssid, String passw) { saveWifi(ssid, passw); }
+  void onNewWifi(String ssid, String passw) {
+    saveWifi(ssid, passw); 
+    delay(10);
+    wifiInit();  // for enable FOTA
+  }
 };
 
 void initShell(){
@@ -309,7 +317,7 @@ void initShell(){
   wcli.add("clear", &wcli_clear,        "\t\tclear shell");
   wcli.add("setup", &wcli_setup,        "\t\tTYPE THIS WORD to enter to SAFE MODE setup");
 
-  if (cfg.getBool(CONFKEYS::KFTXPWR, false)) wcli.forceTxPower(); // force the Tx power (C3 issue)
+  if (cfg.getBool(CONFKEYS::KFTXPWR, true)) wcli.forceTxPower(); // force the Tx power (C3 issue)
   
   wcli.begin("CanAirIO");
 }

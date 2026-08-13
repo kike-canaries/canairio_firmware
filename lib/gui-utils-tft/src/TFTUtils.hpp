@@ -9,6 +9,8 @@
 #endif
 #include "hal.hpp"
 #include <Orbitron_Medium_20.h>
+// Orbitron_Light_32 is provided by M5GFX (lgfx_fonts.hpp) on M5STICKCPLUS
+// and by TFT_eSPI (User_Custom_Fonts.h) on all other targets
 #include "icons.h"
 
 // Main windows
@@ -71,7 +73,7 @@ class TFTUtils {
     
     void welcomeRepeatMessage(String msg);
 
-    void setSensorData(GUIData data);
+    void setSensorData(GUIData *data);
 
     void setGUIStatusFlags(bool wifiOn, bool bleOn, bool blePair);
 

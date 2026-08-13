@@ -10,8 +10,6 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    env:
-      PIO_HOME: /home/runner/.platformio
     strategy:
       max-parallel: 1
       matrix:
@@ -31,17 +29,9 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -U platformio
+          pip install -U platformio rich-click intelhex
           pio pkg update
-      - name: Build ESP32WOKWI firmware
+      - name: Testing All Architectures
         run: |
-          ./build wokwi
-      - name: Test CanAirIO execution with Wokwi
-        uses: wokwi/wokwi-ci-action@v1
-        with:
-          token: ${{ secrets.WOKWI_CLI_TOKEN }}
-          path: tests/wokwi/test_boot
-          timeout: 60000
-          scenario: 'boot_check.yml'
-          serial_log_file: 'log-boot-canairio.txt'
-    
+          ./build ci
+        

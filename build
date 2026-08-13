@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 ################################################################
 # CanAirIO Deploy Util
 # ====================
@@ -25,12 +25,10 @@ DEFAULT="TTGO_T7"
 OWNER="kike-canaries"
 REPO="canairio_firmware"
 INSDIR=$RELDIR/installer/${NAME}_installer
+PIO_HOME=${HOME}/.platformio
 
-flavors="TTGO_T7 WEMOSOLED ESP32DEVKIT TTGO_TDISPLAY M5ATOM M5PICOD4 ESP32C3LOLIN ESP32C3SEEDX ESP32S2LOLIN TTGO_T7S3 AG_OPENAIR"
-#flavors="TTGO_T7 WEMOSOLED HELTEC TTGO_TQ ESP32DEVKIT TTGO_TDISPLAY ESP32PICOD4 M5ATOM M5PICOD4 ESP32C3 ESP32C3OIPLUS ESP32C3LOLIN ESP32C3SEEDX ESP32S2LOLIN ESP32S3 TTGO_T7S3 LORADEVKIT AG_OPENAIR"
-#flavors="TTGO_T7 WEMOSOLED HELTEC TTGO_TQ ESP32DEVKIT TTGO_TDISPLAY ESP32PICOD4 M5STICKCPLUS M5ATOM M5PICOD4 ESP32C3 ESP32C3OIPLUS ESP32C3LOLIN ESP32C3SEEDX ESP32S3 TTGO_T7S3 LORADEVKIT AG_OPENAIR"
-#flavors="TTGO_T7 WEMOSOLED ESP32DEVKIT TTGO_TDISPLAY M5STICKCPLUS M5ATOM ESP32C3 ESP32C3OIPLUS ESP32C3LOLIN ESP32C3SEEDX"
-#flavors="TTGO_T7 ESP32C3 ESP32C3OIPLUS ESP32C3LOLIN ESP32C3SEEDX"
+flavors="TTGO_T7 TTGO_TDISPLAY ESP32DEVKIT M5PICOD4 HELTEC WEMOSOLED TTGO_TQ M5ATOM M5STICKCPLUS ESP32C3LOLIN ESP32C3SEEDX ESP32C3OIPLUS AG_OPENAIR ESP32S2LOLIN TTGO_T7S3 ESP32S3 XIAO_S3 XIAO_C6"
+flavors_ci="TTGO_TDISPLAY ESP32C3LOLIN ESP32S2LOLIN TTGO_T7S3 XIAO_C6"
 
 showHelp () {
   echo ""
@@ -62,6 +60,7 @@ clean () {
   for flavor in $flavors; do
     echo "Clean flavor $flavor.."
     pio run -s -e $flavor -t clean
+    rm -f "sdkconfig.$flavor"
   done
 }
 
@@ -73,24 +72,25 @@ build () {
   echo ""
 
   pio run -s -e $1
+  if [ $? -ne 0 ]; then
+    echo "ERROR: pio build failed for flavor $1"
+    exit 1
+  fi
 
   echo ""
   echo "***********************************************"
   echo "** Firmware $1 output:"
-  echo "** MD5:"
   FIRMDIR=$RELDIR/$BINDIR/$1
   mkdir -p $FIRMDIR 
   cp $OUTDIR/$1/firmware.bin $FIRMDIR/${NAME}_${1}_rev${SRC_REV}.bin
-
   if [ $1 == ESP32C3 ] || [ $1 == ESP32C3LOLIN ] || [ $1 == ESP32C3SEEDX ] || [ $1 == ESP32C3OIPLUS ]; then
-    /usr/bin/python3 ${PIO_HOME}/packages/tool-esptoolpy/esptool.py --chip esp32c3 merge_bin -o  $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash_mode dio --flash_freq 80m --flash_size 4MB 0x0000 $OUTDIR/$1/bootloader.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 ${PIO_HOME}/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
+    python3 ${PIO_HOME}/packages/tool-esptoolpy/esptool.py --chip esp32c3 merge_bin -o  $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash_mode dio --flash_freq 80m --flash_size 4MB 0x0000 $OUTDIR/$1/bootloader.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 ${PIO_HOME}/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
   elif [ $1 == ESP32S3 ] || [ $1 == TTGO_T7S3 ]; then
-    /usr/bin/python3 ${PIO_HOME}/packages/tool-esptoolpy/esptool.py --chip esp32s3 merge_bin -o  $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash_mode dio --flash_freq 80m --flash_size 8MB 0x0000 $OUTDIR/$1/bootloader.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 ${PIO_HOME}/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
+    python3 ${PIO_HOME}/packages/tool-esptoolpy/esptool.py --chip esp32s3 merge_bin -o  $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash_mode dio --flash_freq 80m --flash_size 8MB 0x0000 $OUTDIR/$1/bootloader.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 ${PIO_HOME}/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
   else
-    find $PIO_HOME -wholename "*esp32/*bootloader_dio_40m.bin" -exec cp {} $FIRMDIR/ ";"
-    find $PIO_HOME -wholename "*espressif32/*boot_app0.bin" -exec cp {} $FIRMDIR/ ";"
-    /usr/bin/python3 ${PIO_HOME}/packages/tool-esptoolpy/esptool.py --chip esp32 merge_bin -o $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash_mode dio --flash_freq 40m --flash_size 4MB 0x1000 $FIRMDIR/bootloader_dio_40m.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 $FIRMDIR/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
+    python3 ${PIO_HOME}/packages/tool-esptoolpy/esptool.py --chip esp32 merge_bin -o $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash_mode dio --flash_freq 40m --flash_size 4MB 0x1000 $OUTDIR/$1/bootloader.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 ${PIO_HOME}/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
   fi
+  echo "** MD5:"
   md5sum $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin
   md5sum $FIRMDIR/${NAME}_${1}_rev${SRC_REV}.bin
   echo "***********************************************"
@@ -205,6 +205,13 @@ else
       done     
       printOutput
       ;;
+
+    ci)
+      for flavor in $flavors_ci; do
+          build $flavor
+      done     
+      printOutput
+      ;;
     
     wokwi)
       build ESP32WOKWI
@@ -238,6 +245,7 @@ else
         echo ""
         echo "Please check flavor parameter with 'list' command"
         echo ""
+        exit 1
       fi
       ;;
   esac

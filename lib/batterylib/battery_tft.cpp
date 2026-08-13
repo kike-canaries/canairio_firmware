@@ -1,4 +1,5 @@
 #include <battery_tft.hpp>
+#if defined(TTGO_TDISPLAY) || defined(M5STICKCPLUS)
 #ifndef DISABLE_BATT
 
 void Battery_TFT::setupBattADC() {
@@ -83,4 +84,5 @@ void update() {}
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_TFTBATTERY)
 Battery_TFT battery;
+#endif
 #endif

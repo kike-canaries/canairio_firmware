@@ -5,7 +5,9 @@
 void prepairShutdown() {
     #ifndef M5STICKCPLUS
     #ifndef DISABLE_BATT
+#ifdef ADC_EN
     digitalWrite(ADC_EN, LOW);
+#endif
     #endif
     delay(10);
     //rtc_gpio_init(GPIO_NUM_14);
@@ -114,7 +116,9 @@ void powerTempSensorInit() {
 }
 
 void powerInit() {
+  #ifndef XIAO_C6
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);  // Disable Brownout Detector
+  #endif
   // set cpu speed low to save battery
   setCpuFrequencyMhz(240);
   Serial.printf("-->[POWR] CPU Speed:%i MHz\r\n", getCpuFrequencyMhz());
@@ -136,7 +140,7 @@ void powerLoop() {
   if ((millis() - powerTimeStamp > 30 * 1000)) {  // check it every 5 seconds
     powerTimeStamp = millis();
     float vbat = battery.getVoltage();
-    if (vbat > 3.0 && vbat < BATT_MIN_V) {
+    if (vbat > 3.0 && vbat < BATTERY_MIN_V) {
       Serial.println("-->[POWR] Goto DeepSleep (VBat too low)");
       if (solarmode)
         powerDeepSleepTimer(deepSleep);

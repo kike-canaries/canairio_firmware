@@ -9,6 +9,8 @@
 #include "cloud_anaire.hpp"
 #include "Watchdog.hpp"
 #include "power.hpp"
+#include <math.h>
+#include <time.h>
 
 /******************************************************************************
 *   W I F I   M E T H O D S
@@ -39,6 +41,84 @@ class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
     gui.showMain();
   }
 };
+
+void printLocalTime() {
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) return;
+  Serial.print("-->[WIFI] NTP sync ok. Time now\t: ");
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+}
+
+bool isTimeValid(time_t t) {
+  return t > 1609459200;  // 2021-01-01T00:00:00Z
+}
+
+static bool getTimezoneOffsetFromGeo(int32_t &offsetSeconds) {
+  static int32_t cachedOffset = INT32_MIN;
+  static String cachedGeo = "";
+
+  double lat = cfg.getDouble("lat", 0.0);
+  double lon = cfg.getDouble("lon", 0.0);
+  String geo = cfg.getString("geo", "");
+
+  if ((lat == 0.0 || lon == 0.0) && geo.length() > 5) {
+    if (geo != cachedGeo || cachedOffset == INT32_MIN) {
+      Geohash gh;
+      float tlat = 0.0f;
+      float tlon = 0.0f;
+      gh.decode(geo.c_str(), geo.length(), &tlon, &tlat);
+      lat = tlat;
+      lon = tlon;
+      int32_t h = (int32_t)lround(lon / 15.0);
+      if (h < -12) h = -12;
+      if (h > 14) h = 14;
+      cachedOffset = h * 3600;
+      cachedGeo = geo;
+    }
+    offsetSeconds = cachedOffset;
+    return true;
+  }
+
+  if (lat == 0.0 || lon == 0.0) return false;
+
+  int32_t offsetHours = (int32_t)lround(lon / 15.0);
+  if (offsetHours < -12) offsetHours = -12;
+  if (offsetHours > 14) offsetHours = 14;
+  offsetSeconds = offsetHours * 3600;
+  return true;
+}
+
+void ensureNtpSync() {
+  if (!WiFi.isConnected()) return;
+
+  static bool ntpConfigured = false;
+  static bool ntpSynced = false;
+  static uint32_t lastAttemptMs = 0;
+  static int32_t lastOffsetSeconds = INT32_MIN;
+
+  if (ntpSynced && isTimeValid(time(nullptr))) return;
+
+  if (millis() - lastAttemptMs < 60000) return;  // retry at most every 60s
+  lastAttemptMs = millis();
+
+  int32_t offsetSeconds = 0;
+  if (!getTimezoneOffsetFromGeo(offsetSeconds)) {
+    offsetSeconds = 0;
+  }
+
+  if (!ntpConfigured || offsetSeconds != lastOffsetSeconds) {
+    configTime(offsetSeconds, 0, "pool.ntp.org", "time.nist.gov");
+    ntpConfigured = true;
+    ntpSynced = false;
+    lastOffsetSeconds = offsetSeconds;
+  }
+
+  time_t now = time(nullptr);
+  if (isTimeValid(now)) {
+    ntpSynced = true;
+    printLocalTime();
+  } 
+}
 
 void otaLoop() {
   if (WiFi.isConnected()) {
@@ -114,10 +194,19 @@ void wifiInit() {
   if (!WiFi.isConnected() && isWifiEnable() && ssid.length() > 0) {
     wifiConnect();
   }
+  else {
+    log_i("wifiConnect was skipped");
+    log_i("isConnect: %i isWiFiEnable: %i ssidLenght: %i\r\n", WiFi.isConnected(), isWifiEnable(), ssid.length());
+  }
   if(WiFi.isConnected()) {
     Serial.print("-->[WIFI] device network IP\t: ");
     Serial.println(WiFi.localIP());
     Serial.println("-->[WIFI] publish interval \t: " + String(stime * 2) + " sec.");
+
+    String sname = !(cfg.getString("geo", "")).isEmpty() ? getStationName() : "not configured :(\tRun \"sgeoh\" command ;)";
+    Serial.printf("-->[INFO] CanAirIO station name\t: %s\r\n", sname.c_str());
+
+    ensureNtpSync();
     otaInit();
     wifiCloudsInit();
   }
@@ -153,8 +242,10 @@ void wifiLoop() {
       wifiStop();
     }
     if (!WiFi.isConnected()) return;
+    ensureNtpSync();
     influxDbInit();
     influxDbLoop();  // influxDB publication
+    if (!ota.isConfigured()) otaInit();
     if (cfg.getBool(CONFKEYS::KANAIRE, false)) anaireLoop();
     if (cfg.getBool(CONFKEYS::KHOMEAS, false)) hassLoop();
   }
@@ -176,9 +267,15 @@ String getDeviceInfo() {
   info = info + String(FLAVOR) + "\r\n";
   info = info + "IP: " + WiFi.localIP().toString() + "\r\n";
   info = info + "OTA: " + String(TARGET) + " channel\r\n";
+  
+  struct tm timeinfo;
+  if (getLocalTime(&timeinfo)) {
+    char strftime_buf[64];
+    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    info = info + "NTP: " + String(strftime_buf) + "\r\n";
+  }
   info = info + "==================\r\n";
-  info = info + "MEM: " + String(ESP.getFreeHeap() / 1024) + "Kb\r\n";
-  info = info + "GUI: " + String(gui.getStackFree() / 1024) + "Kb\r\n";
+
   #ifdef CONFIG_IDF_TARGET_ESP32S3
   info = info + "CPU: " + String(powerESP32TempRead()) + "°C\r\n";
   #endif

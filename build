@@ -98,7 +98,7 @@ build () {
   elif [ $1 == ESP32S2LOLIN ]; then
     python3 ${PIO_HOME}/packages/tool-esptoolpy/esptool.py --chip esp32s2 merge_bin -o  $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash_mode dio --flash_freq 80m --flash_size 8MB 0x0000 $OUTDIR/$1/bootloader.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 ${PIO_HOME}/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
   elif [ $1 == XIAO_C6 ]; then
-    python3 ${PIO_HOME}/packages/tool-esptoolpy/esptool --chip esp32c6 merge-bin -o  $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash-mode dio --flash-freq 80m --flash-size 8MB 0x0000 $OUTDIR/$1/bootloader.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 ${PIO_HOME}/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
+    python3 ${PIO_HOME}/packages/tool-esptoolpy/esptool.py --chip esp32c6 merge-bin -o  $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash_mode dio --flash_freq 80m --flash_size 8MB 0x0000 $OUTDIR/$1/bootloader.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 ${PIO_HOME}/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
   else
     python3 ${PIO_HOME}/packages/tool-esptoolpy/esptool.py --chip esp32 merge_bin -o $FIRMDIR/${NAME}_${1}_rev${SRC_REV}_merged.bin --flash_mode dio --flash_freq 40m --flash_size 4MB 0x1000 $OUTDIR/$1/bootloader.bin 0x8000 $OUTDIR/$1/partitions.bin 0xe000 ${PIO_HOME}/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin 0x10000 $OUTDIR/$1/firmware.bin
   fi

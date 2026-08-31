@@ -64,6 +64,7 @@ void influxDbParseFields() {
     sensor.addField("dbMin",sensors.getNoiseMin());
     sensor.addField("dbAvgL",sensors.getNoiseLegalAverage());
     sensor.addField("dbAvgLMx",sensors.getNoiseLegalMaximum());
+    sensor.addField("dbL90",sensors.getNoiseL90());
     sensor.addField("Ld",sensors.getNoiseLd());
     sensor.addField("Le",sensors.getNoiseLe());
     sensor.addField("Ln",sensors.getNoiseLn());

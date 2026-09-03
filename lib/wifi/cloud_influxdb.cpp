@@ -62,7 +62,6 @@ void influxDbParseFields() {
     sensor.addField("bat",battery.getCharge());
     sensor.addField("vbat",battery.getVoltage());
     #endif
-    #if (CSL_NOISE_SENSOR_SUPPORTED == 1)
     sensor.addField("db",sensors.getNoise());
     sensor.addField("dbAvg",sensors.getNoiseAverage());
     sensor.addField("dbPk",sensors.getNoisePeak());
@@ -74,7 +73,6 @@ void influxDbParseFields() {
     sensor.addField("Le",sensors.getNoiseLe());
     sensor.addField("Ln",sensors.getNoiseLn());
     sensor.addField("Lden",sensors.getNoiseLden());
-    #endif
     sensor.addField("rssi",getWifiRSSI());
     sensor.addField("heap",ESP.getFreeHeap());
     sensor.addField("name",getStationName().c_str());

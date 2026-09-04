@@ -89,6 +89,7 @@ String getDeviceIdShort();
 String getStationName();
 String getEfuseDeviceId();
 String getVersion();
+String getGitVersion();
 int getSensorType();
 void clear();
 void reboot();

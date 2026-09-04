@@ -21,6 +21,6 @@ void wifiLoop();
 
 int  getWifiRSSI();
 void printWifiRSSI();
-String getDeviceInfo();
+String getDeviceInfo(bool iSCLI = true);
 String getHostId();
 #endif

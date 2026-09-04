@@ -42,15 +42,16 @@ class MyOTAHandlerCallbacks : public OTAHandlerCallbacks {
   }
 };
 
-void printLocalTime() {
-  struct tm timeinfo;
-  if (!getLocalTime(&timeinfo)) return;
-  Serial.print("-->[WIFI] NTP sync ok. Time now\t: ");
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-}
-
 bool isTimeValid(time_t t) {
   return t > 1609459200;  // 2021-01-01T00:00:00Z
+}
+
+void printLocalTime(bool onlyTime) {
+  struct tm timeinfo;
+  if (!isTimeValid(time(nullptr))) return;
+  if (!getLocalTime(&timeinfo)) return;
+  if (!onlyTime) Serial.print("-->[WIFI] NTP sync ok. Time now\t: ");
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 }
 
 static bool getTimezoneOffsetFromGeo(int32_t &offsetSeconds) {
@@ -99,24 +100,33 @@ void ensureNtpSync(bool sync_now) {
   if (ntpSynced && isTimeValid(time(nullptr))) return;
   if (!sync_now && (millis() - lastAttemptMs < 60000)) return;  // retry at most every 60s
   lastAttemptMs = millis();
+  if (cfg.isKey(PKEYS::KTZONE)) updateTimeSettings(true);
+  else {
+    int32_t offsetSeconds = 0;
+    if (!getTimezoneOffsetFromGeo(offsetSeconds)) {
+      offsetSeconds = 0;
+    }
 
-  int32_t offsetSeconds = 0;
-  if (!getTimezoneOffsetFromGeo(offsetSeconds)) {
-    offsetSeconds = 0;
+    if (!ntpConfigured || offsetSeconds != lastOffsetSeconds) {
+      configTime(offsetSeconds, 0, NTP_SERVER1, NTP_SERVER2);
+      ntpConfigured = true;
+      ntpSynced = false;
+      lastOffsetSeconds = offsetSeconds;
+    }
   }
 
-  if (!ntpConfigured || offsetSeconds != lastOffsetSeconds) {
-    configTime(offsetSeconds, 0, "pool.ntp.org", "time.nist.gov");
-    ntpConfigured = true;
-    ntpSynced = false;
-    lastOffsetSeconds = offsetSeconds;
-  }
-
-  time_t now = time(nullptr);
-  if (isTimeValid(now)) {
+  if (isTimeValid(time(nullptr))) {
     ntpSynced = true;
     printLocalTime();
   } 
+}
+
+void updateTimeSettings(bool silent) {
+  String tzone = cfg.getString(PKEYS::KTZONE, DEFAULT_TZONE);
+  if (!silent) Serial.printf("ntp server: \t%s\r\ntimezone: \t%s\r\n", NTP_SERVER1, tzone.c_str());
+  configTime(GMT_OFFSET_SEC, 0, NTP_SERVER1, NTP_SERVER2);
+  setenv("TZ", tzone.c_str(), 1);  
+  tzset();
 }
 
 void otaLoop() {

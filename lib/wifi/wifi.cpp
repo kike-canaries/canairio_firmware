@@ -88,7 +88,7 @@ static bool getTimezoneOffsetFromGeo(int32_t &offsetSeconds) {
   return true;
 }
 
-void ensureNtpSync() {
+void ensureNtpSync(bool sync_now) {
   if (!WiFi.isConnected()) return;
 
   static bool ntpConfigured = false;
@@ -97,8 +97,7 @@ void ensureNtpSync() {
   static int32_t lastOffsetSeconds = INT32_MIN;
 
   if (ntpSynced && isTimeValid(time(nullptr))) return;
-
-  if (millis() - lastAttemptMs < 60000) return;  // retry at most every 60s
+  if (!sync_now && (millis() - lastAttemptMs < 60000)) return;  // retry at most every 60s
   lastAttemptMs = millis();
 
   int32_t offsetSeconds = 0;
@@ -206,7 +205,7 @@ void wifiInit() {
     String sname = !(cfg.getString("geo", "")).isEmpty() ? getStationName() : "not configured :(\tRun \"sgeoh\" command ;)";
     Serial.printf("-->[INFO] CanAirIO station name\t: %s\r\n", sname.c_str());
 
-    ensureNtpSync();
+    ensureNtpSync(true);
     otaInit();
     wifiCloudsInit();
   }
@@ -242,7 +241,7 @@ void wifiLoop() {
       wifiStop();
     }
     if (!WiFi.isConnected()) return;
-    ensureNtpSync();
+    ensureNtpSync(false);
     influxDbInit();
     influxDbLoop();  // influxDB publication
     if (!ota.isConfigured()) otaInit();
@@ -260,28 +259,32 @@ int getWifiRSSI() {
 /**
  * @brief get the general info on reduced width for TFT screens and CLI.
 */
-String getDeviceInfo() {
+String getDeviceInfo(bool isCLI) {
   String info = getHostId() + "\r\n";
-  info = info + "Rev" + String(REVISION) + " v" + String(VERSION) + "\r\n";
   info = info + "" + getStationName() + "\r\n";
   info = info + String(FLAVOR) + "\r\n";
-  info = info + "IP: " + WiFi.localIP().toString() + "\r\n";
+  if (isCLI) info = info + getVersion() + " (" + getGitVersion() + ")\r\n";
+  else info = info + "Rev: " + String(REVISION) + " v" + String(VERSION) + "\r\n";
+
+  info = info + "===================\r\n";
+  if (!isCLI) info = info + "IP: " + WiFi.localIP().toString() + "\r\n";
   info = info + "OTA: " + String(TARGET) + " channel\r\n";
   
   struct tm timeinfo;
   if (getLocalTime(&timeinfo)) {
     char strftime_buf[64];
-    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    if (isCLI) strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    else strftime(strftime_buf, sizeof(strftime_buf), "%a %d %H:%M", &timeinfo);
     info = info + "NTP: " + String(strftime_buf) + "\r\n";
   }
-  info = info + "==================\r\n";
 
   #ifdef CONFIG_IDF_TARGET_ESP32S3
   info = info + "CPU: " + String(powerESP32TempRead()) + "°C\r\n";
   #endif
   #ifndef DISABLE_BATT
   String charge = battery.isCharging() ? "charging" : "discharging";
-  info = info + "BAT: " + String(battery.getVoltage()) + "v "+String(battery.getCharge()) +"% ("+charge+")\r\n";
+  if (isCLI) info = info + "BAT: " + String(battery.getVoltage()) + "v "+String(battery.getCharge()) +"% ("+charge+")\r\n";
+  else info = info + "BAT: " + String(battery.getVoltage()) + "v "+String(battery.getCharge()) +"%\r\n";
   #endif
   return info;
 }

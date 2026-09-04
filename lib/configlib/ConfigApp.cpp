@@ -483,7 +483,11 @@ String getStationName() {
 }
 
 String getVersion() {
-    return "v"+String(VERSION)+"r"+String(REVISION)+String(TARGET);
+    return "v"+String(VERSION)+" r"+String(REVISION);
+}
+
+String getGitVersion() {
+    return ""+String(GIT_VERSION);
 }
 
 bool isWifiEnable() {

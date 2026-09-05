@@ -82,6 +82,7 @@ void wcli_tzone(char *args, Stream *response) {
     printLocalTime(true);
     return;
   }
+  tzone.replace("\"", "");
   cfg.saveString(PKEYS::KTZONE, tzone);
   updateTimeSettings();
   printLocalTime(true);

@@ -341,7 +341,7 @@ void initShell(){
   wcli.add("info",  &wcli_info,         "\t\tget device information");
   wcli.add("exit",  &wcli_exit,         "\t\texit of the setup mode. AUTO EXIT in 10 seg! :)");
   wcli.add("clear", &wcli_clear,        "\t\tclear shell");
-  wcli.add("setup", &wcli_setup,        "\t\tTYPE THIS WORD to enter to SAFE MODE setup");
+  wcli.add("setup", &wcli_setup,        "\t\tTYPE THIS in the boot to enter to SAFE MODE setup");
 
   if (cfg.getBool(CONFKEYS::KFTXPWR, true)) wcli.forceTxPower(); // force the Tx power (C3 issue)
   

@@ -135,7 +135,7 @@ pio run -e TTGO_T7 --target upload
 First, build the Docker image for your system, using the following command line:
 
 ```bash
-docker build --build-arg DOCKER_USER=$USER --build-arg DOCKER_USERID=$UID -t canairio_pio:master .
+docker build --build-arg DOCKER_USER=$USER --build-arg DOCKER_USERID=$UID -t platformio-core:master .
 ```
 
 <h5 align=right> (don't forget the last point in the line) </h5>

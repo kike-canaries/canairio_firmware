@@ -62,13 +62,12 @@ void influxDbParseFields() {
     sensor.addField("bat",battery.getCharge());
     sensor.addField("vbat",battery.getVoltage());
     #endif
-    sensor.addField("db",sensors.getNoise());
-    sensor.addField("dbAvg",sensors.getNoiseAverage());
-    sensor.addField("dbPk",sensors.getNoisePeak());
-    sensor.addField("dbMin",sensors.getNoiseMin());
-    sensor.addField("dbAvgL",sensors.getNoiseLegalAverage());
-    sensor.addField("dbAvgLMx",sensors.getNoiseLegalMaximum());
-    sensor.addField("dbL90",sensors.getNoiseL90());
+    sensor.addField("db",sensors.getNoise());                   // LAeq,1s
+    sensor.addField("dbPk",sensors.getNoisePeak());             // LAFmax
+    sensor.addField("dbAvgL",sensors.getNoiseLegalAverage());   // L10
+    sensor.addField("dbL90",sensors.getNoiseL90());             // L90
+    sensor.addField("dbLASmax",sensors.getNoiseLASmax());       // LASmax since previous reading
+    sensor.addField("dbLCpeak",sensors.getNoiseLCpeak());       // LCpeak (dB C) since previous reading
     sensor.addField("Ld",sensors.getNoiseLd());
     sensor.addField("Le",sensors.getNoiseLe());
     sensor.addField("Ln",sensors.getNoiseLn());

@@ -68,6 +68,30 @@ void wcli_uartpins(char *args, Stream *response) {
     response->println("invalid pins values");
 }
 
+void wcli_tzone(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
+  String tzone = operands.first();
+  if (tzone.isEmpty()) {
+    if (!cfg.isKey(PKEYS::KTZONE)) {
+      response->println("Not configured yet! Using geo calculated timezone.");
+      response->println("Please select one here: https://tinyurl.com/4s44uyzn");
+    }
+    else {
+      updateTimeSettings();
+    }
+    printLocalTime(true);
+    return;
+  }
+  tzone.replace("\"", "");
+  cfg.saveString(PKEYS::KTZONE, tzone);
+  updateTimeSettings();
+  printLocalTime(true);
+}
+
+void wcli_ptime(char *args, Stream *response) {
+  printLocalTime(true);
+}
+
 bool validBattLimits(float min, float max){
   return (min >= 3.0 && min <= 5.0 && max <=5.0 && max >= 3.0);
 }
@@ -176,7 +200,7 @@ void wcli_sensors_values(Stream *response) {
         String uName = sensors.getUnitName(unit);
         float uValue = sensors.getUnitValue(unit);
         String uSymb = sensors.getUnitSymbol(unit);
-        response->printf(" %s:\t%02.2f\t%s\r\n", uName.c_str(), uValue, uSymb.c_str());
+        response->printf(" %s:\t% 10.2f %s\r\n", uName.c_str(), uValue, uSymb.c_str());
         unit = sensors.getNextUnit();
     }
 }
@@ -306,6 +330,8 @@ void initShell(){
   wcli.add("stype", &wcli_stype,        "\t\tset the sensor type (UART)");
   wcli.add("sgeoh", &wcli_sgeoh,        "\t\tset geohash. Type help for more details.");
   wcli.add("spins", &wcli_uartpins,     "\t\tset the UART pins TX RX");
+  wcli.add("tzone", &wcli_tzone,        "\t\tset TZONE. https://tinyurl.com/4s44uyzn");
+  wcli.add("time" , &wcli_ptime,        "\t\tprint the current time");
   #ifndef DISABLE_BATT
   wcli.add("battv", &wcli_battvLimits,  "\t\tset battery min/max voltage");
   wcli.add("charg", &wcli_chargLimits,  "\t\tset battery charging min/max voltage");
@@ -315,7 +341,7 @@ void initShell(){
   wcli.add("info",  &wcli_info,         "\t\tget device information");
   wcli.add("exit",  &wcli_exit,         "\t\texit of the setup mode. AUTO EXIT in 10 seg! :)");
   wcli.add("clear", &wcli_clear,        "\t\tclear shell");
-  wcli.add("setup", &wcli_setup,        "\t\tTYPE THIS WORD to enter to SAFE MODE setup");
+  wcli.add("setup", &wcli_setup,        "\t\tTYPE THIS in the boot to enter to SAFE MODE setup");
 
   if (cfg.getBool(CONFKEYS::KFTXPWR, true)) wcli.forceTxPower(); // force the Tx power (C3 issue)
   

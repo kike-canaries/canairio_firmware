@@ -95,7 +95,7 @@ void refreshGUIData(bool onUnitSelection) {
     loadGUIData(&data);
     if (!onUnitSelection) {
         gui.displaySensorLiveIcon();  // all sensors read are ok 
-        gui.setInfoData(getDeviceInfo());
+        gui.setInfoData(getDeviceInfo(false));
         printWifiRSSI();
     }
     gui.setSensorData(&data);
@@ -343,7 +343,7 @@ void setup() {
     Serial.println("-->[INFO] ESP32MAC\t\t: " + deviceId);
     Serial.println("-->[INFO] Hostname\t\t: " + getHostId());
     Serial.println("-->[INFO] Revision\t\t: " + gui.getFirmwareVersionCode());
-    Serial.println("-->[INFO] Firmware\t\t: " + String(VERSION));
+    Serial.println("-->[INFO] Firmware\t\t: " + String(GIT_VERSION));
     Serial.println("-->[INFO] Flavor  \t\t: " + String(FLAVOR));
     Serial.println("-->[INFO] Target  \t\t: " + String(TARGET)); 
     logMemory("GPIO");  

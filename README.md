@@ -135,24 +135,24 @@ pio run -e TTGO_T7 --target upload
 First, build the Docker image for your system, using the following command line:
 
 ```bash
-docker build --build-arg DOCKER_USER=$USER --build-arg DOCKER_USERID=$UID -t canairio_pio:master .
+docker build --build-arg DOCKER_USER=$USER --build-arg DOCKER_USERID=$UID -t platformio-core:master .
 ```
 
-This will build a basic compiler image with all PlatformIO stuff. You could need perform this, just only one time.
+<h5 align=right> (don't forget the last point in the line) </h5>
 
-Then, for build the project or default firmware, you only needs run the next command, each time that you need:
+This will build a basic compiler image with all PlatformIO (Pioarduino) stuff. You need perform this step, just **only one time**.
+
+Then, for build the project or default firmware, you only needs to run the next command, each time that you need, for instance:
 
 ```bash
-./docker_build run
+./docker_build run -e TTGO_T7
 ```
 
-Similar, for build and upload to your device, for instance here, we are choosing a specific firmware flavor:
+For build and upload to your device you should specific the port, for instance:
 
 ```bash
-./docker_build run -e TTGO_T7 --target upload
+PORT=/dev/ttyACM0 ./docker_build run -e XIAO_S3 --target upload
 ```
-
-if you have issues with the upload port, please edit `docker_build` and change the PORT variable.
 
 ## OTA WAN updates
 

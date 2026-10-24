@@ -6,6 +6,7 @@ import os
 import os.path
 import requests
 import json
+import subprocess
 from os.path import basename
 from platformio import util
 from SCons.Script import DefaultEnvironment
@@ -44,10 +45,21 @@ if flavor == "ESP32S3" or flavor == "TTGO_T7S3":
 if flavor == "XIAO_C6":
     chipFamily = "ESP32-C6"
 
+# get git version for firmware identification
+try:
+    git_version = subprocess.check_output(
+        ['git', 'describe', '--tags', '--always', '--dirty'],
+        cwd=env.get('PROJECT_DIR'),
+        stderr=subprocess.DEVNULL
+    ).decode('utf-8').strip()
+except (subprocess.CalledProcessError, FileNotFoundError):
+    git_version = "unknown"
+
 # get runtime credentials and put them to compiler directive
 env.Append(BUILD_FLAGS=[
     u'-DREVISION=' + revision + '',
     u'-DVERSION=\\"' + version + '\\"',
+    u'-DGIT_VERSION=\\"' + git_version + '\\"',
     u'-DFLAVOR=\\"' + flavor + '\\"',
     u'-DFAMILY=\\"' + chipFamily + '\\"',
     u'-DTARGET=\\"' + target + '\\"',
